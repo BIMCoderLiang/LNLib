@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33516.290
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LNLib", "LNLib.vcxproj", "{66239699-5016-4E0A-953F-AF2D57E77EA4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{66239699-5016-4E0A-953F-AF2D57E77EA4}.Debug|x64.ActiveCfg = Debug|x64
+		{66239699-5016-4E0A-953F-AF2D57E77EA4}.Debug|x64.Build.0 = Debug|x64
+		{66239699-5016-4E0A-953F-AF2D57E77EA4}.Debug|x86.ActiveCfg = Debug|Win32
+		{66239699-5016-4E0A-953F-AF2D57E77EA4}.Debug|x86.Build.0 = Debug|Win32
+		{66239699-5016-4E0A-953F-AF2D57E77EA4}.Release|x64.ActiveCfg = Release|x64
+		{66239699-5016-4E0A-953F-AF2D57E77EA4}.Release|x64.Build.0 = Release|x64
+		{66239699-5016-4E0A-953F-AF2D57E77EA4}.Release|x86.ActiveCfg = Release|Win32
+		{66239699-5016-4E0A-953F-AF2D57E77EA4}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {ED289259-1D69-4CAD-88E1-27DB4372CA67}
+	EndGlobalSection
+EndGlobal

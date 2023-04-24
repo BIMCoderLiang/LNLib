@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+*.pdb
+*.tlog
+*.vsidx
+
+# Folder
+.vs/

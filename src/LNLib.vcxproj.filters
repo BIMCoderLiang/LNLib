@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="include\XYZ.h" />
+    <ClInclude Include="include\Polynomials.h" />
+    <ClInclude Include="include\BezierCurve.h" />
+    <ClInclude Include="include\UV.h" />
+    <ClInclude Include="include\Constants.h" />
+    <ClInclude Include="include\BezierSurface.h" />
+    <ClInclude Include="include\MathUtils.h" />
+    <ClInclude Include="include\BsplineCurve.h" />
+    <ClInclude Include="include\BsplineSurface.h" />
+    <ClInclude Include="include\LNLibDefinitions.h" />
+    <ClInclude Include="include\ValidationUtils.h" />
+    <ClInclude Include="include\NurbsCurve.h" />
+    <ClInclude Include="include\XYZW.h" />
+    <ClInclude Include="include\NurbsSurface.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Mathematics\XYZ.cpp" />
+    <ClCompile Include="Algorithm\Polynomials.cpp" />
+    <ClCompile Include="Curve\BezierCurve.cpp" />
+    <ClCompile Include="Mathematics\UV.cpp" />
+    <ClCompile Include="Mathematics\Constants.cpp" />
+    <ClCompile Include="Surface\BezierSurface.cpp" />
+    <ClCompile Include="Mathematics\MathUtils.cpp" />
+    <ClCompile Include="Curve\BsplineCurve.cpp" />
+    <ClCompile Include="Surface\BsplineSurface.cpp" />
+    <ClCompile Include="LNLibDefinitions.cpp" />
+    <ClCompile Include="Mathematics\ValidationUtils.cpp" />
+    <ClCompile Include="Curve\NurbsCurve.cpp" />
+    <ClCompile Include="Mathematics\XYZW.cpp" />
+    <ClCompile Include="Surface\NurbsSurface.cpp" />
+  </ItemGroup>
+</Project>
