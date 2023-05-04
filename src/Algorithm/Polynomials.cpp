@@ -87,6 +87,40 @@ int LNLib::Polynomials::GetKnotSpanIndex(unsigned int n, unsigned int degree, do
 	return -1;
 }
 
+void LNLib::Polynomials::GetKnotSpanTimes(unsigned int n, unsigned int degree, double knot, const std::vector<double>& knotVector, int& index, int& times)
+{
+	index = -1; times = 0;
+	int size = static_cast<int>(knotVector.size());
+	int temp = 0;
+	
+	for (int i = 0; i < size; i++)
+	{
+		if (MathUtils::IsAlmostEqualTo(knot, knotVector[i]))
+		{
+			index = i;
+			break;
+		}	
+	}
+
+	if (index == -1)
+	{
+		return;
+	}
+		
+	times = 1;
+	for (int j = index + 1; j < size; j++)
+	{
+		if (MathUtils::IsAlmostEqualTo(knot, knotVector[j]))
+		{
+			times++;
+		}
+		else
+		{
+			break;
+		}	
+	}
+}
+
 void LNLib::Polynomials::BasisFunctions(unsigned int spanIndex, unsigned int degree, double paramT, const std::vector<double>& knotVector, std::vector<double>& basisFunctions)
 {
 	basisFunctions[0] = 1.0;

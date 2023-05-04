@@ -47,6 +47,12 @@ namespace LNLib
 		static int GetKnotSpanIndex(unsigned int n, unsigned int degree, double knot, const std::vector<double>& knotVector);
 
 		/// <summary>
+		/// The NURBS Book 2nd Edition Page152
+		/// Find the knot span index and times.
+		/// </summary>
+		static void GetKnotSpanTimes(unsigned int n, unsigned int degree, double knot, const std::vector<double>& knotVector, int& index, int& times);
+
+		/// <summary>
 		/// The NURBS Book 2nd Edition Page70
 		/// Algorithm A2.2
 		/// Compute the nonvanishing basis functions.
@@ -72,12 +78,6 @@ namespace LNLib
 		/// Algorithm A2.5
 		/// Compute a single basis function and its derivative.
 		/// </summary>
-		/// <param name="index"></param>
-		/// <param name="degree"></param>
-		/// <param name="knotVector"></param>
-		/// <param name="paramT"></param>
-		/// <param name="derivative"></param>
-		/// <param name="derivatives"></param>
 		static void OneBasisFunctionDerivative(unsigned int index, unsigned int degree, const std::vector<double>& knotVector, double paramT, unsigned int derivative, std::vector<double>& derivatives);
 	};
 
