@@ -37,18 +37,18 @@
   <ItemGroup>
     <ClCompile Include="Algorithm\Polynomials.cpp" />
     <ClCompile Include="LNLibDefinitions.cpp" />
-    <ClCompile Include="Curve\NurbsCurve.cpp" />
-    <ClCompile Include="Surface\NurbsSurface.cpp" />
-    <ClCompile Include="Surface\BsplineSurface.cpp" />
-    <ClCompile Include="Curve\BsplineCurve.cpp" />
-    <ClCompile Include="Mathematics\MathUtils.cpp" />
-    <ClCompile Include="Surface\BezierSurface.cpp" />
-    <ClCompile Include="Curve\BezierCurve.cpp" />
-    <ClCompile Include="Mathematics\Constants.cpp" />
-    <ClCompile Include="Mathematics\XYZ.cpp" />
-    <ClCompile Include="Mathematics\UV.cpp" />
-    <ClCompile Include="Mathematics\ValidationUtils.cpp" />
-    <ClCompile Include="Mathematics\XYZW.cpp" />
+    <ClCompile Include="Geometry\GeometryBase\Curve\NurbsCurve.cpp" />
+    <ClCompile Include="Geometry\GeometryBase\Surface\NurbsSurface.cpp" />
+    <ClCompile Include="Geometry\GeometryBase\Surface\BsplineSurface.cpp" />
+    <ClCompile Include="Geometry\GeometryBase\Curve\BsplineCurve.cpp" />
+    <ClCompile Include="Mathematics\Utils\MathUtils.cpp" />
+    <ClCompile Include="Geometry\GeometryBase\Surface\BezierSurface.cpp" />
+    <ClCompile Include="Geometry\GeometryBase\Curve\BezierCurve.cpp" />
+    <ClCompile Include="Mathematics\Math\Constants.cpp" />
+    <ClCompile Include="Mathematics\Math\XYZ.cpp" />
+    <ClCompile Include="Mathematics\Math\UV.cpp" />
+    <ClCompile Include="Mathematics\Utils\ValidationUtils.cpp" />
+    <ClCompile Include="Mathematics\Math\XYZW.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

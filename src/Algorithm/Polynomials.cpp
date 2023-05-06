@@ -62,21 +62,21 @@ double Polynomials::Horner(const std::vector<std::vector<double>>& coefficients,
 	return Horner(temp, degreeU, paramU);
 }
 
-int LNLib::Polynomials::GetKnotSpanIndex(unsigned int n, unsigned int degree, double knot, const std::vector<double>& knotVector)
+int LNLib::Polynomials::GetKnotSpanIndex(unsigned int n, unsigned int degree, double paramT, const std::vector<double>& knotVector)
 {
 	int m = static_cast<int>(knotVector.size()) - degree - 2;
 	if (m >= 0)
 	{
-		if (knot == knotVector[n + 1]) return n;
+		if (paramT == knotVector[n + 1]) return n;
 
 		int low = degree;
 		int high = n + 1;
 		int mid = static_cast<int>(floor((low + high) / 2.0));
 
-		while (knot < knotVector[mid] ||
-				knot >= knotVector[mid + 1])
+		while (paramT < knotVector[mid] ||
+				paramT >= knotVector[mid + 1])
 		{
-			if (knot < knotVector[mid])
+			if (paramT < knotVector[mid])
 				high = mid;
 			else
 				low = mid;
@@ -87,24 +87,23 @@ int LNLib::Polynomials::GetKnotSpanIndex(unsigned int n, unsigned int degree, do
 	return -1;
 }
 
-void LNLib::Polynomials::GetKnotSpanTimes(unsigned int n, unsigned int degree, double knot, const std::vector<double>& knotVector, int& index, int& times)
+int LNLib::Polynomials::GetKnotMultiplicity(unsigned int n, unsigned int degree, double knot, const std::vector<double>& knotVector)
 {
-	index = -1; times = 0;
+	int times = -1;
+	int index = 0;
 	int size = static_cast<int>(knotVector.size());
-	int temp = 0;
 	
-	for (int i = 0; i < size; i++)
+	for (int index = 0; index < size; index++)
 	{
-		if (MathUtils::IsAlmostEqualTo(knot, knotVector[i]))
+		if (MathUtils::IsAlmostEqualTo(knot, knotVector[index]))
 		{
-			index = i;
 			break;
 		}	
 	}
 
 	if (index == -1)
 	{
-		return;
+		return times;
 	}
 		
 	times = 1;
@@ -119,6 +118,7 @@ void LNLib::Polynomials::GetKnotSpanTimes(unsigned int n, unsigned int degree, d
 			break;
 		}	
 	}
+	return times;
 }
 
 void LNLib::Polynomials::BasisFunctions(unsigned int spanIndex, unsigned int degree, double paramT, const std::vector<double>& knotVector, std::vector<double>& basisFunctions)

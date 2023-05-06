@@ -42,15 +42,15 @@ namespace LNLib
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page68
 		/// Algorithm A2.1
-		/// Determine the knot span index.
+		/// Get the knot span index.
 		/// </summary>
-		static int GetKnotSpanIndex(unsigned int n, unsigned int degree, double knot, const std::vector<double>& knotVector);
+		static int GetKnotSpanIndex(unsigned int n, unsigned int degree, double paramT, const std::vector<double>& knotVector);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page152
-		/// Find the knot span index and times.
+		/// Get the knot multiplicity.
 		/// </summary>
-		static void GetKnotSpanTimes(unsigned int n, unsigned int degree, double knot, const std::vector<double>& knotVector, int& index, int& times);
+		static int GetKnotMultiplicity(unsigned int n, unsigned int degree, double knot, const std::vector<double>& knotVector);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page70

@@ -117,6 +117,11 @@ XYZ LNLib::XYZW::ToXYZ(bool divideWeight)
 	}
 }
 
+XYZW LNLib::XYZW::operator+(const XYZW& xyzw) const
+{
+	return XYZW(m_xyzw[0] + xyzw.m_xyzw[0], m_xyzw[1] + xyzw.m_xyzw[1], m_xyzw[2] + xyzw.m_xyzw[2], m_xyzw[3] + xyzw.m_xyzw[3]);
+}
+
 XYZW& LNLib::XYZW::operator+=(const XYZW& xyzw)
 {
 	m_xyzw[0] += xyzw.m_xyzw[0];

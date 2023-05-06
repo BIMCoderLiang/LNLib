@@ -37,6 +37,7 @@ namespace LNLib
 		XYZ ToXYZ(bool divideWeight);
 
 	public:
+		XYZW  operator +(const XYZW& xyzw) const;
 		XYZW& operator +=(const XYZW& xyzw);
 
 	private:
