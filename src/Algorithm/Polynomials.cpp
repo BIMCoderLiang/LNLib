@@ -87,7 +87,7 @@ int LNLib::Polynomials::GetKnotSpanIndex(unsigned int n, unsigned int degree, do
 	return -1;
 }
 
-int LNLib::Polynomials::GetKnotMultiplicity(unsigned int n, unsigned int degree, double knot, const std::vector<double>& knotVector)
+int LNLib::Polynomials::GetKnotMultiplicity(unsigned int degree, double knot, const std::vector<double>& knotVector)
 {
 	int times = -1;
 	int index = 0;

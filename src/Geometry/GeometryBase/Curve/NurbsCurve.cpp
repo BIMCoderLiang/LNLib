@@ -6,7 +6,7 @@
 #include "BsplineCurve.h"
 #include <vector>
 
-void LNLib::NurbsCurve::GetPointOnCurve(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZ>& controlPoints, const std::vector<double> weights, double paramT, XYZ& point)
+void LNLib::NurbsCurve::GetPointOnCurve(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double paramT, XYZ& point)
 {
 	int controlPointsSize = static_cast<int>(controlPoints.size());
 	int n = controlPointsSize - 1;
@@ -14,41 +14,24 @@ void LNLib::NurbsCurve::GetPointOnCurve(unsigned int degree, const std::vector<d
 	std::vector<double> basisFunctions;
 	basisFunctions.resize(degree + 1);
 	Polynomials::BasisFunctions(spanIndex, degree, paramT, knotVector, basisFunctions);
-
-	std::vector<XYZW> weightedPoints;
-	weightedPoints.resize(controlPointsSize);
-	for (int i = 0; i < controlPointsSize; i++)
-	{
-		double w = weights[i];
-		XYZ wc = controlPoints[i] * w;
-		weightedPoints[i] = XYZW(wc, w);
-	}
+	
 
 	XYZW temp = XYZW(0,0,0,0);
 	for (unsigned int j = 0; j <= degree; j++)
 	{
-		temp += basisFunctions[j] * weightedPoints[j];
+		temp += basisFunctions[j] * controlPoints[j];
 	}
 	point = temp.ToXYZ(true);
 
 }
 
-void LNLib::NurbsCurve::ComputeRationalCurveDerivatives(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZ>& controlPoints, const std::vector<double> weights, double paramT, unsigned int derivative, std::vector<XYZ>& derivatives)
+void LNLib::NurbsCurve::ComputeRationalCurveDerivatives(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double paramT, unsigned int derivative, std::vector<XYZ>& derivatives)
 {
 	int size = static_cast<int>(controlPoints.size());
 
-	std::vector<XYZW> weightedPoints;
-	weightedPoints.resize(size);
-	for (int i = 0; i < size; i++)
-	{
-		double w = weights[i];
-		XYZ wc = controlPoints[i] * w;
-		weightedPoints[i] = XYZW(wc, w);
-	}
-
 	std::vector<XYZW> ders;
 	ders.resize(degree + 1);
-	BsplineCurve::ComputeDerivatives(degree, knotVector, weightedPoints, paramT, derivative, ders);
+	BsplineCurve::ComputeDerivatives(degree, knotVector, controlPoints, paramT, derivative, ders);
 
 	std::vector<XYZ> Aders;
 	Aders.resize(degree + 1);
@@ -75,17 +58,17 @@ void LNLib::NurbsCurve::ComputeRationalCurveDerivatives(unsigned int degree, con
 
 }
 
-void LNLib::NurbsCurve::InsertKnot(unsigned int degree, const std::vector<double>& knotVector, std::vector<XYZW>& controlPoints, double insertKnot, unsigned int knotSpanIndex, unsigned int originMultiplicity, unsigned int times, std::vector<double>& insertedKnotVector, std::vector<XYZW>& updatedControlPoints)
+void LNLib::NurbsCurve::InsertKnot(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double insertKnot, unsigned int times, std::vector<double>& insertedKnotVector, std::vector<XYZW>& updatedControlPoints)
 {
 
-	std::vector<XYZW> temp;
-
-	int size = static_cast<int>(controlPoints.size());
-	int np = size - 1;
+	int np = static_cast<int>(controlPoints.size() - 1);
 	int mp = np + degree + 1;
 
+	int knotSpanIndex = Polynomials::GetKnotSpanIndex(np, degree, insertKnot, knotVector);
+	int originMultiplicity = Polynomials::GetKnotMultiplicity(degree, insertKnot, knotVector);
 
-	for (unsigned int i = 0; i <= knotSpanIndex; i++)
+
+	for (int i = 0; i <= knotSpanIndex; i++)
 	{
 		insertedKnotVector[i] = knotVector[i];
 	}
@@ -106,6 +89,9 @@ void LNLib::NurbsCurve::InsertKnot(unsigned int degree, const std::vector<double
 	{
 		updatedControlPoints[i+times] = controlPoints[i];
 	}
+
+	std::vector<XYZW> temp;
+	temp.resize(degree - originMultiplicity + 1);
 	for (unsigned int i = 0; i <= degree - originMultiplicity; i++)
 	{
 		temp[i] = controlPoints[knotSpanIndex - degree + i];
@@ -123,8 +109,43 @@ void LNLib::NurbsCurve::InsertKnot(unsigned int degree, const std::vector<double
 	}
 
 	int L = knotSpanIndex - degree + times;
-	for (unsigned int i = L +1 ; i < knotSpanIndex - originMultiplicity; i++)
+	for (int i = L +1 ; i < knotSpanIndex - originMultiplicity; i++)
 	{
 		updatedControlPoints[i] = temp[i - L];
 	}
+}
+
+void LNLib::NurbsCurve::GetPointOnCurveByInsertKnot(unsigned int degree,const std::vector<double>& knotVector, std::vector<XYZW>& controlPoints, double paramT, XYZ& point)
+{
+	int n = static_cast<int>(controlPoints.size() - 1);
+
+	if (MathUtils::IsAlmostEqualTo(paramT, knotVector[0]))
+	{
+		point = controlPoints[0].ToXYZ(true);
+		return;
+	}
+	if (MathUtils::IsAlmostEqualTo(paramT, knotVector[n + degree + 1]))
+	{
+		point = controlPoints[n].ToXYZ(true);
+		return;
+	}
+
+	int knotSpanIndex = Polynomials::GetKnotSpanIndex(n, degree, paramT, knotVector);
+	int originMultiplicity = Polynomials::GetKnotMultiplicity(degree, paramT, knotVector);
+
+	int r = degree - originMultiplicity;
+	std::vector<XYZW> temp;
+	for (int i = 0; i <= r; i++)
+	{
+		temp[i] = controlPoints[knotSpanIndex - degree + i];
+	}
+	for (int j = 1; j <= r; j++)
+	{
+		for (int i = 0; i < r - j; i++)
+		{
+			double alpha = (paramT - knotVector[knotSpanIndex - degree + j + i]) / (knotVector[i + knotSpanIndex + 1] - knotVector[knotSpanIndex - degree + j + i]);
+			temp[i] = alpha * temp[i + 1] + (1 - alpha) * temp[i];
+		}
+	}
+	point = temp[0].ToXYZ(true);
 }

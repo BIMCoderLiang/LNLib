@@ -50,7 +50,7 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page152
 		/// Get the knot multiplicity.
 		/// </summary>
-		static int GetKnotMultiplicity(unsigned int n, unsigned int degree, double knot, const std::vector<double>& knotVector);
+		static int GetKnotMultiplicity(unsigned int degree, double knot, const std::vector<double>& knotVector);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page70
