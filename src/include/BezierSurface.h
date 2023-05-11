@@ -7,6 +7,7 @@
 namespace LNLib {
 
 	class XYZ;
+	class UV;
 	class LNLIB_EXPORT BezierSurface
 	{
 
@@ -17,7 +18,7 @@ namespace LNLib {
 		/// Algorithm A1.7
 		/// Compute a point on a Bezier surface by the deCasteljau.
 		/// </summary>
-		static void GetPointOnSurfaceByDeCasteljau(const std::vector<std::vector<XYZ>>& controlPoints, unsigned int degreeU, unsigned int degreeV, double paramU, double paramV, XYZ& point);
+		static void GetPointOnSurfaceByDeCasteljau(const std::vector<std::vector<XYZ>>& controlPoints, unsigned int degreeU, unsigned int degreeV, UV uv, XYZ& point);
 	};
 }
 

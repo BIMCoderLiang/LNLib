@@ -1,10 +1,11 @@
 #include "BezierSurface.h"
 #include "BezierCurve.h"
 #include "XYZ.h"
+#include "UV.h"
 
 using namespace LNLib;
 
-void BezierSurface::GetPointOnSurfaceByDeCasteljau(const std::vector<std::vector<XYZ>>& controlPoints, unsigned int degreeU, unsigned int degreeV, double paramU, double paramV, XYZ& point)
+void BezierSurface::GetPointOnSurfaceByDeCasteljau(const std::vector<std::vector<XYZ>>& controlPoints, unsigned int degreeU, unsigned int degreeV, UV uv, XYZ& point)
 {
 	
 	if (degreeU <= degreeV)
@@ -14,9 +15,9 @@ void BezierSurface::GetPointOnSurfaceByDeCasteljau(const std::vector<std::vector
 
 		for (unsigned int j = 0; j <= degreeV; j++)
 		{
-			BezierCurve::GetPointOnCurveByDeCasteljau(controlPoints[j], degreeU, paramU, temp[j]);
+			BezierCurve::GetPointOnCurveByDeCasteljau(controlPoints[j], degreeU, uv.GetU(), temp[j]);
 		}
-		BezierCurve::GetPointOnCurveByDeCasteljau(temp, degreeV, paramV, point);
+		BezierCurve::GetPointOnCurveByDeCasteljau(temp, degreeV, uv.GetV(), point);
 	}
 	else
 	{
@@ -32,8 +33,8 @@ void BezierSurface::GetPointOnSurfaceByDeCasteljau(const std::vector<std::vector
 			{
 				column[k] = (controlPoints[k][i]);
 			}
-			BezierCurve::GetPointOnCurveByDeCasteljau(column, degreeV, paramV, temp[i]);
+			BezierCurve::GetPointOnCurveByDeCasteljau(column, degreeV, uv.GetV(), temp[i]);
 		}
-		BezierCurve::GetPointOnCurveByDeCasteljau(temp, degreeU, paramU, point);
+		BezierCurve::GetPointOnCurveByDeCasteljau(temp, degreeU, uv.GetU(), point);
 	}
 }

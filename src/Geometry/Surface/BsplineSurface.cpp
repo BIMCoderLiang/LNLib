@@ -2,24 +2,25 @@
 #include "BsplineSurface.h"
 #include "BsplineCurve.h"
 #include "Polynomials.h"
+#include "UV.h"
 #include "XYZ.h"
 #include "XYZW.h"
 #include "ValidationUtils.h"
 #include <algorithm>
 
-void LNLib::BsplineSurface::GetPointOnSurface(const std::vector<std::vector<XYZ>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, double paramU, double paramV, XYZ& point)
+void LNLib::BsplineSurface::GetPointOnSurface(const std::vector<std::vector<XYZ>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, XYZ& point)
 {
 	unsigned int n = static_cast<int>(controlPoints.size() - 1);
-	unsigned int uSpanIndex = Polynomials::GetKnotSpanIndex(n, degreeU, paramU, knotVectorU);
+	unsigned int uSpanIndex = Polynomials::GetKnotSpanIndex(n, degreeU, uv.GetU(), knotVectorU);
 	std::vector<double> basisFunctionsU;
 	basisFunctionsU.resize(degreeU + 1);
-	Polynomials::BasisFunctions(uSpanIndex, degreeU, paramU, knotVectorU, basisFunctionsU);
+	Polynomials::BasisFunctions(uSpanIndex, degreeU, uv.GetU(), knotVectorU, basisFunctionsU);
 
 	unsigned int m = static_cast<int>(controlPoints[0].size() - 1);
-	unsigned int vSpanIndex = Polynomials::GetKnotSpanIndex(m, degreeV, paramV, knotVectorV);
+	unsigned int vSpanIndex = Polynomials::GetKnotSpanIndex(m, degreeV, uv.GetV(), knotVectorV);
 	std::vector<double> basisFunctionsV;
 	basisFunctionsV.resize(degreeV + 1);
-	Polynomials::BasisFunctions(vSpanIndex, degreeV, paramV, knotVectorV, basisFunctionsV);
+	Polynomials::BasisFunctions(vSpanIndex, degreeV, uv.GetV(), knotVectorV, basisFunctionsV);
 
 	unsigned int uind = uSpanIndex - degreeU;
 	for (unsigned int l = 0; l <= degreeV; l++)
@@ -34,7 +35,7 @@ void LNLib::BsplineSurface::GetPointOnSurface(const std::vector<std::vector<XYZ>
 	}
 }
 
-void LNLib::BsplineSurface::ComputeDerivatives(const std::vector<std::vector<XYZ>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, double paramU, double paramV, unsigned int derivative, std::vector<std::vector<XYZ>>& derivatives)
+void LNLib::BsplineSurface::ComputeDerivatives(const std::vector<std::vector<XYZ>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, unsigned int derivative, std::vector<std::vector<XYZ>>& derivatives)
 {
 	unsigned int du = std::min(derivative, degreeU);
 	for (unsigned int k = degreeU + 1; k <= derivative; k++)
@@ -55,24 +56,24 @@ void LNLib::BsplineSurface::ComputeDerivatives(const std::vector<std::vector<XYZ
 	}
 
 	unsigned int n = static_cast<int>(controlPoints.size() - 1);
-	unsigned int uSpanIndex = Polynomials::GetKnotSpanIndex(n, degreeU, paramU, knotVectorU);
+	unsigned int uSpanIndex = Polynomials::GetKnotSpanIndex(n, degreeU, uv.GetU(), knotVectorU);
 	std::vector<std::vector<double>> derivativeBasisFunctionsU;
 	derivativeBasisFunctionsU.resize(derivative + 1);
 	for (unsigned i = 0; i <= derivative; i++)
 	{
 		derivativeBasisFunctionsU[i].resize(degreeU + 1);
 	}
-	Polynomials::BasisFunctionsDerivatives(uSpanIndex, degreeU, paramU, du, knotVectorU, derivativeBasisFunctionsU);
+	Polynomials::BasisFunctionsDerivatives(uSpanIndex, degreeU, uv.GetU(), du, knotVectorU, derivativeBasisFunctionsU);
 
 	unsigned int m = static_cast<int>(controlPoints[0].size() - 1);
-	unsigned int vSpanIndex = Polynomials::GetKnotSpanIndex(m, degreeV, paramV, knotVectorV);
+	unsigned int vSpanIndex = Polynomials::GetKnotSpanIndex(m, degreeV, uv.GetV(), knotVectorV);
 	std::vector<std::vector<double>> derivativeBasisFunctionsV;
 	derivativeBasisFunctionsV.resize(derivative + 1);
 	for (unsigned i = 0; i <= derivative; i++)
 	{
 		derivativeBasisFunctionsV[i].resize(degreeV + 1);
 	}
-	Polynomials::BasisFunctionsDerivatives(vSpanIndex, degreeV, paramV, dv, knotVectorV, derivativeBasisFunctionsV);
+	Polynomials::BasisFunctionsDerivatives(vSpanIndex, degreeV, uv.GetV(), dv, knotVectorV, derivativeBasisFunctionsV);
 
 	for (unsigned k = 0; k <= du; k++)
 	{
@@ -96,7 +97,7 @@ void LNLib::BsplineSurface::ComputeDerivatives(const std::vector<std::vector<XYZ
 	}
 }
 
-void LNLib::BsplineSurface::ComputeDerivatives(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, double paramU, double paramV, unsigned int derivative, std::vector<std::vector<XYZW>>& derivatives)
+void LNLib::BsplineSurface::ComputeDerivatives(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, unsigned int derivative, std::vector<std::vector<XYZW>>& derivatives)
 {
 	unsigned int du = std::min(derivative, degreeU);
 	for (unsigned int k = degreeU + 1; k <= derivative; k++)
@@ -117,24 +118,24 @@ void LNLib::BsplineSurface::ComputeDerivatives(const std::vector<std::vector<XYZ
 	}
 
 	unsigned int n = static_cast<int>(controlPoints.size() - 1);
-	unsigned int uSpanIndex = Polynomials::GetKnotSpanIndex(n, degreeU, paramU, knotVectorU);
+	unsigned int uSpanIndex = Polynomials::GetKnotSpanIndex(n, degreeU, uv.GetU(), knotVectorU);
 	std::vector<std::vector<double>> derivativeBasisFunctionsU;
 	derivativeBasisFunctionsU.resize(derivative + 1);
 	for (unsigned i = 0; i <= derivative; i++)
 	{
 		derivativeBasisFunctionsU[i].resize(degreeU + 1);
 	}
-	Polynomials::BasisFunctionsDerivatives(uSpanIndex, degreeU, paramU, du, knotVectorU, derivativeBasisFunctionsU);
+	Polynomials::BasisFunctionsDerivatives(uSpanIndex, degreeU, uv.GetU(), du, knotVectorU, derivativeBasisFunctionsU);
 
 	unsigned int m = static_cast<int>(controlPoints[0].size() - 1);
-	unsigned int vSpanIndex = Polynomials::GetKnotSpanIndex(m, degreeV, paramV, knotVectorV);
+	unsigned int vSpanIndex = Polynomials::GetKnotSpanIndex(m, degreeV, uv.GetV(), knotVectorV);
 	std::vector<std::vector<double>> derivativeBasisFunctionsV;
 	derivativeBasisFunctionsV.resize(derivative + 1);
 	for (unsigned i = 0; i <= derivative; i++)
 	{
 		derivativeBasisFunctionsV[i].resize(degreeV + 1);
 	}
-	Polynomials::BasisFunctionsDerivatives(vSpanIndex, degreeV, paramV, dv, knotVectorV, derivativeBasisFunctionsV);
+	Polynomials::BasisFunctionsDerivatives(vSpanIndex, degreeV, uv.GetV(), dv, knotVectorV, derivativeBasisFunctionsV);
 
 	for (unsigned k = 0; k <= du; k++)
 	{
@@ -158,8 +159,9 @@ void LNLib::BsplineSurface::ComputeDerivatives(const std::vector<std::vector<XYZ
 	}
 }
 
-void LNLib::BsplineSurface::ComputeControlPointsOfDerivatives(const std::vector<std::vector<XYZ>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, double paramU, double paramV, unsigned int derivative, unsigned int minU, unsigned int maxU, unsigned int minV, unsigned int maxV, std::vector<std::vector<std::vector<std::vector<XYZ>>>>& controlPointsOfDerivative)
+void LNLib::BsplineSurface::ComputeControlPointsOfDerivatives(const std::vector<std::vector<XYZ>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, unsigned int minU, unsigned int maxU, unsigned int minV, unsigned int maxV, unsigned int derivative,  std::vector<std::vector<std::vector<std::vector<XYZ>>>>& controlPointsOfDerivative)
 {
+
 	int du = std::min(derivative, degreeU);
 	int dv = std::min(derivative, degreeV);
 	int rangeU = maxU - minU;
@@ -202,7 +204,7 @@ void LNLib::BsplineSurface::ComputeControlPointsOfDerivatives(const std::vector<
 	}
 }
 
-void LNLib::BsplineSurface::ComputeDerivativesByAllBasisFunctions(const std::vector<std::vector<XYZ>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, double paramU, double paramV, unsigned int derivative, std::vector<std::vector<XYZ>>& derivatives)
+void LNLib::BsplineSurface::ComputeDerivativesByAllBasisFunctions(const std::vector<std::vector<XYZ>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, unsigned int derivative, std::vector<std::vector<XYZ>>& derivatives)
 {
 	int du = std::min(derivative, degreeU);
 	for (unsigned int k = degreeU + 1; k <= derivative; k++)
@@ -222,27 +224,27 @@ void LNLib::BsplineSurface::ComputeDerivativesByAllBasisFunctions(const std::vec
 	}
 
 	unsigned int n = static_cast<int>(controlPoints.size() - 1);
-	unsigned int uSpanIndex = Polynomials::GetKnotSpanIndex(n, degreeU, paramU, knotVectorU);
+	unsigned int uSpanIndex = Polynomials::GetKnotSpanIndex(n, degreeU, uv.GetU(), knotVectorU);
 	std::vector<std::vector<double>> allBasisFunctionsU;
 	for (unsigned int i = 0; i <= degreeU; i++)
 	{
 		std::vector<double> basisFunctions;
-		Polynomials::BasisFunctions(uSpanIndex, i, paramU, knotVectorU, basisFunctions);
+		Polynomials::BasisFunctions(uSpanIndex, i, uv.GetU(), knotVectorU, basisFunctions);
 		allBasisFunctionsU[i] = basisFunctions;
 	}
 
 	unsigned int m = static_cast<int>(controlPoints[0].size() - 1);
-	unsigned int vSpanIndex = Polynomials::GetKnotSpanIndex(m, degreeV, paramV, knotVectorV);
+	unsigned int vSpanIndex = Polynomials::GetKnotSpanIndex(m, degreeV, uv.GetV(), knotVectorV);
 	std::vector<std::vector<double>> allBasisFunctionsV;
 	for (unsigned int i = 0; i <= degreeV; i++)
 	{
 		std::vector<double> basisFunctions;
-		Polynomials::BasisFunctions(vSpanIndex, i, paramV, knotVectorV, basisFunctions);
+		Polynomials::BasisFunctions(vSpanIndex, i, uv.GetV(), knotVectorV, basisFunctions);
 		allBasisFunctionsV[i] = basisFunctions;
 	}
 
 	std::vector<std::vector<std::vector<std::vector<XYZ>>>> controlPointsOfDerivative;
-	ComputeControlPointsOfDerivatives(controlPoints, knotVectorU, knotVectorV, degreeU, degreeV, paramU, paramV, derivative, uSpanIndex - degreeU, uSpanIndex, vSpanIndex - degreeV, vSpanIndex, controlPointsOfDerivative);
+	ComputeControlPointsOfDerivatives(controlPoints, knotVectorU, knotVectorV, degreeU, degreeV, uv, uSpanIndex - degreeU, uSpanIndex, vSpanIndex - degreeV, vSpanIndex, derivative, controlPointsOfDerivative);
 
 	for (int k = 0; k <= du; k++)
 	{

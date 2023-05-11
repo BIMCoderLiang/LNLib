@@ -1,23 +1,24 @@
 #include "NurbsSurface.h"
 #include "Polynomials.h"
+#include "UV.h"
 #include "XYZ.h"
 #include "XYZW.h"
 #include "MathUtils.h"
 #include "BsplineSurface.h"
 
-void LNLib::NurbsSurface::GetPointOnSurface(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, double paramU, double paramV, XYZ& point)
+void LNLib::NurbsSurface::GetPointOnSurface(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, XYZ& point)
 {
 	unsigned int n = static_cast<int>(controlPoints.size() - 1);
-	unsigned int uSpanIndex = Polynomials::GetKnotSpanIndex(n, degreeU, paramU, knotVectorU);
+	unsigned int uSpanIndex = Polynomials::GetKnotSpanIndex(n, degreeU, uv.GetU(), knotVectorU);
 	std::vector<double> basisFunctionsU;
 	basisFunctionsU.resize(degreeU + 1);
-	Polynomials::BasisFunctions(uSpanIndex, degreeU, paramU, knotVectorU, basisFunctionsU);
+	Polynomials::BasisFunctions(uSpanIndex, degreeU, uv.GetU(), knotVectorU, basisFunctionsU);
 
 	unsigned int m = static_cast<int>(controlPoints[0].size() - 1);
-	unsigned int vSpanIndex = Polynomials::GetKnotSpanIndex(m, degreeV, paramV, knotVectorV);
+	unsigned int vSpanIndex = Polynomials::GetKnotSpanIndex(m, degreeV, uv.GetV(), knotVectorV);
 	std::vector<double> basisFunctionsV;
 	basisFunctionsV.resize(degreeV + 1);
-	Polynomials::BasisFunctions(vSpanIndex, degreeV, paramV, knotVectorV, basisFunctionsV);
+	Polynomials::BasisFunctions(vSpanIndex, degreeV, uv.GetV(), knotVectorV, basisFunctionsV);
 
 
 	std::vector<XYZW> temp;
@@ -39,7 +40,7 @@ void LNLib::NurbsSurface::GetPointOnSurface(const std::vector<std::vector<XYZW>>
 }
 
 
-void LNLib::NurbsSurface::ComputeRationalSurfaceDerivatives(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, double paramU, double paramV, unsigned int derivative, std::vector<std::vector<XYZ>>& derivatives)
+void LNLib::NurbsSurface::ComputeRationalSurfaceDerivatives(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, unsigned int derivative, std::vector<std::vector<XYZ>>& derivatives)
 {
 	
 	std::vector<std::vector<XYZW>> ders;
@@ -48,7 +49,7 @@ void LNLib::NurbsSurface::ComputeRationalSurfaceDerivatives(const std::vector<st
 	{
 		ders[i].resize(degreeV + 1);
 	}
-	BsplineSurface::ComputeDerivatives(controlPoints, knotVectorU, knotVectorV, degreeU, degreeV, paramU, paramV, derivative, ders);
+	BsplineSurface::ComputeDerivatives(controlPoints, knotVectorU, knotVectorV, degreeU, degreeV, uv, derivative, ders);
 
 	std::vector<std::vector<XYZ>> Aders;
 	for (unsigned int i = 0; i <= degreeU; i++)

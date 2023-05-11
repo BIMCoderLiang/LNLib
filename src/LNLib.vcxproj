@@ -37,13 +37,13 @@
   <ItemGroup>
     <ClCompile Include="Algorithm\Polynomials.cpp" />
     <ClCompile Include="LNLibDefinitions.cpp" />
-    <ClCompile Include="Geometry\GeometryBase\Curve\NurbsCurve.cpp" />
-    <ClCompile Include="Geometry\GeometryBase\Surface\NurbsSurface.cpp" />
-    <ClCompile Include="Geometry\GeometryBase\Surface\BsplineSurface.cpp" />
-    <ClCompile Include="Geometry\GeometryBase\Curve\BsplineCurve.cpp" />
+    <ClCompile Include="Geometry\Curve\NurbsCurve.cpp" />
+    <ClCompile Include="Geometry\Surface\NurbsSurface.cpp" />
+    <ClCompile Include="Geometry\Surface\BsplineSurface.cpp" />
+    <ClCompile Include="Geometry\Curve\BsplineCurve.cpp" />
     <ClCompile Include="Mathematics\Utils\MathUtils.cpp" />
-    <ClCompile Include="Geometry\GeometryBase\Surface\BezierSurface.cpp" />
-    <ClCompile Include="Geometry\GeometryBase\Curve\BezierCurve.cpp" />
+    <ClCompile Include="Geometry\Surface\BezierSurface.cpp" />
+    <ClCompile Include="Geometry\Curve\BezierCurve.cpp" />
     <ClCompile Include="Mathematics\Math\Constants.cpp" />
     <ClCompile Include="Mathematics\Math\XYZ.cpp" />
     <ClCompile Include="Mathematics\Math\UV.cpp" />
