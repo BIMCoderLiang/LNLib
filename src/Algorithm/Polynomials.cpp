@@ -64,27 +64,30 @@ double Polynomials::Horner(const std::vector<std::vector<double>>& coefficients,
 
 int LNLib::Polynomials::GetKnotSpanIndex(unsigned int n, unsigned int degree, double paramT, const std::vector<double>& knotVector)
 {
-	int m = static_cast<int>(knotVector.size()) - degree - 2;
-	if (m >= 0)
+
+	if (MathUtils::IsGreaterThan(paramT, knotVector[n + 1]))
 	{
-		if (paramT == knotVector[n + 1]) return n;
-
-		int low = degree;
-		int high = n + 1;
-		int mid = static_cast<int>(floor((low + high) / 2.0));
-
-		while (paramT < knotVector[mid] ||
-				paramT >= knotVector[mid + 1])
-		{
-			if (paramT < knotVector[mid])
-				high = mid;
-			else
-				low = mid;
-			mid = static_cast<int>(floor((low + high) / 2.0));
-		}
-		return mid;
+		return n;
 	}
-	return -1;
+
+	if (MathUtils::IsLessThan(paramT, knotVector[degree]))
+	{
+		return degree;
+	}
+
+	int low = degree;
+	int high = n + 1;
+	int mid = static_cast<int>(floor((low + high) / 2.0));
+
+	while (paramT < knotVector[mid] || paramT >= knotVector[mid + 1])
+	{
+		if (paramT < knotVector[mid])
+			high = mid;
+		else
+			low = mid;
+		mid = static_cast<int>(floor((low + high) / 2.0));
+	}
+	return mid;
 }
 
 int LNLib::Polynomials::GetKnotMultiplicity(unsigned int degree, double knot, const std::vector<double>& knotVector)

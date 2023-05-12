@@ -96,19 +96,20 @@ void LNLib::NurbsCurve::InsertKnot(unsigned int degree, const std::vector<double
 	{
 		temp[i] = controlPoints[knotSpanIndex - degree + i];
 	}
+
+	int L = 0;
 	for (unsigned int j = 1; j <= times; j++)
 	{
-		int l = knotSpanIndex - degree + j;
+		int L = knotSpanIndex - degree + j;
 		for (unsigned int i = 0; i <= degree - j - originMultiplicity; i++)
 		{
-			double alpha = (insertKnot - knotVector[l + i]) / (knotVector[i + knotSpanIndex + 1] - knotVector[l + i]);
+			double alpha = (insertKnot - knotVector[L + i]) / (knotVector[i + knotSpanIndex + 1] - knotVector[L + i]);
 			temp[i] = alpha * temp[i + 1] + (1 - alpha) * temp[i];
 		}
-		updatedControlPoints[l] = temp[0];
+		updatedControlPoints[L] = temp[0];
 		updatedControlPoints[knotSpanIndex + times - j - originMultiplicity] = temp[degree - j - originMultiplicity];
 	}
 
-	int L = knotSpanIndex - degree + times;
 	for (int i = L +1 ; i < knotSpanIndex - originMultiplicity; i++)
 	{
 		updatedControlPoints[i] = temp[i - L];

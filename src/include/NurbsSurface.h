@@ -24,6 +24,13 @@ namespace LNLib
 		/// Compute S(paramU,paramV) derivatives.
 		/// </summary>
 		static void ComputeRationalSurfaceDerivatives(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, unsigned int derivative, std::vector<std::vector<XYZ>>& derivatives);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page137
+		/// Algorithm A5.3
+		/// Surface knot insertion along U or V direction.
+		/// </summary>
+		static void InsertKnot(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVector, unsigned int degree, double insertKnot, unsigned int times, bool isUDirection, std::vector<double>& insertedKnotVector, std::vector<std::vector<XYZW>>& updatedControlPoints);
 	};
 }
 
