@@ -3,6 +3,7 @@
 #include "UV.h"
 #include "XYZ.h"
 #include "XYZW.h"
+#include "Matrix.h"
 #include "MathUtils.h"
 #include "NurbsCurve.h"
 #include "BsplineSurface.h"
@@ -241,6 +242,37 @@ void LNLib::NurbsSurface::InsertKnot(const std::vector<std::vector<XYZW>>& contr
 			{
 				updatedControlPoints[row][i] = temp[i - L];
 			}
+		}
+	}
+}
+
+void LNLib::NurbsSurface::RefineKnotVector(std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, std::vector<double>& insertKnotElements, bool isUDirection, std::vector<double>& insertedKnotVectorU, std::vector<double>& insertedKnotVectorV, std::vector<std::vector<XYZW>>& updatedControlPoints)
+{
+	
+	if (isUDirection)
+	{
+		std::vector<std::vector<XYZW>> transposedControlPoints = Matrix::Transpose(controlPoints);
+		for (int i = 0; i < static_cast<int>(transposedControlPoints.size()); i++)
+		{
+			std::vector<XYZW> temp;
+			NurbsCurve::RefineKnotVector(degreeU, knotVectorU, transposedControlPoints[i], insertKnotElements, insertedKnotVectorU, temp);
+			updatedControlPoints[i] = temp;
+		}
+		for (int i = 0; i < static_cast<int>(knotVectorV.size()); i++)
+		{
+			insertedKnotVectorV[i] = knotVectorV[i];
+		}
+		updatedControlPoints = Matrix::Transpose(updatedControlPoints);
+	}
+	else
+	{
+		for (int i = 0; i < static_cast<int>(controlPoints.size()); i++)
+		{
+			NurbsCurve::RefineKnotVector(degreeV, knotVectorV, controlPoints[i], insertKnotElements, insertedKnotVectorV, updatedControlPoints[i]);
+		}
+		for (int i = 0; i < static_cast<int>(knotVectorU.size()); i++)
+		{
+			insertedKnotVectorU[i] = knotVectorU[i];
 		}
 	}
 }

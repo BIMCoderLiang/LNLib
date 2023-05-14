@@ -15,6 +15,7 @@
     <ClInclude Include="include\NurbsCurve.h" />
     <ClInclude Include="include\XYZW.h" />
     <ClInclude Include="include\NurbsSurface.h" />
+    <ClInclude Include="include\Matrix.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Mathematics\Math\XYZ.cpp" />
@@ -31,5 +32,6 @@
     <ClCompile Include="Geometry\Curve\NurbsCurve.cpp" />
     <ClCompile Include="Mathematics\Math\XYZW.cpp" />
     <ClCompile Include="Geometry\Surface\NurbsSurface.cpp" />
+    <ClCompile Include="Mathematics\Math\Matrix.cpp" />
   </ItemGroup>
 </Project>

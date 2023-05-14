@@ -150,3 +150,64 @@ void LNLib::NurbsCurve::GetPointOnCurveByInsertKnot(unsigned int degree,const st
 	}
 	point = temp[0].ToXYZ(true);
 }
+
+void LNLib::NurbsCurve::RefineKnotVector(unsigned int degree, const std::vector<double>& knotVector, std::vector<XYZW>& controlPoints, std::vector<double>& insertKnotElements, std::vector<double>& insertedKnotVector, std::vector<XYZW>& updatedControlPoints)
+{
+	int n = static_cast<int>(knotVector.size() - degree - 2);
+	int m = n + degree + 1;
+	int r = static_cast<int>(insertKnotElements.size() - 1);
+
+	int a = Polynomials::GetKnotSpanIndex(n, degree, insertKnotElements[0], knotVector);
+	int b = Polynomials::GetKnotSpanIndex(n, degree, insertKnotElements[r], knotVector);
+
+	b = b + 1;
+
+	for (int j = 0; j <= static_cast<int>(a - degree); j++)
+	{
+		updatedControlPoints[j] = controlPoints[j];
+	}
+	for (int j = b - 1; j <= n; j++)
+	{
+		updatedControlPoints[j + r + 1] = controlPoints[j];
+	}
+	for (int j = 0; j <= a; j++)
+	{
+		insertedKnotVector[j] = knotVector[j];
+	}
+	for (int j = b + degree; j <= m; j++)
+	{
+		insertedKnotVector[j + r + 1] = knotVector[j];
+	}
+
+	int i = b + degree - 1;
+	int k = b + degree + r;
+	for (int j = r; j >= 0; j--)
+	{
+		while (insertKnotElements[j] <= knotVector[i] && i > a)
+		{
+			updatedControlPoints[k - degree - 1] = controlPoints[i - degree - 1];
+			insertedKnotVector[k] = knotVector[i];
+			k = k - 1;
+			i = i - 1;
+		}
+
+		updatedControlPoints[k - degree - 1] = updatedControlPoints[k - degree];
+		for (unsigned int l = 1; l <= degree; l++)
+		{
+			int ind = k - degree + 1;
+			double alpha = insertedKnotVector[k + l] - insertKnotElements[j];
+			if (MathUtils::IsAlmostEqualTo(abs(alpha), 0.0))
+			{
+				updatedControlPoints[ind - 1] = updatedControlPoints[ind];
+			}
+			else
+			{
+				alpha = alpha / (insertedKnotVector[k + 1] - knotVector[i - degree + 1]);
+				updatedControlPoints[ind - 1] = alpha * updatedControlPoints[ind - 1] + (1.0 - alpha) * updatedControlPoints[ind];
+			}
+		}
+
+		insertedKnotVector[k] = insertKnotElements[j];
+		k = k - 1;
+	}
+}
