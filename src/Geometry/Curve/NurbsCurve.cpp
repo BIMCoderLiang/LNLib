@@ -211,3 +211,68 @@ void LNLib::NurbsCurve::RefineKnotVector(unsigned int degree, const std::vector<
 		k = k - 1;
 	}
 }
+
+void LNLib::NurbsCurve::ToBezierCurves(unsigned int degree, const std::vector<double>& knotVector, std::vector<XYZW>& controlPoints, int& bezierCurvesCount, std::vector<std::vector<XYZW>>& decomposedControlPoints)
+{
+	int n = static_cast<int>(knotVector.size() - degree - 2);
+	int m = n + degree + 1;
+
+	int a = static_cast<int>(degree);
+	int b = static_cast<int>(degree) + 1;
+
+	bezierCurvesCount = 0;
+	for (unsigned int i = 0; i <= degree; i++)
+	{
+		decomposedControlPoints[bezierCurvesCount][i] = controlPoints[i];
+	}
+
+	while (b < m)
+	{
+		int i = b;
+		while (b < m && MathUtils::IsAlmostEqualTo(knotVector[b + 1], knotVector[b]))
+		{
+			b++;
+		}
+		int multi = b - i + 1;
+		if (multi < static_cast<int>(degree))
+		{
+			double numerator = knotVector[b] - knotVector[a];
+
+			std::vector<double> alhpaVector;
+			alhpaVector.resize(degree - multi);
+			for (int j = degree; j > multi; j--)
+			{
+				alhpaVector[j - multi - 1] = numerator / (knotVector[a + j] - knotVector[a]);
+			}
+
+			int r = degree - multi;
+			for (int j = 1; j <= r; j++)
+			{
+				int save = r - j;
+				int s = multi + j;
+				for (int k = degree; k >= s; k--)
+				{
+					double alpha = alhpaVector[k - s];
+					decomposedControlPoints[bezierCurvesCount][k] = alpha * decomposedControlPoints[bezierCurvesCount][k] + (1.0 - alpha) * decomposedControlPoints[bezierCurvesCount][k - 1];
+				}
+
+				if (b < m)
+				{
+					decomposedControlPoints[bezierCurvesCount + 1][save] = decomposedControlPoints[bezierCurvesCount][degree];
+				}
+			}
+
+			bezierCurvesCount += 1;
+			if (b < m)
+			{
+				for (unsigned int i = degree - multi; i <= degree; i++)
+				{
+					decomposedControlPoints[bezierCurvesCount][i] = controlPoints[b - degree + i];
+				}
+
+				a = b;
+				b += 1;
+			}
+		}
+	}
+}

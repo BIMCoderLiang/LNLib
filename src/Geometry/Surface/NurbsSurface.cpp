@@ -277,4 +277,86 @@ void LNLib::NurbsSurface::RefineKnotVector(std::vector<std::vector<XYZW>>& contr
 	}
 }
 
+void LNLib::NurbsSurface::ToBezierPatches(std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, bool isUDirection, int& bezierPatchesCount, std::vector<std::vector<std::vector<XYZW>>>& decomposedControlPoints)
+{
+	if (isUDirection)
+	{
+		int n = static_cast<int>(knotVectorU.size() - degreeU - 2);
+		int m = n + degreeU + 1;
+
+		int a = static_cast<int>(degreeU);
+		int b = static_cast<int>(degreeU) + 1;
+
+		bezierPatchesCount = 0;
+		for (unsigned i = 0; i <= degreeU; i++)
+		{
+			for (int row = 0; row <= m; row++)
+			{
+				decomposedControlPoints[bezierPatchesCount][i][row] = controlPoints[i][row];
+			}
+		}
+
+		while (b < m)
+		{
+			int i = b;
+			while (b < m && MathUtils::IsAlmostEqualTo(knotVectorU[b + 1], knotVectorU[b]))
+			{
+				b++;
+			}
+			int multi = b - i + 1;
+			if (multi < static_cast<int>(degreeU))
+			{
+				double numerator = knotVectorU[b] - knotVectorU[a];
+
+				std::vector<double> alhpaVector;
+				alhpaVector.resize(degreeU - multi);
+				for (int j = degreeU; j > multi; j--)
+				{
+					alhpaVector[j - multi - 1] = numerator / (knotVectorU[a + j] - knotVectorU[a]);
+				}
+
+				int r = degreeU - multi;
+				for (int j = 1; j <= r; j++)
+				{
+					int save = r - j;
+					int s = multi + j;
+					for (int k = degreeU; k >= s; k--)
+					{
+						double alpha = alhpaVector[k - s];
+						for (int row = 0; row <= m; row++)
+						{
+							decomposedControlPoints[bezierPatchesCount][k][row] = alpha * decomposedControlPoints[bezierPatchesCount][k][row] + (1.0 - alpha) * decomposedControlPoints[bezierPatchesCount][k - 1][row];
+						}
+						
+					}
+
+					if (b < m)
+					{
+						for (int row = 0; row <= m; row++)
+						{
+							decomposedControlPoints[bezierPatchesCount + 1][save][row] = decomposedControlPoints[bezierPatchesCount][degreeU][row];
+						}
+						
+					}
+				}
+
+				bezierPatchesCount += 1;
+				if (b < m)
+				{
+					for (unsigned int i = degreeU - multi; i <= degreeU; i++)
+					{
+						for (int row = 0; row <= m; row++)
+						{
+							decomposedControlPoints[bezierPatchesCount][i][row] = controlPoints[b - degreeU + i][row];
+						}
+					}
+
+					a = b;
+					b += 1;
+				}
+			}
+		}
+	}
+}
+
 

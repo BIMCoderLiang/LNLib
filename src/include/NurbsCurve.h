@@ -45,6 +45,13 @@ namespace LNLib
 		/// Refine curve knot vector.
 		/// </summary>
 		static void RefineKnotVector(unsigned int degree, const std::vector<double>& knotVector, std::vector<XYZW>& controlPoints, std::vector<double>& insertKnotElements, std::vector<double>& insertedKnotVector, std::vector<XYZW>& updatedControlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page173
+		/// Algorithm A5.6
+		/// Decompose curve into Bezier segements.
+		/// </summary>
+		static void ToBezierCurves(unsigned int degree, const std::vector<double>& knotVector, std::vector<XYZW>& controlPoints, int& bezierCurvesCount, std::vector<std::vector<XYZW>>& decomposedControlPoints);
 	};
 }
 

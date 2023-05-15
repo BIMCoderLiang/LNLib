@@ -38,6 +38,13 @@ namespace LNLib
 		/// Refine surface knot vector.
 		/// </summary>
 		static void RefineKnotVector(std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, std::vector<double>& insertKnotElements, bool isUDirection, std::vector<double>& insertedKnotVectorU, std::vector<double>& insertedKnotVectorV, std::vector<std::vector<XYZW>>& updatedControlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page177
+		/// Algorithm A5.7
+		/// Decompose surface into Bezier patches.
+		/// </summary>
+		static void ToBezierPatches(std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, bool isUDirection, int& bezierPatchesCount, std::vector<std::vector<std::vector<XYZW>>>& decomposedControlPoints);
 	};
 }
 
