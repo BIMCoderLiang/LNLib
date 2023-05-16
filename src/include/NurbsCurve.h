@@ -44,14 +44,21 @@ namespace LNLib
 		/// Algorithm A5.4
 		/// Refine curve knot vector.
 		/// </summary>
-		static void RefineKnotVector(unsigned int degree, const std::vector<double>& knotVector, std::vector<XYZW>& controlPoints, std::vector<double>& insertKnotElements, std::vector<double>& insertedKnotVector, std::vector<XYZW>& updatedControlPoints);
+		static void RefineKnotVector(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double>& insertKnotElements, std::vector<double>& insertedKnotVector, std::vector<XYZW>& updatedControlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page173
 		/// Algorithm A5.6
 		/// Decompose curve into Bezier segements.
 		/// </summary>
-		static void ToBezierCurves(unsigned int degree, const std::vector<double>& knotVector, std::vector<XYZW>& controlPoints, int& bezierCurvesCount, std::vector<std::vector<XYZW>>& decomposedControlPoints);
+		static void ToBezierCurves(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, int& bezierCurvesCount, std::vector<std::vector<XYZW>>& decomposedControlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page185
+		/// Algorithm A5.8
+		/// Curve knot removal.
+		/// </summary>
+		static void RemoveKnot(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double removeKnot, unsigned int removeIndex, unsigned int times, std::vector<double>& restKnotVector, std::vector<XYZW>& updatedControlPoints);
 	};
 }
 

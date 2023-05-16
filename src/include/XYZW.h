@@ -1,6 +1,7 @@
 #pragma once
 #include "LNLibDefinitions.h"
 #include "XYZ.h"
+#include <math.h>
 
 namespace LNLib
 {
@@ -35,9 +36,11 @@ namespace LNLib
 
 	public:
 		XYZ ToXYZ(bool divideWeight);
+		double Distance(const XYZW& another) const;
 
 	public:
 		XYZW  operator +(const XYZW& xyzw) const;
+		XYZW  operator -(const XYZW& xyzw) const;
 		XYZW& operator +=(const XYZW& xyzw);
 
 	private:
@@ -47,5 +50,6 @@ namespace LNLib
 
 	XYZW operator *(const XYZW& source, const double d);
 	XYZW operator *(const double& d, const XYZW& source);
+	XYZW operator /(const XYZW& source, double d);
 }
 

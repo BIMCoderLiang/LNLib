@@ -10,7 +10,7 @@ namespace LNLib
 	public:
 	
 		template<typename T>
-		static std::vector<std::vector<T>> Transpose(std::vector<std::vector<T>> matrix)
+		static std::vector<std::vector<T>> Transpose(const std::vector<std::vector<T>> matrix)
 		{
 			std::vector<std::vector<T>> result;
 			std::vector<T> temp;

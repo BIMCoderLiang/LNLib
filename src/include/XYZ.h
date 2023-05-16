@@ -41,6 +41,7 @@ namespace LNLib
 		XYZ Negative() const;
 		double DotProduct(const XYZ& another) const;
 		XYZ CrossProduct(const XYZ& another) const;
+		double Distance(const XYZ& another) const;
 
 	public:
 

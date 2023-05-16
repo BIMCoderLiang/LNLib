@@ -117,9 +117,20 @@ XYZ LNLib::XYZW::ToXYZ(bool divideWeight)
 	}
 }
 
+double LNLib::XYZW::Distance(const XYZW& another) const
+{
+	double squareValue = pow((another.GetWX() - m_xyzw[0]), 2) + pow((another.GetWY() - m_xyzw[1]), 2) + pow((another.GetWZ() - m_xyzw[2]), 2) + pow((another.GetW() - m_xyzw[3]), 2);
+	return pow(squareValue, 0.5);
+}
+
 XYZW LNLib::XYZW::operator+(const XYZW& xyzw) const
 {
 	return XYZW(m_xyzw[0] + xyzw.m_xyzw[0], m_xyzw[1] + xyzw.m_xyzw[1], m_xyzw[2] + xyzw.m_xyzw[2], m_xyzw[3] + xyzw.m_xyzw[3]);
+}
+
+XYZW LNLib::XYZW::operator-(const XYZW& xyzw) const
+{
+	return XYZW(m_xyzw[0] - xyzw.m_xyzw[0], m_xyzw[1] - xyzw.m_xyzw[1], m_xyzw[2] - xyzw.m_xyzw[2], m_xyzw[3] - xyzw.m_xyzw[3]);
 }
 
 XYZW& LNLib::XYZW::operator+=(const XYZW& xyzw)
@@ -140,4 +151,9 @@ XYZW LNLib::operator*(const XYZW& source, const double d)
 XYZW LNLib::operator*(const double& d, const XYZW& source)
 {
 	return XYZW(source.GetWX() * d, source.GetWY() * d, source.GetWZ() * d, source.GetW() * d);
+}
+
+XYZW LNLib::operator/(const XYZW& source, double d)
+{
+	return XYZW(source.GetWX() / d, source.GetWY() / d, source.GetWZ() / d, source.GetW()/d);
 }

@@ -151,7 +151,7 @@ void LNLib::NurbsCurve::GetPointOnCurveByInsertKnot(unsigned int degree,const st
 	point = temp[0].ToXYZ(true);
 }
 
-void LNLib::NurbsCurve::RefineKnotVector(unsigned int degree, const std::vector<double>& knotVector, std::vector<XYZW>& controlPoints, std::vector<double>& insertKnotElements, std::vector<double>& insertedKnotVector, std::vector<XYZW>& updatedControlPoints)
+void LNLib::NurbsCurve::RefineKnotVector(unsigned int degree, const std::vector<double>& knotVector,const std::vector<XYZW>& controlPoints, std::vector<double>& insertKnotElements, std::vector<double>& insertedKnotVector, std::vector<XYZW>& updatedControlPoints)
 {
 	int n = static_cast<int>(knotVector.size() - degree - 2);
 	int m = n + degree + 1;
@@ -212,7 +212,7 @@ void LNLib::NurbsCurve::RefineKnotVector(unsigned int degree, const std::vector<
 	}
 }
 
-void LNLib::NurbsCurve::ToBezierCurves(unsigned int degree, const std::vector<double>& knotVector, std::vector<XYZW>& controlPoints, int& bezierCurvesCount, std::vector<std::vector<XYZW>>& decomposedControlPoints)
+void LNLib::NurbsCurve::ToBezierCurves(unsigned int degree, const std::vector<double>& knotVector,const std::vector<XYZW>& controlPoints, int& bezierCurvesCount, std::vector<std::vector<XYZW>>& decomposedControlPoints)
 {
 	int n = static_cast<int>(knotVector.size() - degree - 2);
 	int m = n + degree + 1;
@@ -273,6 +273,53 @@ void LNLib::NurbsCurve::ToBezierCurves(unsigned int degree, const std::vector<do
 				a = b;
 				b += 1;
 			}
+		}
+	}
+}
+
+void LNLib::NurbsCurve::RemoveKnot(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double removeKnot, unsigned int removeIndex, unsigned int times, std::vector<double>& restKnotVector, std::vector<XYZW>& updatedControlPoints)
+{
+	int n = static_cast<int>(knotVector.size() - degree - 2);
+	int m = n + degree + 1;
+
+	int order = degree + 1;
+	int originMultiplicity = Polynomials::GetKnotMultiplicity(degree, removeKnot, knotVector);
+	double fout = (2 * removeIndex - originMultiplicity - degree) / 2;
+	int last = removeIndex - originMultiplicity;
+	int first = removeIndex - degree;
+
+	std::vector<XYZW> temp;
+	for (unsigned int t = 0; t < times; t++)
+	{
+		int off = first - 1;
+		temp[0] = controlPoints[off];
+		temp[last + 1 - off] = controlPoints[last + 1];
+
+		int i = first;
+		int j = last;
+
+		int ii = 1;
+		int jj = last - off;
+		int remflag = 0;
+		while (j - i > static_cast<int>(t))
+		{
+			double alphai = (removeKnot - knotVector[i]) / (knotVector[i + order + t] - knotVector[i]);
+			double alphaj = (removeKnot - knotVector[j - t]) / (knotVector[j + order] - knotVector[j - t]);
+
+			temp[ii] = (controlPoints[i] - (1.0 - alphai) * temp[ii - 1]) / alphai;
+			temp[jj] = (controlPoints[j] - alphaj * temp[jj + 1]) / (1.0 - alphaj);
+
+			i = i + 1;
+			ii = ii + 1;
+
+			j = j - 1;
+			jj = jj - 1;
+
+		}
+
+		if (j - i < static_cast<int>(t))
+		{
+			// to do
 		}
 	}
 }
