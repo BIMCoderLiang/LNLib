@@ -59,6 +59,13 @@ namespace LNLib
 		/// Curve knot removal.
 		/// </summary>
 		static void RemoveKnot(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double removeKnot, unsigned int removeIndex, unsigned int times, std::vector<double>& restKnotVector, std::vector<XYZW>& updatedControlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page206
+		/// Algorithm A5.9
+		/// Degree elevate a curve t times.
+		/// </summary>
+		static void ElevateDegree(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, unsigned int times, unsigned int updatedDegree, std::vector<double> updatedKnotVector, std::vector<XYZW> updatedControlPoints);
 	};
 }
 

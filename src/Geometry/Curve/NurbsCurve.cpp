@@ -1,4 +1,5 @@
 #include "NurbsCurve.h"
+#include "Constants.h"
 #include "Polynomials.h"
 #include "XYZ.h"
 #include "XYZW.h"
@@ -288,8 +289,16 @@ void LNLib::NurbsCurve::RemoveKnot(unsigned int degree, const std::vector<double
 	int last = removeIndex - originMultiplicity;
 	int first = removeIndex - degree;
 
+	for (int i = 0; i < static_cast<int>(controlPoints.size()); i++)
+	{
+		updatedControlPoints[i] = controlPoints[i];
+	}
+
 	std::vector<XYZW> temp;
-	for (unsigned int t = 0; t < times; t++)
+	temp.resize(times);
+
+	int t = 0;
+	for (t = 0; t < static_cast<int>(times); t++)
 	{
 		int off = first - 1;
 		temp[0] = controlPoints[off];
@@ -319,7 +328,73 @@ void LNLib::NurbsCurve::RemoveKnot(unsigned int degree, const std::vector<double
 
 		if (j - i < static_cast<int>(t))
 		{
-			// to do
+			if (temp[ii - 1].Distance(temp[jj + 1]) <= Constants::DoubleEpsilon)
+			{
+				remflag = 1;
+			}
+		}
+		else
+		{
+			double alphai = (removeKnot - knotVector[i]) / (knotVector[i + order + t] - knotVector[i]);
+			if (controlPoints[i].Distance(alphai * temp[ii + t + 1] + (1.0 * alphai) * temp[ii - 1]) <= Constants::DoubleEpsilon)
+			{
+				remflag = 1;
+			}
+		}
+
+		if (remflag == 0)
+		{
+			break;
+		}
+		else
+		{
+			i = first;
+			j = last;
+
+			while (j - i > t)
+			{
+				updatedControlPoints[i] = temp[i - off];
+				updatedControlPoints[j] = temp[j - off];
+				i = i + 1;
+				j = j + 1;
+			}
+		}
+		first = first - 1;
+		last = last + 1;
+	}
+
+	if (t == 0)
+	{
+		return;
+	}
+	for (int k = removeIndex + 1; k <= m; k++)
+	{
+		restKnotVector[k - t] = knotVector[k];
+	}
+
+	int j = static_cast<int>(fout);
+	int i = j;
+	
+	for (int k = 1; k < t; k++)
+	{
+		if ( k%2 == 1)
+		{
+			i = i + 1;
+		}
+		else
+		{
+			j = j - 1;
 		}
 	}
+
+	for (int k = i + 1; k <= n; k++)
+	{
+		updatedControlPoints[j] = controlPoints[k];
+		j = j + 1;
+	}
+}
+
+void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, unsigned int times, unsigned int updatedDegree, std::vector<double> updatedKnotVector, std::vector<XYZW> updatedControlPoints)
+{
+
 }
