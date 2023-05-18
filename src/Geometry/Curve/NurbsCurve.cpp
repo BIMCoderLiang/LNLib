@@ -6,6 +6,7 @@
 #include "MathUtils.h"
 #include "BsplineCurve.h"
 #include <vector>
+#include <algorithm>
 
 void LNLib::NurbsCurve::GetPointOnCurve(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double paramT, XYZ& point)
 {
@@ -394,7 +395,221 @@ void LNLib::NurbsCurve::RemoveKnot(unsigned int degree, const std::vector<double
 	}
 }
 
-void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, unsigned int times, unsigned int updatedDegree, std::vector<double> updatedKnotVector, std::vector<XYZW> updatedControlPoints)
+void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, unsigned int times,  std::vector<double> updatedKnotVector, std::vector<XYZW> updatedControlPoints)
 {
+	int n = static_cast<int>(knotVector.size() - degree - 2);
+	int m = n + degree + 1;
 
+	int ph = degree + times;
+	int ph2 = static_cast<int>(ph / 2);
+
+	std::vector<std::vector<double>> bezierSegementsCoeffcients;
+	bezierSegementsCoeffcients.resize(degree + times + 1);
+	for (int i = 0; i < static_cast<int>(degree + times + 1); i++)
+	{
+		bezierSegementsCoeffcients[i].resize(degree + 1);
+	}
+
+	bezierSegementsCoeffcients[0][0] = bezierSegementsCoeffcients[ph][degree] = 1.0;
+
+	for (int i = 1; i <= ph2; i++)
+	{
+		double inv = 1.0 / MathUtils::Binomial(ph, i);
+		int mpi = std::min(static_cast<int>(degree), i);
+
+		for (int j = std::max(0, i - static_cast<int>(times)); j <= mpi; j++)
+		{
+			bezierSegementsCoeffcients[i][j] = inv * MathUtils::Binomial(times, i - j);
+		}
+	}
+
+	for (int i = ph2 + 1; i <= ph - 1; i++)
+	{
+		int mpi = std::min(static_cast<int>(degree), i);
+		for (int j = std::max(0, i - static_cast<int>(times)); j <= mpi; j++)
+		{
+			bezierSegementsCoeffcients[i][j] = bezierSegementsCoeffcients[ph-i][degree - j];
+		}
+	}
+
+	int mh = ph;
+	int kind = ph + 1;
+	int r = -1;
+	int a = static_cast<int>(degree);
+	int b = degree + 1;
+	int cind = 1;
+	double ua = knotVector[0];
+	updatedControlPoints[0] = controlPoints[0];
+
+	for (int i = 0; i <= ph; i++)
+	{
+		updatedKnotVector[i] = ua;
+	}
+
+	std::vector<XYZW> bezierSegementControlPoints;
+	bezierSegementControlPoints.resize(degree + 1);
+	for (int i = 0; i <= static_cast<int>(degree); i++)
+	{
+		bezierSegementControlPoints[i] = controlPoints[i];
+	}
+	while (b < m)
+	{
+		int i = b;
+		while (b < m && MathUtils::IsAlmostEqualTo(knotVector[b], knotVector[b + 1]))
+		{
+			b = b + 1;
+		}
+		int mul = b - i + 1;
+		mh += mul + times;
+		double ub = knotVector[b];
+
+		int oldr = r;
+		r = degree - mul;
+
+		int lbz = 0;
+
+		if (oldr > 0)
+		{
+			lbz = (oldr + 2) / 2;
+		}
+		else
+		{
+			lbz = 1;
+		}
+
+		double rbz = 0.0;
+		if (r > 0)
+		{
+			rbz = ph - (r + 1) / 2;
+		}
+		else
+		{
+			rbz = ph;
+		}
+
+		std::vector<XYZW> currenSegementControlPoints;
+		currenSegementControlPoints.resize(degree + 1);
+
+		std::vector<XYZW> nextSegementLeftMostControlPoints;
+		nextSegementLeftMostControlPoints.resize(degree - 1);
+
+		if (r > 0)
+		{
+			double numer = ub - ua;
+			std::vector<double> alphas;
+			alphas.resize(degree - 1);
+			for (int k = degree; k > mul; k--)
+			{
+				alphas[k - mul - 1] = numer / (knotVector[a + k] - ua);
+			}
+			for (int j = 1; j <= r; j++)
+			{
+				int save = r - j;
+				int s = mul + j;
+
+				for (int k = degree; k >= s; k--)
+				{
+					currenSegementControlPoints[k] = alphas[k - s] * currenSegementControlPoints[k] + (1.0 - alphas[k - s]) * currenSegementControlPoints[k - 1];
+				}
+
+				nextSegementLeftMostControlPoints[save] = currenSegementControlPoints[degree];
+			}
+		}
+
+		std::vector<XYZW> currenSegementDegreeElevateControlPoints;
+		currenSegementDegreeElevateControlPoints.resize(degree + times + 1);
+		for (int i = lbz; i <= ph; i++)
+		{
+			currenSegementDegreeElevateControlPoints[i] = XYZW(0.0,0.0,0.0,0.0);
+			int mpi = std::min(static_cast<int>(degree), i);
+			for (int j = std::max(0, static_cast<int>(i - times)); j <= mpi; j++)
+			{
+				currenSegementDegreeElevateControlPoints[i] += bezierSegementsCoeffcients[i][j] * currenSegementControlPoints[j];
+			}
+		}
+
+		if (oldr > 1)
+		{
+			int first = kind - 2;
+			int last = kind;
+			double den = ub - ua;
+			double bet = (ub - updatedKnotVector[kind - 1] / den);
+			
+			for (int tr = 1; tr < oldr; tr++)
+			{
+				int i = first;
+				int j = last;
+				int kj = j - kind + 1;
+
+				while (j - i > tr)
+				{
+					if (i < cind)
+					{
+						double alf = (ub - updatedKnotVector[i]) / (ua - updatedKnotVector[i]);
+						updatedControlPoints[i] = alf * updatedControlPoints[i] + (1.0 - alf) * updatedControlPoints[i - 1];
+					}
+
+					if (j >= lbz)
+					{
+						if (j - tr <= kind - ph + oldr)
+						{
+							double gam = (ub - updatedKnotVector[j - tr] / den);
+							currenSegementDegreeElevateControlPoints[kj] = gam * currenSegementDegreeElevateControlPoints[kj] + (1.0 - gam) * currenSegementDegreeElevateControlPoints[kj + 1];
+						}
+						else
+						{
+							currenSegementDegreeElevateControlPoints[kj] = bet * currenSegementDegreeElevateControlPoints[kj] + (1.0 - bet) * currenSegementDegreeElevateControlPoints[kj + 1];
+						}
+					}
+
+					i = i + 1;
+					j = j - 1;
+					kj = kj - 1;
+				}
+
+				first = first - 1;
+				last += 1;
+			}
+		}
+
+		if (a != degree)
+		{
+			for (int i = 0; i < ph - oldr; i++)
+			{
+				updatedKnotVector[kind] = ua;
+				kind += 1;
+			}
+		}
+
+		for (int j = lbz; j <= rbz; j++)
+		{
+			updatedControlPoints[cind] = currenSegementDegreeElevateControlPoints[j];
+			cind += 1;
+		}
+
+		if (b < m)
+		{
+			for (int j = 0; j < r; j++)
+			{
+				currenSegementControlPoints[j] = nextSegementLeftMostControlPoints[j];
+			}
+			for (int j = r; j <= static_cast<int>(degree); j++)
+			{
+				currenSegementControlPoints[j] = controlPoints[b - degree + j];
+			}
+
+			a = b;
+			b = b + 1;
+			ua = ub;
+		}
+		else
+		{
+			for (int i = 0; i <= ph; i++)
+			{
+				updatedKnotVector[kind + i] = ub;
+			}
+		}
+
+		int nh = mh - ph - 1;
+	}
 }

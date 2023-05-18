@@ -46,6 +46,13 @@ namespace LNLib
 		/// This routine must run twice (U & V respectively).
 		/// </summary>
 		static void ToBezierPatches(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, bool isUDirection, int& bezierCount, std::vector<std::vector<std::vector<XYZW>>>& decomposedControlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page209
+		/// Algorithm A5.10
+		/// Degree elevate a surface t times.
+		/// </summary>
+		static void ElevateDegree();
 	};
 }
 
