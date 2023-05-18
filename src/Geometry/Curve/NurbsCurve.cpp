@@ -403,14 +403,14 @@ void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<dou
 	int ph = degree + times;
 	int ph2 = static_cast<int>(ph / 2);
 
-	std::vector<std::vector<double>> bezierSegementsCoeffcients;
-	bezierSegementsCoeffcients.resize(degree + times + 1);
+	std::vector<std::vector<double>> bezalfs;
+	bezalfs.resize(degree + times + 1);
 	for (int i = 0; i < static_cast<int>(degree + times + 1); i++)
 	{
-		bezierSegementsCoeffcients[i].resize(degree + 1);
+		bezalfs[i].resize(degree + 1);
 	}
 
-	bezierSegementsCoeffcients[0][0] = bezierSegementsCoeffcients[ph][degree] = 1.0;
+	bezalfs[0][0] = bezalfs[ph][degree] = 1.0;
 
 	for (int i = 1; i <= ph2; i++)
 	{
@@ -419,7 +419,7 @@ void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<dou
 
 		for (int j = std::max(0, i - static_cast<int>(times)); j <= mpi; j++)
 		{
-			bezierSegementsCoeffcients[i][j] = inv * MathUtils::Binomial(times, i - j);
+			bezalfs[i][j] = inv * MathUtils::Binomial(times, i - j);
 		}
 	}
 
@@ -428,7 +428,7 @@ void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<dou
 		int mpi = std::min(static_cast<int>(degree), i);
 		for (int j = std::max(0, i - static_cast<int>(times)); j <= mpi; j++)
 		{
-			bezierSegementsCoeffcients[i][j] = bezierSegementsCoeffcients[ph-i][degree - j];
+			bezalfs[i][j] = bezalfs[ph-i][degree - j];
 		}
 	}
 
@@ -446,12 +446,15 @@ void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<dou
 		updatedKnotVector[i] = ua;
 	}
 
-	std::vector<XYZW> bezierSegementControlPoints;
-	bezierSegementControlPoints.resize(degree + 1);
+	std::vector<XYZW> bpts;
+	bpts.resize(degree + 1);
 	for (int i = 0; i <= static_cast<int>(degree); i++)
 	{
-		bezierSegementControlPoints[i] = controlPoints[i];
+		bpts[i] = controlPoints[i];
 	}
+
+	std::vector<XYZW> nextbpts;
+	nextbpts.resize(degree - 1);
 	while (b < m)
 	{
 		int i = b;
@@ -487,20 +490,14 @@ void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<dou
 			rbz = ph;
 		}
 
-		std::vector<XYZW> currenSegementControlPoints;
-		currenSegementControlPoints.resize(degree + 1);
-
-		std::vector<XYZW> nextSegementLeftMostControlPoints;
-		nextSegementLeftMostControlPoints.resize(degree - 1);
-
 		if (r > 0)
 		{
 			double numer = ub - ua;
-			std::vector<double> alphas;
-			alphas.resize(degree - 1);
+			std::vector<double> alfs;
+			alfs.resize(degree - 1);
 			for (int k = degree; k > mul; k--)
 			{
-				alphas[k - mul - 1] = numer / (knotVector[a + k] - ua);
+				alfs[k - mul - 1] = numer / (knotVector[a + k] - ua);
 			}
 			for (int j = 1; j <= r; j++)
 			{
@@ -509,22 +506,22 @@ void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<dou
 
 				for (int k = degree; k >= s; k--)
 				{
-					currenSegementControlPoints[k] = alphas[k - s] * currenSegementControlPoints[k] + (1.0 - alphas[k - s]) * currenSegementControlPoints[k - 1];
+					bpts[k] = alfs[k - s] * bpts[k] + (1.0 - alfs[k - s]) * bpts[k - 1];
 				}
 
-				nextSegementLeftMostControlPoints[save] = currenSegementControlPoints[degree];
+				nextbpts[save] = bpts[degree];
 			}
 		}
 
-		std::vector<XYZW> currenSegementDegreeElevateControlPoints;
-		currenSegementDegreeElevateControlPoints.resize(degree + times + 1);
+		std::vector<XYZW> ebpts;
+		ebpts.resize(degree + times + 1);
 		for (int i = lbz; i <= ph; i++)
 		{
-			currenSegementDegreeElevateControlPoints[i] = XYZW(0.0,0.0,0.0,0.0);
+			ebpts[i] = XYZW(0.0,0.0,0.0,0.0);
 			int mpi = std::min(static_cast<int>(degree), i);
 			for (int j = std::max(0, static_cast<int>(i - times)); j <= mpi; j++)
 			{
-				currenSegementDegreeElevateControlPoints[i] += bezierSegementsCoeffcients[i][j] * currenSegementControlPoints[j];
+				ebpts[i] += bezalfs[i][j] * bpts[j];
 			}
 		}
 
@@ -554,11 +551,11 @@ void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<dou
 						if (j - tr <= kind - ph + oldr)
 						{
 							double gam = (ub - updatedKnotVector[j - tr] / den);
-							currenSegementDegreeElevateControlPoints[kj] = gam * currenSegementDegreeElevateControlPoints[kj] + (1.0 - gam) * currenSegementDegreeElevateControlPoints[kj + 1];
+							ebpts[kj] = gam * ebpts[kj] + (1.0 - gam) * ebpts[kj + 1];
 						}
 						else
 						{
-							currenSegementDegreeElevateControlPoints[kj] = bet * currenSegementDegreeElevateControlPoints[kj] + (1.0 - bet) * currenSegementDegreeElevateControlPoints[kj + 1];
+							ebpts[kj] = bet * ebpts[kj] + (1.0 - bet) * ebpts[kj + 1];
 						}
 					}
 
@@ -583,7 +580,7 @@ void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<dou
 
 		for (int j = lbz; j <= rbz; j++)
 		{
-			updatedControlPoints[cind] = currenSegementDegreeElevateControlPoints[j];
+			updatedControlPoints[cind] = ebpts[j];
 			cind += 1;
 		}
 
@@ -591,11 +588,11 @@ void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<dou
 		{
 			for (int j = 0; j < r; j++)
 			{
-				currenSegementControlPoints[j] = nextSegementLeftMostControlPoints[j];
+				bpts[j] = nextbpts[j];
 			}
 			for (int j = r; j <= static_cast<int>(degree); j++)
 			{
-				currenSegementControlPoints[j] = controlPoints[b - degree + j];
+				bpts[j] = controlPoints[b - degree + j];
 			}
 
 			a = b;
