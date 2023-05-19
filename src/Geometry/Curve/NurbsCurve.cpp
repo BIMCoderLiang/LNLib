@@ -455,6 +455,8 @@ void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<dou
 
 	std::vector<XYZW> nextbpts;
 	nextbpts.resize(degree - 1);
+	
+	int nh = 0;
 	while (b < m)
 	{
 		int i = b;
@@ -607,6 +609,6 @@ void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<dou
 			}
 		}
 
-		int nh = mh - ph - 1;
+		nh = mh - ph - 1;
 	}
 }
