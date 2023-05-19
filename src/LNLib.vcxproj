@@ -50,7 +50,7 @@
     <ClCompile Include="Mathematics\Math\Constants.cpp" />
     <ClCompile Include="Mathematics\Math\XYZ.cpp" />
     <ClCompile Include="Mathematics\Math\UV.cpp" />
-    <ClCompile Include="Mathematics\Utils\ValidationUtils.cpp" />
+    <ClCompile Include="Algorithm\ValidationUtils.cpp" />
     <ClCompile Include="Mathematics\Math\XYZW.cpp" />
     <ClCompile Include="Mathematics\Math\Matrix.cpp" />
   </ItemGroup>

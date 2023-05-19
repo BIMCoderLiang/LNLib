@@ -29,7 +29,7 @@
     <ClCompile Include="Geometry\Curve\BsplineCurve.cpp" />
     <ClCompile Include="Geometry\Surface\BsplineSurface.cpp" />
     <ClCompile Include="LNLibDefinitions.cpp" />
-    <ClCompile Include="Mathematics\Utils\ValidationUtils.cpp" />
+    <ClCompile Include="Algorithm\ValidationUtils.cpp" />
     <ClCompile Include="Geometry\Curve\NurbsCurve.cpp" />
     <ClCompile Include="Mathematics\Math\XYZW.cpp" />
     <ClCompile Include="Geometry\Surface\NurbsSurface.cpp" />

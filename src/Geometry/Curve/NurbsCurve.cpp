@@ -5,6 +5,7 @@
 #include "XYZW.h"
 #include "MathUtils.h"
 #include "BsplineCurve.h"
+#include "ValidationUtils.h"
 #include <vector>
 #include <algorithm>
 
@@ -329,7 +330,7 @@ void LNLib::NurbsCurve::RemoveKnot(unsigned int degree, const std::vector<double
 
 		if (j - i < static_cast<int>(t))
 		{
-			if (temp[ii - 1].Distance(temp[jj + 1]) <= Constants::DoubleEpsilon)
+			if (temp[ii - 1].Distance(temp[jj + 1]) <= ValidationUtils::ComputeCurveModifyTolerance(controlPoints))
 			{
 				remflag = 1;
 			}
@@ -611,4 +612,202 @@ void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<dou
 
 		nh = mh - ph - 1;
 	}
+}
+
+int LNLib::NurbsCurve::ReduceDegree(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double> updatedKnotVector, std::vector<XYZW> updatedControlPoints)
+{
+	
+	int ph = degree - 1;
+	int mh = ph;
+
+	int kind = ph + 1;
+	int r = -1;
+	int a = degree;
+
+	int b = degree + 1;
+	int cind = 1;
+	int mult = degree;
+
+	int n = static_cast<int>(knotVector.size() - degree - 2);
+	int m = n + degree + 1;
+
+	std::vector<XYZW> bpts;
+	bpts.resize(degree + 1);
+
+	std::vector<XYZW> nextbpts;
+	nextbpts.resize(degree - 1);
+
+	std::vector<XYZW> rbpts;
+	rbpts.resize(degree);
+
+	std::vector<double> alphas;
+	alphas.resize(degree - 1);
+
+	std::vector<double> error;
+	error.resize(m);
+
+	int nh = 0;
+
+	updatedControlPoints.resize(degree);
+	updatedControlPoints[0] = controlPoints[0];
+
+	for (int i = 0; i <= ph; i++)
+	{
+		updatedKnotVector[i] = updatedKnotVector[0];
+	}
+
+	for (int i = 0; i <= static_cast<int>(degree); i++)
+	{
+		bpts[i] = controlPoints[i];
+	}
+
+	for (int i = 0; i < m; i++)
+	{
+		error[i] = 0.0;
+	}
+
+	while (b < m)
+	{
+		int i = b;
+
+		while (b < m && MathUtils::IsAlmostEqualTo(knotVector[b], knotVector[b + 1]))
+		{
+			b = b + 1;
+		}
+		mult = b - i + 1;
+		mh += mult - 1;
+		int oldr = r;
+		r = degree - mult;
+
+		int lbz = 0;
+		if (oldr > 0)
+		{
+			int lbz = (oldr + 2) / 2;
+		}
+		else
+		{
+			lbz = 1;
+		}
+
+		if (r > 0)
+		{
+			double numer = knotVector[b] - knotVector[a];
+			for (int k = degree; k >= mult; k--)
+			{
+				alphas[k - mult - 1] = numer / (knotVector[a + k] - knotVector[a]);
+			}
+
+			for (int j = 1; j < r; j++)
+			{
+				int save = r - j;
+				int s = mult + j;
+				for (int k = degree; k >= s; k--)
+				{
+					bpts[k] = alphas[k - s] * bpts[k] + (1.0 - alphas[k - s]) * bpts[k - 1];
+				}
+
+				nextbpts[save] = bpts[degree];
+			}
+		}
+
+		double maxError = ValidationUtils::ComputeMaxErrorOfBezierReduction(degree, bpts, rbpts);
+		error[a] += maxError;
+		if (error[a] > ValidationUtils::ComputeCurveModifyTolerance(controlPoints))
+		{
+			return 1;
+		}
+		if (oldr > 0)
+		{
+			int first = kind;
+			int last = kind;
+
+			for (int k = 0; k < oldr; k++)
+			{
+				int i = first;
+				int j = last;
+				int kj = j - kind;
+
+				while (j - i > k)
+				{
+					double alpha = (knotVector[a] - updatedKnotVector[i - 1]) / (knotVector[b] - updatedKnotVector[i - 1]);
+					double beta = (knotVector[a] - updatedKnotVector[j - k - 1]) / (knotVector[b] - updatedKnotVector[j - k - 1]);
+					updatedControlPoints[i - 1] = (updatedControlPoints[i - 1] - (1.0 - alpha) * updatedControlPoints[i - 2]) / alpha;
+					rbpts[k] = (rbpts[kj] - beta * rbpts[kj + 1]) / (1.0 - beta);
+					
+					i = i + 1;
+					j = j - 1;
+					kj = kj - 1;
+				}
+
+				double Br;
+				if (j - i < k)
+				{
+					Br = updatedControlPoints[i - 2].Distance(rbpts[kj + 1]);
+				}
+				else
+				{
+					double delta = (knotVector[a] - updatedKnotVector[i - 1]) / (knotVector[b] - updatedKnotVector[i - 1]);
+					XYZW A = delta * rbpts[kj + 1] + (1.0 - delta) * updatedControlPoints[i - 2];
+					Br = updatedControlPoints[i - 1].Distance(A);
+				}
+				
+				int K = a + oldr - k;
+				int q = (2 * degree - k + 1) / 2;
+				int L = K - q;
+				for (int ii = L; ii <= a; ii++)
+				{
+					error[ii] += Br;
+					if (error[ii] > ValidationUtils::ComputeCurveModifyTolerance(controlPoints))
+					{
+						return 1;
+					}
+				}
+
+				first = first - 1;
+				last = last - 1;
+			}
+
+			cind = i - 1;
+		}
+
+		if (a != degree)
+		{
+			for (int i = 0; i < ph - oldr; i++)
+			{
+				updatedKnotVector[kind] = knotVector[a];
+				kind += 1;
+			}
+		}
+
+		for (int i = lbz; i <= ph; i++)
+		{
+			updatedControlPoints[cind] = rbpts[i];
+			cind += 1;
+		}
+
+		if (b < m)
+		{
+			for (int i = 0; i < r; i++)
+			{
+				bpts[i] = nextbpts[i];
+			}
+			for (int i = r; i <= static_cast<int>(degree); i++)
+			{
+				bpts[i] = controlPoints[b - degree + i];
+			}
+
+			a = b;
+			b = b + 1;
+		}
+		else
+		{
+			for (int i = 0; i <= ph; i++)
+			{
+				updatedKnotVector[kind + i] = knotVector[b];
+			}
+		}
+	}
+
+	nh = mh - ph - 1;
+	return 0;
 }

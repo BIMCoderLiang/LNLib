@@ -71,8 +71,10 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page223
 		/// Algorithm A5.11
 		/// Degree reduce a curve from degree to degree - 1.
+		/// return 1 means run failed;
+		/// return 0 means run successed;
 		/// </summary>
-		static void ReduceDegree();
+		static int ReduceDegree(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double> updatedKnotVector, std::vector<XYZW> updatedControlPoints);
 	};
 }
 
