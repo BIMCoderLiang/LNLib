@@ -16,7 +16,6 @@
     <ClInclude Include="include\XYZW.h" />
     <ClInclude Include="include\NurbsSurface.h" />
     <ClInclude Include="include\Matrix.h" />
-    <ClInclude Include="include\Conversion.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Mathematics\Math\XYZ.cpp" />
@@ -34,6 +33,5 @@
     <ClCompile Include="Mathematics\Math\XYZW.cpp" />
     <ClCompile Include="Geometry\Surface\NurbsSurface.cpp" />
     <ClCompile Include="Mathematics\Math\Matrix.cpp" />
-    <ClCompile Include="Algorithm\Conversion.cpp" />
   </ItemGroup>
 </Project>

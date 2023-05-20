@@ -412,3 +412,87 @@ void LNLib::Polynomials::OneBasisFunctionDerivative(unsigned int index, unsigned
 		derivatives[k] = basisFunctionsDerivative[0];
 	}
 }
+
+void LNLib::Polynomials::BezierToPowerMatrix(unsigned int degree, std::vector<std::vector<double>>& matrix)
+{
+	matrix.resize(degree);
+	for (int i = 0; i < static_cast<int>(degree); i++)
+	{
+		matrix[i].resize(degree);
+		for (int j = i + 1; j <= static_cast<int>(degree); j++)
+		{
+			matrix[i][j] = 0.0;
+		}
+	}
+
+	matrix[0][0] = matrix[degree][degree] = 1.0;
+	if (degree % 2 == 0)
+	{
+		matrix[degree][0] = -1.0;
+	}
+	else
+	{
+		matrix[degree][0] = 1.0;
+	}
+
+	double sign = -1.0;
+	for (int i = 1; i < static_cast<int>(degree); i++)
+	{
+		matrix[i][i] = MathUtils::Binomial(degree,i);
+		matrix[i][0] = matrix[degree][degree - 1] = sign * matrix[i][i];
+		sign = -sign;
+	}
+
+	int k1 = (degree + 1) / 2;
+	int pk = degree - 1;
+	for (int k = 1; k < k1; k++)
+	{
+		sign = -1.0;
+		for (int j = k + 1; j <= pk; j++)
+		{
+			matrix[j][k] = matrix[pk][degree - j] = sign * MathUtils::Binomial(degree, k) * MathUtils::Binomial(degree - k, j - k);
+			sign = -sign;
+		}
+	}
+
+	pk = pk - 1;
+}
+
+void LNLib::Polynomials::PowerToBezierMatrix(unsigned int degree, const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& inverseMatrix)
+{
+	inverseMatrix.resize(degree + 1);
+	for (int i = 0; i < static_cast<int>(degree); i++)
+	{
+		inverseMatrix[i].resize(degree + 1);
+		for (int j = i + 1; j <= static_cast<int>(degree); j++)
+		{
+			inverseMatrix[i][j] = 0.0;
+		}
+	}
+
+	for (int i = 0; i <= static_cast<int>(degree); i++)
+	{
+		inverseMatrix[i][0] = inverseMatrix[degree][i] = 1.0;
+		inverseMatrix[i][i] = 1.0 / (inverseMatrix[i][i]);
+	}
+
+	int k1 = (degree + 1) / 2;
+	int pk = degree - 1;
+
+	for (int k = 1; k < k1; k++)
+	{
+		for (int j = k + 1; j < pk; j++)
+		{
+			double d = 0.0;
+			for (int i = k; i < j; i++)
+			{
+				d = d - matrix[j][i] * inverseMatrix[i][k];
+			}
+			inverseMatrix[j][k] = d / (matrix[j][j]);
+			inverseMatrix[pk][degree - j] = inverseMatrix[j][k];
+		}
+		pk = pk - 1;
+	}
+}
+
+

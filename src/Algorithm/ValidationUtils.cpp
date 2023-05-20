@@ -3,6 +3,15 @@
 #include "Constants.h"
 #include "MathUtils.h"
 
+
+namespace LNLib
+{
+	static double GetCoefficient(int index, unsigned int degree)
+	{
+		return index / degree;
+	}
+}
+
 bool LNLib::ValidationUtils::IsInRange(double input, double min, double max)
 {
 	return (MathUtils::IsGreaterThanOrEqual(input, min) && MathUtils::IsLessThanOrEqual(input, max));
@@ -48,17 +57,28 @@ double LNLib::ValidationUtils::ComputeMaxErrorOfBezierReduction(unsigned int deg
 
 	if (degree % 2 == 0)
 	{
-		XYZW Pr = (current[r + 1] - (1 - (r + 1) / degree) * reduction[r + 1]) / ((r + 1) / degree);
-		XYZW Pr1 = (current[r + 1 + 1] - (1 - (r + 1 + 1) / degree) * reduction[r + 1 + 1]) / ((r + 1 + 1) / degree);
+		XYZW cr = current[r];
+		XYZW rmo = reduction[r-1];
+		XYZ Pr = (cr.ToXYZ(true) - GetCoefficient(r, degree) * rmo.ToXYZ(true)) / (1 - GetCoefficient(r, degree));
 
-		XYZW temp = 0.5 * (Pr + Pr1);
-		return abs(current[r + 1].Distance(temp));
+		XYZW cpt = current[r + 2];
+		XYZW rpt = reduction[r + 2];
+		XYZ Pr1 = (cpt.ToXYZ(true) - (1 - GetCoefficient(r + 2, degree)) * rpt.ToXYZ(true)) / GetCoefficient(r + 2,degree);
+
+		XYZW cpo = current[r + 1];
+		XYZ temp = 0.5 * (Pr + Pr1);
+		return std::abs(cpo.ToXYZ(true).Distance(temp));
 	}
 	else
 	{
-		XYZW Plr = (current[r] - (r / degree) * reduction[r + 1]) / (1- (r / degree));
-		XYZW PRr = (current[r + 1] - (1 - ((r + 1) / degree)) * reduction[r + 1]) / ((r + 1) / degree);
+		XYZW cr = current[r];
+		XYZW rmo = reduction[r - 1];
+		XYZ PLr = (cr.ToXYZ(true) - GetCoefficient(r, degree) * rmo.ToXYZ(true)) / (1 - GetCoefficient(r, degree));
 
-		return abs(Plr.Distance(PRr));
+		XYZW cpo = current[r + 1];
+		XYZW rpo = reduction[r + 1];
+		XYZ PRr = (cpo.ToXYZ(true) - (1 - GetCoefficient(r + 1, degree)) * rpo.ToXYZ(true)) / GetCoefficient(r + 1, degree);
+
+		return std::abs(PLr.Distance(PRr));
 	}
 }

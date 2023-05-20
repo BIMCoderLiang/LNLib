@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\Conversion.h" />
     <ClInclude Include="include\BsplineSurface.h" />
     <ClInclude Include="include\BsplineCurve.h" />
     <ClInclude Include="include\BezierSurface.h" />
@@ -38,7 +37,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Algorithm\Polynomials.cpp" />
-    <ClCompile Include="Algorithm\Conversion.cpp" />
     <ClCompile Include="LNLibDefinitions.cpp" />
     <ClCompile Include="Geometry\Curve\NurbsCurve.cpp" />
     <ClCompile Include="Geometry\Surface\NurbsSurface.cpp" />

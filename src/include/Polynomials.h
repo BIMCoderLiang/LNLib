@@ -79,6 +79,20 @@ namespace LNLib
 		/// Compute a single basis function and its derivative.
 		/// </summary>
 		static void OneBasisFunctionDerivative(unsigned int index, unsigned int degree, const std::vector<double>& knotVector, double paramT, unsigned int derivative, std::vector<double>& derivatives);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page269
+		/// Algorithm A6.1
+		/// Compute pth degree Bezier matrix.
+		/// </summary>
+		static void BezierToPowerMatrix(unsigned int degree, std::vector<std::vector<double>>& matrix);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page275
+		/// Algorithm A6.2
+		/// Compute inverse of pth-degree Bezier matrix.
+		/// </summary>
+		static void PowerToBezierMatrix(unsigned int degree, const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& inverseMatrix);
 	};
 
 }
