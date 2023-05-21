@@ -396,7 +396,7 @@ void LNLib::NurbsCurve::RemoveKnot(unsigned int degree, const std::vector<double
 	}
 }
 
-void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, unsigned int times,  std::vector<double> updatedKnotVector, std::vector<XYZW> updatedControlPoints)
+void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, unsigned int times,  std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints)
 {
 	int n = static_cast<int>(knotVector.size() - degree - 2);
 	int m = n + degree + 1;
@@ -614,7 +614,7 @@ void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<dou
 	}
 }
 
-int LNLib::NurbsCurve::ReduceDegree(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double> updatedKnotVector, std::vector<XYZW> updatedControlPoints)
+int LNLib::NurbsCurve::ReduceDegree(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints)
 {
 	
 	int ph = degree - 1;

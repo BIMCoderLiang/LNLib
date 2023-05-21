@@ -10,9 +10,8 @@ namespace LNLib
 	public:
 	
 		template<typename T>
-		static std::vector<std::vector<T>> Transpose(const std::vector<std::vector<T>>& matrix)
+		static void Transpose(const std::vector<std::vector<T>>& matrix, std::vector<std::vector<T>> transposed)
 		{
-			std::vector<std::vector<T>> result;
 			std::vector<T> temp;
 
 			for (int i = 0; i < static_cast<int>(matrix[0].size()); i++)
@@ -21,11 +20,9 @@ namespace LNLib
 				{
 					temp.emplace_back(matrix[j][i]);
 				}
-				result.emplace_back(temp);
+				transposed.emplace_back(temp);
 				temp.erase(temp.begin(), temp.end());
 			}
-
-			return result;
 		}
 	};
 }

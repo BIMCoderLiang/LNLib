@@ -52,7 +52,7 @@ namespace LNLib
 		/// Algorithm A5.10
 		/// Degree elevate a surface t times.
 		/// </summary>
-		static void ElevateDegree();
+		static void ElevateDegree(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, unsigned int times, bool isUDirection, std::vector<double>& insertedKnotVectorU, std::vector<double>& insertedKnotVectorV, std::vector<std::vector<XYZW>>& updatedControlPoints);
 	};
 }
 

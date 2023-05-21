@@ -33,6 +33,11 @@ bool LNLib::ValidationUtils::IsValidNurbs(unsigned int degree, unsigned int knot
 			controlPointsCount == weightsCount;
 }
 
+bool LNLib::ValidationUtils::IsValidDegreeReduction(unsigned int degree)
+{
+	return degree > 1;
+}
+
 double LNLib::ValidationUtils::ComputeCurveModifyTolerance(const std::vector<XYZW>& controlPoints)
 {
 	double minWeight = 1.0;

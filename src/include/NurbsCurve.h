@@ -65,16 +65,17 @@ namespace LNLib
 		/// Algorithm A5.9
 		/// Degree elevate a curve t times.
 		/// </summary>
-		static void ElevateDegree(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, unsigned int times, std::vector<double> updatedKnotVector, std::vector<XYZW> updatedControlPoints);
+		static void ElevateDegree(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, unsigned int times, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page223
 		/// Algorithm A5.11
 		/// Degree reduce a curve from degree to degree - 1.
-		/// return 1 means run failed;
+		/// 
 		/// return 0 means run successed;
+		/// return 1 means run failed; 
 		/// </summary>
-		static int ReduceDegree(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double> updatedKnotVector, std::vector<XYZW> updatedControlPoints);
+		static int ReduceDegree(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
 	};
 }
 

@@ -248,32 +248,55 @@ void LNLib::NurbsSurface::InsertKnot(const std::vector<std::vector<XYZW>>& contr
 
 void LNLib::NurbsSurface::RefineKnotVector(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, std::vector<double>& insertKnotElements, bool isUDirection, std::vector<double>& insertedKnotVectorU, std::vector<double>& insertedKnotVectorV, std::vector<std::vector<XYZW>>& updatedControlPoints)
 {
-	
+	std::vector<double> knots;
+	unsigned int degree;
+	std::vector<std::vector<XYZW>> tempControlPoints;
+	std::vector<std::vector<XYZW>> newControlPoints;
+
 	if (isUDirection)
 	{
-		std::vector<std::vector<XYZW>> transposedControlPoints = Matrix::Transpose(controlPoints);
-		for (int i = 0; i < static_cast<int>(transposedControlPoints.size()); i++)
+		Matrix::Transpose(controlPoints, tempControlPoints);
+		int size = static_cast<int>(knotVectorU.size());
+		knots.resize(size);
+		for (int i = 0; i < size; i++)
 		{
-			std::vector<XYZW> temp;
-			NurbsCurve::RefineKnotVector(degreeU, knotVectorU, transposedControlPoints[i], insertKnotElements, insertedKnotVectorU, temp);
-			updatedControlPoints[i] = temp;
+			knots[i] = knotVectorU[i];
 		}
-		for (int i = 0; i < static_cast<int>(knotVectorV.size()); i++)
-		{
-			insertedKnotVectorV[i] = knotVectorV[i];
-		}
-		updatedControlPoints = Matrix::Transpose(updatedControlPoints);
+		degree = degreeU;
 	}
 	else
 	{
-		for (int i = 0; i < static_cast<int>(controlPoints.size()); i++)
+		tempControlPoints = controlPoints;
+		int size = static_cast<int>(knotVectorV.size());
+		knots.resize(size);
+		for (int i = 0; i < size; i++)
 		{
-			NurbsCurve::RefineKnotVector(degreeV, knotVectorV, controlPoints[i], insertKnotElements, insertedKnotVectorV, updatedControlPoints[i]);
+			knots[i] = knotVectorV[i];
 		}
-		for (int i = 0; i < static_cast<int>(knotVectorU.size()); i++)
-		{
-			insertedKnotVectorU[i] = knotVectorU[i];
-		}
+		degree = degreeV;
+	}
+
+	std::vector<double> insertedKnotVector;
+	
+	for (int i = 0; i < static_cast<int>(tempControlPoints.size()); i++)
+	{
+		insertedKnotVector.clear();
+		std::vector<XYZW> updatedCurveControlPoints;
+		NurbsCurve::RefineKnotVector(degree, knots, tempControlPoints[i], insertKnotElements, insertedKnotVector, updatedCurveControlPoints);
+		newControlPoints[i] = updatedCurveControlPoints;
+	}
+
+	if (isUDirection)
+	{
+		insertedKnotVectorU = insertedKnotVector;
+		insertedKnotVectorV = knotVectorV;
+		Matrix::Transpose(newControlPoints, updatedControlPoints);
+	}
+	else
+	{
+		insertedKnotVectorU = knotVectorU;
+		insertedKnotVectorV = insertedKnotVector;
+		updatedControlPoints = newControlPoints;
 	}
 }
 
@@ -368,7 +391,8 @@ void LNLib::NurbsSurface::ToBezierPatches(const std::vector<std::vector<XYZW>>& 
 
 		bezierCount = 0;
 
-		std::vector<std::vector<XYZW>> transposedControlPoints = Matrix::Transpose(controlPoints);
+		std::vector<std::vector<XYZW>> transposedControlPoints; 
+		Matrix::Transpose(controlPoints, transposedControlPoints);
 		for (unsigned i = 0; i <= degreeV; i++)
 		{
 			for (int row = 0; row <= m; row++)
@@ -418,7 +442,6 @@ void LNLib::NurbsSurface::ToBezierPatches(const std::vector<std::vector<XYZW>>& 
 						{
 							decomposedControlPoints[bezierCount + 1][save][row] = decomposedControlPoints[bezierCount][degreeV][row];
 						}
-
 					}
 				}
 
@@ -438,6 +461,60 @@ void LNLib::NurbsSurface::ToBezierPatches(const std::vector<std::vector<XYZW>>& 
 				}
 			}
 		}
+	}
+}
+
+void LNLib::NurbsSurface::ElevateDegree(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, unsigned int times, bool isUDirection, std::vector<double>& insertedKnotVectorU, std::vector<double>& insertedKnotVectorV, std::vector<std::vector<XYZW>>& updatedControlPoints)
+{
+	std::vector<double> knots;
+	unsigned int degree;
+	std::vector<std::vector<XYZW>> tempControlPoints;
+	std::vector<std::vector<XYZW>> newControlPoints;
+
+	if (isUDirection)
+	{
+		Matrix::Transpose(controlPoints, tempControlPoints);
+		int size = static_cast<int>(knotVectorU.size());
+		knots.resize(size);
+		for (int i = 0; i < size; i++)
+		{
+			knots[i] = knotVectorU[i];
+		}
+		degree = degreeU;
+	}
+	else
+	{
+		tempControlPoints = controlPoints;
+		int size = static_cast<int>(knotVectorV.size());
+		knots.resize(size);
+		for (int i = 0; i < size; i++)
+		{
+			knots[i] = knotVectorV[i];
+		}
+		degree = degreeV;
+	}
+
+	std::vector<double> insertedKnotVector;
+
+	for (int i = 0; i < static_cast<int>(tempControlPoints.size()); i++)
+	{
+		insertedKnotVector.clear();
+		std::vector<XYZW> updatedCurveControlPoints;
+		NurbsCurve::ElevateDegree(degree, knots, tempControlPoints[i], times, insertedKnotVector, updatedCurveControlPoints);
+		newControlPoints[i] = updatedCurveControlPoints;
+	}
+
+	if (isUDirection)
+	{
+		insertedKnotVectorU = insertedKnotVector;
+		insertedKnotVectorV = knotVectorV;
+		Matrix::Transpose(newControlPoints, updatedControlPoints);
+	}
+	else
+	{
+		insertedKnotVectorU = knotVectorU;
+		insertedKnotVectorV = insertedKnotVector;
+		updatedControlPoints = newControlPoints;
 	}
 }
 

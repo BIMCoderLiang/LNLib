@@ -18,6 +18,8 @@ namespace LNLib
 
 		static bool IsValidNurbs(unsigned int degree, unsigned int knotVectorCount, unsigned int controlPointsCount, unsigned int weightsCount);
 
+		static bool IsValidDegreeReduction(unsigned int degree);
+
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page185.
 		/// TOL = dWmin / (1+abs(Pmax)).
