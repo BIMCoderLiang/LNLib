@@ -17,8 +17,19 @@ double Polynomials::Horner(const std::vector<double>& coefficients, unsigned int
 
 double Polynomials::Bernstein(unsigned int i, unsigned int degree, double paramT)
 {
+
+	if (i < 0 || i > degree)
+	{
+		return 0;
+	}
+
+	if ((i == 0 && degree == 0) || ( i == degree))
+	{
+		return 1;
+	}
+
 	std::vector<double> temp;
-	temp.resize(degree + 1, 0.0);
+	temp.resize(degree + 1);
 
 	temp[degree - i] = 1.0;
 	double t1 = 1.0 - paramT;
@@ -35,6 +46,8 @@ double Polynomials::Bernstein(unsigned int i, unsigned int degree, double paramT
 
 void Polynomials::AllBernstein(unsigned int degree, double paramT, std::vector<double>& bernsteinArray)
 {
+	bernsteinArray.resize(degree + 1);
+
 	bernsteinArray[0] = 1.0;
 	double t1 = 1.0 - paramT;
 	for (unsigned int j = 1; j <= degree; j++)

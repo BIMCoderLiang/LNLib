@@ -11,7 +11,6 @@ using namespace LNLib;
 void BezierCurve::GetPointOnCurveByBernstein(const std::vector<XYZ>& controlPoints, unsigned int degree, double paramT, XYZ& point)
 {
 	std::vector<double> bernsteinArray;
-	bernsteinArray.resize(controlPoints.size());
 	Polynomials::AllBernstein(degree, paramT, bernsteinArray);
 
 	XYZ temp(0,0,0);
