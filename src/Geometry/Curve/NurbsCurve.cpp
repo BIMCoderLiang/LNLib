@@ -282,6 +282,8 @@ void LNLib::NurbsCurve::ToBezierCurves(unsigned int degree, const std::vector<do
 
 void LNLib::NurbsCurve::RemoveKnot(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double removeKnot, unsigned int removeIndex, unsigned int times, std::vector<double>& restKnotVector, std::vector<XYZW>& updatedControlPoints)
 {
+	double tol = ValidationUtils::ComputeCurveModifyTolerance(controlPoints);
+
 	int n = static_cast<int>(knotVector.size() - degree - 2);
 	int m = n + degree + 1;
 
@@ -330,7 +332,7 @@ void LNLib::NurbsCurve::RemoveKnot(unsigned int degree, const std::vector<double
 
 		if (j - i < static_cast<int>(t))
 		{
-			if (temp[ii - 1].Distance(temp[jj + 1]) <= ValidationUtils::ComputeCurveModifyTolerance(controlPoints))
+			if (MathUtils::IsLessThanOrEqual(temp[ii - 1].Distance(temp[jj + 1]), tol))
 			{
 				remflag = 1;
 			}
@@ -338,7 +340,7 @@ void LNLib::NurbsCurve::RemoveKnot(unsigned int degree, const std::vector<double
 		else
 		{
 			double alphai = (removeKnot - knotVector[i]) / (knotVector[i + order + t] - knotVector[i]);
-			if (controlPoints[i].Distance(alphai * temp[ii + t + 1] + (1.0 * alphai) * temp[ii - 1]) <= Constants::DoubleEpsilon)
+			if (MathUtils::IsLessThanOrEqual(controlPoints[i].Distance(alphai * temp[ii + t + 1] + (1.0 * alphai) * temp[ii - 1]), tol))
 			{
 				remflag = 1;
 			}
@@ -616,7 +618,8 @@ void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<dou
 
 int LNLib::NurbsCurve::ReduceDegree(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints)
 {
-	
+	double tol = ValidationUtils::ComputeCurveModifyTolerance(controlPoints);
+
 	int ph = degree - 1;
 	int mh = ph;
 
@@ -712,7 +715,7 @@ int LNLib::NurbsCurve::ReduceDegree(unsigned int degree, const std::vector<doubl
 
 		double maxError = ValidationUtils::ComputeMaxErrorOfBezierReduction(degree, bpts, rbpts);
 		error[a] += maxError;
-		if (error[a] > ValidationUtils::ComputeCurveModifyTolerance(controlPoints))
+		if (MathUtils::IsGreaterThan(error[a], tol))
 		{
 			return 1;
 		}
@@ -757,7 +760,7 @@ int LNLib::NurbsCurve::ReduceDegree(unsigned int degree, const std::vector<doubl
 				for (int ii = L; ii <= a; ii++)
 				{
 					error[ii] += Br;
-					if (error[ii] > ValidationUtils::ComputeCurveModifyTolerance(controlPoints))
+					if (MathUtils::IsGreaterThan(error[ii], tol))
 					{
 						return 1;
 					}

@@ -51,7 +51,7 @@ double LNLib::ValidationUtils::ComputeCurveModifyTolerance(const std::vector<XYZ
 		maxDistance = std::max(maxDistance, temp.ToXYZ(true).Length());
 	}
 
-	return Constants::DoubleEpsilon * minWeight / (1 + std::abs(maxDistance));
+	return Constants::DistanceEpsilon * minWeight / (1 + std::abs(maxDistance));
 }
 
 
