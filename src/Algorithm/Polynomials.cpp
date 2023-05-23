@@ -17,15 +17,14 @@ double Polynomials::Horner(const std::vector<double>& coefficients, unsigned int
 
 double Polynomials::Bernstein(unsigned int i, unsigned int degree, double paramT)
 {
-
 	if (i < 0 || i > degree)
 	{
-		return 0;
+		return 0.0;
 	}
 
-	if ((i == 0 && degree == 0) || ( i == degree))
+	if (i == degree)
 	{
-		return 1;
+		return 1.0;
 	}
 
 	std::vector<double> temp;
