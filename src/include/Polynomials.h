@@ -5,7 +5,7 @@
 
 namespace LNLib
 {
-
+	class UV;
 	class LNLIB_EXPORT Polynomials
 	{
 
@@ -37,7 +37,7 @@ namespace LNLib
 		/// Algorithm A1.6
 		/// Compute point on a power basis surface.
 		/// </summary>
-		static double Horner(const std::vector<std::vector<double>>& coefficients, unsigned int degreeU, unsigned int degreeV, double paramU, double paramV);
+		static double Horner(const std::vector<std::vector<double>>& coefficients, unsigned int degreeU, unsigned int degreeV, UV& uv);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page68

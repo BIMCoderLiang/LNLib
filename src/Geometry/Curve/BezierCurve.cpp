@@ -24,7 +24,8 @@ void BezierCurve::GetPointOnCurveByBernstein(const std::vector<XYZ>& controlPoin
 void BezierCurve::GetPointOnCurveByDeCasteljau(const std::vector<XYZ>& controlPoints, unsigned int degree, double paramT, XYZ& point)
 {
 	std::vector<XYZ> temp;
-	temp.resize(controlPoints.size());
+	temp.resize(degree + 1);
+
 	for (unsigned int i = 0; i <= degree; i++)
 	{
 		temp[i] = controlPoints[i];

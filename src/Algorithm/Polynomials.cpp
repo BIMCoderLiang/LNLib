@@ -1,5 +1,6 @@
 
 #include "Polynomials.h"
+#include "UV.h"
 #include "ValidationUtils.h"
 #include "MathUtils.h"
 
@@ -62,16 +63,16 @@ void Polynomials::AllBernstein(unsigned int degree, double paramT, std::vector<d
 	}
 }
 
-double Polynomials::Horner(const std::vector<std::vector<double>>& coefficients, unsigned int degreeU, unsigned int degreeV, double paramU, double paramV)
+double Polynomials::Horner(const std::vector<std::vector<double>>& coefficients, unsigned int degreeU, unsigned int degreeV, UV& uv)
 {
 	std::vector<double> temp;
 	temp.resize(degreeU + 1);
 
 	for (unsigned int i = 0; i <= degreeU; i++)
 	{
-		temp[i] = Horner(coefficients[i], degreeV, paramV);
+		temp[i] = Horner(coefficients[i], degreeV, uv.GetV());
 	}
-	return Horner(temp, degreeU, paramU);
+	return Horner(temp, degreeU, uv.GetU());
 }
 
 int LNLib::Polynomials::GetKnotSpanIndex(unsigned int n, unsigned int degree, double paramT, const std::vector<double>& knotVector)
@@ -104,11 +105,11 @@ int LNLib::Polynomials::GetKnotSpanIndex(unsigned int n, unsigned int degree, do
 
 int LNLib::Polynomials::GetKnotMultiplicity(unsigned int degree, double knot, const std::vector<double>& knotVector)
 {
-	int times = -1;
+	int times = 0;
 	int index = 0;
 	int size = static_cast<int>(knotVector.size());
 	
-	for (int index = 0; index < size; index++)
+	for (index = 0; index < size; index++)
 	{
 		if (MathUtils::IsAlmostEqualTo(knot, knotVector[index]))
 		{
@@ -116,7 +117,7 @@ int LNLib::Polynomials::GetKnotMultiplicity(unsigned int degree, double knot, co
 		}	
 	}
 
-	if (index == -1)
+	if (index == size - 1)
 	{
 		return times;
 	}

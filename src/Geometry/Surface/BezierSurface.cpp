@@ -24,12 +24,14 @@ void BezierSurface::GetPointOnSurfaceByDeCasteljau(const std::vector<std::vector
 		std::vector<XYZ> temp;
 		temp.resize(degreeU + 1);
 
+		int size = static_cast<int>(controlPoints.size());
+
 		for (unsigned int i = 0; i <= degreeU; i++)
 		{
 			std::vector<XYZ> column;
-			column.resize(controlPoints.size());
+			column.resize(size);
 
-			for (unsigned int k = 0; k < controlPoints.size(); k++)
+			for (int k = 0; k < size; k++)
 			{
 				column[k] = (controlPoints[k][i]);
 			}
