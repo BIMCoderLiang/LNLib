@@ -37,7 +37,7 @@ namespace LNLib
 		/// Algorithm A1.6
 		/// Compute point on a power basis surface.
 		/// </summary>
-		static double Horner(const std::vector<std::vector<double>>& coefficients, unsigned int degreeU, unsigned int degreeV, UV& uv);
+		static double Horner(const std::vector<std::vector<double>>& coefficients, unsigned int n, unsigned int m, UV& uv);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page68
@@ -50,7 +50,7 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page152
 		/// Get the knot multiplicity.
 		/// </summary>
-		static int GetKnotMultiplicity(unsigned int degree, double knot, const std::vector<double>& knotVector);
+		static int GetKnotMultiplicity(double knot, const std::vector<double>& knotVector);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page70

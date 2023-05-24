@@ -103,7 +103,7 @@ void LNLib::NurbsSurface::InsertKnot(const std::vector<std::vector<XYZW>>& contr
 {
 	int n = static_cast<int>(knotVector.size()) - degree - 2;
 	int knotSpanIndex = Polynomials::GetKnotSpanIndex(n, degree, insertKnot, knotVector);
-	unsigned int multiplicity = Polynomials::GetKnotMultiplicity(degree, insertKnot, knotVector);
+	unsigned int multiplicity = Polynomials::GetKnotMultiplicity(insertKnot, knotVector);
 
 	if (multiplicity == degree)
 	{

@@ -63,16 +63,16 @@ void Polynomials::AllBernstein(unsigned int degree, double paramT, std::vector<d
 	}
 }
 
-double Polynomials::Horner(const std::vector<std::vector<double>>& coefficients, unsigned int degreeU, unsigned int degreeV, UV& uv)
+double Polynomials::Horner(const std::vector<std::vector<double>>& coefficients, unsigned int n, unsigned int m, UV& uv)
 {
 	std::vector<double> temp;
-	temp.resize(degreeU + 1);
+	temp.resize(n + 1);
 
-	for (unsigned int i = 0; i <= degreeU; i++)
+	for (unsigned int i = 0; i <= n; i++)
 	{
-		temp[i] = Horner(coefficients[i], degreeV, uv.GetV());
+		temp[i] = Horner(coefficients[i], m, uv.GetV());
 	}
-	return Horner(temp, degreeU, uv.GetU());
+	return Horner(temp, n, uv.GetU());
 }
 
 int LNLib::Polynomials::GetKnotSpanIndex(unsigned int n, unsigned int degree, double paramT, const std::vector<double>& knotVector)
@@ -103,38 +103,20 @@ int LNLib::Polynomials::GetKnotSpanIndex(unsigned int n, unsigned int degree, do
 	return mid;
 }
 
-int LNLib::Polynomials::GetKnotMultiplicity(unsigned int degree, double knot, const std::vector<double>& knotVector)
+int LNLib::Polynomials::GetKnotMultiplicity(double knot, const std::vector<double>& knotVector)
 {
-	int times = 0;
-	int index = 0;
 	int size = static_cast<int>(knotVector.size());
-	
-	for (index = 0; index < size; index++)
+	int multi = 0;
+
+	for (int index = 0; index < size; index++)
 	{
 		if (MathUtils::IsAlmostEqualTo(knot, knotVector[index]))
 		{
-			break;
+			multi++;
 		}	
 	}
 
-	if (index == size - 1)
-	{
-		return times;
-	}
-		
-	times = 1;
-	for (int j = index + 1; j < size; j++)
-	{
-		if (MathUtils::IsAlmostEqualTo(knot, knotVector[j]))
-		{
-			times++;
-		}
-		else
-		{
-			break;
-		}	
-	}
-	return times;
+	return multi;
 }
 
 void LNLib::Polynomials::BasisFunctions(unsigned int spanIndex, unsigned int degree, double paramT, const std::vector<double>& knotVector, std::vector<double>& basisFunctions)

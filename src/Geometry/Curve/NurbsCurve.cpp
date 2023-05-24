@@ -68,7 +68,7 @@ void LNLib::NurbsCurve::InsertKnot(unsigned int degree, const std::vector<double
 	int mp = np + degree + 1;
 
 	int knotSpanIndex = Polynomials::GetKnotSpanIndex(np, degree, insertKnot, knotVector);
-	int originMultiplicity = Polynomials::GetKnotMultiplicity(degree, insertKnot, knotVector);
+	int originMultiplicity = Polynomials::GetKnotMultiplicity(insertKnot, knotVector);
 
 
 	for (int i = 0; i <= knotSpanIndex; i++)
@@ -135,7 +135,7 @@ void LNLib::NurbsCurve::GetPointOnCurveByInsertKnot(unsigned int degree,const st
 	}
 
 	int knotSpanIndex = Polynomials::GetKnotSpanIndex(n, degree, paramT, knotVector);
-	int originMultiplicity = Polynomials::GetKnotMultiplicity(degree, paramT, knotVector);
+	int originMultiplicity = Polynomials::GetKnotMultiplicity(paramT, knotVector);
 
 	int r = degree - originMultiplicity;
 	std::vector<XYZW> temp;
@@ -288,7 +288,7 @@ void LNLib::NurbsCurve::RemoveKnot(unsigned int degree, const std::vector<double
 	int m = n + degree + 1;
 
 	int order = degree + 1;
-	int originMultiplicity = Polynomials::GetKnotMultiplicity(degree, removeKnot, knotVector);
+	int originMultiplicity = Polynomials::GetKnotMultiplicity(removeKnot, knotVector);
 	double fout = (2 * removeIndex - originMultiplicity - degree) / 2;
 	int last = removeIndex - originMultiplicity;
 	int first = removeIndex - degree;

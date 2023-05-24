@@ -5,28 +5,27 @@
 
 using namespace LNLib;
 
-void BezierSurface::GetPointOnSurfaceByDeCasteljau(const std::vector<std::vector<XYZ>>& controlPoints, unsigned int degreeU, unsigned int degreeV, UV uv, XYZ& point)
+void BezierSurface::GetPointOnSurfaceByDeCasteljau(const std::vector<std::vector<XYZ>>& controlPoints, unsigned int n, unsigned int m, UV uv, XYZ& point)
 {
-	
-	if (degreeU <= degreeV)
+	if (n <= m)
 	{		
 		std::vector<XYZ> temp;
-		temp.resize(degreeV + 1);
+		temp.resize(m + 1);
 
-		for (unsigned int j = 0; j <= degreeV; j++)
+		for (unsigned int j = 0; j <= m; j++)
 		{
-			BezierCurve::GetPointOnCurveByDeCasteljau(controlPoints[j], degreeU, uv.GetU(), temp[j]);
+			BezierCurve::GetPointOnCurveByDeCasteljau(controlPoints[j], n, uv.GetU(), temp[j]);
 		}
-		BezierCurve::GetPointOnCurveByDeCasteljau(temp, degreeV, uv.GetV(), point);
+		BezierCurve::GetPointOnCurveByDeCasteljau(temp, m, uv.GetV(), point);
 	}
 	else
 	{
 		std::vector<XYZ> temp;
-		temp.resize(degreeU + 1);
+		temp.resize(n + 1);
 
 		int size = static_cast<int>(controlPoints.size());
 
-		for (unsigned int i = 0; i <= degreeU; i++)
+		for (unsigned int i = 0; i <= n; i++)
 		{
 			std::vector<XYZ> column;
 			column.resize(size);
@@ -35,8 +34,8 @@ void BezierSurface::GetPointOnSurfaceByDeCasteljau(const std::vector<std::vector
 			{
 				column[k] = (controlPoints[k][i]);
 			}
-			BezierCurve::GetPointOnCurveByDeCasteljau(column, degreeV, uv.GetV(), temp[i]);
+			BezierCurve::GetPointOnCurveByDeCasteljau(column, m, uv.GetV(), temp[i]);
 		}
-		BezierCurve::GetPointOnCurveByDeCasteljau(temp, degreeU, uv.GetU(), point);
+		BezierCurve::GetPointOnCurveByDeCasteljau(temp, n, uv.GetU(), point);
 	}
 }
