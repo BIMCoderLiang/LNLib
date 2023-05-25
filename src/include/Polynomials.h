@@ -36,6 +36,15 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page36
 		/// Algorithm A1.6
 		/// Compute point on a power basis surface.
+		/// coefficients with (n+1) * (m+1)
+		///  
+		///  [0][0]  [0][1] ... ...  [0][m]     ------- v direction
+		///  [1][0]  [1][1] ... ...  [1][m]    |
+		///    .                               |
+		///    .                               u direction
+		///    .
+		///  [n][0]  [n][1] ... ...  [n][m]      
+		/// 
 		/// </summary>
 		static double Horner(const std::vector<std::vector<double>>& coefficients, unsigned int n, unsigned int m, UV& uv);
 
