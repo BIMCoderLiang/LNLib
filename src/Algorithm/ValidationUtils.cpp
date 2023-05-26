@@ -38,6 +38,19 @@ bool LNLib::ValidationUtils::IsValidDegreeReduction(unsigned int degree)
 	return degree > 1;
 }
 
+bool LNLib::ValidationUtils::IsValidKnotVector(const std::vector<double>& knotVector)
+{
+	int size = static_cast<int>(knotVector.size());
+	for (int i = 0; i < size - 1; i++)
+	{
+		if (MathUtils::IsLessThan(knotVector[i + 1], knotVector[i]))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 double LNLib::ValidationUtils::ComputeCurveModifyTolerance(const std::vector<XYZW>& controlPoints)
 {
 	double minWeight = 1.0;

@@ -21,13 +21,19 @@ namespace LNLib
 		static bool IsValidDegreeReduction(unsigned int degree);
 
 		/// <summary>
-		/// The NURBS Book 2nd Edition Page185.
-		/// TOL = dWmin / (1+abs(Pmax)).
+		/// The NURBS Book 2nd Edition Page50
+		/// Knot Vector is a nondecreasing sequence of real numbers.
+		/// </summary>
+		static bool IsValidKnotVector(const std::vector<double>& knotVector);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page185
+		/// TOL = dWmin / (1+abs(Pmax))
 		/// </summary>
 		static double ComputeCurveModifyTolerance(const std::vector<XYZW>& controlPoints);
 
 		/// <summary>
-		/// The NURBS Book 2nd Edition Page221.
+		/// The NURBS Book 2nd Edition Page221
 		/// Implements Bezier degree reduction and computation of the maximum error.
 		/// </summary>
 		static double ComputeMaxErrorOfBezierReduction(unsigned int degree, const std::vector<XYZW>& current, const std::vector<XYZW>& reduction);
