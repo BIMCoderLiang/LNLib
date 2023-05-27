@@ -121,22 +121,27 @@ int LNLib::Polynomials::GetKnotMultiplicity(double knot, const std::vector<doubl
 
 void LNLib::Polynomials::BasisFunctions(unsigned int spanIndex, unsigned int degree, double paramT, const std::vector<double>& knotVector, std::vector<double>& basisFunctions)
 {
-	basisFunctions[0] = 1.0;
-	for (unsigned int j = 1; j <= degree; j++)
-	{
-		std::vector<double> left;
-		left.resize(degree+1);
-		std::vector<double> right;
-		right.resize(degree+1);
+	basisFunctions.resize(degree + 1);
+	double saved = 0.0;
+	double temp = 0.0;
+	
+	std::vector<double> left;
+	left.resize(degree + 1);
+	std::vector<double> right;
+	right.resize(degree + 1);
 
+	basisFunctions[0] = 1.0;
+
+	for (unsigned int j = 1; j <= degree; j++)
+	{		
 		left[j] = paramT - knotVector[spanIndex + 1 - j];
 		right[j] = knotVector[spanIndex + j] - paramT;
 
-		double saved = 0.0;
+		saved = 0.0;
 
 		for (unsigned int r = 0; r < j; r++)
 		{
-			double temp = basisFunctions[r] / (right[r + 1] + left[j - r]);
+			temp = basisFunctions[r] / (right[r + 1] + left[j - r]);
 			basisFunctions[r] = saved + right[r + 1] * temp;
 			saved = left[j - r] * temp;
 		}
@@ -146,6 +151,12 @@ void LNLib::Polynomials::BasisFunctions(unsigned int spanIndex, unsigned int deg
 
 void LNLib::Polynomials::BasisFunctionsDerivatives(unsigned int spanIndex, unsigned int degree, double paramT,  unsigned int derivative, const std::vector<double>& knotVector, std::vector<std::vector<double>>& derivatives)
 {
+	derivatives.resize(derivative+1);
+	for (int i = 0; i <= static_cast<int>(derivative); i++)
+	{
+		derivatives.resize(degree + 1);
+	}
+
 	std::vector<std::vector<double>> ndu;
 	ndu.resize(degree + 1);
 	for (unsigned int i = 0; i <= degree; i++)
@@ -160,9 +171,12 @@ void LNLib::Polynomials::BasisFunctionsDerivatives(unsigned int spanIndex, unsig
 	std::vector<double> right;
 	right.resize(degree + 1);
 
+	double saved = 0.0;
+	double temp = 0.0;
+
 	for (unsigned int j = 1; j <= degree; j++)
 	{
-		double saved = 0.0;
+		saved = 0.0;
 
 		left[j] = paramT - knotVector[spanIndex + 1 - j];
 		right[j] = knotVector[spanIndex + j] - paramT;
@@ -170,7 +184,7 @@ void LNLib::Polynomials::BasisFunctionsDerivatives(unsigned int spanIndex, unsig
 		for (unsigned int r = 0; r < j; r++)
 		{
 			ndu[j][r] = right[r + 1] + left[j - r];
-			double temp = ndu[r][j - 1] / ndu[j][r];
+			temp = ndu[r][j - 1] / ndu[j][r];
 
 			ndu[r][j] = saved + right[r + 1] * temp;
 			saved = left[j - r] * temp;
@@ -191,17 +205,17 @@ void LNLib::Polynomials::BasisFunctionsDerivatives(unsigned int spanIndex, unsig
 		a[i].resize(degree + 1);
 	}
 
-	for (unsigned int r = 0; r <= degree; r++)
+	for (int r = 0; r <= static_cast<int>(degree); r++)
 	{
 		int s1 = 0; 
 		int s2 = 1;
 		a[0][0] = 1.0;
 
-		for (unsigned int k = 1; k <= derivative; k++)
+		for (int k = 1; k <= static_cast<int>(derivative); k++)
 		{
 			double d = 0.0;
 			int rk = r - k;
-			unsigned int pk = degree - k;
+			int pk = static_cast<int>(degree - k);
 
 			if (r >= k)
 			{
@@ -241,9 +255,9 @@ void LNLib::Polynomials::BasisFunctionsDerivatives(unsigned int spanIndex, unsig
 	}
 
 	int r = static_cast<int>(degree);
-	for (unsigned int k = 1; k <= derivative; k++)
+	for (int k = 1; k <= static_cast<int>(derivative); k++)
 	{
-		for (unsigned int j = 0; j <= degree; j++)
+		for (int j = 0; j <= static_cast<int>(degree); j++)
 		{
 			derivatives[k][j] *= r;
 		}
