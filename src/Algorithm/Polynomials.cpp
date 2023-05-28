@@ -174,14 +174,14 @@ void LNLib::Polynomials::BasisFunctionsDerivatives(unsigned int spanIndex, unsig
 	double saved = 0.0;
 	double temp = 0.0;
 
-	for (unsigned int j = 1; j <= degree; j++)
+	for (int j = 1; j <= static_cast<int>(degree); j++)
 	{
 		saved = 0.0;
 
 		left[j] = paramT - knotVector[spanIndex + 1 - j];
 		right[j] = knotVector[spanIndex + j] - paramT;
 
-		for (unsigned int r = 0; r < j; r++)
+		for (int r = 0; r < j; r++)
 		{
 			ndu[j][r] = right[r + 1] + left[j - r];
 			temp = ndu[r][j - 1] / ndu[j][r];
@@ -192,7 +192,7 @@ void LNLib::Polynomials::BasisFunctionsDerivatives(unsigned int spanIndex, unsig
 		ndu[j][j] = saved;
 	}
 
-	for (unsigned int j = 0; j <= degree; j++)
+	for (int j = 0; j <= static_cast<int>(degree); j++)
 	{
 		derivatives[0][j] = ndu[j][degree];
 	}
@@ -285,13 +285,13 @@ double LNLib::Polynomials::OneBasisFunction(unsigned int index, unsigned int deg
 	std::vector<double> temp;
 	temp.resize(degree + 1);
 
-	for (unsigned int j = 0; j <= degree; j++)
+	for (int j = 0; j <= static_cast<int>(degree); j++)
 	{
 		temp[j] = MathUtils::IsGreaterThanOrEqual(paramT, knotVector[index + j]) && 
 					MathUtils::IsLessThan(paramT, knotVector[index + j + 1]) ? 
 						1.0 : 0.0;
 	}
-	for (unsigned int k = 1; k <= degree; k++)
+	for (int k = 1; k <= static_cast<int>(degree); k++)
 	{
 		double saved;
 		if (MathUtils::IsAlmostEqualTo(temp[0], 0.0))
@@ -302,7 +302,7 @@ double LNLib::Polynomials::OneBasisFunction(unsigned int index, unsigned int deg
 		{
 			saved = ((paramT - knotVector[index] * temp[0])) / (knotVector[index + k] - knotVector[index]);
 		}
-		for (unsigned int j = 0; j < degree - k + 1; j++)
+		for (int j = 0; j < static_cast<int>(degree) - k + 1; j++)
 		{
 			double knotLeft = knotVector[index + j + 1];
 			double knotRight = knotVector[index + j + k + 1];
@@ -324,13 +324,7 @@ double LNLib::Polynomials::OneBasisFunction(unsigned int index, unsigned int deg
 
 void LNLib::Polynomials::OneBasisFunctionDerivative(unsigned int index, unsigned int degree, const std::vector<double>& knotVector, double paramT, unsigned int derivative, std::vector<double>& derivatives)
 {
-	std::vector<std::vector<double>> basisFunctions;
-	basisFunctions.resize(degree + 1);
-	for (unsigned int i = 0; i <= degree; i++)
-	{
-		basisFunctions[i].resize(degree + 1);
-	}
-
+	derivatives.resize(derivative + 1);
 
 	if (MathUtils::IsLessThan(paramT, knotVector[index]) ||
 		MathUtils::IsGreaterThanOrEqual(paramT, knotVector[index + degree + 1]))
@@ -341,13 +335,22 @@ void LNLib::Polynomials::OneBasisFunctionDerivative(unsigned int index, unsigned
 		}
 		return;
 	}
-	for (unsigned int j = 0; j <= degree; j++)
+
+	std::vector<std::vector<double>> basisFunctions;
+	basisFunctions.resize(degree + 1);
+
+	for (int i = 0; i <= static_cast<int>(degree); i++)
+	{
+		basisFunctions[i].resize(degree + 1);
+	}
+
+	for (int j = 0; j <= static_cast<int>(degree); j++)
 	{
 		basisFunctions[j][0] = MathUtils::IsGreaterThanOrEqual(paramT, knotVector[index + j]) &&
 								MathUtils::IsLessThan(paramT, knotVector[index + j + 1]) ?
 								  1.0 : 0.0;
 	}
-	for (unsigned int k = 1; k <= degree; k++)
+	for (int k = 1; k <= static_cast<int>(degree); k++)
 	{
 		double saved;
 		if (MathUtils::IsAlmostEqualTo(basisFunctions[0][k - 1],0.0))
@@ -358,7 +361,7 @@ void LNLib::Polynomials::OneBasisFunctionDerivative(unsigned int index, unsigned
 		{
 			saved = ((paramT - knotVector[index] * basisFunctions[0][k - 1])) / (knotVector[index + k] - knotVector[index]);
 		}
-		for (unsigned int j = 0; j < degree - k + 1; j++)
+		for (int j = 0; j < static_cast<int>(degree) - k + 1; j++)
 		{
 			double knotLeft = knotVector[index + j + 1];
 			double knotRight = knotVector[index + j + k + 1];
@@ -378,16 +381,17 @@ void LNLib::Polynomials::OneBasisFunctionDerivative(unsigned int index, unsigned
 	}
 
 	derivatives[0] = basisFunctions[0][degree];
-	for (unsigned int k = 1; k <= derivative; k++)
-	{
-		std::vector<double> basisFunctionsDerivative;
-		basisFunctionsDerivative.resize(derivative);
 
-		for (unsigned int j = 0; j <= k; j++)
+	std::vector<double> basisFunctionsDerivative;
+	basisFunctionsDerivative.resize(derivative);
+
+	for (int k = 1; k <= static_cast<int>(derivative); k++)
+	{
+		for (int j = 0; j <= k; j++)
 		{
 			basisFunctionsDerivative[j] = basisFunctions[j][degree - k];
 		}
-		for (unsigned int jj = 1; jj <= k; jj++)
+		for (int jj = 1; jj <= k; jj++)
 		{
 			double saved;
 			if (MathUtils::IsAlmostEqualTo(basisFunctionsDerivative[0], 0.0))
@@ -399,7 +403,7 @@ void LNLib::Polynomials::OneBasisFunctionDerivative(unsigned int index, unsigned
 				saved = basisFunctionsDerivative[0] / (knotVector[index + degree - k + jj]) - knotVector[index];
 			}
 
-			for (unsigned int j = 0; j < k - jj + 1; j++)
+			for (int j = 0; j < k - jj + 1; j++)
 			{
 				double knotLeft = knotVector[index + j + 1];
 				double knotRight = knotVector[index + j + degree + jj + 1];
