@@ -1,6 +1,7 @@
 #pragma once
 
 #include "LNLibDefinitions.h"
+#include "Polynomials.h"
 #include <vector>
 
 namespace LNLib
@@ -14,21 +15,41 @@ namespace LNLib
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page82
 		/// Algorithm A3.1
-		/// Compute Bspline curve point
+		/// Compute Bspline curve point.
 		/// </summary>
 		static void GetPointOnCurve(const std::vector<XYZ>& controlPoints, unsigned int degree, double paramT, const std::vector<double>& knotVector, XYZ& point);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page88
+		/// Compute the continuity.
+		/// </summary>
+		static int GetContinuity(unsigned int degree, const std::vector<double>& knotVector, double knot);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page93
 		/// Algorithm A3.2
 		/// Compute curve derivatives.
 		/// </summary>
-		static void ComputeDerivatives(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZ>& controlPoints, double paramT, unsigned int derivative, std::vector<XYZ>& derivatives);
+		template<typename T>
+		static void ComputeDerivatives(unsigned int degree, const std::vector<double>& knotVector, const std::vector<T>& controlPoints, double paramT, unsigned int derivative, std::vector<T>& derivatives)
+		{
+			derivatives.resize(derivative + 1);
 
-		/// <summary>
-		/// Compute curve derivatives for XYZW using Algorithm A3.2
-		/// </summary>
-		static void ComputeDerivatives(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double paramT, unsigned int derivative, std::vector<XYZW>& derivatives);
+			int du = std::min(derivative, degree);
+			int n = static_cast<int>(controlPoints.size() - 1);
+			int spanIndex = Polynomials::GetKnotSpanIndex(n, degree, paramT, knotVector);
+
+			std::vector<std::vector<double>> nders;
+			Polynomials::BasisFunctionsDerivatives(spanIndex, degree, paramT, du, knotVector, nders);
+
+			for (int k = 0; k <= du; k++)
+			{
+				for (unsigned int j = 0; j <= degree; j++)
+				{
+					derivatives[k] += nders[k][j] * controlPoints[spanIndex - degree + j];
+				}
+			}
+		}
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page98

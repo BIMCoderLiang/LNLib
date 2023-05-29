@@ -33,7 +33,6 @@ void LNLib::NurbsCurve::ComputeRationalCurveDerivatives(unsigned int degree, con
 	int size = static_cast<int>(controlPoints.size());
 
 	std::vector<XYZW> ders;
-	ders.resize(degree + 1);
 	BsplineCurve::ComputeDerivatives(degree, knotVector, controlPoints, paramT, derivative, ders);
 
 	std::vector<XYZ> Aders;
