@@ -4,7 +4,6 @@
 
 namespace LNLib
 {
-
 	class LNLIB_EXPORT XYZ
 	{
 
@@ -41,6 +40,8 @@ namespace LNLib
 		XYZ Negative() const;
 		double DotProduct(const XYZ& another) const;
 		XYZ CrossProduct(const XYZ& another) const;
+
+	public:
 		double Distance(const XYZ& another) const;
 
 	public:

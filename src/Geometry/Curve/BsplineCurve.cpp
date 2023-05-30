@@ -48,36 +48,3 @@ void LNLib::BsplineCurve::ComputeControlPointsOfDerivatives(unsigned int degree,
 		}
 	}
 }
-
-void LNLib::BsplineCurve::ComputeDerivativesByAllBasisFunctions(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZ>& controlPoints, double paramT, unsigned int derivative, std::vector<XYZ>& derivatives)
-{
-	derivatives.resize(derivative + 1);
-
-	int du = std::min(derivative, degree);
-	int n = static_cast<int>(controlPoints.size() - 1);
-	int spanIndex = Polynomials::GetKnotSpanIndex(n, degree, paramT, knotVector);
-
-	std::vector<std::vector<double>> allBasisFunctions;
-	allBasisFunctions.resize(degree + 1);
-	for (int i = 0; i <= static_cast<int>(degree); i++)
-	{
-		allBasisFunctions[i].resize(degree + 1);
-	}
-	for (int i = 0; i <= static_cast<int>(degree); i++)
-	{
-		std::vector<double> basisFunctions;
-		Polynomials::BasisFunctions(spanIndex, i, paramT, knotVector, basisFunctions);
-		allBasisFunctions[i] = basisFunctions;
-	}
-	
-	std::vector<std::vector<XYZ>> controlPointsOfDerivative;
-	ComputeControlPointsOfDerivatives(degree, knotVector, controlPoints, du, spanIndex - degree, spanIndex, controlPointsOfDerivative);
-
-	for (int k = 0; k <= du; k++)
-	{
-		for (int j = 0; j <= static_cast<int>(degree) - k; j++)
-		{
-			derivatives[k] += allBasisFunctions[j][degree - k] * controlPointsOfDerivative[k][j];
-		}
-	}
-}
