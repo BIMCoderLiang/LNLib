@@ -14,9 +14,9 @@ LNLib::XYZW::XYZW()
 
 LNLib::XYZW::XYZW(XYZ xyz, double w)
 {
-	m_xyzw[0] = xyz.GetX();
-	m_xyzw[1] = xyz.GetY();
-	m_xyzw[2] = xyz.GetZ();
+	m_xyzw[0] = xyz.GetX() * w;
+	m_xyzw[1] = xyz.GetY() * w;
+	m_xyzw[2] = xyz.GetZ() * w;
 	m_xyzw[3] = w;
 }
 

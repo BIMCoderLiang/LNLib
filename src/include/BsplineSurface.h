@@ -19,7 +19,33 @@ namespace LNLib
 		/// Algorithm A3.5
 		/// Compute surface point.
 		/// </summary>
-		static void GetPointOnSurface(const std::vector<std::vector<XYZ>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, XYZ& point);
+		template <typename T>
+		static void GetPointOnSurface(const std::vector<std::vector<T>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, T& point)
+		{
+			int n = static_cast<int>(knotVectorU.size() - degreeU - 2);
+			int uSpanIndex = Polynomials::GetKnotSpanIndex(n, degreeU, uv.GetU(), knotVectorU);
+
+			std::vector<double> basisFunctionsU;
+			Polynomials::BasisFunctions(uSpanIndex, degreeU, uv.GetU(), knotVectorU, basisFunctionsU);
+
+			int m = static_cast<int>(knotVectorV.size() - degreeV - 2);
+			int vSpanIndex = Polynomials::GetKnotSpanIndex(m, degreeV, uv.GetV(), knotVectorV);
+
+			std::vector<double> basisFunctionsV;
+			Polynomials::BasisFunctions(vSpanIndex, degreeV, uv.GetV(), knotVectorV, basisFunctionsV);
+
+			int uind = uSpanIndex - degreeU;
+			for (int l = 0; l <= static_cast<int>(degreeV); l++)
+			{
+				T temp = T();
+				int vind = vSpanIndex - degreeV + 1;
+				for (int k = 0; k <= static_cast<int>(degreeU); k++)
+				{
+					temp += basisFunctionsU[k] * controlPoints[uind + k][vind];
+				}
+				point += basisFunctionsV[l] * temp;
+			}
+		}
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page111

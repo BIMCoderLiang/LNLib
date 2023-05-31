@@ -17,7 +17,20 @@ namespace LNLib
 		/// Algorithm A3.1
 		/// Compute Bspline curve point.
 		/// </summary>
-		static void GetPointOnCurve(const std::vector<XYZ>& controlPoints, unsigned int degree, double paramT, const std::vector<double>& knotVector, XYZ& point);
+		template <typename T>
+		static void GetPointOnCurve(const std::vector<T>& controlPoints, unsigned int degree, double paramT, const std::vector<double>& knotVector, T& point)
+		{
+			int n = static_cast<int>(controlPoints.size() - 1);
+			int spanIndex = Polynomials::GetKnotSpanIndex(n, degree, paramT, knotVector);
+
+			std::vector<double> basisFunctions;
+			Polynomials::BasisFunctions(spanIndex, degree, paramT, knotVector, basisFunctions);
+
+			for (int i = 0; i <= static_cast<int>(degree); i++)
+			{
+				point += basisFunctions[i] * controlPoints[spanIndex - degree + i];
+			}
+		}
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page88

@@ -6,19 +6,6 @@
 #include <math.h>
 #include <algorithm>
 
-void LNLib::BsplineCurve::GetPointOnCurve(const std::vector<XYZ>& controlPoints, unsigned int degree, double paramT, const std::vector<double>& knotVector, XYZ& point)
-{
-	int n = static_cast<int>(controlPoints.size() - 1);
-	int spanIndex = Polynomials::GetKnotSpanIndex(n, degree, paramT, knotVector);
-
-	std::vector<double> basisFunctions;
-	Polynomials::BasisFunctions(spanIndex, degree, paramT, knotVector, basisFunctions);
-
-	for (int i = 0; i <= static_cast<int>(degree); i++)
-	{
-		point += basisFunctions[i] * controlPoints[spanIndex - degree + i];
-	}
-}
 
 int LNLib::BsplineCurve::GetContinuity(unsigned int degree, const std::vector<double>& knotVector, double knot)
 {

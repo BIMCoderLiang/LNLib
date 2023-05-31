@@ -60,8 +60,6 @@ double LNLib::ValidationUtils::ComputeCurveModifyTolerance(const std::vector<XYZ
 	return Constants::DistanceEpsilon * minWeight / (1 + std::abs(maxDistance));
 }
 
-
-
 double LNLib::ValidationUtils::ComputeMaxErrorOfBezierReduction(unsigned int degree, const std::vector<XYZW>& current, const std::vector<XYZW>& reduction)
 {
 	int r = (degree - 1)/2;

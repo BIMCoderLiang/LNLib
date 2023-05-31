@@ -8,33 +8,6 @@
 #include "ValidationUtils.h"
 #include <algorithm>
 
-void LNLib::BsplineSurface::GetPointOnSurface(const std::vector<std::vector<XYZ>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, XYZ& point)
-{
-	int n = static_cast<int>(knotVectorU.size() - degreeU - 2);
-	int uSpanIndex = Polynomials::GetKnotSpanIndex(n, degreeU, uv.GetU(), knotVectorU);
-
-	std::vector<double> basisFunctionsU;
-	Polynomials::BasisFunctions(uSpanIndex, degreeU, uv.GetU(), knotVectorU, basisFunctionsU);
-
-	int m = static_cast<int>(knotVectorV.size() - degreeV - 2);
-	int vSpanIndex = Polynomials::GetKnotSpanIndex(m, degreeV, uv.GetV(), knotVectorV);
-
-	std::vector<double> basisFunctionsV;
-	Polynomials::BasisFunctions(vSpanIndex, degreeV, uv.GetV(), knotVectorV, basisFunctionsV);
-
-	int uind = uSpanIndex - degreeU;
-	for (int l = 0; l <= static_cast<int>(degreeV); l++)
-	{
-		XYZ temp = XYZ(0, 0, 0);
-		int vind = vSpanIndex - degreeV + 1;
-		for (int k = 0; k <= static_cast<int>(degreeU); k++)
-		{
-			temp += basisFunctionsU[k] * controlPoints[uind + k][vind];
-		}
-		point += basisFunctionsV[l] * temp;
-	}
-}
-
 void LNLib::BsplineSurface::ComputeControlPointsOfDerivatives(const std::vector<std::vector<XYZ>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, unsigned int derMinU, unsigned int derMaxU, unsigned int derMinV, unsigned int derMaxV, unsigned int derivative,  std::vector<std::vector<std::vector<std::vector<XYZ>>>>& controlPointsOfDerivative)
 {
 	controlPointsOfDerivative.resize(derivative + 1);
