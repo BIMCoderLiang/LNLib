@@ -50,51 +50,54 @@ void LNLib::NurbsCurve::ComputeRationalCurveDerivatives(unsigned int degree, con
 
 void LNLib::NurbsCurve::InsertKnot(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double insertKnot, unsigned int times, std::vector<double>& insertedKnotVector, std::vector<XYZW>& updatedControlPoints)
 {
-
-	int np = static_cast<int>(controlPoints.size() - 1);
-	int mp = np + degree + 1;
-
+	int np = static_cast<int>(knotVector.size() - degree) - 2;
 	int knotSpanIndex = Polynomials::GetKnotSpanIndex(np, degree, insertKnot, knotVector);
 	int originMultiplicity = Polynomials::GetKnotMultiplicity(insertKnot, knotVector);
 
+	if (originMultiplicity + times > degree)
+	{
+		times = degree - originMultiplicity;
+	}
 
+	insertedKnotVector.resize(knotVector.size() + times);
 	for (int i = 0; i <= knotSpanIndex; i++)
 	{
 		insertedKnotVector[i] = knotVector[i];
 	}
-	for (unsigned int i = 1; i <= times; i++)
+	for (int i = 1; i <= static_cast<int>(times); i++)
 	{
 		insertedKnotVector[knotSpanIndex + i] = insertKnot;
 	}
-	for (int i = knotSpanIndex + 1; i <= mp; i++)
+	for (int i = knotSpanIndex + 1; i < static_cast<int>(knotVector.size()); i++)
 	{
 		insertedKnotVector[i+times] = knotVector[i];
 	}
 
-	for (unsigned int i = 0; i <= knotSpanIndex - degree; i++)
+	updatedControlPoints.resize(controlPoints.size() + times);
+	for (int i = 0; i <= knotSpanIndex - static_cast<int>(degree); i++)
 	{
 		updatedControlPoints[i] = controlPoints[i];
 	}
-	for (int i = knotSpanIndex - originMultiplicity; i <= np; i++)
+	for (int i = knotSpanIndex - originMultiplicity; i < controlPoints.size(); i++)
 	{
 		updatedControlPoints[i+times] = controlPoints[i];
 	}
 
 	std::vector<XYZW> temp;
 	temp.resize(degree - originMultiplicity + 1);
-	for (unsigned int i = 0; i <= degree - originMultiplicity; i++)
+	for (int i = 0; i <= static_cast<int>(degree) - originMultiplicity; i++)
 	{
 		temp[i] = controlPoints[knotSpanIndex - degree + i];
 	}
 
 	int L = 0;
-	for (unsigned int j = 1; j <= times; j++)
+	for (int j = 1; j <= static_cast<int>(times); j++)
 	{
-		int L = knotSpanIndex - degree + j;
-		for (unsigned int i = 0; i <= degree - j - originMultiplicity; i++)
+		L = knotSpanIndex - degree + j;
+		for (int i = 0; i <= static_cast<int>(degree) - j - originMultiplicity; i++)
 		{
 			double alpha = (insertKnot - knotVector[L + i]) / (knotVector[i + knotSpanIndex + 1] - knotVector[L + i]);
-			temp[i] = alpha * temp[i + 1] + (1 - alpha) * temp[i];
+			temp[i] = alpha * temp[i + 1] + (1.0 - alpha) * temp[i];
 		}
 		updatedControlPoints[L] = temp[0];
 		updatedControlPoints[knotSpanIndex + times - j - originMultiplicity] = temp[degree - j - originMultiplicity];
@@ -106,36 +109,37 @@ void LNLib::NurbsCurve::InsertKnot(unsigned int degree, const std::vector<double
 	}
 }
 
-void LNLib::NurbsCurve::GetPointOnCurveByInsertKnot(unsigned int degree,const std::vector<double>& knotVector, std::vector<XYZW>& controlPoints, double paramT, XYZ& point)
+void LNLib::NurbsCurve::GetPointOnCurveByInsertKnot(unsigned int degree,const std::vector<double>& knotVector, std::vector<XYZW>& controlPoints, double insertKnot, XYZ& point)
 {
-	int n = static_cast<int>(controlPoints.size() - 1);
+	int n = static_cast<int>(knotVector.size() - degree) - 2;
 
-	if (MathUtils::IsAlmostEqualTo(paramT, knotVector[0]))
+	if (MathUtils::IsAlmostEqualTo(insertKnot, knotVector[0]))
 	{
 		point = controlPoints[0].ToXYZ(true);
 		return;
 	}
-	if (MathUtils::IsAlmostEqualTo(paramT, knotVector[n + degree + 1]))
+	if (MathUtils::IsAlmostEqualTo(insertKnot, knotVector[n + degree + 1]))
 	{
 		point = controlPoints[n].ToXYZ(true);
 		return;
 	}
 
-	int knotSpanIndex = Polynomials::GetKnotSpanIndex(n, degree, paramT, knotVector);
-	int originMultiplicity = Polynomials::GetKnotMultiplicity(paramT, knotVector);
+	int knotSpanIndex = Polynomials::GetKnotSpanIndex(n, degree, insertKnot, knotVector);
+	int originMultiplicity = Polynomials::GetKnotMultiplicity(insertKnot, knotVector);
 
-	int r = degree - originMultiplicity;
+	int times = degree - originMultiplicity;
 	std::vector<XYZW> temp;
-	for (int i = 0; i <= r; i++)
+	temp.resize(times + 1);
+	for (int i = 0; i <= times; i++)
 	{
 		temp[i] = controlPoints[knotSpanIndex - degree + i];
 	}
-	for (int j = 1; j <= r; j++)
+	for (int j = 1; j <= times; j++)
 	{
-		for (int i = 0; i < r - j; i++)
+		for (int i = 0; i < times - j; i++)
 		{
-			double alpha = (paramT - knotVector[knotSpanIndex - degree + j + i]) / (knotVector[i + knotSpanIndex + 1] - knotVector[knotSpanIndex - degree + j + i]);
-			temp[i] = alpha * temp[i + 1] + (1 - alpha) * temp[i];
+			double alpha = (insertKnot - knotVector[knotSpanIndex - degree + j + i]) / (knotVector[i + knotSpanIndex + 1] - knotVector[knotSpanIndex - degree + j + i]);
+			temp[i] = alpha * temp[i + 1] + (1.0 - alpha) * temp[i];
 		}
 	}
 	point = temp[0].ToXYZ(true);

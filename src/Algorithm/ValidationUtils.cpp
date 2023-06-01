@@ -25,13 +25,12 @@ bool LNLib::ValidationUtils::IsValidBezier(unsigned int degree, unsigned int con
 
 bool LNLib::ValidationUtils::IsValidBspline(unsigned int degree, unsigned int knotVectorCount, unsigned int controlPointsCount)
 {
-	return knotVectorCount - 1 == degree + controlPointsCount;
+	return (knotVectorCount - 1) == (controlPointsCount - 1) + degree + 1;
 }
 
 bool LNLib::ValidationUtils::IsValidNurbs(unsigned int degree, unsigned int knotVectorCount, unsigned int controlPointsCount, unsigned int weightsCount)
 {
-	return knotVectorCount - 1 == degree + controlPointsCount && 
-			controlPointsCount == weightsCount;
+	return (knotVectorCount - 1) == (controlPointsCount - 1) + degree + 1 && controlPointsCount == weightsCount;
 }
 
 bool LNLib::ValidationUtils::IsValidDegreeReduction(unsigned int degree)
