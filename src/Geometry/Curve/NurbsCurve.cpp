@@ -156,14 +156,7 @@ void LNLib::NurbsCurve::RefineKnotVector(unsigned int degree, const std::vector<
 
 	b = b + 1;
 
-	for (int j = 0; j <= static_cast<int>(a - degree); j++)
-	{
-		updatedControlPoints[j] = controlPoints[j];
-	}
-	for (int j = b - 1; j <= n; j++)
-	{
-		updatedControlPoints[j + r + 1] = controlPoints[j];
-	}
+	insertedKnotVector.resize(knotVector.size() + insertKnotElements.size());
 	for (int j = 0; j <= a; j++)
 	{
 		insertedKnotVector[j] = knotVector[j];
@@ -171,6 +164,16 @@ void LNLib::NurbsCurve::RefineKnotVector(unsigned int degree, const std::vector<
 	for (int j = b + degree; j <= m; j++)
 	{
 		insertedKnotVector[j + r + 1] = knotVector[j];
+	}
+
+	updatedControlPoints.resize(n + r + 1);
+	for (int j = 0; j <= a - static_cast<int>(degree); j++)
+	{
+		updatedControlPoints[j] = controlPoints[j];
+	}
+	for (int j = b - 1; j <= n; j++)
+	{
+		updatedControlPoints[j + r + 1] = controlPoints[j];
 	}
 
 	int i = b + degree - 1;
@@ -186,7 +189,7 @@ void LNLib::NurbsCurve::RefineKnotVector(unsigned int degree, const std::vector<
 		}
 
 		updatedControlPoints[k - degree - 1] = updatedControlPoints[k - degree];
-		for (unsigned int l = 1; l <= degree; l++)
+		for (int l = 1; l <= static_cast<int>(degree); l++)
 		{
 			int ind = k - degree + 1;
 			double alpha = insertedKnotVector[k + l] - insertKnotElements[j];
@@ -214,8 +217,15 @@ void LNLib::NurbsCurve::ToBezierCurves(unsigned int degree, const std::vector<do
 	int a = static_cast<int>(degree);
 	int b = static_cast<int>(degree) + 1;
 
+	int bezierCurves = static_cast<int>(knotVector.size() / (degree + 1)) - 1;
+	decomposedControlPoints.resize(bezierCurves);
+	for (int i = 0; i < bezierCurves; i++)
+	{
+		decomposedControlPoints[i].resize(degree + 1);
+	}
+
 	bezierCurvesCount = 0;
-	for (unsigned int i = 0; i <= degree; i++)
+	for (int i = 0; i <= static_cast<int>(degree); i++)
 	{
 		decomposedControlPoints[bezierCurvesCount][i] = controlPoints[i];
 	}
@@ -259,7 +269,7 @@ void LNLib::NurbsCurve::ToBezierCurves(unsigned int degree, const std::vector<do
 			bezierCurvesCount += 1;
 			if (b < m)
 			{
-				for (unsigned int i = degree - multi; i <= degree; i++)
+				for (int i = static_cast<int>(degree) - multi; i <= static_cast<int>(degree); i++)
 				{
 					decomposedControlPoints[bezierCurvesCount][i] = controlPoints[b - degree + i];
 				}

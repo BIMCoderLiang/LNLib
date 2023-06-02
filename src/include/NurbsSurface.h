@@ -43,9 +43,8 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page177
 		/// Algorithm A5.7
 		/// Decompose surface into Bezier patches.
-		/// This routine must run twice (U & V respectively).
 		/// </summary>
-		static void ToBezierPatches(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, bool isUDirection, int& bezierCount, std::vector<std::vector<std::vector<XYZW>>>& decomposedControlPoints);
+		static void ToBezierPatches(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV,  int& bezierPatchesCount, std::vector<std::vector<std::vector<XYZW>>>& decomposedControlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page209
