@@ -281,23 +281,27 @@ void LNLib::NurbsCurve::ToBezierCurves(unsigned int degree, const std::vector<do
 	}
 }
 
-void LNLib::NurbsCurve::RemoveKnot(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double removeKnot, unsigned int removeIndex, unsigned int times, std::vector<double>& restKnotVector, std::vector<XYZW>& updatedControlPoints)
+void LNLib::NurbsCurve::RemoveKnot(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double removeKnot, unsigned int times, std::vector<double>& restKnotVector, std::vector<XYZW>& updatedControlPoints)
 {
 	double tol = ValidationUtils::ComputeCurveModifyTolerance(controlPoints);
-
 	int n = static_cast<int>(knotVector.size() - degree - 2);
-	int m = n + degree + 1;
 
 	int order = degree + 1;
 	int originMultiplicity = Polynomials::GetKnotMultiplicity(removeKnot, knotVector);
-	double fout = (2 * removeIndex - originMultiplicity - degree) / 2;
-	int last = removeIndex - originMultiplicity;
-	int first = removeIndex - degree;
+	int removeIndex = Polynomials::GetKnotSpanIndex(n, degree, removeKnot, knotVector);
 
-	for (int i = 0; i < static_cast<int>(controlPoints.size()); i++)
+	int first = removeIndex - degree;
+	int last = removeIndex - originMultiplicity;
+	
+	if (times < 1)
 	{
-		updatedControlPoints[i] = controlPoints[i];
+		restKnotVector = knotVector;
+		updatedControlPoints = controlPoints;
+		return;
 	}
+
+	restKnotVector.resize(knotVector.size());
+	updatedControlPoints.resize(controlPoints.size());
 
 	std::vector<XYZW> temp;
 	temp.resize(times);
@@ -314,7 +318,7 @@ void LNLib::NurbsCurve::RemoveKnot(unsigned int degree, const std::vector<double
 
 		int ii = 1;
 		int jj = last - off;
-		int remflag = 0;
+		bool remflag = false;
 		while (j - i > static_cast<int>(t))
 		{
 			double alphai = (removeKnot - knotVector[i]) / (knotVector[i + order + t] - knotVector[i]);
@@ -335,7 +339,7 @@ void LNLib::NurbsCurve::RemoveKnot(unsigned int degree, const std::vector<double
 		{
 			if (MathUtils::IsLessThanOrEqual(temp[ii - 1].Distance(temp[jj + 1]), tol))
 			{
-				remflag = 1;
+				remflag = true;
 			}
 		}
 		else
@@ -343,11 +347,11 @@ void LNLib::NurbsCurve::RemoveKnot(unsigned int degree, const std::vector<double
 			double alphai = (removeKnot - knotVector[i]) / (knotVector[i + order + t] - knotVector[i]);
 			if (MathUtils::IsLessThanOrEqual(controlPoints[i].Distance(alphai * temp[ii + t + 1] + (1.0 * alphai) * temp[ii - 1]), tol))
 			{
-				remflag = 1;
+				remflag = true;
 			}
 		}
 
-		if (remflag == 0)
+		if (!remflag)
 		{
 			break;
 		}
@@ -372,12 +376,14 @@ void LNLib::NurbsCurve::RemoveKnot(unsigned int degree, const std::vector<double
 	{
 		return;
 	}
+	int m = n + degree + 1;
 	for (int k = removeIndex + 1; k <= m; k++)
 	{
 		restKnotVector[k - t] = knotVector[k];
 	}
+	restKnotVector.erase(restKnotVector.end() - t, restKnotVector.end());
 
-	int j = static_cast<int>(fout);
+	int j = static_cast<int>((2 * removeIndex - originMultiplicity - degree) / 2);
 	int i = j;
 	
 	for (int k = 1; k < t; k++)
@@ -397,6 +403,7 @@ void LNLib::NurbsCurve::RemoveKnot(unsigned int degree, const std::vector<double
 		updatedControlPoints[j] = controlPoints[k];
 		j = j + 1;
 	}
+	updatedControlPoints.erase(updatedControlPoints.end() - t, updatedControlPoints.end());
 }
 
 void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, unsigned int times,  std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints)

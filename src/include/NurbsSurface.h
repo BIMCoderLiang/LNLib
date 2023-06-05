@@ -45,7 +45,13 @@ namespace LNLib
 		/// Decompose surface into Bezier patches.
 		/// decomposedControlPoints[i][j][k] means ith patch jth row kth column control point.
 		/// </summary>
-		static void ToBezierPatches(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV,  int& bezierPatchesCount, std::vector<std::vector<std::vector<XYZW>>>& decomposedControlPoints);
+		static void ToBezierPatches(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU,  unsigned int degreeV,  int& bezierPatchesCount, std::vector<std::vector<std::vector<XYZW>>>& decomposedControlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page186
+		/// Surface knot removal.
+		/// </summary>
+		static void RemoveKnot();
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page209
