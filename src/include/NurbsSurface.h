@@ -43,6 +43,7 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page177
 		/// Algorithm A5.7
 		/// Decompose surface into Bezier patches.
+		/// decomposedControlPoints[i][j][k] means ith patch jth row kth column control point.
 		/// </summary>
 		static void ToBezierPatches(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV,  int& bezierPatchesCount, std::vector<std::vector<std::vector<XYZW>>>& decomposedControlPoints);
 

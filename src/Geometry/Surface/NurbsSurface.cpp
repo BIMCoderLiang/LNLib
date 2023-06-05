@@ -3,7 +3,6 @@
 #include "UV.h"
 #include "XYZ.h"
 #include "XYZW.h"
-#include "Matrix.h"
 #include "MathUtils.h"
 #include "NurbsCurve.h"
 #include "BsplineSurface.h"
@@ -227,7 +226,7 @@ void LNLib::NurbsSurface::RefineKnotVector(const std::vector<std::vector<XYZW>>&
 
 	if (isUDirection)
 	{
-		Matrix::Transpose(controlPoints, tempControlPoints);
+		MathUtils::Transpose(controlPoints, tempControlPoints);
 		int size = static_cast<int>(knotVectorU.size());
 		knots.resize(size);
 		for (int i = 0; i < size; i++)
@@ -262,7 +261,7 @@ void LNLib::NurbsSurface::RefineKnotVector(const std::vector<std::vector<XYZW>>&
 	{
 		insertedKnotVectorU = insertedKnotVector;
 		insertedKnotVectorV = knotVectorV;
-		Matrix::Transpose(newControlPoints, updatedControlPoints);
+		MathUtils::Transpose(newControlPoints, updatedControlPoints);
 	}
 	else
 	{
@@ -274,9 +273,51 @@ void LNLib::NurbsSurface::RefineKnotVector(const std::vector<std::vector<XYZW>>&
 
 void LNLib::NurbsSurface::ToBezierPatches(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, int& bezierPatchesCount, std::vector<std::vector<std::vector<XYZW>>>& decomposedControlPoints)
 {
-	/*int bezierStripCount = 0;
-	std::vector<std::vector<XYZW>> uControlPoints;
-	NurbsCurve::ToBezierCurves(degreeU, knotVectorU, controlPoints[0], bezierStripCount, uControlPoints);*/
+	int controlPointsRow = static_cast<int>(controlPoints.size());
+	int conrolPointsColumn = static_cast<int>(controlPoints[0].size());
+
+	std::vector<std::vector<std::vector<XYZW>>> temp;
+	temp.resize(conrolPointsColumn);
+
+	int ubezierCurvesCount = 0;
+	for (int col = 0; col < conrolPointsColumn; col++)
+	{
+		std::vector<XYZW> uDirectionPoints;
+		uDirectionPoints.resize(controlPointsRow);
+		MathUtils::GetColumn(controlPoints, col, uDirectionPoints);
+
+		ubezierCurvesCount = 0;
+		std::vector<std::vector<XYZW>> decomposedUPoints;
+		NurbsCurve::ToBezierCurves(degreeU, knotVectorU, uDirectionPoints, ubezierCurvesCount, decomposedUPoints);
+
+		temp.emplace_back(decomposedUPoints);
+	}
+
+	int vbezierCurvesCount = 0;
+	for (int i = 0; i < ubezierCurvesCount; i++)
+	{
+		int row = static_cast<int>(temp[0][i].size());
+		for (int r = 0; r < row; r++)
+		{
+			std::vector<XYZW> vDirectionPoints;
+			for (int j = 0; j < conrolPointsColumn; j++)
+			{
+				std::vector<XYZW> segement = temp[j][i];
+				vDirectionPoints.emplace_back(segement[r]);
+			}
+
+			vbezierCurvesCount = 0;
+			std::vector<std::vector<XYZW>> decomposedVPoints;
+			NurbsCurve::ToBezierCurves(degreeV, knotVectorV, vDirectionPoints, vbezierCurvesCount, decomposedVPoints);
+
+			for (int v = 0; v < vbezierCurvesCount; v++)
+			{
+				decomposedControlPoints[i * vbezierCurvesCount + v][r] = decomposedVPoints[v];
+			}			
+		}
+	}
+
+	bezierPatchesCount = ubezierCurvesCount * vbezierCurvesCount;
 }
 
 
@@ -290,7 +331,7 @@ void LNLib::NurbsSurface::ElevateDegree(const std::vector<std::vector<XYZW>>& co
 
 	if (isUDirection)
 	{
-		Matrix::Transpose(controlPoints, tempControlPoints);
+		MathUtils::Transpose(controlPoints, tempControlPoints);
 		int size = static_cast<int>(knotVectorU.size());
 		knots.resize(size);
 		for (int i = 0; i < size; i++)
@@ -325,7 +366,7 @@ void LNLib::NurbsSurface::ElevateDegree(const std::vector<std::vector<XYZW>>& co
 	{
 		insertedKnotVectorU = insertedKnotVector;
 		insertedKnotVectorV = knotVectorV;
-		Matrix::Transpose(newControlPoints, updatedControlPoints);
+		MathUtils::Transpose(newControlPoints, updatedControlPoints);
 	}
 	else
 	{
