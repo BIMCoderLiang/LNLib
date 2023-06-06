@@ -74,10 +74,10 @@ namespace LNLib
 		/// Algorithm A5.11
 		/// Degree reduce a curve from degree to degree - 1.
 		/// 
-		/// return 0 means run successed;
-		/// return 1 means run failed; 
+		/// return true means run successed;
+		/// return false means run failed; 
 		/// </summary>
-		static int ReduceDegree(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
+		static bool ReduceDegree(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
 	};
 }
 

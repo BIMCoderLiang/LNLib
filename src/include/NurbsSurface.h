@@ -51,14 +51,23 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page186
 		/// Surface knot removal.
 		/// </summary>
-		static void RemoveKnot();
+		static void RemoveKnot(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, double removeKnot, unsigned int times, bool isUDirection, std::vector<double>& restKnotVectorU, std::vector<double>& restKnotVectorV, std::vector<std::vector<XYZW>>& updatedControlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page209
 		/// Algorithm A5.10
 		/// Degree elevate a surface t times.
 		/// </summary>
-		static void ElevateDegree(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, unsigned int times, bool isUDirection, std::vector<double>& insertedKnotVectorU, std::vector<double>& insertedKnotVectorV, std::vector<std::vector<XYZW>>& updatedControlPoints);
+		static void ElevateDegree(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, unsigned int times, bool isUDirection, std::vector<double>& updatedKnotVectorU, std::vector<double>& updatedKnotVectorV, std::vector<std::vector<XYZW>>& updatedControlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page227
+		/// Degree reduce U or V Direction curve from degree to degree - 1.
+		/// 
+		/// return true means run successed;
+		/// return false means run failed; 
+		/// </summary>
+		static bool ReduceDegree();
 	};
 }
 

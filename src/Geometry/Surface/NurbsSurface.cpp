@@ -320,9 +320,48 @@ void LNLib::NurbsSurface::ToBezierPatches(const std::vector<std::vector<XYZW>>& 
 	bezierPatchesCount = ubezierCurvesCount * vbezierCurvesCount;
 }
 
+void LNLib::NurbsSurface::RemoveKnot(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, double removeKnot, unsigned int times, bool isUDirection, std::vector<double>& restKnotVectorU, std::vector<double>& restKnotVectorV, std::vector<std::vector<XYZW>>& updatedControlPoints)
+{
+	int controlPointsRow = static_cast<int>(controlPoints.size());
+	int conrolPointsColumn = static_cast<int>(controlPoints[0].size());
+	if (isUDirection)
+	{
+		std::vector<std::vector<XYZW>> temp;
+		std::vector<double> uKnotVector;
+		for (int v = 0; v < conrolPointsColumn; v++)
+		{
+			std::vector<XYZW> uControlPoints;
+			MathUtils::GetColumn(controlPoints, v, uControlPoints);
+			uKnotVector.clear();
+			std::vector<XYZW> uUpdatedControlPoints;
+			NurbsCurve::RemoveKnot(degreeU, knotVectorU, uControlPoints, removeKnot, times, uKnotVector, uUpdatedControlPoints);
+			temp.emplace_back(uUpdatedControlPoints);
+		}
+
+		MathUtils::Transpose(temp, updatedControlPoints);
+		restKnotVectorU = uKnotVector;
+		restKnotVectorV = knotVectorV;
+
+	}
+	else
+	{
+		std::vector<double> vKnotVector;
+		for (int u = 0; u < controlPointsRow; u++)
+		{
+			vKnotVector.clear();
+			std::vector<XYZW> vUpdatedControlPoints;
+			NurbsCurve::RemoveKnot(degreeV, knotVectorV, controlPoints[u], removeKnot, times, vKnotVector, vUpdatedControlPoints);
+			updatedControlPoints.emplace_back(vUpdatedControlPoints);
+		}
+
+		restKnotVectorU = knotVectorU;
+		restKnotVectorV = vKnotVector;
+	}
+}
 
 
-void LNLib::NurbsSurface::ElevateDegree(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, unsigned int times, bool isUDirection, std::vector<double>& insertedKnotVectorU, std::vector<double>& insertedKnotVectorV, std::vector<std::vector<XYZW>>& updatedControlPoints)
+
+void LNLib::NurbsSurface::ElevateDegree(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, unsigned int times, bool isUDirection, std::vector<double>& updatedKnotVectorU, std::vector<double>& updatedKnotVectorV, std::vector<std::vector<XYZW>>& updatedControlPoints)
 {
 	std::vector<double> knots;
 	unsigned int degree;
@@ -364,14 +403,14 @@ void LNLib::NurbsSurface::ElevateDegree(const std::vector<std::vector<XYZW>>& co
 
 	if (isUDirection)
 	{
-		insertedKnotVectorU = insertedKnotVector;
-		insertedKnotVectorV = knotVectorV;
+		updatedKnotVectorU = insertedKnotVector;
+		updatedKnotVectorV = knotVectorV;
 		MathUtils::Transpose(newControlPoints, updatedControlPoints);
 	}
 	else
 	{
-		insertedKnotVectorU = knotVectorU;
-		insertedKnotVectorV = insertedKnotVector;
+		updatedKnotVectorU = knotVectorU;
+		updatedKnotVectorV = insertedKnotVector;
 		updatedControlPoints = newControlPoints;
 	}
 }
