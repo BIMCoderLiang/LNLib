@@ -428,10 +428,10 @@ void LNLib::Polynomials::OneBasisFunctionDerivative(unsigned int index, unsigned
 
 void LNLib::Polynomials::BezierToPowerMatrix(unsigned int degree, std::vector<std::vector<double>>& matrix)
 {
-	matrix.resize(degree);
+	matrix.resize(degree+1);
 	for (int i = 0; i < static_cast<int>(degree); i++)
 	{
-		matrix[i].resize(degree);
+		matrix[i].resize(degree+1);
 		for (int j = i + 1; j <= static_cast<int>(degree); j++)
 		{
 			matrix[i][j] = 0.0;
@@ -439,14 +439,7 @@ void LNLib::Polynomials::BezierToPowerMatrix(unsigned int degree, std::vector<st
 	}
 
 	matrix[0][0] = matrix[degree][degree] = 1.0;
-	if (degree % 2 == 0)
-	{
-		matrix[degree][0] = -1.0;
-	}
-	else
-	{
-		matrix[degree][0] = 1.0;
-	}
+	matrix[degree][0] = degree % 2 == 0 ? -1.0 : 1.0;
 
 	double sign = -1.0;
 	for (int i = 1; i < static_cast<int>(degree); i++)
@@ -466,9 +459,8 @@ void LNLib::Polynomials::BezierToPowerMatrix(unsigned int degree, std::vector<st
 			matrix[j][k] = matrix[pk][degree - j] = sign * MathUtils::Binomial(degree, k) * MathUtils::Binomial(degree - k, j - k);
 			sign = -sign;
 		}
+		pk = pk - 1;
 	}
-
-	pk = pk - 1;
 }
 
 void LNLib::Polynomials::PowerToBezierMatrix(unsigned int degree, const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& inverseMatrix)
@@ -486,7 +478,7 @@ void LNLib::Polynomials::PowerToBezierMatrix(unsigned int degree, const std::vec
 	for (int i = 0; i <= static_cast<int>(degree); i++)
 	{
 		inverseMatrix[i][0] = inverseMatrix[degree][i] = 1.0;
-		inverseMatrix[i][i] = 1.0 / (inverseMatrix[i][i]);
+		inverseMatrix[i][i] = 1.0 / (matrix[i][i]);
 	}
 
 	int k1 = (degree + 1) / 2;
@@ -501,7 +493,7 @@ void LNLib::Polynomials::PowerToBezierMatrix(unsigned int degree, const std::vec
 			{
 				d = d - matrix[j][i] * inverseMatrix[i][k];
 			}
-			inverseMatrix[j][k] = d / (matrix[j][j]);
+			inverseMatrix[j][k] = d / (inverseMatrix[j][j]);
 			inverseMatrix[pk][degree - j] = inverseMatrix[j][k];
 		}
 		pk = pk - 1;

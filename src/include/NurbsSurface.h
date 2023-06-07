@@ -67,7 +67,7 @@ namespace LNLib
 		/// return true means run successed;
 		/// return false means run failed; 
 		/// </summary>
-		static bool ReduceDegree();
+		static bool ReduceDegree(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, bool isUDirection, std::vector<double>& updatedKnotVectorU, std::vector<double>& updatedKnotVectorV, std::vector<std::vector<XYZW>>& updatedControlPoints);
 	};
 }
 

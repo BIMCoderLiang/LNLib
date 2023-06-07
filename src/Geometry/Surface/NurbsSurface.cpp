@@ -391,28 +391,84 @@ void LNLib::NurbsSurface::ElevateDegree(const std::vector<std::vector<XYZW>>& co
 		degree = degreeV;
 	}
 
-	std::vector<double> insertedKnotVector;
+	std::vector<double> tempKnotVector;
 
 	for (int i = 0; i < static_cast<int>(tempControlPoints.size()); i++)
 	{
-		insertedKnotVector.clear();
+		tempKnotVector.clear();
 		std::vector<XYZW> updatedCurveControlPoints;
-		NurbsCurve::ElevateDegree(degree, knots, tempControlPoints[i], times, insertedKnotVector, updatedCurveControlPoints);
+		NurbsCurve::ElevateDegree(degree, knots, tempControlPoints[i], times, tempKnotVector, updatedCurveControlPoints);
 		newControlPoints[i] = updatedCurveControlPoints;
 	}
 
 	if (isUDirection)
 	{
-		updatedKnotVectorU = insertedKnotVector;
+		updatedKnotVectorU = tempKnotVector;
 		updatedKnotVectorV = knotVectorV;
 		MathUtils::Transpose(newControlPoints, updatedControlPoints);
 	}
 	else
 	{
 		updatedKnotVectorU = knotVectorU;
-		updatedKnotVectorV = insertedKnotVector;
+		updatedKnotVectorV = tempKnotVector;
 		updatedControlPoints = newControlPoints;
 	}
+}
+
+bool LNLib::NurbsSurface::ReduceDegree(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, bool isUDirection, std::vector<double>& updatedKnotVectorU, std::vector<double>& updatedKnotVectorV, std::vector<std::vector<XYZW>>& updatedControlPoints)
+{
+	std::vector<double> knots;
+	unsigned int degree;
+	std::vector<std::vector<XYZW>> tempControlPoints;
+	std::vector<std::vector<XYZW>> newControlPoints;
+
+	if (isUDirection)
+	{
+		MathUtils::Transpose(controlPoints, tempControlPoints);
+		int size = static_cast<int>(knotVectorU.size());
+		knots.resize(size);
+		for (int i = 0; i < size; i++)
+		{
+			knots[i] = knotVectorU[i];
+		}
+		degree = degreeU;
+	}
+	else
+	{
+		tempControlPoints = controlPoints;
+		int size = static_cast<int>(knotVectorV.size());
+		knots.resize(size);
+		for (int i = 0; i < size; i++)
+		{
+			knots[i] = knotVectorV[i];
+		}
+		degree = degreeV;
+	}
+
+	std::vector<double> tempKnotVector;
+
+	for (int i = 0; i < static_cast<int>(tempControlPoints.size()); i++)
+	{
+		tempKnotVector.clear();
+		std::vector<XYZW> updatedCurveControlPoints;
+		bool result  = NurbsCurve::ReduceDegree(degree, knots, tempControlPoints[i], tempKnotVector, updatedCurveControlPoints);
+		if (!result) return false;
+		newControlPoints[i] = updatedCurveControlPoints;
+	}
+
+	if (isUDirection)
+	{
+		updatedKnotVectorU = tempKnotVector;
+		updatedKnotVectorV = knotVectorV;
+		MathUtils::Transpose(newControlPoints, updatedControlPoints);
+	}
+	else
+	{
+		updatedKnotVectorU = knotVectorU;
+		updatedKnotVectorV = tempKnotVector;
+		updatedControlPoints = newControlPoints;
+	}
+	return true;
 }
 
 

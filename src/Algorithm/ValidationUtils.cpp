@@ -59,34 +59,35 @@ double LNLib::ValidationUtils::ComputeCurveModifyTolerance(const std::vector<XYZ
 	return Constants::DistanceEpsilon * minWeight / (1 + std::abs(maxDistance));
 }
 
-double LNLib::ValidationUtils::ComputeMaxErrorOfBezierReduction(unsigned int degree, const std::vector<XYZW>& current, const std::vector<XYZW>& reduction)
+double LNLib::ValidationUtils::ComputeMaxErrorOfBezierReduction(unsigned int degree, const std::vector<XYZW>& currentControlPoints, const std::vector<XYZW>& reductedControlPoints)
 {
 	int r = (degree - 1)/2;
 
 	if (degree % 2 == 0)
 	{
-		XYZW cr = current[r];
-		XYZW rmo = reduction[r-1];
-		XYZ Pr = (cr.ToXYZ(true) - GetCoefficient(r, degree) * rmo.ToXYZ(true)) / (1 - GetCoefficient(r, degree));
+		XYZW cwp = currentControlPoints[r];
+		XYZW rwp = reductedControlPoints[r-1];
+		XYZ Pr = (cwp.ToXYZ(true) - GetCoefficient(r, degree) * rwp.ToXYZ(true)) / (1 - GetCoefficient(r, degree));
 
-		XYZW cpt = current[r + 2];
-		XYZW rpt = reduction[r + 2];
-		XYZ Pr1 = (cpt.ToXYZ(true) - (1 - GetCoefficient(r + 2, degree)) * rpt.ToXYZ(true)) / GetCoefficient(r + 2,degree);
+		XYZW cwp1 = currentControlPoints[r + 2];
+		XYZW rwp1 = reductedControlPoints[r + 2];
+		XYZ Pr1 = (cwp1.ToXYZ(true) - (1 - GetCoefficient(r + 2, degree)) * rwp1.ToXYZ(true)) / GetCoefficient(r + 2,degree);
 
-		XYZW cpo = current[r + 1];
-		XYZ temp = 0.5 * (Pr + Pr1);
-		return std::abs(cpo.ToXYZ(true).Distance(temp));
+		XYZW cp1 = currentControlPoints[r + 1];
+		XYZ pr = 0.5 * (Pr + Pr1);
+
+		return std::abs((cp1.ToXYZ(true)-pr).Length());
 	}
 	else
 	{
-		XYZW cr = current[r];
-		XYZW rmo = reduction[r - 1];
-		XYZ PLr = (cr.ToXYZ(true) - GetCoefficient(r, degree) * rmo.ToXYZ(true)) / (1 - GetCoefficient(r, degree));
+		XYZW cwp = currentControlPoints[r];
+		XYZW rwp = reductedControlPoints[r - 1];
+		XYZ PLr = (cwp.ToXYZ(true) - GetCoefficient(r, degree) * rwp.ToXYZ(true)) / (1 - GetCoefficient(r, degree));
 
-		XYZW cpo = current[r + 1];
-		XYZW rpo = reduction[r + 1];
-		XYZ PRr = (cpo.ToXYZ(true) - (1 - GetCoefficient(r + 1, degree)) * rpo.ToXYZ(true)) / GetCoefficient(r + 1, degree);
+		XYZW cwp1 = currentControlPoints[r + 1];
+		XYZW rwp1 = reductedControlPoints[r + 1];
+		XYZ PRr = (cwp1.ToXYZ(true) - (1 - GetCoefficient(r + 1, degree)) * rwp1.ToXYZ(true)) / GetCoefficient(r + 1, degree);
 
-		return std::abs(PLr.Distance(PRr));
+		return std::abs((PLr+PRr).Length());
 	}
 }
