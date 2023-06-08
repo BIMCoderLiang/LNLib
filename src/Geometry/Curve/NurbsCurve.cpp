@@ -381,7 +381,10 @@ void LNLib::NurbsCurve::RemoveKnot(unsigned int degree, const std::vector<double
 	{
 		restKnotVector[k - t] = knotVector[k];
 	}
-	restKnotVector.erase(restKnotVector.end() - t, restKnotVector.end());
+	for (int k = 0; k < t; k++)
+	{
+		restKnotVector.pop_back();
+	}
 
 	int j = static_cast<int>((2 * removeIndex - originMultiplicity - degree) / 2);
 	int i = j;
@@ -403,7 +406,10 @@ void LNLib::NurbsCurve::RemoveKnot(unsigned int degree, const std::vector<double
 		updatedControlPoints[j] = controlPoints[k];
 		j = j + 1;
 	}
-	updatedControlPoints.erase(updatedControlPoints.end() - t, updatedControlPoints.end());
+	for (int k = 0; k < t; k++)
+	{
+		updatedControlPoints.pop_back();
+	}
 }
 
 void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, unsigned int times,  std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints)
