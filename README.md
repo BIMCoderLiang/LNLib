@@ -7,7 +7,7 @@ Basic Elements:
 - XYZ
 - XYZW
 
-NURBS Algorithm:
+NURBS Algorithms:
 - Basis Function Computation
 - Point On Curve or Surface
 - Curve and Surface Decomposion
