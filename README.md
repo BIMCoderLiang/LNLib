@@ -21,7 +21,7 @@ This library is **under development.**
 - Algorithms of Chapter 6 - 11 in The NURBS Book 2nd Edition
 - Other Common NURBS algorithms
 - Geometry Objects Creation
-- UI Interactive for LNLib
+- UI Interaction for LNLib
 
 ## Contributing
 Welcome join this project including discussions in **Issues** and make **Pull requests**.
