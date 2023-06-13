@@ -15,6 +15,7 @@
 
 namespace LNLib
 {
+	class XYZ;
 	class XYZW;
 	class LNLIB_EXPORT ValidationUtils
 	{
@@ -47,6 +48,10 @@ namespace LNLib
 		/// Implements Bezier degree reduction and computation of the maximum error.
 		/// </summary>
 		static double ComputeMaxErrorOfBezierReduction(unsigned int degree, const std::vector<XYZW>& currentControlPoints, const std::vector<XYZW>& reductedControlPoints);
+
+		static bool IsClosed(const std::vector<XYZ>& controlPoints);
+
+		static bool IsClosed(const std::vector<XYZW>& controlPoints);
 	};
 }
 

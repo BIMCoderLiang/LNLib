@@ -106,7 +106,7 @@ double XYZ::SqrLength() const
 	return m_xyz[0] * m_xyz[0] + m_xyz[1] * m_xyz[1] + m_xyz[2] * m_xyz[2];
 }
 
-double XYZ::Normalize()
+XYZ XYZ::Normalize()
 {
 	double length = Length();
 	if (length > 0)
@@ -116,7 +116,7 @@ double XYZ::Normalize()
 		m_xyz[1] *= invLength;
 		m_xyz[2] *= invLength;
 	}
-	return length;
+	return *this;
 }
 
 XYZ XYZ::Add(const XYZ& another) const

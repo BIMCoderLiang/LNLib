@@ -101,3 +101,17 @@ double LNLib::ValidationUtils::ComputeMaxErrorOfBezierReduction(unsigned int deg
 		return std::abs((PLr+PRr).Length());
 	}
 }
+
+bool LNLib::ValidationUtils::IsClosed(const std::vector<XYZ>& controlPoints)
+{
+	XYZ first = controlPoints[0];
+	XYZ last = controlPoints[controlPoints.size() - 1];
+	return first.IsAlmostEqualTo(last);
+}
+
+bool LNLib::ValidationUtils::IsClosed(const std::vector<XYZW>& controlPoints)
+{
+	XYZW first = controlPoints[0];
+	XYZW last = controlPoints[controlPoints.size() - 1];
+	return first.ToXYZ(true).IsAlmostEqualTo(last.ToXYZ(true));
+}

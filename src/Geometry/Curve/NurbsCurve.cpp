@@ -816,3 +816,116 @@ bool LNLib::NurbsCurve::ReduceDegree(unsigned int degree, const std::vector<doub
 	nh = mh - ph - 1;
 	return true;
 }
+
+double LNLib::NurbsCurve::GetParamOnCurve(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const XYZ& givenPoint)
+{
+	double minValue = -Constants::DoubleEpsilon;
+
+	int maxIterations = 10;
+	double paramT = 0.0;
+	double minParam = knotVector[0];
+	double maxParam = knotVector[knotVector.size() - 1];
+
+	int samples = static_cast<int>(controlPoints.size() * degree);
+	double span = (maxParam - minParam) / (samples - 1);
+	for (int i = 0; i < samples - 1; i++)
+	{
+		double currentU = minParam + span * i; 
+		XYZ currentPoint;
+		NurbsCurve::GetPointOnCurve(degree, knotVector, controlPoints, currentU, currentPoint);
+
+		double nextU = minParam + span * (i + 1);
+		XYZ nextPoint;
+		NurbsCurve::GetPointOnCurve(degree, knotVector, controlPoints, nextU, nextPoint);
+
+		XYZ vector1 = currentPoint - givenPoint;
+		XYZ vector2 = nextPoint - currentPoint;
+		double dot = vector1.DotProduct(vector2);
+
+		XYZ projectPoint;
+		double projectU;
+
+		if (dot < 0)
+		{
+			projectPoint = currentPoint;
+			projectU = currentU;
+		}
+		else if (dot > 1)
+		{
+			projectPoint = nextPoint;
+			projectU = nextU;
+		}
+		else
+		{
+			projectPoint = currentPoint + dot * vector1.Normalize();
+			projectU = currentU + (nextU - currentU) * dot;
+		}
+
+		double distance = (givenPoint - projectPoint).Length();
+		if (distance < minValue)
+		{
+			minValue = distance;
+			paramT = projectU;
+		}
+	}
+
+
+	bool isClosed = ValidationUtils::IsClosed(controlPoints);
+	double a = minParam;
+	double b = maxParam;
+
+	int counters = 0;
+	while (counters < maxIterations)
+	{
+		std::vector<XYZ> derivatives;
+		ComputeRationalCurveDerivatives(degree, knotVector, controlPoints, paramT, 2, derivatives);
+		XYZ difference = derivatives[0] - givenPoint;
+		double f = derivatives[1].DotProduct(difference);
+
+		double condition1 = difference.Length();
+		double condition2 = std::abs(f/ (derivatives[1].Length() * condition1));
+		
+		if (condition1 < Constants::DistanceEpsilon && 
+			condition2 < Constants::DistanceEpsilon)
+		{
+			return paramT;
+		}
+		
+		double df = derivatives[2].DotProduct(difference) + derivatives[1] * derivatives[1];
+		double temp = paramT - f / df;
+
+		if (isClosed)
+		{
+			if (temp < a)
+			{
+				temp = a;
+			}
+			if (temp > b)
+			{
+				temp = b;
+			}
+		}
+		else
+		{
+			if (temp < a)
+			{
+				temp = b - (a - temp);
+			}
+			if (temp > b)
+			{
+				temp = a + (temp - b);
+			}
+		}
+		
+		double condition4 = ((temp - paramT) * derivatives[1]).Length();
+		if (condition4 < Constants::DistanceEpsilon) {
+			return paramT;
+		}
+
+		paramT = temp;
+		counters++;
+	}
+	return paramT;
+	
+
+}

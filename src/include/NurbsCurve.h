@@ -88,6 +88,12 @@ namespace LNLib
 		/// return false means run failed; 
 		/// </summary>
 		static bool ReduceDegree(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page230
+		/// Point inversion:finding the corresponding parameter make C(u) = P.
+		/// </summary>
+		static double GetParamOnCurve(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const XYZ& givenPoint);
 	};
 }
 
