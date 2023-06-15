@@ -52,6 +52,14 @@ namespace LNLib
 		static bool IsClosed(const std::vector<XYZ>& controlPoints);
 
 		static bool IsClosed(const std::vector<XYZW>& controlPoints);
+
+		static bool IsClosedU(const std::vector<std::vector<XYZ>>& controlPoints);
+
+		static bool IsClosedV(const std::vector<std::vector<XYZ>>& controlPoints);
+
+		static bool IsClosedU(const std::vector<std::vector<XYZW>>& controlPoints);
+
+		static bool IsClosedV(const std::vector<std::vector<XYZW>>& controlPoints);
 	};
 }
 

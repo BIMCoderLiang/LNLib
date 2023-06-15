@@ -115,3 +115,69 @@ bool LNLib::ValidationUtils::IsClosed(const std::vector<XYZW>& controlPoints)
 	XYZW last = controlPoints[controlPoints.size() - 1];
 	return first.ToXYZ(true).IsAlmostEqualTo(last.ToXYZ(true));
 }
+
+bool LNLib::ValidationUtils::IsClosedU(const std::vector<std::vector<XYZ>>& controlPoints)
+{
+	for (int i = 0; i < controlPoints.size(); i++)
+	{
+		std::vector<XYZ> row = controlPoints[i];
+		bool rowResult = ValidationUtils::IsClosed(row);
+		if (!rowResult)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+bool LNLib::ValidationUtils::IsClosedU(const std::vector<std::vector<XYZW>>& controlPoints)
+{
+	for (int i = 0; i < controlPoints.size(); i++)
+	{
+		std::vector<XYZW> row = controlPoints[i];
+		bool rowResult = ValidationUtils::IsClosed(row);
+		if (!rowResult)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+bool LNLib::ValidationUtils::IsClosedV(const std::vector<std::vector<XYZ>>& controlPoints)
+{
+	std::vector<std::vector<XYZ>> transposed;
+	MathUtils::Transpose(controlPoints, transposed);
+
+	for (int i = 0; i < transposed.size(); i++)
+	{
+		std::vector<XYZ> row = transposed[i];
+		bool rowResult = ValidationUtils::IsClosed(row);
+		if (!rowResult)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+bool LNLib::ValidationUtils::IsClosedV(const std::vector<std::vector<XYZW>>& controlPoints)
+{
+	std::vector<std::vector<XYZW>> transposed;
+	MathUtils::Transpose(controlPoints, transposed);
+
+	for (int i = 0; i < transposed.size(); i++)
+	{
+		std::vector<XYZW> row = transposed[i];
+		bool rowResult = ValidationUtils::IsClosed(row);
+		if (!rowResult)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+
+
+

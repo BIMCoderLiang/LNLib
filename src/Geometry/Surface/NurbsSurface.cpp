@@ -16,6 +16,7 @@
 #include "MathUtils.h"
 #include "NurbsCurve.h"
 #include "BsplineSurface.h"
+#include "ValidationUtils.h"
 
 void LNLib::NurbsSurface::GetPointOnSurface(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, XYZ& point)
 {
@@ -479,6 +480,108 @@ bool LNLib::NurbsSurface::ReduceDegree(const std::vector<std::vector<XYZW>>& con
 		updatedControlPoints = newControlPoints;
 	}
 	return true;
+}
+
+LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, const XYZ& givenPoint)
+{
+	double minValue = Constants::MaxDistance;
+
+	int maxIterations = 10;
+	UV param = UV(Constants::DoubleEpsilon, Constants::DoubleEpsilon);
+
+	double minUParam = knotVectorU[0];
+	double maxUParam = knotVectorU[knotVectorU.size() - 1];
+	double minVParam = knotVectorV[0];
+	double maxVParam = knotVectorV[knotVectorV.size() - 1];
+
+	double a = minUParam;
+	double b = maxUParam;
+	double c = minVParam;
+	double d = maxVParam;
+
+	bool isClosedU = ValidationUtils::IsClosedU(controlPoints);
+	bool isClosedV = ValidationUtils::IsClosedV(controlPoints);
+
+	//to do... tessllate surface.
+
+	int counters = 0;
+	while (counters < maxIterations)
+	{
+		std::vector<std::vector<XYZ>> derivatives;
+		ComputeRationalSurfaceDerivatives(controlPoints,knotVectorU,knotVectorV,degreeU,degreeV,param,2,derivatives);
+		XYZ difference = derivatives[0][0] - givenPoint;
+		double fa = derivatives[1][0].DotProduct(difference);
+		double fb = derivatives[0][1].DotProduct(difference);
+
+		double condition1 = difference.Length();
+		double condition2a = std::abs(fa / (derivatives[1][0].Length() * condition1));
+		double condition2b = std::abs(fb / (derivatives[0][1].Length() * condition1));
+
+		if (condition1 < Constants::DistanceEpsilon &&
+			condition2a < Constants::DistanceEpsilon &&
+			condition2b < Constants::DistanceEpsilon)
+		{
+			return param;
+		}
+
+		//to do... solve J*delta = k
+		UV temp = UV(0, 0);
+
+		if (!isClosedU)
+		{
+			if (param[0] < a)
+			{
+				param = UV(a, param[1]);
+			}
+			if (param[0] > b)
+			{
+				param = UV(b, param[1]);
+			}
+		}
+		if (!isClosedV)
+		{
+			if (param[1] < c)
+			{
+				param = UV(param[0], c);
+			}
+			if (param[1] > d)
+			{
+				param = UV(param[0], d);
+			}
+		}
+		if (isClosedU)
+		{
+			if (param[0] < a)
+			{
+				param = UV(b-(a-param[0]), param[1]);
+			}
+			if (param[0] > b)
+			{
+				param = UV(a+(param[0]-b), param[1]);
+			}
+		}
+		if (isClosedV)
+		{
+			if (param[1] < c)
+			{
+				param = UV(param[0], d-(c-param[1]));
+			}
+			if (param[1] > d)
+			{
+				param = UV(param[0], c+(param[1]-d));
+			}
+		}
+
+		double condition4a = ((temp[0] - param[0]) * derivatives[1][0]).Length();
+		double condition4b = ((temp[1] - param[1]) * derivatives[0][1]).Length();
+		if (condition4a + condition4b < Constants::DistanceEpsilon) {
+			return param;
+		}
+
+		param = temp;
+		counters++;
+	}
+	return param;
 }
 
 

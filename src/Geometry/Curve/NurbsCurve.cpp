@@ -819,10 +819,10 @@ bool LNLib::NurbsCurve::ReduceDegree(unsigned int degree, const std::vector<doub
 
 double LNLib::NurbsCurve::GetParamOnCurve(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const XYZ& givenPoint)
 {
-	double minValue = -Constants::DoubleEpsilon;
+	double minValue = Constants::MaxDistance;
 
 	int maxIterations = 10;
-	double paramT = 0.0;
+	double paramT = Constants::DoubleEpsilon;
 	double minParam = knotVector[0];
 	double maxParam = knotVector[knotVector.size() - 1];
 
@@ -868,7 +868,6 @@ double LNLib::NurbsCurve::GetParamOnCurve(unsigned int degree, const std::vector
 			paramT = projectU;
 		}
 	}
-
 
 	bool isClosed = ValidationUtils::IsClosed(controlPoints);
 	double a = minParam;
@@ -926,6 +925,4 @@ double LNLib::NurbsCurve::GetParamOnCurve(unsigned int degree, const std::vector
 		counters++;
 	}
 	return paramT;
-	
-
 }
