@@ -524,8 +524,33 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const std::vector<std::vector<X
 			return param;
 		}
 
-		//to do... solve J*delta = k
-		UV temp = UV(0, 0);
+		XYZ Su = derivatives[1][0];
+		XYZ Sv = derivatives[0][1];
+
+		XYZ Suu = derivatives[2][0];
+		XYZ Svv = derivatives[0][2];
+
+		XYZ Suv,Svu = derivatives[1][1];
+
+		double fuv = -Su.DotProduct(difference);
+		double guv = -Sv.DotProduct(difference);
+
+		double fu = Su.DotProduct(Su) + difference.DotProduct(Suu);
+		double fv = Su.DotProduct(Sv) + difference.DotProduct(Suv);
+		double gu = Su.DotProduct(Sv) + difference.DotProduct(Svu);
+		double gv = Sv.DotProduct(Sv) + difference.DotProduct(Svv);
+		
+		if (MathUtils::IsAlmostEqualTo(fu * gv, fv * gu))
+		{
+			counters++;
+			continue;
+		}
+
+		double deltaU = ((-fuv * gv) - fv * (-guv)) / (fu * gv - fv * gu);
+		double deltaV = (fu * (-guv) - (-fuv) * gu)/ (fu * gv - fv * gu);
+
+		UV delta = UV(deltaU,deltaV);
+		UV temp = param + delta;
 
 		if (!isClosedU)
 		{

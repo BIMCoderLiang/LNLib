@@ -118,34 +118,6 @@ bool LNLib::ValidationUtils::IsClosed(const std::vector<XYZW>& controlPoints)
 
 bool LNLib::ValidationUtils::IsClosedU(const std::vector<std::vector<XYZ>>& controlPoints)
 {
-	for (int i = 0; i < controlPoints.size(); i++)
-	{
-		std::vector<XYZ> row = controlPoints[i];
-		bool rowResult = ValidationUtils::IsClosed(row);
-		if (!rowResult)
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
-bool LNLib::ValidationUtils::IsClosedU(const std::vector<std::vector<XYZW>>& controlPoints)
-{
-	for (int i = 0; i < controlPoints.size(); i++)
-	{
-		std::vector<XYZW> row = controlPoints[i];
-		bool rowResult = ValidationUtils::IsClosed(row);
-		if (!rowResult)
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
-bool LNLib::ValidationUtils::IsClosedV(const std::vector<std::vector<XYZ>>& controlPoints)
-{
 	std::vector<std::vector<XYZ>> transposed;
 	MathUtils::Transpose(controlPoints, transposed);
 
@@ -161,7 +133,7 @@ bool LNLib::ValidationUtils::IsClosedV(const std::vector<std::vector<XYZ>>& cont
 	return true;
 }
 
-bool LNLib::ValidationUtils::IsClosedV(const std::vector<std::vector<XYZW>>& controlPoints)
+bool LNLib::ValidationUtils::IsClosedU(const std::vector<std::vector<XYZW>>& controlPoints)
 {
 	std::vector<std::vector<XYZW>> transposed;
 	MathUtils::Transpose(controlPoints, transposed);
@@ -178,6 +150,33 @@ bool LNLib::ValidationUtils::IsClosedV(const std::vector<std::vector<XYZW>>& con
 	return true;
 }
 
+bool LNLib::ValidationUtils::IsClosedV(const std::vector<std::vector<XYZ>>& controlPoints)
+{
+	for (int i = 0; i < controlPoints.size(); i++)
+	{
+		std::vector<XYZ> row = controlPoints[i];
+		bool rowResult = ValidationUtils::IsClosed(row);
+		if (!rowResult)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+bool LNLib::ValidationUtils::IsClosedV(const std::vector<std::vector<XYZW>>& controlPoints)
+{
+	for (int i = 0; i < controlPoints.size(); i++)
+	{
+		std::vector<XYZW> row = controlPoints[i];
+		bool rowResult = ValidationUtils::IsClosed(row);
+		if (!rowResult)
+		{
+			return false;
+		}
+	}
+	return true;
+}
 
 
 
