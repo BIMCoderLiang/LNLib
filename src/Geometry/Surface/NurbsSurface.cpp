@@ -502,7 +502,55 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const std::vector<std::vector<X
 	bool isClosedU = ValidationUtils::IsClosedU(controlPoints);
 	bool isClosedV = ValidationUtils::IsClosedV(controlPoints);
 
-	//to do... tessllate surface.
+	int samplesU = static_cast<int>(controlPoints.size() * degreeU);
+	int samplesV = static_cast<int>(controlPoints[0].size() * degreeV);
+	double spanU = (maxUParam - minUParam) / (samplesU - 1);
+	double spanV = (maxVParam - minVParam) / (samplesV - 1);
+	for (int i = 0; i < samplesU - 1; i++)
+	{
+		double currentU = minUParam + spanU * i;
+		double nextU = minUParam + spanU * (i + 1);
+		for (int j = 0; j < samplesV; j++)
+		{
+			double v = minVParam + spanV * j;
+			
+			XYZ currentPoint;
+			NurbsSurface::GetPointOnSurface(controlPoints, knotVectorU, knotVectorV, degreeU, degreeV, UV(currentU, v), currentPoint);
+			
+			XYZ nextPoint;
+			NurbsSurface::GetPointOnSurface(controlPoints, knotVectorU, knotVectorV, degreeU, degreeV, UV(nextU, v), nextPoint);
+
+			XYZ vector1 = currentPoint - givenPoint;
+			XYZ vector2 = nextPoint - currentPoint;
+			double dot = vector1.DotProduct(vector2);
+
+			XYZ projectPoint;
+			UV project = UV(Constants::DoubleEpsilon, Constants::DoubleEpsilon);
+
+			if (dot < 0)
+			{
+				projectPoint = currentPoint;
+				project = UV(currentU,v);
+			}
+			else if (dot > 1)
+			{
+				projectPoint = nextPoint;
+				project = UV(nextU, v);
+			}
+			else
+			{
+				projectPoint = currentPoint + dot * vector1.Normalize();
+				project = UV(currentU + (nextU - currentU) * dot, v);
+			}
+
+			double distance = (givenPoint - projectPoint).Length();
+			if (distance < minValue)
+			{
+				minValue = distance;
+				param = project;
+			}
+		}
+	}
 
 	int counters = 0;
 	while (counters < maxIterations)
