@@ -657,4 +657,32 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const std::vector<std::vector<X
 	return param;
 }
 
+bool LNLib::NurbsSurface::GetUVTangent(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, const UV param, const XYZ& tangent, UV& uvTangent)
+{
+	std::vector<std::vector<XYZ>> derivatives;
+	ComputeRationalSurfaceDerivatives(controlPoints, knotVectorU, knotVectorV, degreeU, degreeV, param, 1, derivatives);
+	XYZ Su = derivatives[1][0];
+	XYZ Sv = derivatives[0][1];
+
+	double a = Su.DotProduct(Su);
+	double b = Su.DotProduct(Sv);
+
+	double c = Su.DotProduct(Sv);
+	double d = Sv.DotProduct(Sv);
+
+	double e = Su.DotProduct(tangent);
+	double f = Sv.DotProduct(tangent);
+
+	if (MathUtils::IsAlmostEqualTo(a * d, b * c))
+	{
+		return false;
+	}
+	
+	double u = (e * d - b * f) / (a * d - b * c);
+	double v = (a * f - e * c) / (a * d - b * c);
+
+	uvTangent = UV(u, v);
+	return true;
+}
+
 

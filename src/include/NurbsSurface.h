@@ -84,6 +84,12 @@ namespace LNLib
 		/// Point inversion:finding the corresponding parameter make S(u,v) = P.
 		/// </summary>
 		static UV GetParamOnSurface(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, const XYZ& givenPoint);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page235
+		/// Surface Tangent Vector Inversion: finding the corresponding UV tangent [du dv] make T = Su*du+Sv*dv.
+		/// </summary>
+		static bool GetUVTangent(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, const UV param, const XYZ& tangent, UV& uvTangent);
 	};
 }
 
