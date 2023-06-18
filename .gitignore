@@ -38,6 +38,6 @@
 .vs/
 
 src/x64
-LNLib-Tests/x64
+test/x64
 *.user
 src/packages
