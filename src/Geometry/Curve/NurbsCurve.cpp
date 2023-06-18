@@ -926,3 +926,35 @@ double LNLib::NurbsCurve::GetParamOnCurve(unsigned int degree, const std::vector
 	}
 	return paramT;
 }
+
+void LNLib::NurbsCurve::ReverseKnotVector(const std::vector<double>& knotVector, std::vector<double> reversedKnotVector)
+{
+	int size = static_cast<int>(knotVector.size());
+
+	double min = knotVector[0];
+	double max = knotVector[size - 1];
+
+	reversedKnotVector.resize(size);
+	reversedKnotVector[0] = min;
+	for (int i = 1; i < size; i++)
+	{
+		reversedKnotVector[i] = reversedKnotVector[i - 1] + (knotVector[size - i] - knotVector[size - i - 1]);
+	}
+}
+
+void LNLib::NurbsCurve::ReverseControlPoints(const std::vector<XYZW>& controlPoints, std::vector<XYZW> reversedControlPoints)
+{
+	int size = static_cast<int>(controlPoints.size());
+	reversedControlPoints.resize(size);
+	for (int i = 0; i < size; i++)
+	{
+		reversedControlPoints[i] = controlPoints[i];
+	}
+	std::reverse(reversedControlPoints.begin(), reversedControlPoints.end());
+}
+
+void LNLib::NurbsCurve::Reverse(const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double>& reversedKnotVector, std::vector<XYZW>& reversedControlPoints)
+{
+	ReverseKnotVector(knotVector, reversedKnotVector);
+	ReverseControlPoints(controlPoints, reversedControlPoints);
+}

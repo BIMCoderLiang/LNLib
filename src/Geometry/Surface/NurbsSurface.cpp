@@ -685,4 +685,38 @@ bool LNLib::NurbsSurface::GetUVTangent(const std::vector<std::vector<XYZW>>& con
 	return true;
 }
 
+void LNLib::NurbsSurface::ReverseU(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, std::vector<double>& reversedKnotVectorU, std::vector<std::vector<XYZW>>& reversedControlPoints)
+{
+	NurbsCurve::ReverseKnotVector(knotVectorU, reversedKnotVectorU);
+	int row = static_cast<int>(controlPoints.size());
+	int column = static_cast<int>(controlPoints[0].size());
+
+	reversedControlPoints.resize(row);
+	for (int i = 0; i < row; i++)
+	{
+		reversedControlPoints[i].resize(column);
+		for (int j = 0; j < column; j++)
+		{
+			reversedControlPoints[i][j] = controlPoints[i][j];
+		}
+	}
+
+	std::reverse(reversedControlPoints.begin(), reversedControlPoints.end());
+}
+
+void LNLib::NurbsSurface::ReverseV(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorV, std::vector<double>& reversedKnotVectorV, std::vector<std::vector<XYZW>>& reversedControlPoints)
+{
+	NurbsCurve::ReverseKnotVector(knotVectorV, reversedKnotVectorV);
+	int row = static_cast<int>(controlPoints.size());
+
+	reversedControlPoints.resize(row);
+	for (int i = 0; i < row; i++)
+	{
+		std::vector<XYZW> rowReversed;
+		NurbsCurve::ReverseControlPoints(controlPoints[i], rowReversed);
+
+		reversedControlPoints.emplace_back(rowReversed);
+	}
+}
+
 
