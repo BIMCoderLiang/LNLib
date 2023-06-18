@@ -36,3 +36,8 @@
 
 # Folder
 .vs/
+
+src/x64
+LNLib-Tests/x64
+*.user
+src/packages
