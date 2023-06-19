@@ -13,6 +13,7 @@
 #include "Polynomials.h"
 #include "XYZ.h"
 #include "XYZW.h"
+#include "Matrix4d.h"
 #include "MathUtils.h"
 #include "BsplineCurve.h"
 #include "ValidationUtils.h"
@@ -925,6 +926,11 @@ double LNLib::NurbsCurve::GetParamOnCurve(unsigned int degree, const std::vector
 		counters++;
 	}
 	return paramT;
+}
+
+void LNLib::NurbsCurve::CreateTransform(const std::vector<XYZW>& controlPoints, const Matrix4d& matrix, std::vector<XYZW>& transformedControlPoints)
+{
+	
 }
 
 void LNLib::NurbsCurve::ReverseKnotVector(const std::vector<double>& knotVector, std::vector<double> reversedKnotVector)

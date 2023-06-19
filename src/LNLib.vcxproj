@@ -33,6 +33,7 @@
     <ClInclude Include="include\NurbsCurve.h" />
     <ClInclude Include="include\XYZW.h" />
     <ClInclude Include="include\NurbsSurface.h" />
+    <ClInclude Include="include\Matrix4d.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Algorithm\Polynomials.cpp" />
@@ -49,6 +50,7 @@
     <ClCompile Include="Mathematics\Math\UV.cpp" />
     <ClCompile Include="Algorithm\ValidationUtils.cpp" />
     <ClCompile Include="Mathematics\Math\XYZW.cpp" />
+    <ClCompile Include="Mathematics\Math\Matrix4d.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

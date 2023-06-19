@@ -17,6 +17,7 @@ namespace LNLib
 {
 	class XYZ;
 	class XYZW;
+	class Matrix4d;
 	class LNLIB_EXPORT NurbsCurve
 	{
 	public:
@@ -94,6 +95,12 @@ namespace LNLib
 		/// Point inversion:finding the corresponding parameter make C(u) = P.
 		/// </summary>
 		static double GetParamOnCurve(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const XYZ& givenPoint);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page236
+		/// Curve make Transform.
+		/// </summary>
+		static void CreateTransform(const std::vector<XYZW>& controlPoints, const Matrix4d& matrix, std::vector<XYZW>& transformedControlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page263
