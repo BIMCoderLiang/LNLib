@@ -46,6 +46,7 @@ namespace LNLib
 
 	public:
 		XYZ ToXYZ(bool divideWeight);
+		bool IsAlmostEqualTo(const XYZW& another) const;
 		double Distance(const XYZW& another) const;
 
 	public:
