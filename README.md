@@ -18,7 +18,7 @@ NURBS Algorithms:
 This library is **under development.**
 
 ## Roadmap
-- Algorithms of Chapter 6 - 11 in The NURBS Book 2nd Edition
+- Algorithms of Chapter 7 - 11 in The NURBS Book 2nd Edition
 - Other Common NURBS algorithms
 - Geometry Objects Creation
 - UI Interaction for LNLib

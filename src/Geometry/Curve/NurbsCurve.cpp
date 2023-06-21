@@ -930,7 +930,15 @@ double LNLib::NurbsCurve::GetParamOnCurve(unsigned int degree, const std::vector
 
 void LNLib::NurbsCurve::CreateTransform(const std::vector<XYZW>& controlPoints, const Matrix4d& matrix, std::vector<XYZW>& transformedControlPoints)
 {
-	
+	int size = static_cast<int>(controlPoints.size());
+	transformedControlPoints.resize(size);
+
+	Matrix4d tempMatrix = matrix;
+	for (int i = 0; i < size; i++)
+	{
+		XYZW temp = controlPoints[i];
+		transformedControlPoints[i] = XYZW(tempMatrix.OfPoint(temp.ToXYZ(true)),temp.GetW());
+	}
 }
 
 void LNLib::NurbsCurve::ReverseKnotVector(const std::vector<double>& knotVector, std::vector<double> reversedKnotVector)
