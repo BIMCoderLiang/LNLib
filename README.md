@@ -6,6 +6,7 @@ Basic Elements:
 - UV
 - XYZ
 - XYZW
+- Matrix4d
 
 NURBS Algorithms:
 - Basis Function Computation
@@ -14,6 +15,9 @@ NURBS Algorithms:
 - Knot Insertion and Removal
 - Knot Refinement
 - Degree Elevation and Reduction
+- Point and Tangent Inversion
+- Curve and Surface Reverse
+- Curve Transform
 
 This library is **under development.**
 
