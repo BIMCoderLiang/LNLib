@@ -140,6 +140,16 @@ double LNLib::XYZW::Distance(const XYZW& another) const
 	return pow(squareValue, 0.5);
 }
 
+double& LNLib::XYZW::operator[](int index)
+{
+	return m_xyzw[index];
+}
+
+const double& LNLib::XYZW::operator[](int index) const
+{
+	return m_xyzw[index];
+}
+
 XYZW LNLib::XYZW::operator+(const XYZW& xyzw) const
 {
 	return XYZW(m_xyzw[0] + xyzw.m_xyzw[0], m_xyzw[1] + xyzw.m_xyzw[1], m_xyzw[2] + xyzw.m_xyzw[2], m_xyzw[3] + xyzw.m_xyzw[3]);

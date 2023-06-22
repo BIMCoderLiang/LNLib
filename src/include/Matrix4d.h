@@ -1,6 +1,6 @@
 /*
  * Author:
- * 2023/06/08 - Yuqing Liang (BIMCoder Liang)
+ * 2023/06/22 - Yuqing Liang (BIMCoder Liang)
  * bim.frankliang@foxmail.com
  * 微信公众号：BIMCoder梁老师
  *
@@ -28,27 +28,27 @@ namespace LNLib
 							double a30, double a31, double a32, double a33);
 
 	public:
-
-		static Matrix4d CreateReflection(XYZ origin, XYZ normal);
-		static Matrix4d CreateRotation(XYZ axis, double angle);
-		static Matrix4d CreateTranslation(XYZ vector);
+		static Matrix4d CreateReflection(const XYZ& origin, const XYZ& normal);
+		static Matrix4d CreateRotation(const XYZ& axis, double rad);
+		static Matrix4d CreateTranslation(const XYZ& vector);
 		static Matrix4d CreateScale(double scale, bool isScaleOrigin);
-		static Matrix4d CreateScale(XYZ scale);
+		static Matrix4d CreateScale(const XYZ& scale);
+
+	public:
+		static Matrix4d CreateCamera(const XYZ& eyePoint, const XYZ& lookDirection, const XYZ& upDirection, const XYZ& rightDirection);
+		static Matrix4d CreateLookAt(const XYZ& eyePoint, const XYZ& targetPoint, const XYZ& upDirection);
+		static Matrix4d Orthogonal(double width, double height, double zNear, double zFar);
+		static Matrix4d Perspective(double width, double height, double zNear, double zFar);
+		static Matrix4d PerspectiveFov(double fov, double aspect, double zNear, double zFar);
+		static Matrix4d PerspectiveMultiFovs(double fovX, double fovY, double zNear, double zFar);
 
 	public:
 		void SetBasisX(const XYZ basisX);
-		double GetBasisX() const;
+		XYZ GetBasisX() const;
 		void SetBasisY(const XYZ basisY);
-		double GetBasisY() const;
+		XYZ GetBasisY() const;
 		void SetBasisZ(const XYZ basisZ);
-		double GetBasisZ() const;
-
-		double BasisX() const;
-		double& BasisX();
-		double BasisY() const;
-		double& BasisY();
-		double BasisZ() const;
-		double& BasisZ();
+		XYZ GetBasisZ() const;
 
 	public:
 		Matrix4d Multiply(const Matrix4d& right);
@@ -56,8 +56,9 @@ namespace LNLib
 		XYZ OfVector(const XYZ& vector);
 
 	public:
-		Matrix4d GetInverse();
+		bool GetInverse(Matrix4d& inverse);
 		Matrix4d GetTranspose();
+		XYZ GetScale();
 		double GetDeterminant();
 		bool IsIdentity();
 		bool HasReflection();

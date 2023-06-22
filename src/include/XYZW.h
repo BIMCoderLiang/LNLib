@@ -50,6 +50,8 @@ namespace LNLib
 		double Distance(const XYZW& another) const;
 
 	public:
+		double& operator[](int index);
+		const double& operator[](int index) const;
 		XYZW  operator +(const XYZW& xyzw) const;
 		XYZW  operator -(const XYZW& xyzw) const;
 		XYZW& operator +=(const XYZW& xyzw);
