@@ -1064,3 +1064,47 @@ bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ
 	degree = 2;
 	return true;
 }
+
+bool LNLib::NurbsCurve::CreateOneConicArc(const XYZ& start, const XYZ& startTangent, const XYZ& end, const XYZ& endTangent, const XYZ& pointOnConic, XYZ& projectPoint, double& projectPointWeight)
+{
+	XYZ sTemp = start;
+	XYZ eTemp = end;
+
+	double param0, param1 = 0.0;
+	XYZ point = XYZ(0,0,0);
+	CurveCurveIntersectionType type = Intersection::ComputeRays(start, startTangent, end, endTangent, param0, param1, point);
+	
+	XYZ pDiff = end - start;
+	double alf0, alf2 = 0.0;
+	XYZ dummy = XYZ(0, 0, 0);
+	if (type == CurveCurveIntersectionType::Intersecting)
+	{
+		XYZ v1p = pointOnConic - point;
+		type = Intersection::ComputeRays(point, v1p, start, pDiff, alf0, alf2, dummy);
+		if (type == CurveCurveIntersectionType::Intersecting)
+		{
+			double a = sqrt(alf2 / (1.0 - alf2));
+			double u = a / (1.0 + a);
+			double num = (1.0 - u) * (1.0 - u) * (pointOnConic - start).DotProduct(point - pointOnConic) + u * u * (pointOnConic - end).DotProduct(point - pointOnConic);
+			double den = 2.0 * u * (1.0 - u) * (point - pointOnConic).DotProduct(point - pointOnConic);
+			projectPoint = point;
+			projectPointWeight = num / den;
+			return true;
+		}
+	}
+	else if(type == CurveCurveIntersectionType::Parallel)
+	{
+		type = Intersection::ComputeRays(pointOnConic, startTangent, start, pDiff, alf0, alf2, dummy);
+		if (type == CurveCurveIntersectionType::Intersecting)
+		{
+			double a = sqrt(alf2 / (1.0 - alf2));
+			double u = a / (1.0 + a);
+			double b = 2.0 * u * (1.0 - u);
+			b = -alf0 * (1.0 - b) / b;
+			projectPoint = b * startTangent;
+			projectPointWeight = 0.0;
+			return true;
+		}
+	}
+	return false;
+}

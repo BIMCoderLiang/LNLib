@@ -132,14 +132,14 @@ namespace LNLib
 		/// Algorithm A7.2
 		/// Create one Bezier conic arc.
 		/// </summary>
-		static void CreateOneConicArc(const XYZ& point0, const XYZ& vector0, const XYZ& point2, const XYZ& vector2, const XYZ& pointOnConic, XYZ& point1);
+		static bool CreateOneConicArc(const XYZ& start, const XYZ& startTangent, const XYZ& end, const XYZ& endTangent, const XYZ& pointOnConic, XYZ& projectPoint, double& projectPointWeight);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page317
 		/// Algorithm A7.3
 		/// Construct open conic arc.
 		/// </summary>
-		static void CreateOpenConic(const XYZ& point0, const XYZ& vector0, const XYZ& point2, const XYZ& vector2, int& degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+		static void CreateOpenConic(const XYZ& start, const XYZ& startTangent, const XYZ& end, const XYZ& endTangent, int& degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
 	};
 }
 
