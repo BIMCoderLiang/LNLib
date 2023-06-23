@@ -119,6 +119,12 @@ namespace LNLib
 		/// Curve reverse,but not use reparameterization.
 		/// </summary>
 		static void Reverse(const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double>& reversedKnotVector, std::vector<XYZW>& reversedControlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page308
+		/// Create arbitrary NURBS circular arc.
+		/// </summary>
+		static void CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ& yAxis, double xRadius, double yRadius, double startRad, double endRad, int& degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
 	};
 }
 

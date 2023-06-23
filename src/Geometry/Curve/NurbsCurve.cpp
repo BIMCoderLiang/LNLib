@@ -972,3 +972,90 @@ void LNLib::NurbsCurve::Reverse(const std::vector<double>& knotVector, const std
 	ReverseKnotVector(knotVector, reversedKnotVector);
 	ReverseControlPoints(controlPoints, reversedControlPoints);
 }
+
+void LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ& yAxis, double startRad, double endRad, double xRadius, double yRadius, int& degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+{
+	XYZ nXTemp = xAxis;
+	XYZ nX = nXTemp.Normalize();
+	XYZ nYTemp = yAxis;
+	XYZ nY = nYTemp.Normalize();
+
+	if (endRad < startRad)
+	{
+		endRad = 2 * Constants::Pi + startRad;
+	}
+	double theta = endRad - startRad;
+	
+	int narcs = 0;
+	if (MathUtils::IsLessThanOrEqual(theta, Constants::Pi / 2))
+	{
+		narcs = 1;
+	}
+	else
+	{
+		if (MathUtils::IsLessThanOrEqual(theta, Constants::Pi))
+		{
+			narcs = 2;
+		}
+		else if (MathUtils::IsLessThanOrEqual(theta, 3 * Constants::Pi / 2))
+		{
+			narcs = 3;
+		}
+		else
+		{
+			narcs = 4;
+		}
+	}
+	double dtheta = theta / narcs;
+	int n = 2 * narcs;
+
+	knotVector.resize(n + 3);
+	controlPoints.resize(n);
+
+	double w1 = cos(dtheta / 2.0);
+	XYZ P0 = center + xRadius * cos(startRad) * nX + yRadius * sin(startRad) * nY;
+	XYZ T0 = -sin(startRad) * nX + cos(startRad) * nY;
+
+	controlPoints[0] = XYZW(P0,1);
+	int index = 0;
+	double angle = startRad;
+	for (int i = 1; i < narcs; i++)
+	{
+		angle = angle + dtheta;
+		XYZ P2 = center + xRadius * cos(angle) * nX + yRadius * sin(angle) * nY;
+		controlPoints[index + 2] = XYZW(P2, 1);
+		XYZ T2 = -sin(angle) * nX + cos(angle) * nY;
+		XYZ P1 = XYZ(); // to be continue...
+		controlPoints[index + 1] = XYZW(P1, w1);
+		index = index + 2;
+		if (i < narcs)
+		{
+			P0 = P2;
+			T0 = T2;
+		}
+	}
+
+	int j = 2 * narcs + 1;
+
+	for (int i = 0; i < 3; i++) 
+	{
+		knotVector[i] = 0.0;
+		knotVector[i + j] = 1.0;
+	}
+
+	switch (narcs) {
+	case 2:
+		knotVector[3] = knotVector[4] = 0.5;
+		break;
+	case 3:
+		knotVector[3] = knotVector[4] = 1 / 3;
+		knotVector[5] = knotVector[6] = 2 / 3;
+		break;
+	case 4:
+		knotVector[3] = knotVector[4] = 0.25;
+		knotVector[5] = knotVector[6] = 0.5;
+		knotVector[7] = knotVector[8] = 0.75;
+		break;
+	}
+	degree = 2;
+}

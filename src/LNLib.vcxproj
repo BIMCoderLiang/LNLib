@@ -34,9 +34,11 @@
     <ClInclude Include="include\XYZW.h" />
     <ClInclude Include="include\NurbsSurface.h" />
     <ClInclude Include="include\Matrix4d.h" />
+    <ClInclude Include="include\Intersection.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Algorithm\Polynomials.cpp" />
+    <ClCompile Include="Algorithm\Intersection.cpp" />
     <ClCompile Include="LNLibDefinitions.cpp" />
     <ClCompile Include="Geometry\Curve\NurbsCurve.cpp" />
     <ClCompile Include="Geometry\Surface\NurbsSurface.cpp" />
