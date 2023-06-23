@@ -122,9 +122,24 @@ namespace LNLib
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page308
-		/// Create arbitrary NURBS circular arc.
+		/// Algorithm A7.1
+		/// Create arbitrary NURBS arc.
 		/// </summary>
-		static void CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ& yAxis, double xRadius, double yRadius, double startRad, double endRad, int& degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+		static bool CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ& yAxis, double xRadius, double yRadius, double startRad, double endRad, int& degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page314
+		/// Algorithm A7.2
+		/// Create one Bezier conic arc.
+		/// </summary>
+		static void CreateOneConicArc(const XYZ& point0, const XYZ& vector0, const XYZ& point2, const XYZ& vector2, const XYZ& pointOnConic, XYZ& point1);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page317
+		/// Algorithm A7.3
+		/// Construct open conic arc.
+		/// </summary>
+		static void CreateOpenConic(const XYZ& point0, const XYZ& vector0, const XYZ& point2, const XYZ& vector2, int& degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
 	};
 }
 

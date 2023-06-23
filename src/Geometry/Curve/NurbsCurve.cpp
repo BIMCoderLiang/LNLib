@@ -16,6 +16,7 @@
 #include "Matrix4d.h"
 #include "MathUtils.h"
 #include "BsplineCurve.h"
+#include "Intersection.h"
 #include "ValidationUtils.h"
 #include <vector>
 #include <algorithm>
@@ -973,7 +974,7 @@ void LNLib::NurbsCurve::Reverse(const std::vector<double>& knotVector, const std
 	ReverseControlPoints(controlPoints, reversedControlPoints);
 }
 
-void LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ& yAxis, double startRad, double endRad, double xRadius, double yRadius, int& degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ& yAxis, double startRad, double endRad, double xRadius, double yRadius, int& degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
 {
 	XYZ nXTemp = xAxis;
 	XYZ nX = nXTemp.Normalize();
@@ -1025,7 +1026,10 @@ void LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ
 		XYZ P2 = center + xRadius * cos(angle) * nX + yRadius * sin(angle) * nY;
 		controlPoints[index + 2] = XYZW(P2, 1);
 		XYZ T2 = -sin(angle) * nX + cos(angle) * nY;
-		XYZ P1 = XYZ(); // to be continue...
+		XYZ P1;
+		double param0, param2 = 0.0;
+		CurveCurveIntersectionType type =  Intersection::ComputeRays(P0, T0, P2, T2, param0, param2, P1);
+		if (type != CurveCurveIntersectionType::Intersecting) return false;
 		controlPoints[index + 1] = XYZW(P1, w1);
 		index = index + 2;
 		if (i < narcs)
@@ -1058,4 +1062,5 @@ void LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ
 		break;
 	}
 	degree = 2;
+	return true;
 }

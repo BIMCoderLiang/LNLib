@@ -5,7 +5,7 @@ VisualStudioVersion = 17.5.33516.290
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LNLib", "LNLib.vcxproj", "{66239699-5016-4E0A-953F-AF2D57E77EA4}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LNLib-Tests", "..\test\LNLib-Tests.vcxproj", "{0D3D5280-7051-4DB4-A361-6E8B4E05EC43}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LNLib_Tests", "..\test\LNLib_Tests.vcxproj", "{0D3D5280-7051-4DB4-A361-6E8B4E05EC43}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
