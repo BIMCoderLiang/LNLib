@@ -44,6 +44,7 @@ namespace LNLib
 		bool IsAlmostEqualTo(const XYZ& another) const;
 		double Length() const;
 		double SqrLength() const;
+		double AngleTo(const XYZ& another) const;
 		XYZ Normalize();
 		XYZ Add(const XYZ& another) const;
 		XYZ Substract(const XYZ& another) const;

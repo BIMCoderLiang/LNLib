@@ -31,9 +31,9 @@ CurveCurveIntersectionType Intersection::ComputeRays(const XYZ& point0, const XY
 	XYZ pDiffNormal = (p1Temp - p0Temp).Normalize();
 	XYZ coinCross = pDiffNormal.CrossProduct(v1);
 
-	if (cross.IsAlmostEqualTo(XYZ(0,0,0)))
+	if (cross.IsZero())
 	{
-		if (coinCross.IsAlmostEqualTo(XYZ(0,0,0)))
+		if (coinCross.IsZero())
 		{
 			return CurveCurveIntersectionType::Coincident;
 		}

@@ -136,10 +136,16 @@ namespace LNLib
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page317
+		/// Split arc.
+		/// </summary>
+		static void SplitArc(const XYZ& start, const XYZ& projectPoint, double projectPointWeight, const XYZ& end, XYZ& insertPointAtStartSide, XYZ& splitPoint, XYZ& insertPointAtEndSide, double insertWeight);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page317
 		/// Algorithm A7.3
 		/// Construct open conic arc.
 		/// </summary>
-		static void CreateOpenConic(const XYZ& start, const XYZ& startTangent, const XYZ& end, const XYZ& endTangent, int& degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+		static bool CreateOpenConic(const XYZ& start, const XYZ& startTangent, const XYZ& end, const XYZ& endTangent, const XYZ& pointOnConic, int& degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
 	};
 }
 

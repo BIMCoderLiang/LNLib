@@ -1108,3 +1108,109 @@ bool LNLib::NurbsCurve::CreateOneConicArc(const XYZ& start, const XYZ& startTang
 	}
 	return false;
 }
+
+void LNLib::NurbsCurve::SplitArc(const XYZ& start, const XYZ& projectPoint, double projectPointWeight, const XYZ& end, XYZ& insertPointAtStartSide, XYZ& splitPoint, XYZ& insertPointAtEndSide, double insertWeight)
+{
+	insertPointAtStartSide = (start + projectPointWeight * projectPoint) / (1 + projectPointWeight);
+	insertPointAtEndSide = (projectPointWeight * projectPoint + end) / (1 + projectPointWeight);
+	splitPoint = (insertPointAtStartSide + insertPointAtEndSide) / 2.0;
+	insertWeight = sqrt((1 + projectPointWeight) / 2);
+}
+
+bool LNLib::NurbsCurve::CreateOpenConic(const XYZ& start, const XYZ& startTangent, const XYZ& end, const XYZ& endTangent, const XYZ& pointOnConic, int& degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+{
+	XYZ P1;
+	double w1 = 0.0;
+	bool isCreated = CreateOneConicArc(start, startTangent, end, endTangent, pointOnConic, P1, w1);
+	if (!isCreated) return false;
+
+	int nsegs = 0;
+	if (MathUtils::IsLessThanOrEqual(w1, -1.0))
+	{
+		return false;
+	}
+	if (MathUtils::IsGreaterThanOrEqual(w1, 1.0))
+	{
+		nsegs = 1;
+	}
+	else
+	{
+		XYZ v1 = (P1 - start).Normalize();
+		XYZ v2 = (end - P1).Normalize();
+		double rad = v1.AngleTo(v2);
+		if (MathUtils::IsGreaterThan(w1, 0.0) && rad > MathUtils::AngleToRadians(60))
+		{
+			nsegs = 1;
+		}
+		else if (MathUtils::IsLessThan(w1, 0.0) && rad > MathUtils::AngleToRadians(90))
+		{
+			nsegs = 4;
+		}
+		else
+		{
+			nsegs = 2;
+		}
+	}
+
+	int n = 2 * nsegs;
+	int j = 2 * nsegs + 1;
+
+	controlPoints.resize(n + 1);
+	knotVector.resize(j + 3);
+	degree = 2;
+
+	for (int i = 0; i < 3; i++)
+	{
+		knotVector[i] = 0.0;
+		knotVector[i + j] = 1.0;
+	}
+
+	controlPoints[0] = XYZW(start,1.0);
+	controlPoints[n] = XYZW(end, 1.0);
+
+	if (nsegs == 1)
+	{
+		controlPoints[1] = XYZW(P1, w1);
+		return true;
+	}
+
+	XYZ Q1,R1,S;
+	double wqr = 0.0;
+	SplitArc(start,P1,w1,end,Q1,S,R1,wqr);
+
+	if (nsegs == 2)
+	{
+		controlPoints[2] = XYZW(S, 1.0);
+		controlPoints[1] = XYZW(Q1, wqr);
+		controlPoints[3] = XYZW(R1, wqr);
+
+		knotVector[3] = knotVector[4] = 0.5;
+		return true;
+	}
+
+	if (nsegs == 4)
+	{
+		controlPoints[4] = XYZW(S, 1.0);
+		w1 = wqr;
+
+		XYZ HQ1, HR1, HS;
+		SplitArc(start,Q1,w1,S,HQ1,HS,HR1,wqr);
+		controlPoints[2] = XYZW(HS, 1.0);
+		controlPoints[1] = XYZW(HQ1, wqr);
+		controlPoints[3] = XYZW(HR1, wqr);
+
+		SplitArc(S,R1,w1,end,HQ1,HS,HR1,wqr);
+		controlPoints[6] = XYZW(HS, 1.0);
+		controlPoints[5] = XYZW(HQ1, wqr);
+		controlPoints[7] = XYZW(HR1, wqr);
+
+		for (int i = 0; i < 2; i++)
+		{
+			knotVector[i + 3] = 0.25;
+			knotVector[i + 5] = 0.5;
+			knotVector[i + 7] = 0.75;
+		}
+		return true;
+	}
+	return false;
+}

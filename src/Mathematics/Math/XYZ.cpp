@@ -106,6 +106,24 @@ double XYZ::SqrLength() const
 	return m_xyz[0] * m_xyz[0] + m_xyz[1] * m_xyz[1] + m_xyz[2] * m_xyz[2];
 }
 
+double LNLib::XYZ::AngleTo(const XYZ& another) const
+{
+	XYZ tTemp = (*this);
+	XYZ ntTemp = tTemp.Normalize();
+
+	XYZ aTemp = another;
+	XYZ naTemp = aTemp.Normalize();
+
+	if (ntTemp.IsZero() ||
+		naTemp.IsZero())
+	{
+		return 0.0;
+	}
+	double dot = ntTemp.DotProduct(naTemp);
+	dot = dot < -1.0 ? -1.0 : dot > 1.0 ? 1.0 : dot;
+	return acos(dot);
+}
+
 XYZ XYZ::Normalize()
 {
 	double length = Length();
