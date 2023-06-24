@@ -18,7 +18,7 @@ NURBS Algorithms:
 - Point and Tangent Inversion
 - Curve and Surface Reverse
 - Curve Transform
-- Create Arc and Conic
+- Create Arc and Conic Curve
 
 This library is **under development.**
 
