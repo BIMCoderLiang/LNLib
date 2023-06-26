@@ -720,3 +720,74 @@ void LNLib::NurbsSurface::ReverseV(const std::vector<std::vector<XYZW>>& control
 }
 
 
+void LNLib::NurbsSurface::CreateBilinearSurface(const XYZ& point0, const XYZ& point1, const XYZ& point2, const XYZ& point3, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
+{
+	int degree = 3;
+
+	for (int i = 0; i <= degree; i++) 
+	{
+		std::vector<XYZW> row;
+		for (int j = 0; j <= degree; j++) 
+		{
+			double l = 1.0 - i / degree;
+			XYZ inter12 = l * point0 + (1 - l) * point1;
+			XYZ inter34 = l * point3 + (1 - l) * point2;
+
+			XYZ res = inter12 * (1- j/degree) + (j/degree) * inter34;
+			row.emplace_back(XYZW(res, 1.0));
+		}
+		controlPoints.emplace_back(row);
+
+		knotVectorU.emplace_back(0.0);
+		knotVectorV.emplace_back(0.0);
+	}
+
+	for (int i = 0; i <= degree; i++)
+	{
+		knotVectorU.emplace_back(1.0);
+		knotVectorV.emplace_back(1.0);
+	}
+}
+
+void LNLib::NurbsSurface::CreateCylindricalSurface(const XYZ& origin, const XYZ& xAxis, const XYZ& yAxis, double startRad, double endRad, double radius, double height, int& degreeU, int& degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
+{
+	XYZ xTemp = xAxis;
+	XYZ yTemp = yAxis;
+
+	XYZ nX = xTemp.Normalize();
+	XYZ nY = yTemp.Normalize();
+
+	int arcDegree;
+	std::vector<double> arcKnotVector;
+	std::vector<XYZW> arcControlPoints;
+
+	NurbsCurve::CreateArc(origin, nX, nY, radius, radius, startRad, endRad, arcDegree, arcKnotVector, arcControlPoints);
+
+	XYZ axis = nX.CrossProduct(nY);
+	XYZ translation = height * axis;
+	XYZ halfTranslation = 0.5 * height * axis;
+
+	int size = static_cast<int>(arcControlPoints.size());
+
+	controlPoints.resize(3);
+	for (int i = 0; i < 3; i++)
+	{
+		controlPoints[i].resize(size);
+	}
+
+	for (int i = 0; i < size; i++)
+	{
+		double w = arcControlPoints[i].GetW();
+
+		controlPoints[2][i] = XYZW(arcControlPoints[i].ToXYZ(true), w);
+		controlPoints[1][i] = XYZW(halfTranslation + arcControlPoints[i].ToXYZ(true), w);
+		controlPoints[0][i] = XYZW(translation + arcControlPoints[i].ToXYZ(true), w);
+	}
+
+	degreeU = 2;
+	degreeV = arcDegree;
+	knotVectorU = { 0,0,0,1,1,1 };
+	knotVectorV = arcKnotVector;
+}
+
+

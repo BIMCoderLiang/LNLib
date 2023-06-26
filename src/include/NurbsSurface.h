@@ -102,6 +102,18 @@ namespace LNLib
 		/// Surface reverse V direction,but not use reparameterization.
 		/// </summary>
 		static void ReverseV(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorV, std::vector<double>& reversedKnotVectorV, std::vector<std::vector<XYZW>>& reversedControlPoints);
+		
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page334
+		/// construct a NURBS surface by four counter-clockwise points.
+		/// </summary>
+		static void CreateBilinearSurface(const XYZ& point0, const XYZ& point1, const XYZ& point2, const XYZ& point3, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page336
+		/// Create a right cirular cylinder.
+		/// </summary>
+		static void CreateCylindricalSurface(const XYZ& origin, const XYZ& xAxis, const XYZ& yAxis, double startRad, double endRad, double radius, double height, int& degreeU, int& degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints);
 	};
 }
 
