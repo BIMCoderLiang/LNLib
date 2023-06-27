@@ -738,18 +738,15 @@ void LNLib::NurbsSurface::CreateBilinearSurface(const XYZ& point0, const XYZ& po
 		}
 		controlPoints.emplace_back(row);
 
-		knotVectorU.emplace_back(0.0);
-		knotVectorV.emplace_back(0.0);
-	}
-
-	for (int i = 0; i <= degree; i++)
-	{
+		knotVectorU.insert(knotVectorU.begin(),0.0);
 		knotVectorU.emplace_back(1.0);
+
+		knotVectorV.insert(knotVectorV.begin(), 0.0);
 		knotVectorV.emplace_back(1.0);
 	}
 }
 
-void LNLib::NurbsSurface::CreateCylindricalSurface(const XYZ& origin, const XYZ& xAxis, const XYZ& yAxis, double startRad, double endRad, double radius, double height, int& degreeU, int& degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
+bool LNLib::NurbsSurface::CreateCylindricalSurface(const XYZ& origin, const XYZ& xAxis, const XYZ& yAxis, double startRad, double endRad, double radius, double height, int& degreeU, int& degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
 {
 	XYZ xTemp = xAxis;
 	XYZ yTemp = yAxis;
@@ -761,8 +758,8 @@ void LNLib::NurbsSurface::CreateCylindricalSurface(const XYZ& origin, const XYZ&
 	std::vector<double> arcKnotVector;
 	std::vector<XYZW> arcControlPoints;
 
-	NurbsCurve::CreateArc(origin, nX, nY, radius, radius, startRad, endRad, arcDegree, arcKnotVector, arcControlPoints);
-
+	bool isCreated = NurbsCurve::CreateArc(origin, nX, nY, radius, radius, startRad, endRad, arcDegree, arcKnotVector, arcControlPoints);
+	if (!isCreated) return false;
 	XYZ axis = nX.CrossProduct(nY);
 	XYZ translation = height * axis;
 	XYZ halfTranslation = 0.5 * height * axis;
@@ -788,6 +785,56 @@ void LNLib::NurbsSurface::CreateCylindricalSurface(const XYZ& origin, const XYZ&
 	degreeV = arcDegree;
 	knotVectorU = { 0,0,0,1,1,1 };
 	knotVectorV = arcKnotVector;
+
+	return true;
+}
+
+bool LNLib::NurbsSurface::CreateRuledSurface(int degree0, const std::vector<double>& knotVector0, const std::vector<XYZW> controlPoints0, int degree1, const std::vector<double>& knotVector1, const std::vector<XYZW>& controlPoints1,
+											 int& degreeU, int& degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>> controlPoints)
+{
+	int kSize = static_cast<int>(knotVector0.size());
+	if (!MathUtils::IsAlmostEqualTo(knotVector0[0], knotVector1[0]) ||
+		!MathUtils::IsAlmostEqualTo(knotVector0[kSize - 1], knotVector1[kSize - 1]))
+	{
+		return false;
+	}
+
+	degreeU = std::max(degree0, degree1);
+	degreeV = 1;
+
+	std::vector<double> updatedKnotVector0;
+	std::vector<XYZW> updatedControlPoints0;
+	std::vector<double> updatedKnotVector1;
+	std::vector<XYZW> updatedControlPoints1;
+	if (degree0 < degreeU)
+	{
+		int times = degreeU - degree0;
+		NurbsCurve::ElevateDegree(degree0, knotVector0, controlPoints0, times, updatedKnotVector0, updatedControlPoints0);
+	}
+	else
+	{
+		int times = degreeU - degree1;
+		NurbsCurve::ElevateDegree(degree1, knotVector1, controlPoints1, times, updatedKnotVector1, updatedControlPoints1);
+	}
+
+	bool isSameKnotVector = true;
+	for (int i = 0; i < kSize; i++)
+	{
+		if (!MathUtils::IsAlmostEqualTo(knotVector0[i], knotVector1[i]))
+		{
+			isSameKnotVector = false;
+			break;
+		}
+	}
+
+
+	if (!isSameKnotVector)
+	{
+		//NurbsCurve::RefineKnotVector();
+		//NurbsCurve::RefineKnotVector();
+	}
+
+	return true;
 }
 
 
