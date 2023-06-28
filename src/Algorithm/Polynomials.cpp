@@ -12,6 +12,7 @@
 #include "UV.h"
 #include "ValidationUtils.h"
 #include "MathUtils.h"
+#include <algorithm>
 
 using namespace LNLib;
 
@@ -127,6 +128,81 @@ int LNLib::Polynomials::GetKnotMultiplicity(double knot, const std::vector<doubl
 
 	return multi;
 }
+
+std::unordered_map<double, int> LNLib::Polynomials::GetKnotMultiplicityMap(const std::vector<double>& knotVector)
+{
+	std::unordered_map<double, int> result;
+
+	for (int i = 0; i < static_cast<int>(knotVector.size()); i++)
+	{
+		std::unordered_map<double, int>::const_iterator got = result.find(i);
+		if (got == result.end())
+		{
+			result.insert({ i, GetKnotMultiplicity(knotVector[i], knotVector) });
+		}
+	}
+	return result;
+}
+
+void LNLib::Polynomials::GetInsertedKnotElement(const std::vector<double> knotVector0, const std::vector<double> knotVector1, std::vector<double>& insertElements0, std::vector<double>& insertElements1)
+{
+	std::unordered_map<double, int> map0 = GetKnotMultiplicityMap(knotVector0);
+	std::unordered_map<double, int> map1 = GetKnotMultiplicityMap(knotVector1);
+
+	for (auto it = map0.begin(); it != map0.end(); ++it)
+	{
+		double key0 = it->first;
+		int count0 = it->second;
+
+		std::unordered_map<double, int>::const_iterator got = map1.find(key0);
+		if (got == map1.end())
+		{
+			for (int i = 0; i < count0; i++)
+			{
+				insertElements1.emplace_back(key0);
+			}
+		}
+		else
+		{
+			int count1 = got->second;
+			if (count0 > count1)
+			{
+				int times = count0 - count1;
+				for (int j = 0; j < times; j++)
+				{
+					insertElements1.emplace_back(key0);
+				}
+			}
+			else
+			{
+				int times = count1 - count0;
+				for (int j = 0; j < times; j++)
+				{
+					insertElements0.emplace_back(key0);
+				}
+			}
+		}
+	}
+
+	for (auto it = map1.begin(); it != map1.end(); ++it)
+	{
+		double key1 = it->first;
+		int count1 = it->second;
+
+		std::unordered_map<double, int>::const_iterator got = map0.find(key1);
+		if (got == map0.end())
+		{
+			for (int i = 0; i < count1; i++)
+			{
+				insertElements0.emplace_back(key1);
+			}
+		}
+	}
+
+	std::sort(insertElements0.begin(), insertElements0.end());
+	std::sort(insertElements1.begin(), insertElements1.end());
+}
+
 
 void LNLib::Polynomials::BasisFunctions(unsigned int spanIndex, unsigned int degree, double paramT, const std::vector<double>& knotVector, std::vector<double>& basisFunctions)
 {
