@@ -19,11 +19,12 @@ NURBS Algorithms:
 - Curve and Surface Reverse
 - Curve Transform
 - Create Arc and Conic Curve
+- Create Bilinear/Cylindrical/Ruled/Revolved Surface
 
 This library is **under development.**
 
 ## Roadmap
-- Algorithms of Chapter 8 - 11 in The NURBS Book 2nd Edition
+- Algorithms of Chapter 9 - 11 in The NURBS Book 2nd Edition
 - Other Common NURBS algorithms
 - Geometry Objects Creation
 - UI Interaction for LNLib

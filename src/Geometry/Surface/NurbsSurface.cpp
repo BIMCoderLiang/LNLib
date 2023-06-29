@@ -16,6 +16,8 @@
 #include "MathUtils.h"
 #include "NurbsCurve.h"
 #include "BsplineSurface.h"
+#include "Projection.h"
+#include "Intersection.h"
 #include "ValidationUtils.h"
 
 void LNLib::NurbsSurface::GetPointOnSurface(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, XYZ& point)
@@ -869,6 +871,115 @@ bool LNLib::NurbsSurface::CreateRuledSurface(int degree0, const std::vector<doub
 		controlPoints[i].resize(2);
 		controlPoints[i][0] = finalControlPoints0[i];
 		controlPoints[i][1] = finalControlPoints1[i];
+	}
+
+	return true;
+}
+
+bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& axis, double rad, const std::vector<XYZW>& generatrixCurve, std::vector<double>& knotVectorU, std::vector<std::vector<XYZW>>& controlPoints)
+{
+	int narcs = 0;
+	if (MathUtils::IsLessThanOrEqual(rad, Constants::Pi / 2))
+	{
+		narcs = 1;
+	}
+	else
+	{
+		if (MathUtils::IsLessThanOrEqual(rad, Constants::Pi))
+		{
+			narcs = 2;
+			knotVectorU.resize(6);
+			knotVectorU[3] = knotVectorU[4] = 0.5;
+		}
+		else if (MathUtils::IsLessThanOrEqual(rad, 3 * Constants::Pi / 2))
+		{
+			narcs = 3;
+			knotVectorU.resize(8);
+			knotVectorU[3] = knotVectorU[4] = 1.0 / 3.0;
+			knotVectorU[5] = knotVectorU[6] = 2.0 / 3.0;
+		}
+		else
+		{
+			narcs = 4;
+			knotVectorU.resize(10);
+			knotVectorU[3] = knotVectorU[4] = 0.25;
+			knotVectorU[5] = knotVectorU[6] = 0.5;
+			knotVectorU[7] = knotVectorU[8] = 0.75;
+		}
+	}
+
+	double dtheta = rad / narcs;
+	int j = 3 + 2 * (narcs - 1);
+	for (int i = 0; i < 3; j++,i++)
+	{
+		knotVectorU[i] = 0.0;
+		knotVectorU[j] = 1.0;
+	}
+
+	int n = 2 * narcs;
+	double wm = cos(dtheta / 2.0);
+	double angle = 0.0;
+	std::vector<double> cosines(narcs + 1), sines(narcs + 1);
+
+	for (int i = 1; i <= narcs; i++)
+	{
+		angle = angle + dtheta;
+		cosines[i] = cos(angle);
+		sines[i] = sin(angle);
+	}
+
+	int m = static_cast<int>(generatrixCurve.size());
+	XYZ X, Y, O, P0, P2, T0, T2;
+	double r = 0.0;
+	int index = 0;
+
+	controlPoints.resize(n + 1);
+	for (int i = 0; i <= n; i++)
+	{
+		controlPoints[i].resize(m + 1);
+	}
+
+	for (int j = 0; j <= m; j++)
+	{
+		XYZW gp = generatrixCurve[j];
+		XYZ p = XYZ(gp[0], gp[1], gp[2]) / gp[3];
+
+		Projection::PointToLine(origin, axis, p, O);
+		X = p - O;
+
+		r = X.Normalize().Length();
+		Y = axis.CrossProduct(X);
+
+		P0 = p;
+		controlPoints[0][j] = XYZW(P0, gp[3]);
+
+		T0 = Y;
+		index = 0;
+		angle = 0.0;
+
+		for (int i = 1; i <= narcs; i++)
+		{
+			P2 = O + r * cosines[i] * X + r * sines[i] * Y;
+			controlPoints[index + 2][j] = XYZW(P2, gp[3]);
+			T2 = -sines[i] * X + cosines[i] * Y;
+
+			XYZ intersectPoint;
+			double param0;
+			double param1;
+			CurveCurveIntersectionType type = Intersection::ComputeRays(P0, T0, P2, T2, param0, param1, intersectPoint);
+			if (type != CurveCurveIntersectionType::Intersecting)
+			{
+				return false;
+			}
+			controlPoints[index + 1][j] = XYZW(intersectPoint, gp[3]);
+
+			index += 2;
+			if (i < narcs)
+			{
+				P0 = P2;
+				T0 = T2;
+			}
+		}
 	}
 
 	return true;

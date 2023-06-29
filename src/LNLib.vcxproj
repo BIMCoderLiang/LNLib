@@ -35,6 +35,7 @@
     <ClInclude Include="include\NurbsSurface.h" />
     <ClInclude Include="include\Matrix4d.h" />
     <ClInclude Include="include\Intersection.h" />
+    <ClInclude Include="include\Projection.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Algorithm\Polynomials.cpp" />
@@ -53,6 +54,7 @@
     <ClCompile Include="Algorithm\ValidationUtils.cpp" />
     <ClCompile Include="Mathematics\Math\XYZW.cpp" />
     <ClCompile Include="Mathematics\Math\Matrix4d.cpp" />
+    <ClCompile Include="Algorithm\Projection.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
