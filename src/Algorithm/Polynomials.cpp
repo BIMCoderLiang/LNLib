@@ -16,6 +16,33 @@
 
 using namespace LNLib;
 
+namespace LNLib
+{
+	struct CustomDoubleEqual
+	{
+		bool operator()(const double& d1, const double& d2) const
+		{
+			return MathUtils::IsAlmostEqualTo(d1, d2);
+		}
+	};
+	std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> GetKnotMultiplicityMap(const std::vector<double>& knotVector)
+	{
+		std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> result;
+
+		for (int i = 0; i < static_cast<int>(knotVector.size()); i++)
+		{
+			auto got = result.find(i);
+			if (got == result.end())
+			{
+				result.insert({ i, LNLib::Polynomials::GetKnotMultiplicity(knotVector[i], knotVector) });
+			}
+		}
+		return result;
+	}
+}
+
+
+
 double Polynomials::Horner(const std::vector<double>& coefficients, unsigned int degree, double paramT)
 {
 	double result = coefficients[degree];
@@ -129,32 +156,17 @@ int LNLib::Polynomials::GetKnotMultiplicity(double knot, const std::vector<doubl
 	return multi;
 }
 
-std::unordered_map<double, int> LNLib::Polynomials::GetKnotMultiplicityMap(const std::vector<double>& knotVector)
-{
-	std::unordered_map<double, int> result;
-
-	for (int i = 0; i < static_cast<int>(knotVector.size()); i++)
-	{
-		std::unordered_map<double, int>::const_iterator got = result.find(i);
-		if (got == result.end())
-		{
-			result.insert({ i, GetKnotMultiplicity(knotVector[i], knotVector) });
-		}
-	}
-	return result;
-}
-
 void LNLib::Polynomials::GetInsertedKnotElement(const std::vector<double> knotVector0, const std::vector<double> knotVector1, std::vector<double>& insertElements0, std::vector<double>& insertElements1)
 {
-	std::unordered_map<double, int> map0 = GetKnotMultiplicityMap(knotVector0);
-	std::unordered_map<double, int> map1 = GetKnotMultiplicityMap(knotVector1);
+	std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> map0 = GetKnotMultiplicityMap(knotVector0);
+	std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> map1 = GetKnotMultiplicityMap(knotVector1);
 
 	for (auto it = map0.begin(); it != map0.end(); ++it)
 	{
 		double key0 = it->first;
 		int count0 = it->second;
 
-		std::unordered_map<double, int>::const_iterator got = map1.find(key0);
+		auto got = map1.find(key0);
 		if (got == map1.end())
 		{
 			for (int i = 0; i < count0; i++)
@@ -189,7 +201,7 @@ void LNLib::Polynomials::GetInsertedKnotElement(const std::vector<double> knotVe
 		double key1 = it->first;
 		int count1 = it->second;
 
-		std::unordered_map<double, int>::const_iterator got = map0.find(key1);
+		auto got = map0.find(key1);
 		if (got == map0.end())
 		{
 			for (int i = 0; i < count1; i++)

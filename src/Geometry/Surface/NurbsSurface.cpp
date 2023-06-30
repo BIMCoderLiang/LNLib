@@ -876,7 +876,7 @@ bool LNLib::NurbsSurface::CreateRuledSurface(int degree0, const std::vector<doub
 	return true;
 }
 
-bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& axis, double rad, const std::vector<XYZW>& generatrixCurve, std::vector<double>& knotVectorU, std::vector<std::vector<XYZW>>& controlPoints)
+bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& axis, double rad, const std::vector<XYZW>& generatrixCurve, int& degreeU, std::vector<double>& knotVectorU, std::vector<std::vector<XYZW>>& controlPoints)
 {
 	int narcs = 0;
 	if (MathUtils::IsLessThanOrEqual(rad, Constants::Pi / 2))
@@ -981,6 +981,8 @@ bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& ax
 			}
 		}
 	}
+
+	degreeU = 2;
 
 	return true;
 }

@@ -72,8 +72,6 @@ namespace LNLib
 		/// </summary>
 		static int GetKnotMultiplicity(double knot, const std::vector<double>& knotVector);
 
-		static std::unordered_map<double, int> GetKnotMultiplicityMap(const std::vector<double>& knotVector);
-
 		static void GetInsertedKnotElement(const std::vector<double> knotVector0, const std::vector<double> knotVector1, std::vector<double>& insertElements0, std::vector<double>& insertElements1);
 
 		/// <summary>
