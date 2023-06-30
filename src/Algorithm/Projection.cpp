@@ -16,5 +16,5 @@ void LNLib::Projection::PointToLine(const XYZ& origin, const XYZ& vector, const 
     XYZ temp = vector;
     XYZ nTemp = temp.Normalize();
 
-    ProjectPoint = origin + (Point - origin) * nTemp * nTemp;
+    ProjectPoint = origin + ((Point - origin).DotProduct(nTemp)) * nTemp;
 }
