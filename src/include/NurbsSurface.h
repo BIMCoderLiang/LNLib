@@ -123,6 +123,7 @@ namespace LNLib
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page346
+		/// Algorithm A8.1
 		/// Create a revolved surface.
 		/// </summary>
 		static bool CreateRevolvedSurface(const XYZ& origin, const XYZ& axis, double rad, const std::vector<XYZW>& generatrixCurve, int& degreeU, std::vector<double>& knotVectorU, std::vector<std::vector<XYZW>>& controlPoints);
