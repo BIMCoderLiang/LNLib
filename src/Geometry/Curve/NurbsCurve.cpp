@@ -18,6 +18,7 @@
 #include "BsplineCurve.h"
 #include "Intersection.h"
 #include "ValidationUtils.h"
+#include "Interpolation.h"
 #include <vector>
 #include <algorithm>
 
@@ -1213,4 +1214,62 @@ bool LNLib::NurbsCurve::CreateOpenConic(const XYZ& start, const XYZ& startTangen
 		return true;
 	}
 	return false;
+}
+
+void LNLib::NurbsCurve::Create(unsigned int degree, const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+{
+	int n = static_cast<int>(throughPoints.size());
+	int m = (n - 1) + degree + 1;
+
+	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
+	Interpolation::ComputeKnotVector(degree, throughPoints, knotVector);
+
+	std::vector<std::vector<double>> A;
+	A.resize(n + 1);
+	for (int i = 0; i <= n; i++)
+	{
+		A[i].resize(n + 1);
+	}
+
+	for (int i = 0; i <= n; i++)
+	{
+		int spanIndex = Polynomials::GetKnotSpanIndex(n, degree, uk[i], knotVector);
+		std::vector<double> basis;
+		Polynomials::BasisFunctions(spanIndex, degree, knotVector[i], knotVector, basis);
+
+		int j = spanIndex - degree;
+		for (int k = 0; k < static_cast<int>(basis.size()); k++)
+		{
+			A[i][j] = basis[k];
+			j++;
+		}
+	}
+
+	std::vector<XYZ> tempControlPoints;
+	tempControlPoints.resize(n);
+
+	std::vector<std::vector<double>> matrixL;
+	std::vector<std::vector<double>> matrixU;
+	Interpolation::LUDecomposition(A, matrixL, matrixU);
+
+	for (int i = 0; i < 3; i++)
+	{
+		std::vector<double> rhs;
+		for (int j = 0; j < n; j++)
+		{
+			rhs[j] = throughPoints[j][i];
+		}
+		std::vector<double> column = Interpolation::ForwardSubstitution(matrixL, rhs);
+		std::vector<double> sol = Interpolation::BackwardSubstitution(matrixU, column);
+
+		for (int j = 0; j < n; j++)
+		{
+			tempControlPoints[j][i] = sol[j];
+		}
+	}
+
+	for (int i = 0; i < n; i++)
+	{
+		controlPoints[i] = XYZW(tempControlPoints[i], 1);
+	}
 }

@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Interpolation.h" />
     <ClInclude Include="include\BsplineSurface.h" />
     <ClInclude Include="include\BsplineCurve.h" />
     <ClInclude Include="include\BezierSurface.h" />
@@ -40,6 +41,7 @@
   <ItemGroup>
     <ClCompile Include="Algorithm\Polynomials.cpp" />
     <ClCompile Include="Algorithm\Intersection.cpp" />
+    <ClCompile Include="Algorithm\Interpolation.cpp" />
     <ClCompile Include="LNLibDefinitions.cpp" />
     <ClCompile Include="Geometry\Curve\NurbsCurve.cpp" />
     <ClCompile Include="Geometry\Surface\NurbsSurface.cpp" />

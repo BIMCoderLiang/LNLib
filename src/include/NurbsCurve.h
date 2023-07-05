@@ -146,6 +146,31 @@ namespace LNLib
 		/// Construct open conic arc.
 		/// </summary>
 		static bool CreateOpenConic(const XYZ& start, const XYZ& startTangent, const XYZ& end, const XYZ& endTangent, const XYZ& pointOnConic, int& degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page369
+		/// Algorithm A9.1
+		/// Global interpolation througn n+1 points.
+		/// </summary>
+		static void Create(unsigned int degree, const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page369
+		/// Global interpolation througn n+1 points with end derivatives specified.
+		/// </summary>
+		static void Create(unsigned int degree, const std::vector<XYZ>& throughPoints, const XYZ& startTangent, const XYZ& endTangent,  std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page371
+		/// Create a global cubic curve through n+1 points with end derivatives specified.
+		/// </summary>
+		static void CreateCubic(const std::vector<XYZ>& throughPoints, const XYZ& startTangent, const XYZ& endTangent, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page374
+		/// Global interpolation by through points and its derivate.
+		/// </summary>
+		static void CreateCubic(const std::vector<XYZ>& throughPoints, const std::vector<XYZ>& tangents, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
 	};
 }
 
