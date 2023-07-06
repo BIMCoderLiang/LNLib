@@ -24,6 +24,8 @@ namespace LNLib
 
 		static void ComputeKnotVector(unsigned int degree, const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector);
 
+		static void ComputeKnotVectorForEndTangents(unsigned int degree, const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector);
+
 		static bool LUDecomposition(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& matrixL, std::vector<std::vector<double>>& matrixU);
 
 		static std::vector<double> ForwardSubstitution(const std::vector<std::vector<double>>& matrixL, const std::vector<double>& column);

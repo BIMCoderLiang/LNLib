@@ -1218,8 +1218,8 @@ bool LNLib::NurbsCurve::CreateOpenConic(const XYZ& start, const XYZ& startTangen
 
 void LNLib::NurbsCurve::Create(unsigned int degree, const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
 {
-	int n = static_cast<int>(throughPoints.size());
-	int m = (n - 1) + degree + 1;
+	int size = static_cast<int>(throughPoints.size());
+	int n = size - 1;
 
 	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
 	Interpolation::ComputeKnotVector(degree, throughPoints, knotVector);
@@ -1246,7 +1246,7 @@ void LNLib::NurbsCurve::Create(unsigned int degree, const std::vector<XYZ>& thro
 	}
 
 	std::vector<XYZ> tempControlPoints;
-	tempControlPoints.resize(n);
+	tempControlPoints.resize(size);
 
 	std::vector<std::vector<double>> matrixL;
 	std::vector<std::vector<double>> matrixU;
@@ -1255,20 +1255,98 @@ void LNLib::NurbsCurve::Create(unsigned int degree, const std::vector<XYZ>& thro
 	for (int i = 0; i < 3; i++)
 	{
 		std::vector<double> rhs;
-		for (int j = 0; j < n; j++)
+		for (int j = 0; j <= n; j++)
 		{
 			rhs[j] = throughPoints[j][i];
 		}
 		std::vector<double> column = Interpolation::ForwardSubstitution(matrixL, rhs);
 		std::vector<double> sol = Interpolation::BackwardSubstitution(matrixU, column);
 
-		for (int j = 0; j < n; j++)
+		for (int j = 0; j <= n; j++)
 		{
 			tempControlPoints[j][i] = sol[j];
 		}
 	}
 
-	for (int i = 0; i < n; i++)
+	for (int i = 0; i < size; i++)
+	{
+		controlPoints[i] = XYZW(tempControlPoints[i], 1);
+	}
+}
+
+void LNLib::NurbsCurve::Create(unsigned int degree, const std::vector<XYZ>& throughPoints, const XYZ& startTangent, const XYZ& endTangent, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+{
+	int size = static_cast<int>(throughPoints.size());
+	int n = size - 1;
+	int m = n + degree + 3;
+
+	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
+	Interpolation::ComputeKnotVectorForEndTangents(degree, throughPoints, knotVector);
+
+	std::vector<std::vector<double>> A;
+	A.resize(n + 3);
+	for (int i = 0; i <= n + 2; i++)
+	{
+		A[i].resize(n + 3);
+	}
+
+	for (int i = 0; i <= n; i++)
+	{
+		int spanIndex = Polynomials::GetKnotSpanIndex(n, degree, uk[i], knotVector);
+		std::vector<double> basis;
+		Polynomials::BasisFunctions(spanIndex, degree, knotVector[i], knotVector, basis);
+
+		int j = spanIndex - degree;
+		for (int k = 0; k < static_cast<int>(basis.size()); k++)
+		{
+			A[i][j] = basis[k];
+			j++;
+		}
+	}
+
+	std::vector<double> startTangentVector;
+	startTangentVector.resize(n + 3, 0.0);
+	startTangentVector[0] = -1;
+	startTangentVector[1] = 1;
+	A.insert(A.begin() + 1, startTangentVector);
+
+	std::vector<double> endTangentVector;
+	endTangentVector.resize(n + 3, 0.0);
+	endTangentVector[n + 1] = -1;
+	endTangentVector[n + 2] = 1;
+	A.insert(A.end() - 1 , endTangentVector);
+
+	std::vector<XYZ> tempControlPoints;
+	tempControlPoints.resize(size);
+
+	std::vector<std::vector<double>> matrixL;
+	std::vector<std::vector<double>> matrixU;
+	Interpolation::LUDecomposition(A, matrixL, matrixU);
+
+	for (int i = 0; i < 3; i++)
+	{
+		std::vector<double> rhs;
+		for (int j = 0; j <= n; j++)
+		{
+			rhs[j] = throughPoints[j][i];
+		}
+
+		XYZ startTangentValue = (knotVector[degree + 1] / degree) * startTangent;
+		rhs.insert(rhs.begin() + 1 , startTangentValue[i]);
+
+		XYZ endTangentValue = (1 - (knotVector[m - degree - 1] / degree)) * endTangent;
+		rhs.insert(rhs.end() - 1, endTangentValue[i]);
+
+		std::vector<double> column = Interpolation::ForwardSubstitution(matrixL, rhs);
+		std::vector<double> sol = Interpolation::BackwardSubstitution(matrixU, column);
+
+		for (int j = 0; j <= n; j++)
+		{
+			tempControlPoints[j][i] = sol[j];
+		}
+	}
+
+	for (int i = 0; i < size; i++)
 	{
 		controlPoints[i] = XYZW(tempControlPoints[i], 1);
 	}

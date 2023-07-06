@@ -46,16 +46,17 @@ void LNLib::Interpolation::ComputeKnotVector(unsigned int degree, const std::vec
 {
 	std::vector<double> uk = GetChordParameterization(throughPoints);
 
-	int n = static_cast<int>(throughPoints.size());
-	int m = (n - 1) + degree + 1;
+	int size = static_cast<int>(throughPoints.size());
+	int n = size - 1;
+	int m = n + degree + 1;
 
-	knotVector.resize(degree + 1, 0.0);
+	knotVector.resize(m + 1, 0.0);
 	for (int i = m - degree; i <= m; i++)
 	{
 		knotVector[i] = 1.0;
 	}
 
-	for (int j = 1; j <= static_cast<int>(n - degree); j++)
+	for (int j = 1; j <= static_cast<int>(n - degree + 1); j++)
 	{
 		double temp = 0.0;
 		for (int i = j; i <= static_cast<int>(j + degree - 1); i++)
@@ -63,6 +64,31 @@ void LNLib::Interpolation::ComputeKnotVector(unsigned int degree, const std::vec
 			temp += uk[i];
 		}
 		knotVector[j + degree] = (1.0 / degree) * temp;
+	}
+}
+
+void LNLib::Interpolation::ComputeKnotVectorForEndTangents(unsigned int degree, const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector)
+{
+	std::vector<double> uk = GetChordParameterization(throughPoints);
+
+	int size = static_cast<int>(throughPoints.size());
+	int n = size - 1;
+	int m = n + degree + 3;
+
+	knotVector.resize(m + 1, 0.0);
+	for (int i = m - degree; i <= m; i++)
+	{
+		knotVector[i] = 1.0;
+	}
+
+	for (int j = 0; j <= static_cast<int>(n - degree + 1); j++)
+	{
+		double temp = 0.0;
+		for (int i = j; i <= static_cast<int>(j + degree - 1); i++)
+		{
+			temp += uk[i];
+		}
+		knotVector[j + degree + 1] = (1.0 / degree) * temp;
 	}
 }
 
