@@ -1276,6 +1276,11 @@ void LNLib::NurbsCurve::Create(unsigned int degree, const std::vector<XYZ>& thro
 
 void LNLib::NurbsCurve::Create(unsigned int degree, const std::vector<XYZ>& throughPoints, const XYZ& startTangent, const XYZ& endTangent, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
 {
+	XYZ sTemp = startTangent;
+	XYZ sT = sTemp.Normalize() * Interpolation::GetTotalChordLength(throughPoints);
+	XYZ eTemp = endTangent;
+	XYZ eT = eTemp.Normalize() * Interpolation::GetTotalChordLength(throughPoints);
+
 	int size = static_cast<int>(throughPoints.size());
 	int n = size - 1;
 	int m = n + degree + 3;
@@ -1317,7 +1322,7 @@ void LNLib::NurbsCurve::Create(unsigned int degree, const std::vector<XYZ>& thro
 	A.insert(A.end() - 1 , endTangentVector);
 
 	std::vector<XYZ> tempControlPoints;
-	tempControlPoints.resize(size);
+	tempControlPoints.resize(n + 3);
 
 	std::vector<std::vector<double>> matrixL;
 	std::vector<std::vector<double>> matrixU;
@@ -1331,10 +1336,10 @@ void LNLib::NurbsCurve::Create(unsigned int degree, const std::vector<XYZ>& thro
 			rhs[j] = throughPoints[j][i];
 		}
 
-		XYZ startTangentValue = (knotVector[degree + 1] / degree) * startTangent;
+		XYZ startTangentValue = (knotVector[degree + 1] / degree) * sT;
 		rhs.insert(rhs.begin() + 1 , startTangentValue[i]);
 
-		XYZ endTangentValue = (1 - (knotVector[m - degree - 1] / degree)) * endTangent;
+		XYZ endTangentValue = (1 - (knotVector[m - degree - 1] / degree)) * eT;
 		rhs.insert(rhs.end() - 1, endTangentValue[i]);
 
 		std::vector<double> column = Interpolation::ForwardSubstitution(matrixL, rhs);
@@ -1349,5 +1354,71 @@ void LNLib::NurbsCurve::Create(unsigned int degree, const std::vector<XYZ>& thro
 	for (int i = 0; i < size; i++)
 	{
 		controlPoints[i] = XYZW(tempControlPoints[i], 1);
+	}
+}
+
+void LNLib::NurbsCurve::CreateCubic(const std::vector<XYZ>& throughPoints, const XYZ& startTangent, const XYZ& endTangent, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+{
+	XYZ sTemp = startTangent;
+	XYZ sT = sTemp.Normalize() * Interpolation::GetTotalChordLength(throughPoints);
+	XYZ eTemp = endTangent;
+	XYZ eT = eTemp.Normalize() * Interpolation::GetTotalChordLength(throughPoints);
+
+	int size = static_cast<int>(throughPoints.size());
+	int n = size - 1;
+	int m = n + 3 + 3;
+	
+	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
+
+	knotVector.resize(m + 1, 0.0);
+	for (int i = n + 3; i <= n + 6; i++)
+	{
+		knotVector[i] = 1.0;
+	}
+
+	for (int j = 1; j <= n - 1; j++)
+	{
+		knotVector[j + 3] = uk[j];
+	}
+
+	controlPoints.resize(n + 3);
+
+	controlPoints[0] = XYZW(throughPoints[0],1);
+	controlPoints[1] = XYZW((knotVector[4] / 3) * sT,1) + controlPoints[0];
+	controlPoints[n + 2] = XYZW(throughPoints[n], 1);
+	controlPoints[n + 1] = controlPoints[n + 2] - XYZW(((1 - knotVector[n + 2]) / 3) * eT, 1);
+
+	std::vector<XYZ> R;
+	R.resize(n + 1);
+	std::vector<double> dd;
+	dd.resize(n + 1);
+	std::vector<double> abc;
+	abc.resize(4);
+
+	for (int i = 3; i < n; i++)
+	{
+		R[i] = throughPoints[i - 1];
+	}
+
+	Polynomials::BasisFunctions(4, 3, knotVector[4],  knotVector, abc);
+	double den = abc[1];
+	controlPoints[2] = XYZW((throughPoints[1]-abc[0]*controlPoints[1].ToXYZ(true)) / den, 1);
+
+	for (int i = 3; i < n; i++)
+	{
+		dd[i] = abc[2] / den;
+		Polynomials::BasisFunctions(i + 2, 3, knotVector[i + 2],  knotVector, abc);
+		den = abc[1] - abc[0] * dd[i];
+		controlPoints[i] = XYZW((R[i] -abc[0] * controlPoints[i-1].ToXYZ(true)) / den, 1);
+	}
+
+	dd[n] = abc[2] / den;
+	Polynomials::BasisFunctions(n + 2, 3, knotVector[n + 2],  knotVector, abc);
+	den = abc[1] - abc[0] * dd[n];
+	controlPoints[n] = XYZW((throughPoints[n-1]-abc[2]*controlPoints[n+1].ToXYZ(true)-abc[0]*controlPoints[n-1].ToXYZ(true)) / den, 1);
+	
+	for (int i = n - 1; i >= 2; i--)
+	{
+		controlPoints[i] = controlPoints[i] - dd[i + 1] * controlPoints[i + 1];
 	}
 }
