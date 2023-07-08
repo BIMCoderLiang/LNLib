@@ -150,19 +150,20 @@ namespace LNLib
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page369
 		/// Algorithm A9.1
-		/// Global interpolation througn n+1 points.
+		/// Global interpolation through n+1 points.
 		/// </summary>
 		static void Create(unsigned int degree, const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page369
-		/// Global interpolation througn n+1 points with end derivatives specified.
+		/// Global interpolation through n+1 points with end derivatives specified.
 		/// </summary>
 		static void Create(unsigned int degree, const std::vector<XYZ>& throughPoints, const XYZ& startTangent, const XYZ& endTangent,  std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page371
-		/// Create a global cubic curve through n+1 points with end derivatives specified.
+		/// Algorithm A9.2
+		/// Create a cubic curve through n+1 points with end derivatives specified.
 		/// </summary>
 		static void CreateCubic(const std::vector<XYZ>& throughPoints, const XYZ& startTangent, const XYZ& endTangent, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
 
