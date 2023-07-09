@@ -1276,10 +1276,12 @@ void LNLib::NurbsCurve::Create(unsigned int degree, const std::vector<XYZ>& thro
 
 void LNLib::NurbsCurve::Create(unsigned int degree, const std::vector<XYZ>& throughPoints, const XYZ& startTangent, const XYZ& endTangent, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
 {
+	double d = Interpolation::GetTotalChordLength(throughPoints);
+
 	XYZ sTemp = startTangent;
-	XYZ sT = sTemp.Normalize() * Interpolation::GetTotalChordLength(throughPoints);
+	XYZ sT = sTemp.Normalize() * d;
 	XYZ eTemp = endTangent;
-	XYZ eT = eTemp.Normalize() * Interpolation::GetTotalChordLength(throughPoints);
+	XYZ eT = eTemp.Normalize() * d;
 
 	int size = static_cast<int>(throughPoints.size());
 	int n = size - 1;
@@ -1359,10 +1361,12 @@ void LNLib::NurbsCurve::Create(unsigned int degree, const std::vector<XYZ>& thro
 
 void LNLib::NurbsCurve::CreateCubic(const std::vector<XYZ>& throughPoints, const XYZ& startTangent, const XYZ& endTangent, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
 {
+	double d = Interpolation::GetTotalChordLength(throughPoints);
+
 	XYZ sTemp = startTangent;
-	XYZ sT = sTemp.Normalize() * Interpolation::GetTotalChordLength(throughPoints);
+	XYZ sT = sTemp.Normalize() * d;
 	XYZ eTemp = endTangent;
-	XYZ eT = eTemp.Normalize() * Interpolation::GetTotalChordLength(throughPoints);
+	XYZ eT = eTemp.Normalize() * d;
 
 	int size = static_cast<int>(throughPoints.size());
 	int n = size - 1;
@@ -1421,4 +1425,34 @@ void LNLib::NurbsCurve::CreateCubic(const std::vector<XYZ>& throughPoints, const
 	{
 		controlPoints[i] = controlPoints[i] - dd[i + 1] * controlPoints[i + 1];
 	}
+}
+
+void LNLib::NurbsCurve::CreateCubic(const std::vector<XYZ>& throughPoints, const std::vector<XYZ>& tangents, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+{
+	int tangentsCount = static_cast<int>(tangents.size());
+	std::vector<XYZ> innerTangents;
+	innerTangents.resize(tangentsCount);
+
+	double d = Interpolation::GetTotalChordLength(throughPoints);
+	for (int i = 0; i < tangentsCount; i++)
+	{
+		XYZ t = tangents[i];
+		XYZ tTemp = t.Normalize() * d;
+		innerTangents[i] = tTemp;
+	}
+
+	int size = static_cast<int>(throughPoints.size());
+	int n = size - 1;
+	int m = 2*(n+1)+3;
+
+	knotVector.resize(m + 1, 0.0);
+	controlPoints.resize(2 * (n + 1));
+
+	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
+	for (int i = 0; i < 4; i++)
+	{
+		knotVector[m - i] = 1.0;
+	}
+
+	//to be continue...
 }
