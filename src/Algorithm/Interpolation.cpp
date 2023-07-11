@@ -18,7 +18,7 @@ double LNLib::Interpolation::GetTotalChordLength(const std::vector<XYZ>& through
 	int n = size - 1;
 
 	double result = 0.0;
-	for (int i = 1; i < n; i++)
+	for (int i = 1; i <= n; i++)
 	{
 		result += throughPoints[i].Distance(throughPoints[i - 1]);
 	}
@@ -27,15 +27,15 @@ double LNLib::Interpolation::GetTotalChordLength(const std::vector<XYZ>& through
 
 std::vector<double> LNLib::Interpolation::GetChordParameterization(const std::vector<XYZ>& throughPoints)
 {
-	int n = static_cast<int>(throughPoints.size());
+	int size = static_cast<int>(throughPoints.size());
+	int n = size - 1;
 
 	std::vector<double> uk;
-	uk.resize(n);
-	uk[0] = 0.0;
-	uk[n - 1] = 1.0;
+	uk.resize(size,0.0);
+	uk[n] = 1.0;
 
 	double d = GetTotalChordLength(throughPoints);
-	for (int i = 1; i < n - 1; ++i)
+	for (int i = 1; i <= n - 1; i++)
 	{
 		uk[i] = uk[i - 1] + (throughPoints[i].Distance(throughPoints[i - 1])) / d;
 	}
@@ -190,4 +190,84 @@ std::vector<double> LNLib::Interpolation::BackwardSubstitution(const std::vector
 		result[i] = (column[i] - temp) / matrixU[i][i];
 	}
 	return result;
+}
+
+void LNLib::Interpolation::GetSurfaceMeshParameterization(const std::vector<std::vector<XYZ>>& throughPoints, std::vector<double>& paramVectorU, std::vector<double>& paramVectorV)
+{
+	int sizeU = static_cast<int>(throughPoints.size());
+	int sizeV = static_cast<int>(throughPoints[0].size());
+
+	int n = sizeU - 1;
+	int m = sizeV - 1;
+
+	int num = m + 1;
+	paramVectorU.resize(sizeU, 0.0);
+	paramVectorU[n] = 1.0;
+	
+	for (int l = 0; l <= m; l++)
+	{
+		double total = 0.0;
+		std::vector<double> cds;
+		cds.resize(n + 1, 0.0);
+
+		for (int k = 1; k <= n; k++)
+		{
+			cds[k] = throughPoints[k][l].Distance(throughPoints[k - 1][l]);
+			total += cds[k];
+		}
+
+		if (MathUtils::IsAlmostEqualTo(total, 0.0))
+		{
+			num = num - 1;
+		}
+		else
+		{
+			double d = 0.0;
+			for (int k = 1; k < n; k++)
+			{
+				d += cds[k];
+				paramVectorU[k] = paramVectorU[k] + d / total;
+			}
+		}
+	}
+	for (int k = 1; k < n; k++)
+	{
+		paramVectorU[k] = paramVectorU[k] / num;
+	}
+
+	num = n + 1;
+	paramVectorV.resize(sizeV, 0.0);
+	paramVectorV[m] = 1.0;
+
+
+	for (int k = 0; k <= n; k++)
+	{
+		double total = 0.0;
+		std::vector<double> cds;
+		cds.resize(m + 1, 0.0);
+
+		for (int l = 1; l <= m; l++)
+		{
+			cds[l] = throughPoints[k][l].Distance(throughPoints[k][l - 1]);
+			total += cds[l];
+		}
+
+		if (MathUtils::IsAlmostEqualTo(total, 0.0))
+		{
+			num = num - 1;
+		}
+		else
+		{
+			double d = 0.0;
+			for (int l = 1; l < m; l++)
+			{
+				d += cds[l];
+				paramVectorV[l] = paramVectorU[l] + d / total;
+			}
+		}
+	}
+	for (int l = 1; l < m; l++)
+	{
+		paramVectorV[l] = paramVectorV[l] / num;
+	}
 }
