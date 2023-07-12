@@ -1222,29 +1222,9 @@ void LNLib::NurbsCurve::Create(unsigned int degree, const std::vector<XYZ>& thro
 	int n = size - 1;
 
 	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
-	Interpolation::ComputeKnotVector(degree, throughPoints, knotVector);
+	Interpolation::ComputeKnotVector(degree, static_cast<int>(throughPoints.size()), uk, knotVector);
 
-	std::vector<std::vector<double>> A;
-	A.resize(n + 1);
-	for (int i = 0; i <= n; i++)
-	{
-		A[i].resize(n + 1);
-	}
-
-	for (int i = 0; i <= n; i++)
-	{
-		int spanIndex = Polynomials::GetKnotSpanIndex(n, degree, uk[i], knotVector);
-		std::vector<double> basis;
-		Polynomials::BasisFunctions(spanIndex, degree, knotVector[i], knotVector, basis);
-
-		int j = spanIndex - degree;
-		for (int k = 0; k < static_cast<int>(basis.size()); k++)
-		{
-			A[i][j] = basis[k];
-			j++;
-		}
-	}
-
+	std::vector<std::vector<double>> A = Interpolation::MakeInterpolationMatrix(degree, size, uk, knotVector);
 	std::vector<XYZ> tempControlPoints;
 	tempControlPoints.resize(size);
 

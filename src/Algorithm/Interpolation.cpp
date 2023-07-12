@@ -11,6 +11,7 @@
 #include "Interpolation.h"
 #include "XYZ.h"
 #include "MathUtils.h"
+#include "Polynomials.h"
 
 double LNLib::Interpolation::GetTotalChordLength(const std::vector<XYZ>& throughPoints)
 {
@@ -42,11 +43,11 @@ std::vector<double> LNLib::Interpolation::GetChordParameterization(const std::ve
 	return uk;
 }
 
-void LNLib::Interpolation::ComputeKnotVector(unsigned int degree, const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector)
+void LNLib::Interpolation::ComputeKnotVector(unsigned int degree, const int pointsCount, const std::vector<double> params, std::vector<double>& knotVector)
 {
-	std::vector<double> uk = GetChordParameterization(throughPoints);
+	std::vector<double> uk = params;
 
-	int size = static_cast<int>(throughPoints.size());
+	int size = pointsCount;
 	int n = size - 1;
 	int m = n + degree + 1;
 
@@ -90,6 +91,32 @@ void LNLib::Interpolation::ComputeKnotVectorForEndTangents(unsigned int degree, 
 		}
 		knotVector[j + degree + 1] = (1.0 / degree) * temp;
 	}
+}
+
+std::vector<std::vector<double>> LNLib::Interpolation::MakeInterpolationMatrix(unsigned int degree, int pointsCount, const std::vector<double>& params, const std::vector<double>& knotVector)
+{
+	int n = pointsCount - 1;
+	std::vector<std::vector<double>> A;
+	A.resize(n + 1);
+	for (int i = 0; i <= n; i++)
+	{
+		A[i].resize(n + 1);
+	}
+
+	for (int i = 0; i <= n; i++)
+	{
+		int spanIndex = Polynomials::GetKnotSpanIndex(n, degree, params[i], knotVector);
+		std::vector<double> basis;
+		Polynomials::BasisFunctions(spanIndex, degree, knotVector[i], knotVector, basis);
+
+		int j = spanIndex - degree;
+		for (int k = 0; k < static_cast<int>(basis.size()); k++)
+		{
+			A[i][j] = basis[k];
+			j++;
+		}
+	}
+	return A;
 }
 
 bool LNLib::Interpolation::LUDecomposition(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& matrixL, std::vector<std::vector<double>>& matrixU)
@@ -191,6 +218,38 @@ std::vector<double> LNLib::Interpolation::BackwardSubstitution(const std::vector
 	}
 	return result;
 }
+
+std::vector<LNLib::XYZ> LNLib::Interpolation::GetSolvedMatrix(const std::vector<std::vector<double>>& matrix, const std::vector<XYZ>& throughPoints)
+{
+	int size = static_cast<int>(throughPoints.size());
+	int n = size - 1;
+
+	std::vector<XYZ> tempControlPoints;
+	tempControlPoints.resize(size);
+
+	std::vector<std::vector<double>> matrixL;
+	std::vector<std::vector<double>> matrixU;
+	Interpolation::LUDecomposition(matrix, matrixL, matrixU);
+
+	for (int i = 0; i < 3; i++)
+	{
+		std::vector<double> rhs;
+		for (int j = 0; j <= n; j++)
+		{
+			rhs[j] = throughPoints[j][i];
+		}
+		std::vector<double> column = Interpolation::ForwardSubstitution(matrixL, rhs);
+		std::vector<double> sol = Interpolation::BackwardSubstitution(matrixU, column);
+
+		for (int j = 0; j <= n; j++)
+		{
+			tempControlPoints[j][i] = sol[j];
+		}
+	}
+	return tempControlPoints;
+}
+
+
 
 void LNLib::Interpolation::GetSurfaceMeshParameterization(const std::vector<std::vector<XYZ>>& throughPoints, std::vector<double>& paramVectorU, std::vector<double>& paramVectorV)
 {

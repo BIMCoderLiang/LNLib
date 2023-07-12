@@ -18,6 +18,7 @@
 #include "BsplineSurface.h"
 #include "Projection.h"
 #include "Intersection.h"
+#include "Interpolation.h"
 #include "ValidationUtils.h"
 
 void LNLib::NurbsSurface::GetPointOnSurface(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, XYZ& point)
@@ -985,6 +986,56 @@ bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& ax
 	degreeU = 2;
 
 	return true;
+}
+
+void LNLib::NurbsSurface::Create(const std::vector<std::vector<XYZ>>& throughPoints, unsigned int degreeU, unsigned int degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
+{
+	std::vector<double> uk;
+	std::vector<double> vl;
+
+	Interpolation::GetSurfaceMeshParameterization(throughPoints, uk, vl);
+
+	int sizeU = static_cast<int>(throughPoints.size());
+	int n = sizeU - 1;
+	int sizeV = static_cast<int>(throughPoints[0].size());
+	int m = sizeV - 1;
+
+	Interpolation::ComputeKnotVector(degreeU, sizeU, uk, knotVectorU);
+	Interpolation::ComputeKnotVector(degreeV, sizeV, vl, knotVectorV);
+
+	std::vector<std::vector<XYZ>> tempResult;
+	std::vector<std::vector<XYZ>> tempControlPoints;
+	for (int l = 0; l <= m; l++)
+	{
+		std::vector<XYZ> temp;
+		for (int i = 0; i <= n; i++)
+		{
+			temp.emplace_back(throughPoints[i][l]);
+		}
+		std::vector<std::vector<double>> A = Interpolation::MakeInterpolationMatrix(degreeU, sizeU, uk, knotVectorU);
+		tempControlPoints.emplace_back(Interpolation::GetSolvedMatrix(A, temp));
+	}
+
+	for (int i = 0; i <= n; i++)
+	{
+		std::vector<XYZ> temp;
+		for (int l = 0; l <= m; l++)
+		{
+			temp.emplace_back(tempControlPoints[i][l]);
+		}
+		std::vector<std::vector<double>> A = Interpolation::MakeInterpolationMatrix(degreeV, sizeV, vl, knotVectorV);
+		tempResult.emplace_back(Interpolation::GetSolvedMatrix(A, temp));
+	}
+
+	for (int i = 0; i < static_cast<int>(tempResult.size()); i++)
+	{
+		std::vector<XYZW> temp;
+		for (int j = 0; j < static_cast<int>(tempResult[0].size()); j++)
+		{
+			temp.emplace_back(XYZW(tempResult[i][j],1));
+		}
+		controlPoints.emplace_back(temp);
+	}
 }
 
 

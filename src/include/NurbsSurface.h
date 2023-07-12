@@ -127,5 +127,12 @@ namespace LNLib
 		/// Create a revolved surface.
 		/// </summary>
 		static bool CreateRevolvedSurface(const XYZ& origin, const XYZ& axis, double rad, const std::vector<XYZW>& generatrixCurve, int& degreeU, std::vector<double>& knotVectorU, std::vector<std::vector<XYZW>>& controlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page380
+		/// Algorithm A9.4
+		/// Global surface interpolation.
+		/// </summary>
+		static void Create(const std::vector<std::vector<XYZ>>& throughPoints, unsigned int degreeU, unsigned int degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints);
 	};
 }
