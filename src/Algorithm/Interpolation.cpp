@@ -201,11 +201,11 @@ std::vector<double> LNLib::Interpolation::ForwardSubstitution(const std::vector<
 std::vector<double> LNLib::Interpolation::BackwardSubstitution(const std::vector<std::vector<double>>& matrixU, const std::vector<double>& column)
 {
 	int size = static_cast<int>(column.size());
-
+	int n = size - 1;
 	std::vector<double> result;
 	result.resize(size, 0.0);
 
-	result[size-1] = column[size-1] / matrixU[size-1][size-1];
+	result[n] = column[n] / matrixU[n][n];
 	for (int i = size - 2; i >= 0; i--)
 	{
 		double temp = 0.0;

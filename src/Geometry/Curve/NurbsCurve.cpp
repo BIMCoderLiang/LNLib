@@ -1225,28 +1225,7 @@ void LNLib::NurbsCurve::Create(unsigned int degree, const std::vector<XYZ>& thro
 	Interpolation::ComputeKnotVector(degree, static_cast<int>(throughPoints.size()), uk, knotVector);
 
 	std::vector<std::vector<double>> A = Interpolation::MakeInterpolationMatrix(degree, size, uk, knotVector);
-	std::vector<XYZ> tempControlPoints;
-	tempControlPoints.resize(size);
-
-	std::vector<std::vector<double>> matrixL;
-	std::vector<std::vector<double>> matrixU;
-	Interpolation::LUDecomposition(A, matrixL, matrixU);
-
-	for (int i = 0; i < 3; i++)
-	{
-		std::vector<double> rhs;
-		for (int j = 0; j <= n; j++)
-		{
-			rhs[j] = throughPoints[j][i];
-		}
-		std::vector<double> column = Interpolation::ForwardSubstitution(matrixL, rhs);
-		std::vector<double> sol = Interpolation::BackwardSubstitution(matrixU, column);
-
-		for (int j = 0; j <= n; j++)
-		{
-			tempControlPoints[j][i] = sol[j];
-		}
-	}
+	std::vector<XYZ> tempControlPoints = Interpolation::GetSolvedMatrix(A, throughPoints);
 
 	for (int i = 0; i < size; i++)
 	{
