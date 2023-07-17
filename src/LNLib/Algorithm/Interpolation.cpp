@@ -14,6 +14,25 @@
 #include "Polynomials.h"
 #include <algorithm>
 
+namespace LNLib
+{
+	XYZ& GetQk(const std::vector<XYZ>& throughPoints, unsigned int index)
+	{
+		return throughPoints[index] - throughPoints[index - 1];
+	}
+
+	double GetAk(const XYZ& qk_1, const XYZ& qk, const XYZ& qk1, const XYZ& qk2)
+	{
+		return (qk_1.CrossProduct(qk)).Length() / ((qk_1.CrossProduct(qk).Length()) + (qk1.CrossProduct(qk2)).Length());
+	}
+
+	XYZ& GetVk(const XYZ& qk_1, const XYZ& qk, const XYZ& qk1, const XYZ& qk2)
+	{
+		double ak = GetAk(qk_1,qk,qk1,qk2);
+		return ((1 - ak) * qk + ak * qk1).Normalize();
+	}
+}
+
 double LNLib::Interpolation::GetTotalChordLength(const std::vector<XYZ>& throughPoints)
 {
 	int size = static_cast<int>(throughPoints.size());
@@ -413,4 +432,32 @@ void LNLib::Interpolation::GetSurfaceMeshParameterization(const std::vector<std:
 	{
 		paramVectorV[l] = paramVectorV[l] / num;
 	}
+}
+
+bool ComputerTangent(const std::vector<LNLib::XYZ>& throughPoints, std::vector<LNLib::XYZ>& tangents)
+{
+	int size = static_cast<int>(throughPoints.size());
+	if (size < 5) return false;
+	int n = size - 1;
+	tangents.resize(size);
+	for (int k = 2; k <= n - 2 ; k++)
+	{
+		LNLib::XYZ qk_1 = GetQk(throughPoints, k - 1);
+		LNLib::XYZ qk = GetQk(throughPoints, k);
+		LNLib::XYZ qk1 = GetQk(throughPoints, k+1);
+		LNLib::XYZ qk2 = GetQk(throughPoints, k+2);
+
+		tangents[k] = GetVk(qk_1, qk, qk1, qk2);
+	}
+
+	LNLib::XYZ q_1 = 2 * GetQk(throughPoints, 0) - GetQk(throughPoints, 1);
+	LNLib::XYZ q0 = 2*GetQk(throughPoints, 1) - GetQk(throughPoints, 2);
+	LNLib::XYZ qn1 = 2 * GetQk(throughPoints, n) - GetQk(throughPoints, n-1);
+	LNLib::XYZ qn2 = 2 * GetQk(throughPoints, n+1) - GetQk(throughPoints, n);
+
+	tangents[0] = GetVk(q_1, q0, GetQk(throughPoints, 1), GetQk(throughPoints, 2));
+	tangents[1] = GetVk(q0, GetQk(throughPoints, 1), GetQk(throughPoints, 2), GetQk(throughPoints, 3));
+	tangents[n-1] = GetVk(GetQk(throughPoints, n - 2), GetQk(throughPoints, n-1), GetQk(throughPoints, n),qn1);
+	tangents[n] = GetVk(GetQk(throughPoints, n-1), GetQk(throughPoints, n),qn1,qn2);
+	return true;
 }

@@ -55,5 +55,11 @@ namespace LNLib
 		/// Compute paramters for global surface interpolation.
 		/// </summary>
 		static void GetSurfaceMeshParameterization(const std::vector<std::vector<XYZ>>& throughPoints, std::vector<double>& paramVectorU, std::vector<double>& paramVectorV);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page386
+		/// Computer tangent of each through point (at least five points).
+		/// </summary>
+		static bool ComputerTangent(const std::vector<XYZ>& throughPoints, std::vector<LNLib::XYZ>& tangents);
 	};
 }
