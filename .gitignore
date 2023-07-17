@@ -41,3 +41,4 @@ src/x64
 test/x64
 *.user
 src/packages
+build
