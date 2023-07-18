@@ -16,7 +16,7 @@
 
 namespace LNLib
 {
-	XYZ& GetQk(const std::vector<XYZ>& throughPoints, unsigned int index)
+	XYZ GetQk(const std::vector<XYZ>& throughPoints, unsigned int index)
 	{
 		return throughPoints[index] - throughPoints[index - 1];
 	}
@@ -26,7 +26,7 @@ namespace LNLib
 		return (qk_1.CrossProduct(qk)).Length() / ((qk_1.CrossProduct(qk).Length()) + (qk1.CrossProduct(qk2)).Length());
 	}
 
-	XYZ& GetVk(const XYZ& qk_1, const XYZ& qk, const XYZ& qk1, const XYZ& qk2)
+	XYZ GetVk(const XYZ& qk_1, const XYZ& qk, const XYZ& qk1, const XYZ& qk2)
 	{
 		double ak = GetAk(qk_1,qk,qk1,qk2);
 		return ((1 - ak) * qk + ak * qk1).Normalize();
@@ -434,7 +434,7 @@ void LNLib::Interpolation::GetSurfaceMeshParameterization(const std::vector<std:
 	}
 }
 
-bool ComputerTangent(const std::vector<LNLib::XYZ>& throughPoints, std::vector<LNLib::XYZ>& tangents)
+bool LNLib::Interpolation::ComputerTangent(const std::vector<XYZ>& throughPoints, std::vector<XYZ>& tangents)
 {
 	int size = static_cast<int>(throughPoints.size());
 	if (size < 5) return false;

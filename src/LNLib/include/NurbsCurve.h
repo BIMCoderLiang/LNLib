@@ -159,6 +159,12 @@ namespace LNLib
 		/// Global interpolation by through points and tangents. (including Algorithm A9.2)
 		/// </summary>
 		static void Create(unsigned int degree,  const std::vector<XYZ>& throughPoints, const std::vector<XYZ>& tangents, const std::vector<int>& tangentsIndices,  std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page398
+		/// Local interpolation by through points.
+		/// </summary>
+		static void CreateCubic(const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
 	};
 }
 

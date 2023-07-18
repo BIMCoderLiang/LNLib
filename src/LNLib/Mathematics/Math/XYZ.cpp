@@ -167,7 +167,7 @@ XYZ XYZ::CrossProduct(const XYZ& another) const
 double LNLib::XYZ::Distance(const XYZ& another) const
 {
 	double squareValue = pow((another.GetX() - m_xyz[0]),2) + pow((another.GetY() - m_xyz[1]),2) + pow((another.GetZ() - m_xyz[2]),2);
-	return pow(squareValue,0.5);
+	return sqrt(squareValue);
 }
 
 XYZ& XYZ::operator=(const XYZ& xyz)
