@@ -4,7 +4,7 @@
  * bim.frankliang@foxmail.com
  * 微信公众号：BIMCoder梁老师
  *
- * Use of this source code is governed by a GPL-3.0 license license that can be found in
+ * Use of this source code is governed by a GPL-3.0 license that can be found in
  * the LICENSE file.
  */
 
@@ -63,7 +63,7 @@ void LNLib::NurbsCurve::ComputeRationalCurveDerivatives(unsigned int degree, con
 
 void LNLib::NurbsCurve::InsertKnot(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double insertKnot, unsigned int times, std::vector<double>& insertedKnotVector, std::vector<XYZW>& updatedControlPoints)
 {
-	int np = static_cast<int>(knotVector.size() - degree) - 2;
+	int np = static_cast<int>(controlPoints.size() - 1);
 	int knotSpanIndex = Polynomials::GetKnotSpanIndex(np, degree, insertKnot, knotVector);
 	int originMultiplicity = Polynomials::GetKnotMultiplicity(insertKnot, knotVector);
 
@@ -124,7 +124,7 @@ void LNLib::NurbsCurve::InsertKnot(unsigned int degree, const std::vector<double
 
 void LNLib::NurbsCurve::GetPointOnCurveByInsertKnot(unsigned int degree,const std::vector<double>& knotVector, std::vector<XYZW>& controlPoints, double insertKnot, XYZ& point)
 {
-	int n = static_cast<int>(knotVector.size() - degree) - 2;
+	int n = static_cast<int>(controlPoints.size() - 1);
 
 	if (MathUtils::IsAlmostEqualTo(insertKnot, knotVector[0]))
 	{
@@ -160,7 +160,7 @@ void LNLib::NurbsCurve::GetPointOnCurveByInsertKnot(unsigned int degree,const st
 
 void LNLib::NurbsCurve::RefineKnotVector(unsigned int degree, const std::vector<double>& knotVector,const std::vector<XYZW>& controlPoints, std::vector<double>& insertKnotElements, std::vector<double>& insertedKnotVector, std::vector<XYZW>& updatedControlPoints)
 {
-	int n = static_cast<int>(knotVector.size() - degree - 2);
+	int n = static_cast<int>(controlPoints.size() - 1);
 	int m = n + degree + 1;
 	int r = static_cast<int>(insertKnotElements.size() - 1);
 
@@ -224,7 +224,7 @@ void LNLib::NurbsCurve::RefineKnotVector(unsigned int degree, const std::vector<
 
 void LNLib::NurbsCurve::ToBezierCurves(unsigned int degree, const std::vector<double>& knotVector,const std::vector<XYZW>& controlPoints, int& bezierCurvesCount, std::vector<std::vector<XYZW>>& decomposedControlPoints)
 {
-	int n = static_cast<int>(knotVector.size() - degree - 2);
+	int n = static_cast<int>(controlPoints.size() - 1);
 	int m = n + degree + 1;
 
 	int a = static_cast<int>(degree);
@@ -297,7 +297,7 @@ void LNLib::NurbsCurve::ToBezierCurves(unsigned int degree, const std::vector<do
 void LNLib::NurbsCurve::RemoveKnot(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double removeKnot, unsigned int times, std::vector<double>& restKnotVector, std::vector<XYZW>& updatedControlPoints)
 {
 	double tol = ValidationUtils::ComputeCurveModifyTolerance(controlPoints);
-	int n = static_cast<int>(knotVector.size() - degree - 2);
+	int n = static_cast<int>(controlPoints.size() - 1);
 
 	int order = degree + 1;
 	int originMultiplicity = Polynomials::GetKnotMultiplicity(removeKnot, knotVector);
@@ -434,7 +434,7 @@ void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<dou
 		return;
 	}
 
-	int n = static_cast<int>(knotVector.size() - degree - 2);
+	int n = static_cast<int>(controlPoints.size() - 1);
 	int m = n + degree + 1;
 
 	int ph = degree + times;
@@ -648,7 +648,7 @@ bool LNLib::NurbsCurve::ReduceDegree(unsigned int degree, const std::vector<doub
 	int cind = 1;
 	int mult = static_cast<int>(degree);
 
-	int n = static_cast<int>(knotVector.size() - degree - 2);
+	int n = static_cast<int>(controlPoints.size() - 1);
 	int m = n + static_cast<int>(degree) + 1;
 
 	std::vector<XYZW> bpts;
@@ -1373,7 +1373,7 @@ void LNLib::NurbsCurve::CreateCubic(const std::vector<XYZ>& throughPoints, std::
 
 	int kvSize = 2 * (degree + 1) + 2 * (n - 1);
 	knotVector.resize(kvSize);
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i <= degree; i++)
 	{
 		knotVector[i] = 0;
 		knotVector[kvSize - 1 - i] = 1;
@@ -1381,7 +1381,7 @@ void LNLib::NurbsCurve::CreateCubic(const std::vector<XYZ>& throughPoints, std::
 
 	for (int i = 1; i < n; i=i+2)
 	{
-		knotVector[3 + i] = knotVector[3 + (i + 1)] = uk[i] / uk[n];
+		knotVector[degree + i] = knotVector[degree + (i + 1)] = uk[i] / uk[n];
 	}
 
 	int tSize = static_cast<int>(tempControlPoints.size());

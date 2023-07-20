@@ -4,7 +4,7 @@
  * bim.frankliang@foxmail.com
  * 微信公众号：BIMCoder梁老师
  *
- * Use of this source code is governed by a GPL-3.0 license license that can be found in
+ * Use of this source code is governed by a GPL-3.0 license that can be found in
  * the LICENSE file.
  */
 
@@ -33,12 +33,12 @@ namespace LNLib
 			int n = static_cast<int>(controlPoints.size() - 1);
 			int spanIndex = Polynomials::GetKnotSpanIndex(n, degree, paramT, knotVector);
 
-			std::vector<double> basisFunctions;
-			Polynomials::BasisFunctions(spanIndex, degree, paramT, knotVector, basisFunctions);
+			std::vector<double> N;
+			Polynomials::BasisFunctions(spanIndex, degree, paramT, knotVector, N);
 
 			for (int i = 0; i <= static_cast<int>(degree); i++)
 			{
-				point += basisFunctions[i] * controlPoints[spanIndex - degree + i];
+				point += N[i] * controlPoints[spanIndex - degree + i];
 			}
 		}
 

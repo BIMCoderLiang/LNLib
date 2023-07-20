@@ -4,7 +4,7 @@
  * bim.frankliang@foxmail.com
  * 微信公众号：BIMCoder梁老师
  *
- * Use of this source code is governed by a GPL-3.0 license license that can be found in
+ * Use of this source code is governed by a GPL-3.0 license that can be found in
  * the LICENSE file.
  */
 
@@ -134,5 +134,12 @@ namespace LNLib
 		/// Global surface interpolation.
 		/// </summary>
 		static void Create(const std::vector<std::vector<XYZ>>& throughPoints, unsigned int degreeU, unsigned int degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page404
+		/// Algorithm A9.5
+		/// Local surface interpolation through (n+1)*(m+1) points.
+		/// </summary>
+		static void CreateBicubic(const std::vector<std::vector<XYZ>>& throughPoints, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints);
 	};
 }

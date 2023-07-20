@@ -4,7 +4,7 @@
  * bim.frankliang@foxmail.com
  * 微信公众号：BIMCoder梁老师
  *
- * Use of this source code is governed by a GPL-3.0 license license that can be found in
+ * Use of this source code is governed by a GPL-3.0 license that can be found in
  * the LICENSE file.
  */
 
@@ -83,7 +83,7 @@ void LNLib::NurbsSurface::ComputeRationalSurfaceDerivatives(const std::vector<st
 
 void LNLib::NurbsSurface::InsertKnot(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVector, unsigned int degree, double insertKnot, unsigned int times, bool isUDirection, std::vector<double>& insertedKnotVector, std::vector<std::vector<XYZW>>& updatedControlPoints)
 {
-	int n = static_cast<int>(knotVector.size()) - degree - 2;
+	int n = static_cast<int>(knotVector.size() - degree - 2);
 	int knotSpanIndex = Polynomials::GetKnotSpanIndex(n, degree, insertKnot, knotVector);
 	int multiplicity = Polynomials::GetKnotMultiplicity(insertKnot, knotVector);
 
@@ -288,13 +288,13 @@ void LNLib::NurbsSurface::RefineKnotVector(const std::vector<std::vector<XYZW>>&
 void LNLib::NurbsSurface::ToBezierPatches(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, int& bezierPatchesCount, std::vector<std::vector<std::vector<XYZW>>>& decomposedControlPoints)
 {
 	int controlPointsRow = static_cast<int>(controlPoints.size());
-	int conrolPointsColumn = static_cast<int>(controlPoints[0].size());
+	int controlPointsColumn = static_cast<int>(controlPoints[0].size());
 
 	std::vector<std::vector<std::vector<XYZW>>> temp;
-	temp.resize(conrolPointsColumn);
+	temp.resize(controlPointsColumn);
 
 	int ubezierCurvesCount = 0;
-	for (int col = 0; col < conrolPointsColumn; col++)
+	for (int col = 0; col < controlPointsColumn; col++)
 	{
 		std::vector<XYZW> uDirectionPoints;
 		uDirectionPoints.resize(controlPointsRow);
@@ -314,7 +314,7 @@ void LNLib::NurbsSurface::ToBezierPatches(const std::vector<std::vector<XYZW>>& 
 		for (int r = 0; r < row; r++)
 		{
 			std::vector<XYZW> vDirectionPoints;
-			for (int j = 0; j < conrolPointsColumn; j++)
+			for (int j = 0; j < controlPointsColumn; j++)
 			{
 				std::vector<XYZW> segement = temp[j][i];
 				vDirectionPoints.emplace_back(segement[r]);
@@ -337,12 +337,12 @@ void LNLib::NurbsSurface::ToBezierPatches(const std::vector<std::vector<XYZW>>& 
 void LNLib::NurbsSurface::RemoveKnot(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, double removeKnot, unsigned int times, bool isUDirection, std::vector<double>& restKnotVectorU, std::vector<double>& restKnotVectorV, std::vector<std::vector<XYZW>>& updatedControlPoints)
 {
 	int controlPointsRow = static_cast<int>(controlPoints.size());
-	int conrolPointsColumn = static_cast<int>(controlPoints[0].size());
+	int controlPointsColumn = static_cast<int>(controlPoints[0].size());
 	if (isUDirection)
 	{
 		std::vector<std::vector<XYZW>> temp;
 		std::vector<double> uKnotVector;
-		for (int v = 0; v < conrolPointsColumn; v++)
+		for (int v = 0; v < controlPointsColumn; v++)
 		{
 			std::vector<XYZW> uControlPoints;
 			MathUtils::GetColumn(controlPoints, v, uControlPoints);
@@ -1036,6 +1036,161 @@ void LNLib::NurbsSurface::Create(const std::vector<std::vector<XYZ>>& throughPoi
 		}
 		controlPoints.emplace_back(temp);
 	}
+}
+
+void LNLib::NurbsSurface::CreateBicubic(const std::vector<std::vector<XYZ>>& throughPoints, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
+{
+	unsigned int degreeU = 3;
+	unsigned int degreeV = 3;
+
+	int row = static_cast<int>(throughPoints.size());
+	int n = row - 1;
+	int column = static_cast<int>(throughPoints[0].size());
+	int m = column - 1;
+
+	std::vector<std::vector<std::vector<XYZ>>> td;
+	td.resize(n + 1);
+	for (int i = 0; i <= n; i++)
+	{
+		td[i].resize(m + 1);
+		for (int j = 0; j <= m; j++)
+		{
+			td[i][j].resize(3);
+		}
+	}
+
+	std::vector<double> ub;
+	ub.resize(n + 1, 0.0);
+	std::vector<double> vb;
+	vb.resize(m + 1, 0.0);
+
+	std::vector<double> r;
+	r.resize(m + 1);
+	std::vector<double> s;
+	s.resize(n + 1);
+
+	double total = 0.0;
+	for (int l = 0; l <= m; l++)
+	{
+		std::vector<XYZ> columnData;
+		MathUtils::GetColumn(throughPoints, l, columnData);
+
+		std::vector<XYZ> tvkl;
+		bool hasTangents = Interpolation::ComputerTangent(columnData, tvkl);
+		if (!hasTangents) return;
+
+		r[l] = 0.0;
+		for (int k = 0; k <= n; k++)
+		{
+			td[k][l][1] = tvkl[k];
+
+			if (k > 0)
+			{
+				double d = throughPoints[k][l].Distance(throughPoints[k - 1][l]);
+				ub[k] += d;
+				r[l] += d;
+			}
+		}
+		total += r[l];
+	}
+	for (int k = 1; k < n; k++)
+	{
+		ub[k] = ub[k - 1] + ub[k] / total;
+	}
+	ub[n] = 1.0;
+	total = 0.0;
+
+	for (int k = 0; k <= n; k++)
+	{
+		std::vector<XYZ> tukl;
+		bool hasTangents = Interpolation::ComputerTangent(throughPoints[k], tukl);
+		if (!hasTangents) return;
+
+		s[k] = 0.0;
+		for (int l = 0; l <= m; l++)
+		{
+			td[k][l][0] = tukl[l];
+
+			if (l > 0)
+			{
+				double d = throughPoints[k][l].Distance(throughPoints[k][l - 1]);
+				vb[l] += d;
+				s[k] += d;
+			}
+		}
+		total += s[k];
+	}
+	for (int l = 1; l < m; l++)
+	{
+		vb[l] = vb[l - 1] + vb[l] / total;
+	}
+	vb[m] = 1.0;
+
+	knotVectorU.resize(2 * (degreeU + 1) + 2 * (n - 1));
+	for (int i = 0; i <= degreeU; i++)
+	{
+		knotVectorU[i] = 0;
+		knotVectorU[ub.size() - 1 - i] = 1;
+	}
+	for (int i = 1; i < n; i = i + 2)
+	{
+		knotVectorU[degreeU + i] = knotVectorU[degreeU + (i + 1)] = ub[i] ;
+	}
+
+	knotVectorV.resize(2 * (degreeV + 1) + 2 * (m - 1));
+	for (int i = 0; i <= degreeV; i++)
+	{
+		knotVectorV[i] = 0;
+		knotVectorV[vb.size() - 1 - i] = 1;
+	}
+	for (int i = 1; i < m; i = i + 2)
+	{
+		knotVectorV[degreeV + i] = knotVectorV[degreeV + (i + 1)] = vb[i];
+	}
+
+	std::vector<std::vector<XYZ>> bezierControlPoints;
+	bezierControlPoints.resize(degreeU + 1);
+	for (int i = 0; i < degreeU + 1; i++)
+	{
+		bezierControlPoints[i].resize(degreeV + 1);
+	}
+
+	for (int k = 0; k <= n; k++)
+	{
+		double ak = 0.0;
+		if (k > 0)
+		{
+			ak = (ub[k] - ub[k - 1]) / ((ub[k] - ub[k - 1]) + (ub[k + 1] - ub[k]));
+		}
+		for (int l = 0; l <= m; l++)
+		{
+			double bl = 0.0;
+			if (k == l == 0)
+			{
+				td[0][0][2] = XYZ(0,0,0);
+				continue;
+			}
+			if (l > 0)
+			{
+				bl = (vb[l] - vb[l - 1]) / ((vb[l] - vb[l - 1]) + (vb[l + 1] - vb[l]));
+			}
+			
+			XYZ dvukl = (1 - ak) * (td[k][l][1] - td[k - 1][l][1]) / (ub[k] - ub[k - 1]) + ak * (td[k + 1][l][1] - td[k][l][1]) / (ub[k + 1] - ub[k]);
+			XYZ duvkl = (1 - bl) * (td[k][l][0] - td[k][l - 1][0]) / (vb[l] - vb[l - 1]) + bl * (td[k][l + 1][0] - td[k][l][0]) / (vb[l + 1] - vb[l]);
+
+			td[k][l][2] = (ak * duvkl + bl * dvukl) / (ak + bl);
+		}
+	}
+
+	for (int k = 0; k < n; k++)
+	{
+		for (int l = 0; l < m; l++)
+		{
+
+		}
+	}
+
+	// to be continued....
 }
 
 
