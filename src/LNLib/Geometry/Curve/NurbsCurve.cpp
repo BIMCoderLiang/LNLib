@@ -1393,3 +1393,46 @@ void LNLib::NurbsCurve::CreateCubic(const std::vector<XYZ>& throughPoints, std::
 		controlPoints[i + 1] = tempControlPoints[i];
 	}
 }
+
+double LNLib::NurbsCurve::ComputerRemoveKnotErrorBound(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, int removalIndex)
+{
+	int ord = static_cast<int>(degree + 1);
+	int r = removalIndex;
+	double u = knotVector[r];
+	int s = Polynomials::GetKnotMultiplicity(u, knotVector);
+	int last = r - s;
+	int first = static_cast<int>(r - degree);
+	int off = first - 1;
+
+	std::vector<XYZW> temp;
+	temp.resize(last + 1 - off + 1);
+	temp[0] = controlPoints[off];
+	temp[last + 1 - off] = controlPoints[last + 1];
+
+	int i = first, j = last;
+	int ii = 1, jj = last - off;
+
+	double alfi = 0.0, alfj = 0.0;
+
+	while (j - i > 0) 
+	{
+		alfi = (u - knotVector[i]) / (knotVector[i + ord] - knotVector[i]);
+		alfj = (u - knotVector[j]) / (knotVector[j + ord] - knotVector[j]);
+		temp[ii] = (controlPoints[i] - (1.0 - alfi) * temp[ii - 1]) / alfi;
+		temp[jj] = (controlPoints[j] - alfj * temp[jj + 1]) / (1.0 - alfj);
+		
+		i += 1;
+		ii += 1;
+		j = j - 1;
+		jj = jj - 1;
+	}
+	if (j - i < 0) 
+	{
+		return temp[ii - 1].Distance(temp[jj + 1]);
+	}
+	else 
+	{
+		alfi = (u - knotVector[i]) / (knotVector[i + ord] - knotVector[i]);
+		return controlPoints[i].Distance(alfi * temp[ii + 1] + (1.0 - alfi) * temp[ii - 1]);
+	}
+}
