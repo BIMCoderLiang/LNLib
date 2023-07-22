@@ -167,6 +167,12 @@ namespace LNLib
 		static void CreateCubic(const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
 
 		/// <summary>
+		/// The NURBS Book 2nd Edition Page410
+		/// Least square curve approximation.
+		/// </summary>
+		static bool LeastSquaresApproximation(unsigned int degree, const std::vector<XYZ>& throughPoints, int controlPointsCount, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+
+		/// <summary>
 		/// The NURBS Book 2nd Edition Page428
 		/// Algorithm A9.8
 		/// Get knot removal error bound (nonrational).

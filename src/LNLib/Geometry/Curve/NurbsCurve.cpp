@@ -1394,6 +1394,109 @@ void LNLib::NurbsCurve::CreateCubic(const std::vector<XYZ>& throughPoints, std::
 	}
 }
 
+bool LNLib::NurbsCurve::LeastSquaresApproximation(unsigned int degree, const std::vector<XYZ>& throughPoints, int controlPointsCount, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+{
+	int size = static_cast<int>(throughPoints.size());
+	int n = controlPointsCount - 1;
+	if (!ValidationUtils::IsInRange(n, degree, size - 1)) return false;
+
+	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
+	int m = n + degree + 1;
+	knotVector.resize(m,1.0);
+
+	double d = (m + 1) / (n - degree + 1);
+	for (int j = 0; j <= degree; j++)
+		knotVector[j] = 0;
+
+	for (int j = 1; j < n - degree; j++) 
+	{
+		knotVector[degree + j] = 0.0;
+		for (int k = j; k < j + degree; ++k) 
+		{
+			int i = (int)(k * d);
+			double a = k * d - i;
+			int i2 = (int)((k - 1) * d);
+			knotVector[degree + j] += a * uk[i2] + (1 - a) * uk[i];
+		}
+		knotVector[degree + j] /= degree;
+	}
+
+	std::vector<XYZ> R(n), rk(m);
+	R[0] = throughPoints[0];
+	R[n - 1] = throughPoints[m - 1];
+	std::vector<std::vector<double>> N;
+	N.resize(m);
+	for (int i = 0; i < m; i++)
+	{
+		N[i].resize(n);
+	}
+	N[0][0] = 1.0;
+	N[m - 1][n - 1] = 1.0;
+
+	for (int i = 0; i < m; i++) 
+	{
+		int np = static_cast<int>(knotVector.size() - degree) - 2;
+		int spanIndex = Polynomials::GetKnotSpanIndex(np, degree, uk[i], knotVector);
+		std::vector<double> basis;
+		Polynomials::BasisFunctions(spanIndex, degree, uk[i], knotVector, basis);
+		for (int j = 0; j <= degree; j++) 
+		{ 
+			N[i][spanIndex - degree + j] = basis[j];
+		}
+		rk[i] = throughPoints[i] - N[i][0] * throughPoints[0] - N[i][n - 1] * throughPoints[m - 1];
+
+	}
+
+	for (int i = 0; i < n; i++) 
+	{
+		R[i] = XYZ(0,0,0);
+		for (int j = 0; j < m; j++)
+			R[i] += N[j][i] * rk[j];
+		if (R[i].X() * R[i].X() < Constants::DoubleEpsilon &&
+			R[i].Y() * R[i].Y() < Constants::DoubleEpsilon &&
+			R[i].Z() * R[i].Z() < Constants::DoubleEpsilon)
+		{
+			return false;
+		}
+	}
+
+
+	if (n - 2 > 0) 
+	{
+		std::vector<XYZ> B(n - 2);
+		for (int i = 0; i < n - 2; i++)
+		{
+			B[i] = R[i + 1];
+		}
+
+		std::vector<std::vector<double>> Ns;
+		Ns.resize(m - 2);
+		for (int i = 0; i < m - 2; i++)
+		{
+			Ns[i].resize(n - 2);
+		}
+		for (int i = 1; i <= m - 2; i++)
+		{
+			for (int j = 1; j <= n - 2; j++)
+			{
+				Ns[i - 1][j - 1] = N[i][j];
+			}
+		}
+		std::vector<std::vector<double>> Nst;
+		MathUtils::Transpose(Ns, Nst);
+
+		std::vector<XYZ> tempControlPoints = Interpolation::GetSolvedMatrix(MathUtils::MatrixMultiply(Nst,Ns), B);
+		for (int i = 0; i < size; i++)
+		{
+			controlPoints[i] = XYZW(tempControlPoints[i], 1);
+		}
+	}
+
+	controlPoints[0] = XYZW(throughPoints[0], 1);
+	controlPoints[n - 1] = XYZW(throughPoints[m - 1], 1);
+	return true;
+}
+
 double LNLib::NurbsCurve::ComputerRemoveKnotErrorBound(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, int removalIndex)
 {
 	int ord = static_cast<int>(degree + 1);

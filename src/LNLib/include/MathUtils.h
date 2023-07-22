@@ -69,6 +69,32 @@ namespace LNLib
 				columnData.emplace_back(matrix[i][columnIndex]);
 			}
 		}
+
+		template<typename T>
+		static std::vector<std::vector<double>> MatrixMultiply(const std::vector<std::vector<T>>& matrix0, const std::vector<std::vector<T>>& matrix1)
+		{
+			int m = static_cast<int>(matrix0.size());
+			int n = static_cast<int>(matrix0[0].size());
+			int p = static_cast<int>(matrix1[0].size());
+			std::vector<std::vector<double>> result;
+			std::vector<double> temparray;
+			for (int i = 0; i < m; i++)
+			{
+				for (int j = 0; j < p; j++)
+				{
+					double sum = 0.0;
+					for (int k = 0; k < n; k++)
+					{
+						sum += matrix0[i][k] + matrix1[k][j];
+					}
+					temparray.emplace_back(sum);
+				}
+				result.emplace_back(temparray);
+				temparray.erase(temparray.begin(), temparray.end());
+			}
+
+			return result;
+		}
 	};
 }
 
