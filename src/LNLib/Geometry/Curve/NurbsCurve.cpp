@@ -1460,7 +1460,6 @@ bool LNLib::NurbsCurve::LeastSquaresApproximation(unsigned int degree, const std
 		}
 	}
 
-
 	if (n - 2 > 0) 
 	{
 		std::vector<XYZ> B(n - 2);
@@ -1537,5 +1536,281 @@ double LNLib::NurbsCurve::ComputerRemoveKnotErrorBound(unsigned int degree, cons
 	{
 		alfi = (u - knotVector[i]) / (knotVector[i + ord] - knotVector[i]);
 		return controlPoints[i].Distance(alfi * temp[ii + 1] + (1.0 - alfi) * temp[ii - 1]);
+	}
+}
+
+void LNLib::NurbsCurve::RemoveKnotsByGivenBound(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const std::vector<double> params, std::vector<double>& error, double maxError, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints)
+{
+
+	int knotSize = static_cast<int>(knotVector.size());
+	std::vector<double> Br(knotSize, Constants::MaxDistance);
+	std::vector<int> S(knotSize,0);
+	std::vector<int> Nl(knotSize);
+	std::vector<int> Nr(knotSize,params.size() - 1);
+
+	std::vector<double> uk = params;
+	int ukSize = static_cast<int>(uk.size());
+	std::vector<double> NewError(ukSize);
+	std::vector<double> temp(ukSize);
+
+	int i, BrMinIndex = 0;
+	int r, s, Rstart, Rend, k;
+	double BrMin, u;
+
+	int controlPointsSize = static_cast<int>(controlPoints.size());
+	int n = controlPointsSize - 1;
+	s = 1;
+	for (int i = degree + 1; i < controlPointsSize; i++)
+	{
+		if (knotVector[i] < knotVector[i + 1]) 
+		{
+			Br[i] = ComputerRemoveKnotErrorBound(degree, knotVector, controlPoints, i);
+			S[i] = Polynomials::GetKnotMultiplicity(knotVector[i],knotVector);
+			s = 1;
+		}
+		else {
+			Br[i] = Constants::MaxDistance;
+			S[i] = 1;
+			s++;
+		}
+	}
+
+	Nl[0] = 0;
+	for (int i = 0; i < ukSize; i++)
+	{
+		int np = static_cast<int>(knotVector.size() - degree) - 2;
+		int spanIndex = Polynomials::GetKnotSpanIndex(np, degree, uk[i], knotVector);
+		if (!Nl[spanIndex])
+		{
+			Nl[spanIndex] = i;
+		}
+		if (i + 1 < ukSize)
+		{
+			Nr[spanIndex] = i + 1;
+		}	
+	}
+
+	std::vector<double> tempU = knotVector;
+	std::vector<XYZW> tempCP = controlPoints;
+
+	while (1) 
+	{
+		double minStandard = Constants::MaxDistance;
+		for (int i = 0; i < Br.size(); i++)
+		{
+			if (Br[i] < minStandard)
+			{
+				BrMinIndex = i;
+				minStandard = Br[i];
+			}
+		}
+		BrMin = Br[BrMinIndex];
+
+		if (BrMin == Constants::MaxDistance)break;
+		r = BrMinIndex;
+		s = S[BrMinIndex];
+		
+		Rstart = std::max(r - degree, degree + 1);
+		Rend = std::min(r + static_cast<int>(degree) - S[r + degree] + 1, n);
+		Rstart = Nl[Rstart];
+		Rend = Nr[Rend];
+
+		bool removable = true;
+		for (i = Rstart; i <= Rend; i++) 
+		{
+			double a;
+			s = S[r];
+			if ((degree + s) % 2) 
+			{
+				u = uk[i];
+				k = (degree + s + 1) / 2;
+				a = tempU[r] - tempU[r - k + 1];
+				a /= tempU[r - k + degree + 2] - tempU[r - k + 1];
+				NewError[i] = (1.0 - a) * Br[r] * Polynomials::OneBasisFunction(r - k + 1, degree, tempU, u);
+			}
+			else 
+			{
+				u = uk[i];
+				k = (degree + s) / 2;
+				NewError[i] = Br[r] * Polynomials::OneBasisFunction(r - k, degree, tempU, u);
+			}
+			temp[i] = NewError[i] + error[i];
+			if (temp[i] > maxError) 
+			{
+				removable = false;
+				Br[r] = Constants::MaxDistance;
+				break;
+			}
+		}
+
+		if (removable) 
+		{
+			std::vector<double> tempNewU;
+			std::vector<XYZW> tempNewCP;
+			RemoveKnot(degree, tempU, tempCP, r, 1, tempNewU, tempNewCP);
+			controlPointsSize = tempNewCP.size();
+			for (int i = Rstart; i <= Rend; i++)
+			{
+				error[i] = temp[i];
+			}
+				
+			if (controlPointsSize <= degree + 1)
+			{
+				break;
+			}
+
+			Rstart = Nl[r - degree - 1];
+			Rend = Nr[r - S[r]];
+			int spanIndex = 0;
+			int oldspanIndex = -1;
+			for (int k = Rstart; k <= Rend; k++) 
+			{
+				int np = static_cast<int>(tempNewU.size() - degree) - 2;
+				spanIndex = Polynomials::GetKnotSpanIndex(np, degree, uk[i], tempNewU);
+				if (spanIndex != oldspanIndex)
+				{
+					Nl[spanIndex] = k;
+				}
+				if (k + 1 < ukSize)
+				{
+					Nr[spanIndex] = k + 1;
+				}	
+				oldspanIndex = spanIndex;
+			}
+			for (int k = r - S[r] + 1; k < Nl.size() - 1; k++) {
+				Nl[k] = Nl[k + 1];
+				Nr[k] = Nr[k + 1];
+			}
+			Nl.resize(Nl.size() - 1);
+			Nr.resize(Nr.size() - 1);
+
+			Rstart = std::max(r - degree, degree + 1);
+			Rend = std::min(r + static_cast<int>(degree) - S[r] + 1, controlPointsSize);
+			s = S[Rstart];
+			for (i = Rstart; i <= Rend; i++) 
+			{
+				if (tempNewU[i] < tempNewU[i + 1])
+				{
+					Br[i] = ComputerRemoveKnotErrorBound(degree, tempNewU, tempNewCP, i);
+					S[i] = s;
+					s = 1;
+				}
+				else {
+					Br[i] = Constants::MaxDistance;
+					S[i] = 1;
+					s++;
+				}
+			}
+			for (int i = Rend + 1; i < static_cast<int>(Br.size() - 1); i++)
+			{
+				Br[i] = Br[i + 1];
+				S[i] = S[i + 1];
+			}
+			Br.resize(Br.size() - 1);
+
+			tempU = tempNewU;
+			tempCP = tempNewCP;
+		}
+		else 
+		{
+			Br[r] = Constants::MaxDistance;
+		}
+	}
+}
+
+void LNLib::NurbsCurve::GlobalCurveApproximationByErrorBound(unsigned int degree, const std::vector<XYZ>& throughPoints, double maxError, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+{
+	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
+	int size = static_cast<int>(throughPoints.size());
+	int m = size - 1;
+	std::vector<double> error(size, 0.0);
+	
+	std::vector<double> U;
+	U.resize(2 + m - 1 + 2);
+	std::vector<XYZW> P;
+	P.resize(size);
+	
+	int tempDeg = 1;
+	for (int i = 0; i < uk.size(); i++)
+	{
+		U[i + tempDeg] = uk[i];
+	}
+	U[0] = 0;
+	U[U.size() - 1] = 1.0;
+
+	for (int i = 0; i < size; i++)
+	{
+		P[i] = XYZW(throughPoints[i],1);
+	}
+
+	int n = m;
+	int nh = -1;
+	std::vector<double> Uh;
+	std::vector<XYZW> Ph;
+
+	for (int deg = 1; deg <= degree + 1; deg++)
+	{
+		RemoveKnotsByGivenBound(deg, U, P, uk, error, maxError, Uh, Ph);
+		nh = static_cast<int>(Ph.size() - 1);
+
+		if (deg == degree) break;
+
+		std::vector<double> tU;
+		std::vector<XYZW> tP;
+		ElevateDegree(deg, Uh, Ph, 1, tU, tP);
+		U = tU;
+		P = tP;
+		n = static_cast<int>(P.size() - 1);
+
+		bool result = LeastSquaresApproximation(deg + 1, throughPoints, P.size(), tU, tP);
+		if (result)
+		{
+			U = tU;
+			P = tP;
+
+			for (int i = 0; i < size; i++)
+			{
+				double param = GetParamOnCurve(deg + 1, U, P, throughPoints[i]);
+				uk[i] = param;
+				XYZ p;
+				GetPointOnCurve(deg + 1, U, P, param, p);
+				error[i] = p.Distance(throughPoints[i]);
+			}
+		}
+	}
+
+	if (n == nh)
+	{
+		knotVector = U;
+		controlPoints = P;
+		return;
+	}
+	else
+	{
+		std::vector<double> tU;
+		std::vector<XYZW> tP;
+		bool result = LeastSquaresApproximation(degree, throughPoints, P.size(), tU, tP);
+		if (result)
+		{
+			for (int i = 0; i < size; i++)
+			{
+				double param = GetParamOnCurve(degree, U, P, throughPoints[i]);
+				uk[i] = param;
+				XYZ p;
+				GetPointOnCurve(degree, U, P, param, p);
+				error[i] = p.Distance(throughPoints[i]);
+			}
+
+			RemoveKnotsByGivenBound(degree, tU, tP, uk, error, maxError, Uh, Ph);
+			knotVector = Uh;
+			controlPoints = Ph;
+			return;
+		}
+		else
+		{
+			knotVector = U;
+			controlPoints = P;
+			return;
+		}
 	}
 }
