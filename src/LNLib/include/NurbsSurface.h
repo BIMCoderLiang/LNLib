@@ -133,13 +133,19 @@ namespace LNLib
 		/// Algorithm A9.4
 		/// Global surface interpolation.
 		/// </summary>
-		static void Create(const std::vector<std::vector<XYZ>>& throughPoints, unsigned int degreeU, unsigned int degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints);
+		static void GlobalSurfaceInterpolation(const std::vector<std::vector<XYZ>>& throughPoints, unsigned int degreeU, unsigned int degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page404
 		/// Algorithm A9.5
 		/// Local surface interpolation through (n+1)*(m+1) points.
 		/// </summary>
-		static void CreateBicubic(const std::vector<std::vector<XYZ>>& throughPoints, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints);
+		static void CreateBicubicSurface(const std::vector<std::vector<XYZ>>& throughPoints, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page422
+		/// Algorithm A9.5
+		/// </summary>
+		static void GlobalSurfaceApproximation(const std::vector<std::vector<XYZ>>& throughPoints, unsigned int degreeU, unsigned int degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints);
 	};
 }

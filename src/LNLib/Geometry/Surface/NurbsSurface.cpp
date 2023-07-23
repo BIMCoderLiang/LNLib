@@ -988,7 +988,7 @@ bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& ax
 	return true;
 }
 
-void LNLib::NurbsSurface::Create(const std::vector<std::vector<XYZ>>& throughPoints, unsigned int degreeU, unsigned int degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
+void LNLib::NurbsSurface::GlobalSurfaceInterpolation(const std::vector<std::vector<XYZ>>& throughPoints, unsigned int degreeU, unsigned int degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
 {
 	std::vector<double> uk;
 	std::vector<double> vl;
@@ -1038,7 +1038,7 @@ void LNLib::NurbsSurface::Create(const std::vector<std::vector<XYZ>>& throughPoi
 	}
 }
 
-void LNLib::NurbsSurface::CreateBicubic(const std::vector<std::vector<XYZ>>& throughPoints, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
+void LNLib::NurbsSurface::CreateBicubicSurface(const std::vector<std::vector<XYZ>>& throughPoints, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
 {
 	unsigned int degreeU = 3;
 	unsigned int degreeV = 3;
@@ -1191,6 +1191,11 @@ void LNLib::NurbsSurface::CreateBicubic(const std::vector<std::vector<XYZ>>& thr
 	}
 
 	// to be continued....
+}
+
+void LNLib::NurbsSurface::GlobalSurfaceApproximation(const std::vector<std::vector<XYZ>>& throughPoints, unsigned int degreeU, unsigned int degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
+{
+
 }
 
 

@@ -1216,7 +1216,7 @@ bool LNLib::NurbsCurve::CreateOpenConic(const XYZ& start, const XYZ& startTangen
 	return false;
 }
 
-void LNLib::NurbsCurve::Create(unsigned int degree, const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+void LNLib::NurbsCurve::GlobalInterpolation(unsigned int degree, const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
 {
 	int size = static_cast<int>(throughPoints.size());
 	int n = size - 1;
@@ -1233,7 +1233,7 @@ void LNLib::NurbsCurve::Create(unsigned int degree, const std::vector<XYZ>& thro
 	}
 }
 
-void LNLib::NurbsCurve::Create(unsigned int degree, const std::vector<XYZ>& throughPoints, const std::vector<XYZ>& tangents, const std::vector<int>& tangentsIndices, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+void LNLib::NurbsCurve::GlobalInterpolationByTangents(unsigned int degree, const std::vector<XYZ>& throughPoints, const std::vector<XYZ>& tangents, const std::vector<int>& tangentsIndices, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
 {
 	int pointsCount = static_cast<int>(throughPoints.size());
 	int tangentsCount = static_cast<int>(tangents.size());
@@ -1331,7 +1331,7 @@ void LNLib::NurbsCurve::Create(unsigned int degree, const std::vector<XYZ>& thro
 	}
 }
 
-void LNLib::NurbsCurve::CreateCubic(const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+void LNLib::NurbsCurve::LocalInterpolation(const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
 {
 	unsigned int degree = 3;
 
