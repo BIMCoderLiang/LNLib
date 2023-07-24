@@ -1814,3 +1814,30 @@ void LNLib::NurbsCurve::GlobalCurveApproximationByErrorBound(unsigned int degree
 		}
 	}
 }
+
+void LNLib::NurbsCurve::ToUnclampCurve(unsigned int degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+{
+	int n = static_cast<int>(controlPoints.size() - 1);
+	for (int i = 0; i < degree - 2; i++)
+	{
+		knotVector[degree - i - 1] = knotVector[degree - i] - (knotVector[n - i]);
+		int k = degree - 1;
+		for (int j = i; j >= 0; j--)
+		{
+			double alfa = (knotVector[degree] - knotVector[k]) / (knotVector[degree + j + 1] - knotVector[k]);
+			controlPoints[j] = (controlPoints[j] - alfa * controlPoints[j + 1]) / (1.0 - alfa);
+			k = k - 1;
+		}
+	}
+	knotVector[0] = knotVector[1] - (knotVector[n + degree + 2] - knotVector[n - degree + 1]);
+	for (int i = 0; i <= degree - 2; i++)
+	{
+		knotVector[n + i + 2] = knotVector[n + i + 1] + (knotVector[degree + i + 1] - knotVector[degree + i]);
+		for (int j = i; j >= 0; j--)
+		{
+			double alfa = (knotVector[n + 1] - knotVector[n - j]) / (knotVector[n - j + i + 2] - knotVector[n - j]);
+			controlPoints[n - j] = (controlPoints[n - j] - (1.0 - alfa) * controlPoints[n - j - 1]) / alfa;
+		}
+	}
+	knotVector[n + degree + 1] = knotVector[n + degree] + (knotVector[2 * degree] - knotVector[2 * degree - 1]);
+}

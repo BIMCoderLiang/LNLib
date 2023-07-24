@@ -84,9 +84,6 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page223
 		/// Algorithm A5.11
 		/// Degree reduce a curve from degree to degree - 1.
-		/// 
-		/// return true means run successed;
-		/// return false means run failed; 
 		/// </summary>
 		static bool ReduceDegree(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
 
@@ -173,6 +170,12 @@ namespace LNLib
 		static bool LeastSquaresApproximation(unsigned int degree, const std::vector<XYZ>& throughPoints, int controlPointsCount, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
 
 		/// <summary>
+		/// The NURBS Book 2nd Edition Page413
+		/// Weighted and contrained least squares approximation.
+		/// </summary>
+		static bool WeightedAndContrainedLeastSquaresApproximation(unsigned int degree, const std::vector<XYZ>& throughPoints, const std::vector<double>& weights, const std::vector<XYZ>& tangents, const std::vector<int>& tangentIndices, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+
+		/// <summary>
 		/// The NURBS Book 2nd Edition Page428
 		/// Algorithm A9.8
 		/// Get knot removal error bound (nonrational).
@@ -192,6 +195,13 @@ namespace LNLib
 		/// Global curve approximation to within bound maxError.
 		/// </summary>
 		static void GlobalCurveApproximationByErrorBound(unsigned int degree, const std::vector<XYZ>& throughPoints, double maxError, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page577
+		/// Algorithm A12.1
+		/// Unclamp a clamped curve.
+		/// </summary>
+		static void ToUnclampCurve(unsigned int degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
 	};
 }
 
