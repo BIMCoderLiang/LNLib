@@ -171,9 +171,10 @@ namespace LNLib
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page413
+		/// Algorithm A9.6
 		/// Weighted and contrained least squares approximation.
 		/// </summary>
-		static bool WeightedAndContrainedLeastSquaresApproximation(unsigned int degree, const std::vector<XYZ>& throughPoints, const std::vector<double>& weights, const std::vector<XYZ>& tangents, const std::vector<int>& tangentIndices, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+		static bool WeightedAndContrainedLeastSquaresApproximation(unsigned int degree, const std::vector<XYZ>& throughPoints, const std::vector<double>& weights, const std::vector<XYZ>& tangents, const std::vector<int>& tangentIndices, const std::vector<double>& weightedTangents, int controlPointsCount, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page428
@@ -195,6 +196,20 @@ namespace LNLib
 		/// Global curve approximation to within bound maxError.
 		/// </summary>
 		static void GlobalCurveApproximationByErrorBound(unsigned int degree, const std::vector<XYZ>& throughPoints, double maxError, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page440
+		/// Algorithm A9.11
+		/// Fit to tolerance with conic segment.
+		/// </summary>
+		static void FitWithConic();
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page448
+		/// Algorithm A9.12
+		/// Fit to tolerance with cubic segment.
+		/// </summary>
+		static void FitWithCubic();
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page577

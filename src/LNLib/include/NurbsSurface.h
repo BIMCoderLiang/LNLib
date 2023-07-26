@@ -144,8 +144,9 @@ namespace LNLib
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page422
-		/// Algorithm A9.5
+		/// Algorithm A9.7
+		/// Global surface approximation with fixed number of control points.
 		/// </summary>
-		static void GlobalSurfaceApproximation(const std::vector<std::vector<XYZ>>& throughPoints, unsigned int degreeU, unsigned int degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints);
+		static void GlobalSurfaceApproximation(const std::vector<std::vector<XYZ>>& throughPoints, unsigned int degreeU, unsigned int degreeV, int controlPointsRows, int controlPointsColumns, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints);
 	};
 }

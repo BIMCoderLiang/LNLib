@@ -63,7 +63,7 @@ std::vector<double> LNLib::Interpolation::GetChordParameterization(const std::ve
 	return uk;
 }
 
-void LNLib::Interpolation::ComputeKnotVector(unsigned int degree, const int pointsCount, const std::vector<double> params, std::vector<double>& knotVector)
+void LNLib::Interpolation::ComputeKnotVector(unsigned int degree, int pointsCount, const std::vector<double> params, std::vector<double>& knotVector)
 {
 	std::vector<double> uk = params;
 
@@ -85,6 +85,26 @@ void LNLib::Interpolation::ComputeKnotVector(unsigned int degree, const int poin
 			temp += uk[i];
 		}
 		knotVector[j + degree] = (1.0 / degree) * temp;
+	}
+}
+
+void LNLib::Interpolation::ComputeKnotVector(unsigned int degree, int pointsCount, int controlPointsCount, const std::vector<double> params, std::vector<double>& knotVector)
+{
+	for (int i = 0; i <= degree; i++)
+	{
+		knotVector[i] = 0;
+	}
+	double d = pointsCount / (controlPointsCount - degree);
+	for (int j = 1; j < controlPointsCount - degree; j++)
+	{
+		int i = static_cast<int>(j * d);
+		double alpha = (j * d) - i;
+		double temp = (1.0 - alpha) * params[i - 1] + (alpha * params[i]);
+		knotVector.emplace_back(temp);
+	}
+	for (int i = 0; i <= degree; i++)
+	{
+		knotVector.emplace_back(1.0);
 	}
 }
 
@@ -112,106 +132,6 @@ std::vector<std::vector<double>> LNLib::Interpolation::MakeInterpolationMatrix(u
 	return A;
 }
 
-bool LNLib::Interpolation::LUDecomposition(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& matrixL, std::vector<std::vector<double>>& matrixU)
-{
-	int row = static_cast<int>(matrix.size());
-	if (row <= 0) return false;
-	int column = static_cast<int>(matrix[0].size());
-	if (row != column) return false;
-
-	matrixL.resize(row);
-	for (int i = 0; i < row; i++)
-	{
-		matrixL[i].resize(row, 0.0);
-	}
-
-	matrixU.resize(row);
-	for (int i = 0; i < row; i++)
-	{
-		matrixU[i].resize(row, 0.0);
-	}
-
-	for (int i = 0; i < row; i++)
-	{
-		for (int k = 0; k < row; k++)
-		{
-			double temp = 0.0;
-			for (int j = 0; j < i; j++)
-			{
-				temp += matrixL[i][j] * matrixU[j][k];
-			}
-			matrixU[i][k] = matrix[i][k] - temp;
-
-			if (i == k)
-			{
-				matrixL[i][i] = 1.0;
-			}
-			else
-			{
-				temp = 0.0;
-				for (int j = 0; j < i; j++)
-				{
-					temp += matrixL[k][j] * matrixU[j][i];
-				}
-				matrixL[k][i] = matrix[k][i] - temp;
-
-				if (MathUtils::IsAlmostEqualTo(matrixU[i][i], 0.0))
-				{
-					matrixL[k][i] = 0.0;
-				}
-				else
-				{
-					matrixL[k][i] /= matrixU[i][i];
-				}
-			}
-		}
-	}
-
-	return true;
-}
-
-std::vector<double> LNLib::Interpolation::ForwardSubstitution(const std::vector<std::vector<double>>& matrixL, const std::vector<double>& column)
-{
-	int size = static_cast<int>(column.size());
-
-	std::vector<double> result;
-	result.resize(size, 0.0);
-
-	result[0] = column[0] / matrixL[0][0];
-	for (int i = 1; i < size; i++)
-	{
-		double temp = 0.0;
-		for (int j = 0; j < i; j++)
-		{
-			temp += matrixL[i][j] * result[j];
-		}
-
-		result[i] = (column[i] - temp)/ matrixL[i][i];
-	}
-	return result;
-}
-
-std::vector<double> LNLib::Interpolation::BackwardSubstitution(const std::vector<std::vector<double>>& matrixU, const std::vector<double>& column)
-{
-	int size = static_cast<int>(column.size());
-	int n = size - 1;
-	std::vector<double> result;
-	result.resize(size, 0.0);
-
-	result[n] = column[n] / matrixU[n][n];
-	for (int i = size - 2; i >= 0; i--)
-	{
-		double temp = 0.0;
-		for (int j = i; j < size; j++)
-		{
-			temp += matrixU[i][j] * result[j];
-		}
-
-		result[i] = (column[i] - temp) / matrixU[i][i];
-	}
-	return result;
-}
-
 std::vector<LNLib::XYZ> LNLib::Interpolation::GetSolvedMatrix(const std::vector<std::vector<double>>& matrix, const std::vector<XYZ>& data)
 {
 	int size = static_cast<int>(data.size());
@@ -222,7 +142,7 @@ std::vector<LNLib::XYZ> LNLib::Interpolation::GetSolvedMatrix(const std::vector<
 
 	std::vector<std::vector<double>> matrixL;
 	std::vector<std::vector<double>> matrixU;
-	Interpolation::LUDecomposition(matrix, matrixL, matrixU);
+	MathUtils::LUDecomposition(matrix, matrixL, matrixU);
 
 	for (int i = 0; i < 3; i++)
 	{
@@ -231,8 +151,8 @@ std::vector<LNLib::XYZ> LNLib::Interpolation::GetSolvedMatrix(const std::vector<
 		{
 			rhs[j] = data[j][i];
 		}
-		std::vector<double> column = Interpolation::ForwardSubstitution(matrixL, rhs);
-		std::vector<double> sol = Interpolation::BackwardSubstitution(matrixU, column);
+		std::vector<double> column = MathUtils::ForwardSubstitution(matrixL, rhs);
+		std::vector<double> sol = MathUtils::BackwardSubstitution(matrixU, column);
 
 		for (int j = 0; j <= n; j++)
 		{
@@ -400,7 +320,6 @@ void LNLib::Interpolation::GetSurfaceMeshParameterization(const std::vector<std:
 	num = n + 1;
 	paramVectorV.resize(sizeV, 0.0);
 	paramVectorV[m] = 1.0;
-
 
 	for (int k = 0; k <= n; k++)
 	{

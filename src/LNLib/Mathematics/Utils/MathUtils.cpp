@@ -83,3 +83,14 @@ double LNLib::MathUtils::Binomial(unsigned int number, unsigned int i)
 {
     return Factorial(number) / (Factorial(i) * Factorial(number - 1));
 }
+
+std::vector<std::vector<double>> LNLib::MathUtils::CreateMatrix(int row, int column)
+{
+    std::vector<std::vector<double>> result;
+    for (int i = 0; i < row; i++)
+    {
+        std::vector<double> v(column, 0);
+        result.emplace_back(v);
+    }
+    return result;
+}
