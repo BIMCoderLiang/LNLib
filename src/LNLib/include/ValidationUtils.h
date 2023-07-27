@@ -96,7 +96,6 @@ namespace LNLib
 			}
 			return true;
 		}
-
 	};
 }
 

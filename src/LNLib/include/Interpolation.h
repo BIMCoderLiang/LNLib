@@ -45,7 +45,9 @@ namespace LNLib
 
 		static std::vector<std::vector<double>> MakeInterpolationMatrix(unsigned int degree, int dataCount, const std::vector<double>& params, const std::vector<double>& knotVector);
 
-		static std::vector<XYZ> GetSolvedMatrix(const std::vector<std::vector<double>>& matrix, const std::vector<XYZ>& data);
+		static std::vector<XYZ> ComputerMatrixMultiplyPoints(std::vector<std::vector<double>> matrix, std::vector<XYZ> points);
+
+		static std::vector<XYZ> ComputerControlPointsByLUDecomposition(const std::vector<std::vector<double>>& matrix, const std::vector<XYZ>& data);
 
 		static void ComputerKnotVectorForTangents(unsigned int degree, const std::vector<double>& params, const std::vector<int>& derivativeIndices, std::vector<double>& knotVector);
 

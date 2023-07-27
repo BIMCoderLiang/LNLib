@@ -425,90 +425,24 @@ XYZ LNLib::Matrix4d::OfVector(const XYZ& vector)
 
 bool LNLib::Matrix4d::GetInverse(Matrix4d& inverse)
 {
-	double tempResult[4][4];
-	double tmp[12];
-	double src[16]; 
-	double det;
-	for (int i = 0; i < 4; i++)
-	{
-		src[i + 0] = (*this).m_matrix4d[i][0];
-		src[i + 4] = (*this).m_matrix4d[i][1];
-		src[i + 8] = (*this).m_matrix4d[i][2];
-		src[i + 12] = (*this).m_matrix4d[i][3];
-	}
-	tmp[0] = src[10] * src[15];
-	tmp[1] = src[11] * src[14];
-	tmp[2] = src[9] * src[15];
-	tmp[3] = src[11] * src[13];
-	tmp[4] = src[9] * src[14];
-	tmp[5] = src[10] * src[13];
-	tmp[6] = src[8] * src[15];
-	tmp[7] = src[11] * src[12];
-	tmp[8] = src[8] * src[14];
-	tmp[9] = src[10] * src[12];
-	tmp[10] = src[8] * src[13];
-	tmp[11] = src[9] * src[12];
-
-	tempResult[0][0] = tmp[0] * src[5] + tmp[3] * src[6] + tmp[4] * src[7];
-	tempResult[0][0] -= tmp[1] * src[5] + tmp[2] * src[6] + tmp[5] * src[7];
-	tempResult[0][1] = tmp[1] * src[4] + tmp[6] * src[6] + tmp[9] * src[7];
-	tempResult[0][1] -= tmp[0] * src[4] + tmp[7] * src[6] + tmp[8] * src[7];
-	tempResult[0][2] = tmp[2] * src[4] + tmp[7] * src[5] + tmp[10] * src[7];
-	tempResult[0][2] -= tmp[3] * src[4] + tmp[6] * src[5] + tmp[11] * src[7];
-	tempResult[0][3] = tmp[5] * src[4] + tmp[8] * src[5] + tmp[11] * src[6];
-	tempResult[0][3] -= tmp[4] * src[4] + tmp[9] * src[5] + tmp[10] * src[6];
-	tempResult[1][0] = tmp[1] * src[1] + tmp[2] * src[2] + tmp[5] * src[3];
-	tempResult[1][0] -= tmp[0] * src[1] + tmp[3] * src[2] + tmp[4] * src[3];
-	tempResult[1][1] = tmp[0] * src[0] + tmp[7] * src[2] + tmp[8] * src[3];
-	tempResult[1][1] -= tmp[1] * src[0] + tmp[6] * src[2] + tmp[9] * src[3];
-	tempResult[1][2] = tmp[3] * src[0] + tmp[6] * src[1] + tmp[11] * src[3];
-	tempResult[1][2] -= tmp[2] * src[0] + tmp[7] * src[1] + tmp[10] * src[3];
-	tempResult[1][3] = tmp[4] * src[0] + tmp[9] * src[1] + tmp[10] * src[2];
-	tempResult[1][3] -= tmp[5] * src[0] + tmp[8] * src[1] + tmp[11] * src[2];
-
-	tmp[0] = src[2] * src[7];
-	tmp[1] = src[3] * src[6];
-	tmp[2] = src[1] * src[7];
-	tmp[3] = src[3] * src[5];
-	tmp[4] = src[1] * src[6];
-	tmp[5] = src[2] * src[5];
-
-	tmp[6] = src[0] * src[7];
-	tmp[7] = src[3] * src[4];
-	tmp[8] = src[0] * src[6];
-	tmp[9] = src[2] * src[4];
-	tmp[10] = src[0] * src[5];
-	tmp[11] = src[1] * src[4];
-
-	tempResult[2][0] = tmp[0] * src[13] + tmp[3] * src[14] + tmp[4] * src[15];
-	tempResult[2][0] -= tmp[1] * src[13] + tmp[2] * src[14] + tmp[5] * src[15];
-	tempResult[2][1] = tmp[1] * src[12] + tmp[6] * src[14] + tmp[9] * src[15];
-	tempResult[2][1] -= tmp[0] * src[12] + tmp[7] * src[14] + tmp[8] * src[15];
-	tempResult[2][2] = tmp[2] * src[12] + tmp[7] * src[13] + tmp[10] * src[15];
-	tempResult[2][2] -= tmp[3] * src[12] + tmp[6] * src[13] + tmp[11] * src[15];
-	tempResult[2][3] = tmp[5] * src[12] + tmp[8] * src[13] + tmp[11] * src[14];
-	tempResult[2][3] -= tmp[4] * src[12] + tmp[9] * src[13] + tmp[10] * src[14];
-	tempResult[3][0] = tmp[2] * src[10] + tmp[5] * src[11] + tmp[1] * src[9];
-	tempResult[3][0] -= tmp[4] * src[11] + tmp[0] * src[9] + tmp[3] * src[10];
-	tempResult[3][1] = tmp[8] * src[11] + tmp[0] * src[8] + tmp[7] * src[10];
-	tempResult[3][1] -= tmp[6] * src[10] + tmp[9] * src[11] + tmp[1] * src[8];
-	tempResult[3][2] = tmp[6] * src[9] + tmp[11] * src[11] + tmp[3] * src[8];
-	tempResult[3][2] -= tmp[10] * src[11] + tmp[2] * src[8] + tmp[7] * src[9];
-	tempResult[3][3] = tmp[10] * src[10] + tmp[4] * src[8] + tmp[9] * src[9];
-	tempResult[3][3] -= tmp[8] * src[9] + tmp[11] * src[10] + tmp[5] * src[8];
-
-	det = src[0] * tempResult[0][0] + src[1] * tempResult[0][1] + src[2] * tempResult[0][2] + src[3] * tempResult[0][3];
-	if (MathUtils::IsAlmostEqualTo(det, 0.0))
-	{
-		return false;
-	}
-	det = 1.0 / det;
-
+	std::vector<std::vector<double>> currentMatrix(4);
 	for (int i = 0; i < 4; i++)
 	{
 		for (int j = 0; j < 4; j++)
 		{
-			inverse.m_matrix4d[i][j] = tempResult[i][j] * det;
+			currentMatrix[i][j] = m_matrix4d[i][j];
+		}
+	}
+	std::vector<std::vector<double>> inverseMatrix(4);
+	if (!MathUtils::MakeInverse(currentMatrix, inverseMatrix))
+	{
+		return false;
+	}
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			inverse.m_matrix4d[i][j] = inverseMatrix[i][j];
 		}
 	}
 	return true;

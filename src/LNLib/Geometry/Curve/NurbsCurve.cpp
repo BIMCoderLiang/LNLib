@@ -1225,7 +1225,7 @@ void LNLib::NurbsCurve::GlobalInterpolation(unsigned int degree, const std::vect
 	Interpolation::ComputeKnotVector(degree, static_cast<int>(throughPoints.size()), uk, knotVector);
 
 	std::vector<std::vector<double>> A = Interpolation::MakeInterpolationMatrix(degree, size, uk, knotVector);
-	std::vector<XYZ> tempControlPoints = Interpolation::GetSolvedMatrix(A, throughPoints);
+	std::vector<XYZ> tempControlPoints = Interpolation::ComputerControlPointsByLUDecomposition(A, throughPoints);
 
 	for (int i = 0; i < size; i++)
 	{
@@ -1324,7 +1324,7 @@ void LNLib::NurbsCurve::GlobalInterpolationByTangents(unsigned int degree, const
 	A[0][0] = 1;
 	A[size - 1][size - 1] = 1;
 
-	std::vector<XYZ> tempControlPoints = Interpolation::GetSolvedMatrix(A, b);
+	std::vector<XYZ> tempControlPoints = Interpolation::ComputerControlPointsByLUDecomposition(A, b);
 	for (int i = 0; i < size; i++)
 	{
 		controlPoints[i] = XYZW(tempControlPoints[i], 1);
@@ -1439,7 +1439,7 @@ bool LNLib::NurbsCurve::LeastSquaresApproximation(unsigned int degree, const std
 		R[i] = temp;
 	}
 	
-	std::vector<XYZ> tempControlPoints = Interpolation::GetSolvedMatrix(A, R);
+	std::vector<XYZ> tempControlPoints = Interpolation::ComputerControlPointsByLUDecomposition(A, R);
 	for (int i = 0; i < size; i++)
 	{
 		controlPoints[i] = XYZW(tempControlPoints[i], 1);
@@ -1557,21 +1557,13 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(unsigned 
 
 	std::vector<std::vector<double>> NTW  = MathUtils::MatrixMultiply(NT, MathUtils::MakeDiagonal(W));
 	std::vector<std::vector<double>> NTWN = MathUtils::MatrixMultiply(NTW,N);
-	std::vector<XYZ> NTWS(n+1);
-	for (int i = 0; i <= n; i++)
-	{
-		XYZ temp = XYZ(0, 0, 0);
-		for (int j = 0; j <= mu; j++)
-		{
-			temp += NTW[i][j] * S[j];
-		}
-		NTWS.emplace_back(temp);
-	}
 
+	std::vector<XYZ> NTWS = Interpolation::ComputerMatrixMultiplyPoints(NTW, S);
+	
 	std::vector<XYZ> tempControlPoints;
 	if (mc < 0)
 	{
-		tempControlPoints = Interpolation::GetSolvedMatrix(NTWN, NTWS);
+		tempControlPoints = Interpolation::ComputerControlPointsByLUDecomposition(NTWN, NTWS);
 	}
 	else
 	{
@@ -1585,50 +1577,21 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(unsigned 
 		std::vector<std::vector<double>> MinverseNTWN = MathUtils::MatrixMultiply(M, inverseNTWN);
 		std::vector<std::vector<double>> MinverseNTWNMT = MathUtils::MatrixMultiply(MinverseNTWN, MT);
 
-		std::vector<XYZ> MinverseNTWNNTWS(mc + 1);
-		for (int i = 0; i <= mc; i++)
-		{
-			XYZ temp = XYZ(0, 0, 0);
-			for (int j = 0; j <= n; j++)
-			{
-				temp += MinverseNTWN[i][j] * NTWS[j];
-			}
-			MinverseNTWNNTWS.emplace_back(temp);
-		}
+		std::vector<XYZ> MinverseNTWNNTWS = Interpolation::ComputerMatrixMultiplyPoints(MinverseNTWN, NTWS);
 		std::vector<XYZ> MinverseNTWNNTWSminusT(mc + 1);
 		for (int i = 0; i <= mc; i++)
 		{
 			MinverseNTWNNTWSminusT.emplace_back(MinverseNTWNNTWS[i] - T[i]);
 		}
 
-		std::vector<XYZ> A = Interpolation::GetSolvedMatrix(MinverseNTWNMT, MinverseNTWNNTWSminusT);
-		
-		std::vector<XYZ> MTA(n + 1);
-		for (int i = 0; i <= n; i++)
-		{
-			XYZ temp(0, 0, 0);
-			for (int j = 0; j <= mc; j++)
-			{
-				temp += MT[i][j] * A[j];
-			}
-			MTA.emplace_back(temp);
-		}
-
+		std::vector<XYZ> A = Interpolation::ComputerControlPointsByLUDecomposition(MinverseNTWNMT, MinverseNTWNNTWSminusT);
+		std::vector<XYZ> MTA = Interpolation::ComputerMatrixMultiplyPoints(MT, A);
 		std::vector<XYZ> NTWSminusMTA(n + 1);
 		for (int i = 0; i <= n; i++)
 		{
 			NTWSminusMTA.emplace_back(NTWS[i] - MTA[i]);
 		}
-
-		for (int i = 0; i <= n; i++)
-		{
-			XYZ temp(0, 0, 0);
-			for (int j = 0; j <= n; j++)
-			{
-				temp += inverseNTWN[i][j] * NTWSminusMTA[j];
-			}
-			tempControlPoints.emplace_back(temp);
-		}
+		tempControlPoints = Interpolation::ComputerMatrixMultiplyPoints(inverseNTWN, NTWSminusMTA);
 	}
 
 	for (int i = 0; i < static_cast<int>(tempControlPoints.size()); i++)

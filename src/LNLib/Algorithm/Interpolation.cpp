@@ -132,7 +132,29 @@ std::vector<std::vector<double>> LNLib::Interpolation::MakeInterpolationMatrix(u
 	return A;
 }
 
-std::vector<LNLib::XYZ> LNLib::Interpolation::GetSolvedMatrix(const std::vector<std::vector<double>>& matrix, const std::vector<XYZ>& data)
+std::vector<LNLib::XYZ> LNLib::Interpolation::ComputerMatrixMultiplyPoints(std::vector<std::vector<double>> matrix, std::vector<XYZ> points)
+{
+	int row = static_cast<int>(matrix.size());
+	int column = static_cast<int>(matrix[0].size());
+	int size = static_cast<int>(points.size());
+	std::vector<XYZ> result(row);
+	if (!(column == size))
+	{
+		return result;
+	}
+	for (int i = 0; i <= row; i++)
+	{
+		XYZ temp = XYZ(0, 0, 0);
+		for (int j = 0; j <= column; j++)
+		{
+			temp += matrix[i][j] * points[j];
+		}
+		result.emplace_back(temp);
+	}
+	return result;
+}
+
+std::vector<LNLib::XYZ> LNLib::Interpolation::ComputerControlPointsByLUDecomposition(const std::vector<std::vector<double>>& matrix, const std::vector<XYZ>& data)
 {
 	int size = static_cast<int>(data.size());
 	int n = size - 1;
