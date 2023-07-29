@@ -28,7 +28,6 @@ XYZ::XYZ(double x, double y, double z){
 	m_xyz[2] = z;
 }
 
-
 void XYZ::SetX(const double x)
 {
 	m_xyz[0] = x;

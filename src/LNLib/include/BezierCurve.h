@@ -46,7 +46,7 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page392
 		/// Local rational quadratic curve interpolation.
 		/// </summary>
-		static XYZW ComputerMiddleControlPointOnQuadraticCurve(const XYZ& startPoint, const XYZ& startTangent, const XYZ& endPoint, const XYZ& endTangent);
+		static bool ComputerMiddleControlPointsOnQuadraticCurve(const XYZ& startPoint, const XYZ& startTangent, const XYZ& endPoint, const XYZ& endTangent, std::vector<XYZW>& controlPoints);
 
 	};
 }

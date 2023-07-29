@@ -1917,21 +1917,20 @@ void LNLib::NurbsCurve::GlobalCurveApproximationByErrorBound(unsigned int degree
 	}
 }
 
-bool LNLib::NurbsCurve::FitWithConic(int startPointIndex, int endPointIndex, const std::vector<XYZ>& throughPoints, const XYZ& startTangent, const XYZ& endTangent, double maxError, XYZW& middleControlPoint)
+bool LNLib::NurbsCurve::FitWithConic(int startPointIndex, int endPointIndex, const std::vector<XYZ>& throughPoints, const XYZ& startTangent, const XYZ& endTangent, double maxError, std::vector<XYZW>& middleControlPoints)
 {
 	XYZ startPoint = throughPoints[startPointIndex];
 	XYZ endPoint = throughPoints[endPointIndex];
 	if (endPointIndex - startPointIndex == 1)
 	{
-		middleControlPoint = BezierCurve::ComputerMiddleControlPointOnQuadraticCurve(startPoint, startTangent, endPoint, endTangent);
-		return true;
+		return BezierCurve::ComputerMiddleControlPointsOnQuadraticCurve(startPoint, startTangent, endPoint, endTangent, middleControlPoints);
 	}
 	double alf1, alf2 = 0.0;
 	XYZ R(0, 0, 0);
 	CurveCurveIntersectionType type =  Intersection::ComputeRays(startPoint, startTangent, endPoint, endTangent, alf1, alf2, R);
 	if (type == CurveCurveIntersectionType::Coincident)
 	{
-		middleControlPoint = XYZW((startPoint + endPoint) / 2, 1);
+		middleControlPoints.emplace_back(XYZW((startPoint + endPoint) / 2, 1));
 		return true;
 	}
 	else if (type == CurveCurveIntersectionType::Skew ||
@@ -2015,7 +2014,7 @@ bool LNLib::NurbsCurve::FitWithConic(int startPointIndex, int endPointIndex, con
 				return false;
 			}
 		}
-		middleControlPoint = XYZW(R, w);
+		middleControlPoints.emplace_back(XYZW(R, w));
 		return true;
 	}
 	return false;
