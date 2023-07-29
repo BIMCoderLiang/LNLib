@@ -1013,7 +1013,7 @@ void LNLib::NurbsSurface::GlobalSurfaceInterpolation(const std::vector<std::vect
 			temp.emplace_back(throughPoints[i][l]);
 		}
 		std::vector<std::vector<double>> A = Interpolation::MakeInterpolationMatrix(degreeU, sizeU, uk, knotVectorU);
-		tempControlPoints.emplace_back(Interpolation::GetSolvedMatrix(A, temp));
+		tempControlPoints.emplace_back(Interpolation::ComputerControlPointsByLUDecomposition(A, temp));
 	}
 
 	for (int i = 0; i <= n; i++)
@@ -1024,7 +1024,7 @@ void LNLib::NurbsSurface::GlobalSurfaceInterpolation(const std::vector<std::vect
 			temp.emplace_back(tempControlPoints[i][l]);
 		}
 		std::vector<std::vector<double>> A = Interpolation::MakeInterpolationMatrix(degreeV, sizeV, vl, knotVectorV);
-		tempResult.emplace_back(Interpolation::GetSolvedMatrix(A, temp));
+		tempResult.emplace_back(Interpolation::ComputerControlPointsByLUDecomposition(A, temp));
 	}
 
 	for (int i = 0; i < static_cast<int>(tempResult.size()); i++)
@@ -1193,9 +1193,9 @@ void LNLib::NurbsSurface::CreateBicubicSurface(const std::vector<std::vector<XYZ
 	// to be continued....
 }
 
-void LNLib::NurbsSurface::GlobalSurfaceApproximation(const std::vector<std::vector<XYZ>>& throughPoints, unsigned int degreeU, unsigned int degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
+void LNLib::NurbsSurface::GlobalSurfaceApproximation(const std::vector<std::vector<XYZ>>& throughPoints, unsigned int degreeU, unsigned int degreeV, int controlPointsRows, int controlPointsColumns, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
 {
-
+	
 }
 
 

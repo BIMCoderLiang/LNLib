@@ -28,8 +28,9 @@ namespace LNLib
 		/// Compute Bspline curve point.
 		/// </summary>
 		template <typename T>
-		static void GetPointOnCurve(const std::vector<T>& controlPoints, unsigned int degree, double paramT, const std::vector<double>& knotVector, T& point)
+		static T GetPointOnCurve(const std::vector<T>& controlPoints, unsigned int degree, double paramT, const std::vector<double>& knotVector)
 		{
+			T point;
 			int n = static_cast<int>(controlPoints.size() - 1);
 			int spanIndex = Polynomials::GetKnotSpanIndex(n, degree, paramT, knotVector);
 
@@ -40,6 +41,7 @@ namespace LNLib
 			{
 				point += N[i] * controlPoints[spanIndex - degree + i];
 			}
+			return point;
 		}
 
 		/// <summary>
@@ -54,9 +56,9 @@ namespace LNLib
 		/// Compute curve derivatives. (Usually Use)
 		/// </summary>
 		template<typename T>
-		static void ComputeDerivatives(unsigned int degree, const std::vector<double>& knotVector, const std::vector<T>& controlPoints, double paramT, unsigned int derivative, std::vector<T>& derivatives)
+		static std::vector<T> ComputeDerivatives(unsigned int degree, const std::vector<double>& knotVector, const std::vector<T>& controlPoints, double paramT, unsigned int derivative)
 		{
-			derivatives.resize(derivative + 1);
+			std::vector<T> derivatives(derivative + 1);
 
 			int du = std::min(derivative, degree);
 			int n = static_cast<int>(controlPoints.size() - 1);
@@ -72,6 +74,7 @@ namespace LNLib
 					derivatives[k] += nders[k][j] * controlPoints[spanIndex - degree + j];
 				}
 			}
+			return derivatives;
 		}
 
 		/// <summary>
@@ -79,7 +82,7 @@ namespace LNLib
 		/// Algorithm A3.3
 		/// Compute control points of curve derivatives.
 		/// </summary>
-		static void ComputeControlPointsOfDerivatives(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZ>& controlPoints, unsigned int derivative, unsigned int min, unsigned int max, std::vector<std::vector<XYZ>>& controlPointsOfDerivative);
+		static std::vector<std::vector<XYZ>> ComputeControlPointsOfDerivatives(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZ>& controlPoints, unsigned int derivative, unsigned int min, unsigned int max);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page99
@@ -87,9 +90,9 @@ namespace LNLib
 		/// Compute curve detivatives.
 		/// </summary>
 		template<typename T>
-		static void ComputeDerivativesByAllBasisFunctions(unsigned int degree, const std::vector<double>& knotVector, const std::vector<T>& controlPoints, double paramT, unsigned int derivative, std::vector<T>& derivatives)
+		static std::vector<T> ComputeDerivativesByAllBasisFunctions(unsigned int degree, const std::vector<double>& knotVector, const std::vector<T>& controlPoints, double paramT, unsigned int derivative)
 		{
-			derivatives.resize(derivative + 1);
+			std::vector<T> derivatives(derivative + 1);
 
 			int du = std::min(derivative, degree);
 			int n = static_cast<int>(controlPoints.size() - 1);

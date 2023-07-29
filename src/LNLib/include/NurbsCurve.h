@@ -27,14 +27,14 @@ namespace LNLib
 		/// Algorithm A4.1
 		/// Compute point on rational B-spline curve.
 		/// </summary>
-		static void GetPointOnCurve(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double paramT, XYZ& point);
+		static XYZ GetPointOnCurve(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double paramT);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page127
 		/// Algorithm A4.2
 		/// Compute C(paramT) derivatives from Cw(paramT) deraivatives.
 		/// </summary>
-		static void ComputeRationalCurveDerivatives(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double paramT, unsigned int derivative, std::vector<XYZ>& derivatives);
+		static std::vector<XYZ> ComputeRationalCurveDerivatives(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double paramT, unsigned int derivative);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page151
@@ -49,7 +49,7 @@ namespace LNLib
 		/// Algorithm A5.2
 		/// Computes a point on a curve by using knot insertion ("corner cutting").
 		/// </summary>
-		static void GetPointOnCurveByInsertKnot(unsigned int degree, const std::vector<double>& knotVector, std::vector<XYZW>& controlPoints, double insertKnot, XYZ& point);
+		static XYZ GetPointOnCurveByInsertKnot(unsigned int degree, const std::vector<double>& knotVector, std::vector<XYZW>& controlPoints, double insertKnot);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page164
@@ -202,7 +202,7 @@ namespace LNLib
 		/// Algorithm A9.11
 		/// Fit to tolerance with conic segment.
 		/// </summary>
-		static void FitWithConic();
+		static bool FitWithConic(int startPointIndex, int endPointIndex, const std::vector<XYZ>& throughPoints, const XYZ& startTangent, const XYZ& endTangent, double maxError, XYZW& middleControlPoint);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page448

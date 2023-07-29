@@ -15,6 +15,7 @@
 #include "XYZW.h"
 #include "Matrix4d.h"
 #include "MathUtils.h"
+#include "BezierCurve.h"
 #include "BsplineCurve.h"
 #include "Intersection.h"
 #include "ValidationUtils.h"
@@ -22,19 +23,19 @@
 #include <vector>
 #include <algorithm>
 
-void LNLib::NurbsCurve::GetPointOnCurve(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double paramT, XYZ& point)
+LNLib::XYZ LNLib::NurbsCurve::GetPointOnCurve(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double paramT)
 {
 	XYZW temp = XYZW();
-	BsplineCurve::GetPointOnCurve(controlPoints, degree, paramT, knotVector, temp);
-	point = temp.ToXYZ(true);
+	temp = BsplineCurve::GetPointOnCurve(controlPoints, degree, paramT, knotVector);
+	return temp.ToXYZ(true);
 }
 
-void LNLib::NurbsCurve::ComputeRationalCurveDerivatives(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double paramT, unsigned int derivative, std::vector<XYZ>& derivatives)
+std::vector<LNLib::XYZ> LNLib::NurbsCurve::ComputeRationalCurveDerivatives(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double paramT, unsigned int derivative)
 {
-	derivatives.resize(derivative + 1);
+	std::vector<LNLib::XYZ> derivatives(derivative + 1);
 
 	std::vector<XYZW> ders;
-	BsplineCurve::ComputeDerivatives(degree, knotVector, controlPoints, paramT, derivative, ders);
+	ders = BsplineCurve::ComputeDerivatives(degree, knotVector, controlPoints, paramT, derivative);
 
 	std::vector<XYZ> Aders;
 	Aders.resize(derivative + 1);
@@ -58,7 +59,7 @@ void LNLib::NurbsCurve::ComputeRationalCurveDerivatives(unsigned int degree, con
 		}
 		derivatives[k] = v/wders[0];
 	}
-
+	return derivatives;
 }
 
 void LNLib::NurbsCurve::InsertKnot(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double insertKnot, unsigned int times, std::vector<double>& insertedKnotVector, std::vector<XYZW>& updatedControlPoints)
@@ -122,19 +123,20 @@ void LNLib::NurbsCurve::InsertKnot(unsigned int degree, const std::vector<double
 	}
 }
 
-void LNLib::NurbsCurve::GetPointOnCurveByInsertKnot(unsigned int degree,const std::vector<double>& knotVector, std::vector<XYZW>& controlPoints, double insertKnot, XYZ& point)
+LNLib::XYZ LNLib::NurbsCurve::GetPointOnCurveByInsertKnot(unsigned int degree,const std::vector<double>& knotVector, std::vector<XYZW>& controlPoints, double insertKnot)
 {
+	XYZ point = XYZ(0, 0, 0);
 	int n = static_cast<int>(controlPoints.size() - 1);
 
 	if (MathUtils::IsAlmostEqualTo(insertKnot, knotVector[0]))
 	{
 		point = controlPoints[0].ToXYZ(true);
-		return;
+		return point;
 	}
 	if (MathUtils::IsAlmostEqualTo(insertKnot, knotVector[n + degree + 1]))
 	{
 		point = controlPoints[n].ToXYZ(true);
-		return;
+		return point;
 	}
 
 	int knotSpanIndex = Polynomials::GetKnotSpanIndex(n, degree, insertKnot, knotVector);
@@ -156,6 +158,7 @@ void LNLib::NurbsCurve::GetPointOnCurveByInsertKnot(unsigned int degree,const st
 		}
 	}
 	point = temp[0].ToXYZ(true);
+	return point;
 }
 
 void LNLib::NurbsCurve::RefineKnotVector(unsigned int degree, const std::vector<double>& knotVector,const std::vector<XYZW>& controlPoints, std::vector<double>& insertKnotElements, std::vector<double>& insertedKnotVector, std::vector<XYZW>& updatedControlPoints)
@@ -834,12 +837,10 @@ double LNLib::NurbsCurve::GetParamOnCurve(unsigned int degree, const std::vector
 	for (int i = 0; i < samples - 1; i++)
 	{
 		double currentU = minParam + span * i; 
-		XYZ currentPoint;
-		NurbsCurve::GetPointOnCurve(degree, knotVector, controlPoints, currentU, currentPoint);
+		XYZ currentPoint = NurbsCurve::GetPointOnCurve(degree, knotVector, controlPoints, currentU);
 
 		double nextU = minParam + span * (i + 1);
-		XYZ nextPoint;
-		NurbsCurve::GetPointOnCurve(degree, knotVector, controlPoints, nextU, nextPoint);
+		XYZ nextPoint = NurbsCurve::GetPointOnCurve(degree, knotVector, controlPoints, nextU);		
 
 		XYZ vector1 = currentPoint - givenPoint;
 		XYZ vector2 = nextPoint - currentPoint;
@@ -879,8 +880,7 @@ double LNLib::NurbsCurve::GetParamOnCurve(unsigned int degree, const std::vector
 	int counters = 0;
 	while (counters < maxIterations)
 	{
-		std::vector<XYZ> derivatives;
-		ComputeRationalCurveDerivatives(degree, knotVector, controlPoints, paramT, 2, derivatives);
+		std::vector<XYZ> derivatives = ComputeRationalCurveDerivatives(degree, knotVector, controlPoints, paramT, 2);
 		XYZ difference = derivatives[0] - givenPoint;
 		double f = derivatives[1].DotProduct(difference);
 
@@ -1876,8 +1876,7 @@ void LNLib::NurbsCurve::GlobalCurveApproximationByErrorBound(unsigned int degree
 			{
 				double param = GetParamOnCurve(deg + 1, U, P, throughPoints[i]);
 				uk[i] = param;
-				XYZ p;
-				GetPointOnCurve(deg + 1, U, P, param, p);
+				XYZ p = GetPointOnCurve(deg + 1, U, P, param);
 				error[i] = p.Distance(throughPoints[i]);
 			}
 		}
@@ -1900,8 +1899,7 @@ void LNLib::NurbsCurve::GlobalCurveApproximationByErrorBound(unsigned int degree
 			{
 				double param = GetParamOnCurve(degree, U, P, throughPoints[i]);
 				uk[i] = param;
-				XYZ p;
-				GetPointOnCurve(degree, U, P, param, p);
+				XYZ p = GetPointOnCurve(degree, U, P, param);
 				error[i] = p.Distance(throughPoints[i]);
 			}
 
@@ -1917,6 +1915,110 @@ void LNLib::NurbsCurve::GlobalCurveApproximationByErrorBound(unsigned int degree
 			return;
 		}
 	}
+}
+
+bool LNLib::NurbsCurve::FitWithConic(int startPointIndex, int endPointIndex, const std::vector<XYZ>& throughPoints, const XYZ& startTangent, const XYZ& endTangent, double maxError, XYZW& middleControlPoint)
+{
+	XYZ startPoint = throughPoints[startPointIndex];
+	XYZ endPoint = throughPoints[endPointIndex];
+	if (endPointIndex - startPointIndex == 1)
+	{
+		middleControlPoint = BezierCurve::ComputerMiddleControlPointOnQuadraticCurve(startPoint, startTangent, endPoint, endTangent);
+		return true;
+	}
+	double alf1, alf2 = 0.0;
+	XYZ R(0, 0, 0);
+	CurveCurveIntersectionType type =  Intersection::ComputeRays(startPoint, startTangent, endPoint, endTangent, alf1, alf2, R);
+	if (type == CurveCurveIntersectionType::Coincident)
+	{
+		middleControlPoint = XYZW((startPoint + endPoint) / 2, 1);
+		return true;
+	}
+	else if (type == CurveCurveIntersectionType::Skew ||
+			 type == CurveCurveIntersectionType::Parallel)
+	{
+		return false;
+	}
+	if (MathUtils::IsLessThanOrEqual(alf1, 0.0) || 
+		MathUtils::IsGreaterThanOrEqual(alf2, 0.0))
+	{
+		return false;
+	}
+	double s = 0.0;
+	XYZ V = endPoint - startPoint;
+	for (int i = startPointIndex + 1; i <= endPointIndex - 1; i++)
+	{
+		XYZ V1 = throughPoints[i] - R;
+		type = Intersection::ComputeRays(startPoint, V, R, V1, alf1, alf2, R);
+		if (type == CurveCurveIntersectionType::Intersecting)
+		{
+			if (MathUtils::IsLessThanOrEqual(alf1, 0.0) ||
+				MathUtils::IsGreaterThanOrEqual(alf1, 1.0) ||
+				MathUtils::IsLessThanOrEqual(alf2, 0.0))
+			{
+				return false;
+			}
+			XYZ S = (1 - s) * (startPoint + endPoint)/2 + s * R;
+			double wi = 0.0;
+			if (CreateOneConicArc(startPoint, V, R, V1, S, R, wi))
+			{
+				s = s + wi / (1 + wi);
+			}
+			else
+			{
+				return false;
+			}
+		}
+		s = s / (endPointIndex - startPointIndex - 1);
+		double w = s / (1.0 - s);
+		
+		std::vector<XYZW> controlPoints = { XYZW(startPoint,1), XYZW(R,w), XYZW(endPoint,1) };
+		for (int i = startPointIndex + 1; i < endPointIndex - 1; i++)
+		{
+			XYZ tp = throughPoints[i];
+			double minValue = Constants::MaxDistance;
+			for (int i = 0; i < 99; i++)
+			{
+				double currentU = 0.01 * i;
+				XYZ currentPoint;
+				currentPoint = BezierCurve::GetPointOnQuadraticArc(controlPoints[0],controlPoints[1],controlPoints[2], currentU);
+
+				double nextU = 0.01 * (i + 1);
+				XYZ nextPoint;
+				nextPoint = BezierCurve::GetPointOnQuadraticArc(controlPoints[0], controlPoints[1], controlPoints[2], nextU);
+
+				XYZ vector1 = currentPoint - tp;
+				XYZ vector2 = nextPoint - currentPoint;
+				double dot = vector1.DotProduct(vector2);
+
+				XYZ projectPoint;
+				if (dot < 0)
+				{
+					projectPoint = currentPoint;
+				}
+				else if (dot > 1)
+				{
+					projectPoint = nextPoint;
+				}
+				else
+				{
+					projectPoint = currentPoint + dot * vector1.Normalize();
+				}
+				double distance = (tp - projectPoint).Length();
+				if (distance < minValue)
+				{
+					minValue = distance;
+				}
+			}
+			if (MathUtils::IsGreaterThan(minValue, maxError))
+			{
+				return false;
+			}
+		}
+		middleControlPoint = XYZW(R, w);
+		return true;
+	}
+	return false;
 }
 
 void LNLib::NurbsCurve::ToUnclampCurve(unsigned int degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)

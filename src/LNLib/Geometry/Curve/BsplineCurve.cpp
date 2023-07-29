@@ -23,9 +23,9 @@ int LNLib::BsplineCurve::GetContinuity(unsigned int degree, const std::vector<do
 	return degree - multi;
 }
 
-void LNLib::BsplineCurve::ComputeControlPointsOfDerivatives(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZ>& controlPoints, unsigned int derivative, unsigned int derMin, unsigned int derMax, std::vector<std::vector<XYZ>>& controlPointsOfDerivative)
+std::vector<std::vector<LNLib::XYZ>> LNLib::BsplineCurve::ComputeControlPointsOfDerivatives(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZ>& controlPoints, unsigned int derivative, unsigned int derMin, unsigned int derMax)
 {
-	controlPointsOfDerivative.resize(derivative + 1);
+	std::vector<std::vector<LNLib::XYZ>> controlPointsOfDerivative(derivative + 1);
 	for (int i = 0; i <= static_cast<int>(derivative); i++)
 	{
 		controlPointsOfDerivative[i].resize(derMax - derivative - derMin + 1);
@@ -44,4 +44,5 @@ void LNLib::BsplineCurve::ComputeControlPointsOfDerivatives(unsigned int degree,
 			controlPointsOfDerivative[k][i] = temp * (controlPointsOfDerivative[k - 1][i + 1] - controlPointsOfDerivative[k - 1][i]) / (knotVector[derMin + i + degree + 1] - knotVector[derMin + i + k]);
 		}
 	}
+	return controlPointsOfDerivative;
 }
