@@ -32,6 +32,12 @@ namespace LNLib
 		static std::vector<double> GetChordParameterization(const std::vector<XYZ>& throughPoints);
 
 		/// <summary>
+		/// The NURBS Book 2nd Edition Page446
+		/// The chord length parameterization.
+		/// </summary>
+		static std::vector<double> GetChordParameterization(const std::vector<XYZ>& throughPoints, int startIndex, int endIndex);
+
+		/// <summary>
 		/// The NURBS Book 2nd Edition Page365
 		/// Technique of averaging.
 		/// </summary>

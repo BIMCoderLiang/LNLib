@@ -751,11 +751,8 @@ void LNLib::NurbsSurface::CreateBilinearSurface(const XYZ& point0, const XYZ& po
 
 bool LNLib::NurbsSurface::CreateCylindricalSurface(const XYZ& origin, const XYZ& xAxis, const XYZ& yAxis, double startRad, double endRad, double radius, double height, int& degreeU, int& degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
 {
-	XYZ xTemp = xAxis;
-	XYZ yTemp = yAxis;
-
-	XYZ nX = xTemp.Normalize();
-	XYZ nY = yTemp.Normalize();
+	XYZ nX = const_cast<XYZ&>(xAxis).Normalize();
+	XYZ nY = const_cast<XYZ&>(yAxis).Normalize();
 
 	int arcDegree;
 	std::vector<double> arcKnotVector;

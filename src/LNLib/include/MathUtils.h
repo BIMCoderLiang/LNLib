@@ -43,6 +43,12 @@ namespace LNLib
 
 		static double Binomial(unsigned int number, unsigned int i);
 
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page445
+		/// Equation 9.102.
+		/// </summary>
+		static double ComputerCubicEquationsWithOneVariable(double cubic, double quadratic, double linear, double constant);
+
 		template<typename T>
 		static void Transpose(const std::vector<std::vector<T>>& matrix, std::vector<std::vector<T>> transposed)
 		{

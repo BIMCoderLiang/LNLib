@@ -22,12 +22,21 @@ namespace LNLib
 		Skew = 3,
 	};
 
+	enum class LinePlaneIntersectionType : int
+	{
+		Intersecting = 0,
+		Parallel = 1,
+		On = 2,
+	};
+
 	class XYZ;
 	class LNLIB_EXPORT Intersection
 	{
 
 	public:
 		static CurveCurveIntersectionType ComputeRays(const XYZ& point0, const XYZ& vector0, const XYZ& point1, const XYZ& vector1, double& param0, double& param1, XYZ& intersectPoint);
+
+		static LinePlaneIntersectionType ComputeLineAndPlane(const XYZ& normal, const XYZ& pointOnPlane, const XYZ& pointOnLine, const XYZ& lineDirection, XYZ& intersectPoint);
 
 	};
 }

@@ -202,14 +202,14 @@ namespace LNLib
 		/// Algorithm A9.11
 		/// Fit to tolerance with conic segment.
 		/// </summary>
-		static bool FitWithConic(int startPointIndex, int endPointIndex, const std::vector<XYZ>& throughPoints, const XYZ& startTangent, const XYZ& endTangent, double maxError, std::vector<XYZW>& middleControlPoints);
+		static bool LocalRationalQuadraticCurveApproximation(int startPointIndex, int endPointIndex, const std::vector<XYZ>& throughPoints, const XYZ& startTangent, const XYZ& endTangent, double maxError, std::vector<XYZW>& middleControlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page448
 		/// Algorithm A9.12
 		/// Fit to tolerance with cubic segment.
 		/// </summary>
-		static void FitWithCubic();
+		static bool LocalNonRationalCubicCurveApproximation(int startPointIndex, int endPointIndex, const std::vector<XYZ>& throughPoints, const XYZ& startTangent, const XYZ& endTangent, double maxError, std::vector<XYZW>& middleControlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page577

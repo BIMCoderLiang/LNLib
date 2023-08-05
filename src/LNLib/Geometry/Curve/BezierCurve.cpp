@@ -108,10 +108,8 @@ XYZ LNLib::BezierCurve::GetPointOnQuadraticArc(const XYZW& startPoint, const XYZ
 bool LNLib::BezierCurve::ComputerMiddleControlPointsOnQuadraticCurve(const XYZ& startPoint, const XYZ& startTangent, const XYZ& endPoint, const XYZ& endTangent, std::vector<XYZW>& controlPoints)
 {
 	XYZ chord = (endPoint - startPoint).Normalize();
-	XYZ tST = startTangent;
-	XYZ tET = endTangent;
-	XYZ nST = tST.Normalize();
-	XYZ nET = tET.Normalize();
+	XYZ nST = const_cast<XYZ&>(startTangent).Normalize();
+	XYZ nET = const_cast<XYZ&>(endTangent).Normalize();
 
 	if (nST.IsAlmostEqualTo(chord) ||
 		nST.IsAlmostEqualTo(chord.Negative()))
@@ -139,18 +137,8 @@ bool LNLib::BezierCurve::ComputerMiddleControlPointsOnQuadraticCurve(const XYZ& 
 		}
 		else
 		{
-			double gamma1 = (R - startPoint).Length() / startTangent.Length();
-			if ((R - startPoint).Normalize().IsAlmostEqualTo(nST.Negative()))
-			{
-				gamma1 = -gamma1;
-			}
-
-			double gamma2 = (R - endPoint).Length() / endTangent.Length();
-			if ((R - endPoint).Normalize().IsAlmostEqualTo(nET.Negative()))
-			{
-				gamma2 = -gamma2;
-			}
-
+			double gamma1 = (R - startPoint)[0] / startTangent[0];
+			double gamma2 = (R - endPoint)[0] / endTangent[0];
 			if (MathUtils::IsGreaterThan(gamma1, 0.0) && MathUtils::IsLessThan(gamma2, 0.0))
 			{
 				double w = 0.0;

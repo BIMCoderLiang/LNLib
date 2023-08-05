@@ -977,10 +977,8 @@ void LNLib::NurbsCurve::Reverse(const std::vector<double>& knotVector, const std
 
 bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ& yAxis, double startRad, double endRad, double xRadius, double yRadius, int& degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
 {
-	XYZ nXTemp = xAxis;
-	XYZ nX = nXTemp.Normalize();
-	XYZ nYTemp = yAxis;
-	XYZ nY = nYTemp.Normalize();
+	XYZ nX = const_cast<XYZ&>(xAxis).Normalize();
+	XYZ nY = const_cast<XYZ&>(yAxis).Normalize();
 
 	if (endRad < startRad)
 	{
@@ -1917,7 +1915,7 @@ void LNLib::NurbsCurve::GlobalCurveApproximationByErrorBound(unsigned int degree
 	}
 }
 
-bool LNLib::NurbsCurve::FitWithConic(int startPointIndex, int endPointIndex, const std::vector<XYZ>& throughPoints, const XYZ& startTangent, const XYZ& endTangent, double maxError, std::vector<XYZW>& middleControlPoints)
+bool LNLib::NurbsCurve::LocalRationalQuadraticCurveApproximation(int startPointIndex, int endPointIndex, const std::vector<XYZ>& throughPoints, const XYZ& startTangent, const XYZ& endTangent, double maxError, std::vector<XYZW>& middleControlPoints)
 {
 	XYZ startPoint = throughPoints[startPointIndex];
 	XYZ endPoint = throughPoints[endPointIndex];
@@ -2018,6 +2016,180 @@ bool LNLib::NurbsCurve::FitWithConic(int startPointIndex, int endPointIndex, con
 		return true;
 	}
 	return false;
+}
+
+bool LNLib::NurbsCurve::LocalNonRationalCubicCurveApproximation(int startPointIndex, int endPointIndex, const std::vector<XYZ>& throughPoints, const XYZ& startTangent, const XYZ& endTangent, double maxError, std::vector<XYZW>& middleControlPoints)
+{
+	int size = static_cast<int>(throughPoints.size());
+	XYZ startPoint = throughPoints[startPointIndex];
+	XYZ endPoint = throughPoints[endPointIndex];
+	double alpha = 0.0;
+	double beta = 0.0;
+	if (endPointIndex - startPointIndex == 1)
+	{
+		XYZ Dks(0, 0, 0);
+		XYZ Dke(0, 0, 0);
+		if (startPointIndex == 0)
+		{
+			Dks = startTangent;
+		}
+		if (endPointIndex == size - 1)
+		{
+			Dke = endTangent;
+		}
+		if (startPointIndex != 0 && 
+			endPointIndex != size - 1)
+		{
+			Dks = endPoint.Distance(startPoint) / startPoint.Distance(throughPoints[startPointIndex - 1]) * startTangent;
+			Dks = throughPoints[endPointIndex + 1].Distance(endPoint) / endPoint.Distance(startPoint) * endTangent;
+		}
+		alpha = Dks.Length() / 3;
+		beta = -Dke.Length() / 3;
+		XYZW P1((startPoint + alpha * startTangent),1);
+		XYZW P2((endPoint + beta * endTangent), 1);
+		middleControlPoints.emplace_back(P1);
+		middleControlPoints.emplace_back(P2);
+		return true;
+	}
+	int dk = endPointIndex - startPointIndex;
+	bool isLine = true;
+	XYZ tempStandard(0, 0, 0);
+	for (int i = startPointIndex; i < dk + 1; i++)
+	{
+		XYZ tp = throughPoints[i];
+		XYZ direction = (tp - startPoint).Normalize();
+		if (tempStandard.IsZero())
+		{
+			tempStandard = direction;
+		}
+		else
+		{
+			if (!tempStandard.IsAlmostEqualTo(direction))
+			{
+				isLine = false;
+				break;
+			}
+		}
+	}
+	if (isLine)
+	{
+		XYZW P1((2*startPoint + endPoint)/3, 1);
+		XYZW P2((startPoint + 2*endPoint)/3, 1);
+		middleControlPoints.emplace_back(P1);
+		middleControlPoints.emplace_back(P2);
+		return true;
+	}
+	std::vector<double> uh;
+	std::vector<double> alfak;
+	std::vector<double> betak;
+	for (int k = 1; k < dk; k++)
+	{
+		XYZ normalPi = (endPoint - startPoint).Normalize().CrossProduct(startTangent);
+		XYZ t = throughPoints[k + startPointIndex];
+		XYZ tt = (t - startPoint).Normalize().CrossProduct(endTangent);
+		if (normalPi.Normalize().IsAlmostEqualTo(tt.Normalize()) ||
+			normalPi.Normalize().IsAlmostEqualTo(tt.Normalize().Negative()))
+		{
+			uh = Interpolation::GetChordParameterization(throughPoints, startPointIndex, endPointIndex);
+			double ak = 0.0;
+			double bk = 0.0;
+			double s = 1 - uh[k];
+			double t = uh[k];
+
+			XYZ a1 = 3 * pow(s, 2) * t * startTangent;
+			XYZ b1 = 3 * s * pow(t, 2) * endTangent;
+			XYZ c1 = throughPoints[k] - (pow(s, 3) + 3 * pow(s, 2) * t) * startPoint - (pow(t, 3) + 3 * s * pow(t, 2)) * endPoint;
+
+			double alk = (uh[k] - uh[k - 1]) / (uh[k + 1] - uh[k - 1]);
+			XYZ dk = (throughPoints[k] - throughPoints[k - 1]) / (uh[k] - uh[k - 1]);
+			XYZ dk1 = (throughPoints[k+1] - throughPoints[k]) / (uh[k+1] - uh[k]);
+			XYZ Dk = ((1 - alk) * dk + alk * dk1).Normalize();
+
+			XYZ a2 = s * (s - 2 * t) * (Dk.CrossProduct(startTangent));
+			XYZ b2 = t * (2 * s - t) * (Dk.CrossProduct(endTangent));
+			XYZ c2 = 2 * s * t * (Dk.CrossProduct(startPoint - endPoint));
+
+			ak = (c1 * b2 - c2 * b1) / (a1 * b2 - a2 * b1);
+			bk = (c1 * a2 - c2 * a1) / (b1 * a2 - b2 * a1);
+
+			if (MathUtils::IsGreaterThan(ak, 0.0) &&
+				MathUtils::IsLessThan(bk, 0.0))
+			{
+				alfak[k] = ak;
+				betak[k] = bk;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else
+		{
+			XYZ Pd(0, 0, 0);
+			LinePlaneIntersectionType type0 = Intersection::ComputeLineAndPlane(normalPi, startPoint, throughPoints[k + startPointIndex], startTangent, Pd);
+			if (!(type0 == LinePlaneIntersectionType::Intersecting)) return false;
+			double param0 = 0.0; double param1 = 0.0;
+			XYZ Pc(0, 0, 0);
+			CurveCurveIntersectionType type1 = Intersection::ComputeRays(startPoint, endPoint - startPoint, Pd, startTangent, param0, param1, Pc);
+			if (!(type1 == CurveCurveIntersectionType::Intersecting)) return false;
+			double gamma = Pc.Distance(endPoint) / startPoint.Distance(endPoint);
+			if (MathUtils::IsLessThan(gamma, 0.0) || 
+				MathUtils::IsGreaterThan(gamma, 1.0))
+			{
+				return false;
+			}
+			uh[k] = MathUtils::ComputerCubicEquationsWithOneVariable(2, -3, 0, 1 - gamma);
+			if (MathUtils::IsLessThan(uh[k], 0.0) || 
+				MathUtils::IsGreaterThan(uh[k], 1.0))
+			{
+				return false;
+			}
+			else
+			{
+				double a = Pc.Distance(Pd);
+				double b = -Pd.Distance(throughPoints[k + startPointIndex]);
+				double b13 = Polynomials::Bernstein(1, 3, uh[k]);
+				double b23 = Polynomials::Bernstein(2, 3, uh[k]);
+				alfak[k] = a / b13;
+				betak[k] = b / b23;
+			}
+		}
+	}
+	alpha = 0.0;
+	beta = 0.0;
+	for (int k = 1; k < dk; k++)
+	{
+		alpha += alfak[k];
+		beta += betak[k];
+	}
+	alpha = alpha / (dk - 1);
+	beta = beta / (dk - 1);
+	XYZ P1 = throughPoints[startPointIndex] + alpha * startTangent;
+	XYZ P2 = throughPoints[endPointIndex] + beta * endTangent;
+	middleControlPoints.emplace_back(XYZW(P1,1));
+	middleControlPoints.emplace_back(XYZW(P2,1));
+	for (int k = 1; k < dk; k++)
+	{
+		double u = uh[k];
+		double deltaAk = alfak[k] - alpha;
+		double deltaBk = betak[k] - beta;
+		double e = (deltaAk * Polynomials::Bernstein(1, 3, u) * startTangent).Distance(deltaBk * Polynomials::Bernstein(2, 3, u) * endTangent);
+		if (MathUtils::IsLessThanOrEqual(e, maxError)) continue;
+		else
+		{
+			std::vector<XYZW> cps = { XYZW(startPoint,1), XYZW(P1,1), XYZW(P2,1),  XYZW(endPoint,1) };
+			double tempParam = GetParamOnCurve(3, uh, cps, throughPoints[startPointIndex + k]);
+			std::vector<XYZ> cpts = { startPoint, P1, P2, endPoint };
+			XYZ t = BezierCurve::GetPointOnCurveByBernstein(cpts, 3, tempParam);
+			XYZ p = BezierCurve::GetPointOnCurveByBernstein(cpts, 3, u);
+			double ek = p.Distance(t);
+			if (MathUtils::IsGreaterThan(ek, maxError))
+			{
+				return false;
+			}
+		}
+	}
+	return true;
 }
 
 void LNLib::NurbsCurve::ToUnclampCurve(unsigned int degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)

@@ -84,6 +84,19 @@ double LNLib::MathUtils::Binomial(unsigned int number, unsigned int i)
     return Factorial(number) / (Factorial(i) * Factorial(number - 1));
 }
 
+double LNLib::MathUtils::ComputerCubicEquationsWithOneVariable(double cubic, double quadratic, double linear, double constant)
+{
+    double result;
+    double initial = 0.001;
+    result = initial - ((cubic * pow(initial,3) + quadratic * pow(initial, 2) + linear * initial + constant) / (3 * cubic * pow(initial, 2) + 2 * quadratic * initial + linear));
+    while(MathUtils::IsGreaterThan(abs(result-initial),Constants::DoubleEpsilon))
+    {
+        initial = result;
+        result = initial - ((cubic * pow(initial,3) + quadratic * pow(initial, 2) + linear * initial + constant) / (3 * cubic * pow(initial, 2) + 2 * quadratic * initial + linear));
+    }
+    return result;
+}
+
 std::vector<std::vector<double>> LNLib::MathUtils::MatrixMultiply(const std::vector<std::vector<double>>& matrix0, const std::vector<std::vector<double>>& matrix1)
 {
     int m = static_cast<int>(matrix0.size());

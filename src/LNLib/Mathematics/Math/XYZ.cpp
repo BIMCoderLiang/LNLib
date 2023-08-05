@@ -107,11 +107,8 @@ double XYZ::SqrLength() const
 
 double LNLib::XYZ::AngleTo(const XYZ& another) const
 {
-	XYZ tTemp = (*this);
-	XYZ ntTemp = tTemp.Normalize();
-
-	XYZ aTemp = another;
-	XYZ naTemp = aTemp.Normalize();
+	XYZ ntTemp = const_cast<XYZ&>(*this).Normalize();
+	XYZ naTemp = const_cast<XYZ&>(another).Normalize();
 
 	if (ntTemp.IsZero() ||
 		naTemp.IsZero())

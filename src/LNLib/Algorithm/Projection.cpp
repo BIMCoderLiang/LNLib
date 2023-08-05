@@ -13,8 +13,6 @@
 
 void LNLib::Projection::PointToLine(const XYZ& origin, const XYZ& vector, const XYZ& Point, XYZ& ProjectPoint)
 {
-    XYZ temp = vector;
-    XYZ nTemp = temp.Normalize();
-
-    ProjectPoint = origin + ((Point - origin).DotProduct(nTemp)) * nTemp;
+    XYZ temp = const_cast<XYZ&>(vector).Normalize();
+    ProjectPoint = origin + ((Point - origin).DotProduct(temp)) * temp;
 }

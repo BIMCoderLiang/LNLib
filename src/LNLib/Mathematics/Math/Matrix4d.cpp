@@ -75,8 +75,7 @@ Matrix4d LNLib::Matrix4d::CreateReflection(const XYZ& origin, const XYZ& normal)
 {
 	Matrix4d result = Matrix4d();
 
-	XYZ temp = normal;
-	XYZ nTemp = temp.Normalize();
+	XYZ nTemp = const_cast<XYZ&>(normal).Normalize();
 	XYZW wNormal = XYZW(nTemp.GetX(), nTemp.GetY(), nTemp.GetZ(), -origin.DotProduct(nTemp));
 
 	result.m_matrix4d[0][0] = 1 - 2 * wNormal[0] * wNormal[0];
@@ -107,8 +106,7 @@ Matrix4d LNLib::Matrix4d::CreateRotation(const XYZ& axis, double rad)
 	double s = sin(rad);
 	double t = 1.0 - c;
 
-	XYZ tempAxis = axis;
-	XYZ nAxis = tempAxis.Normalize();
+	XYZ nAxis = const_cast<XYZ&>(axis).Normalize();
 	double x = nAxis.GetX();
 	double y = nAxis.GetY();
 	double z = nAxis.GetZ();
@@ -172,14 +170,9 @@ Matrix4d LNLib::Matrix4d::CreateScale(const XYZ& scale)
 
 Matrix4d LNLib::Matrix4d::CreateCamera(const XYZ& eyePoint, const XYZ& lookDirection, const XYZ& upDirection, const XYZ& rightDirection)
 {
-	XYZ lTemp = lookDirection;
-	XYZ look = lTemp.Normalize();
-
-	XYZ uTemp = upDirection;
-	XYZ up = uTemp.Normalize();
-
-	XYZ rTemp = upDirection;
-	XYZ right = rTemp.Normalize();
+	XYZ look = const_cast<XYZ&>(lookDirection).Normalize();
+	XYZ up = const_cast<XYZ&>(upDirection).Normalize();
+	XYZ right = const_cast<XYZ&>(upDirection).Normalize();
 
 	Matrix4d result = Matrix4d();
 	result.m_matrix4d[0][0] = right.GetX();

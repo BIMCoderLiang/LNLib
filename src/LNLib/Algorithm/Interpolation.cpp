@@ -28,7 +28,7 @@ namespace LNLib
 
 	XYZ GetVk(const XYZ& qk_1, const XYZ& qk, const XYZ& qk1, const XYZ& qk2)
 	{
-		double ak = GetAk(qk_1,qk,qk1,qk2);
+		double ak = GetAk(qk_1, qk, qk1, qk2);
 		return ((1 - ak) * qk + ak * qk1).Normalize();
 	}
 }
@@ -60,6 +60,26 @@ std::vector<double> LNLib::Interpolation::GetChordParameterization(const std::ve
 	{
 		uk[i] = uk[i - 1] + (throughPoints[i].Distance(throughPoints[i - 1])) / d;
 	}
+	return uk;
+}
+
+std::vector<double> LNLib::Interpolation::GetChordParameterization(const std::vector<XYZ>& throughPoints, int startIndex, int endIndex)
+{
+	int size = endIndex - startIndex + 1;
+	std::vector<double> uk;
+	uk.resize(size, 0.0);
+
+	double length = 0.0;
+	for (int i = startIndex; i <= endIndex; i++)
+	{
+		length += throughPoints[i].Distance(throughPoints[i - 1]);
+	}
+
+	for (int i = startIndex; i <= endIndex; i++)
+	{
+		uk[i] = uk[i - 1] + (throughPoints[i].Distance(throughPoints[i - 1])) / length;
+	}
+
 	return uk;
 }
 

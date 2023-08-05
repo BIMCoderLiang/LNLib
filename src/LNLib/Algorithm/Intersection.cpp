@@ -16,11 +16,8 @@ using namespace LNLib;
 
 CurveCurveIntersectionType Intersection::ComputeRays(const XYZ& point0, const XYZ& vector0, const XYZ& point1, const XYZ& vector1, double& param0, double& param1, XYZ& intersectPoint)
 {
-	XYZ v0Temp = vector0;
-	XYZ v0 = v0Temp.Normalize();
-
-	XYZ v1Temp = vector1;
-	XYZ v1 = v1Temp.Normalize();
+	XYZ v0 = const_cast<XYZ&>(vector0).Normalize();
+	XYZ v1 = const_cast<XYZ&>(vector1).Normalize();
 
 	XYZ cross = v0.CrossProduct(v1);
 
@@ -63,4 +60,21 @@ CurveCurveIntersectionType Intersection::ComputeRays(const XYZ& point0, const XY
 		return CurveCurveIntersectionType::Intersecting;
 	}
 	return CurveCurveIntersectionType::Skew;
+}
+
+LinePlaneIntersectionType LNLib::Intersection::ComputeLineAndPlane(const XYZ& normal, const XYZ& pointOnPlane, const XYZ& pointOnLine, const XYZ& lineDirection, XYZ& intersectPoint)
+{
+	double d = (pointOnLine - pointOnPlane).DotProduct(normal);
+	double angle = normal.AngleTo(lineDirection);
+	if (MathUtils::IsAlmostEqualTo(d, 0.0))
+	{
+		return LinePlaneIntersectionType::On;
+	}
+	if (MathUtils::IsAlmostEqualTo(angle, Constants::Pi / 2))
+	{
+		return LinePlaneIntersectionType::Parallel;
+	}
+	d = d / lineDirection.DotProduct(normal);
+	intersectPoint = d * const_cast<XYZ&>(normal).Normalize() + pointOnLine;
+	return LinePlaneIntersectionType::Intersecting;
 }
