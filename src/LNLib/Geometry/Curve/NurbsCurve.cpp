@@ -1329,7 +1329,7 @@ void LNLib::NurbsCurve::GlobalInterpolationByTangents(unsigned int degree, const
 	}
 }
 
-void LNLib::NurbsCurve::LocalInterpolation(const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+void LNLib::NurbsCurve::LocalCubicCurveInterpolation(const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
 {
 	unsigned int degree = 3;
 

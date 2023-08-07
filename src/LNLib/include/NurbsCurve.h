@@ -158,10 +158,10 @@ namespace LNLib
 		static void GlobalInterpolationByTangents(unsigned int degree, const std::vector<XYZ>& throughPoints, const std::vector<XYZ>& tangents, const std::vector<int>& tangentsIndices,  std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
 
 		/// <summary>
-		/// The NURBS Book 2nd Edition Page398
-		/// Local interpolation by through points.
+		/// The NURBS Book 2nd Edition Page395
+		/// Local cubic curve interpolation by through points.
 		/// </summary>
-		static void LocalInterpolation(const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+		static void LocalCubicCurveInterpolation(const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page410
