@@ -21,11 +21,12 @@ NURBS Algorithms:
 - Create Arc and Conic Curve
 - Create Bilinear/Cylindrical/Ruled/Revolved Surface
 - Global/Local Curve/Surface Interpolation 
+- Global/Local Curve/Surface Approximation
 
 This library is **under development.**
 
 ## Roadmap
-- Algorithms of Chapter 9 - 11 in The NURBS Book 2nd Edition
+- Algorithms of Chapter 10 & 11 in The NURBS Book 2nd Edition
 - Other Common NURBS algorithms
 
 ## Contributing

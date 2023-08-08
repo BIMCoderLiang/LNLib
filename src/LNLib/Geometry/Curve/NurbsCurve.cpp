@@ -1220,7 +1220,7 @@ void LNLib::NurbsCurve::GlobalInterpolation(unsigned int degree, const std::vect
 	int n = size - 1;
 
 	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
-	Interpolation::ComputeKnotVector(degree, static_cast<int>(throughPoints.size()), uk, knotVector);
+	knotVector = Interpolation::ComputeKnotVector(degree, static_cast<int>(throughPoints.size()), uk);
 
 	std::vector<std::vector<double>> A = Interpolation::MakeInterpolationMatrix(degree, size, uk, knotVector);
 	std::vector<XYZ> tempControlPoints = Interpolation::ComputerControlPointsByLUDecomposition(A, throughPoints);
@@ -1237,7 +1237,7 @@ void LNLib::NurbsCurve::GlobalInterpolationByTangents(unsigned int degree, const
 	int tangentsCount = static_cast<int>(tangents.size());
 	int size = pointsCount + tangentsCount;
 	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
-	Interpolation::ComputerKnotVectorForTangents(degree, uk, tangentsIndices, knotVector);
+	knotVector = Interpolation::ComputerKnotVectorForTangents(degree, uk, tangentsIndices);
 
 	std::vector<XYZ> innerTangents;
 	innerTangents.resize(tangentsCount);
@@ -1400,7 +1400,7 @@ bool LNLib::NurbsCurve::LeastSquaresApproximation(unsigned int degree, const std
 	if (!ValidationUtils::IsInRange(n, degree, m - 1)) return false;
 
 	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
-	Interpolation::ComputeKnotVector(degree, size, controlPointsCount, uk, knotVector);
+	knotVector = Interpolation::ComputeKnotVector(degree, size, controlPointsCount, uk);
 
 	std::vector<XYZ> Rk(m);
 	Rk[0] = XYZ(0, 0, 0);
@@ -1487,7 +1487,7 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(unsigned 
 	}
 
 	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
-	Interpolation::ComputeKnotVector(degree, size, controlPointsCount, uk, knotVector);
+	knotVector = Interpolation::ComputeKnotVector(degree, size, controlPointsCount, uk);
 
 	int j = 0;
 	int mu2 = 0;

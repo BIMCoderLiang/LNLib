@@ -83,8 +83,9 @@ std::vector<double> LNLib::Interpolation::GetChordParameterization(const std::ve
 	return uk;
 }
 
-void LNLib::Interpolation::ComputeKnotVector(unsigned int degree, int pointsCount, const std::vector<double> params, std::vector<double>& knotVector)
+std::vector<double> LNLib::Interpolation::ComputeKnotVector(unsigned int degree, int pointsCount, const std::vector<double> params)
 {
+	std::vector<double> knotVector;
 	std::vector<double> uk = params;
 
 	int size = pointsCount;
@@ -106,10 +107,12 @@ void LNLib::Interpolation::ComputeKnotVector(unsigned int degree, int pointsCoun
 		}
 		knotVector[j + degree] = (1.0 / degree) * temp;
 	}
+	return knotVector;
 }
 
-void LNLib::Interpolation::ComputeKnotVector(unsigned int degree, int pointsCount, int controlPointsCount, const std::vector<double> params, std::vector<double>& knotVector)
+std::vector<double> LNLib::Interpolation::ComputeKnotVector(unsigned int degree, int pointsCount, int controlPointsCount, const std::vector<double> params)
 {
+	std::vector<double>  knotVector;
 	for (int i = 0; i <= degree; i++)
 	{
 		knotVector[i] = 0;
@@ -126,6 +129,7 @@ void LNLib::Interpolation::ComputeKnotVector(unsigned int degree, int pointsCoun
 	{
 		knotVector.emplace_back(1.0);
 	}
+	return knotVector;
 }
 
 std::vector<std::vector<double>> LNLib::Interpolation::MakeInterpolationMatrix(unsigned int degree, int dataCount, const std::vector<double>& params, const std::vector<double>& knotVector)
@@ -204,7 +208,7 @@ std::vector<LNLib::XYZ> LNLib::Interpolation::ComputerControlPointsByLUDecomposi
 	return tempControlPoints;
 }
 
-void LNLib::Interpolation::ComputerKnotVectorForTangents(unsigned int degree, const std::vector<double>& params, const std::vector<int>& derivativeIndices, std::vector<double>& knotVector)
+std::vector<double> LNLib::Interpolation::ComputerKnotVectorForTangents(unsigned int degree, const std::vector<double>& params, const std::vector<int>& derivativeIndices)
 {
 	int paramsCount = static_cast<int>(params.size());
 	int derCount = static_cast<int>(derivativeIndices.size());
@@ -300,6 +304,7 @@ void LNLib::Interpolation::ComputerKnotVectorForTangents(unsigned int degree, co
 		tempKnotVector.data());
 
 	int numKnots = paramsCount + derCount + degree + 1;
+	std::vector<double> knotVector;
 	knotVector.resize(numKnots);
 
 	for (int i = 0; i < static_cast<int>(degree); i++)
@@ -312,6 +317,7 @@ void LNLib::Interpolation::ComputerKnotVectorForTangents(unsigned int degree, co
 	{
 		knotVector[degree + i] = tempKnotVector[i];
 	}
+	return knotVector;
 }
 
 
