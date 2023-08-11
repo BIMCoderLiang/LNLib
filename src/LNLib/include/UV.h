@@ -15,11 +15,15 @@
 
 namespace LNLib
 {
+	/// <summary>
+	/// Represents two-dimension location/vector/offset
+	/// </summary>
 	class LNLIB_EXPORT UV
 	{
 
 	public:
 
+		UV();
 		UV(double u, double v);
 
 	public:
@@ -47,7 +51,7 @@ namespace LNLib
 		UV Negative() const;
 		double DotProduct(const UV& another) const;
 		double CrossProduct(const UV& another) const;
-
+		double Distance(const UV& another) const;
 
 	public:
 

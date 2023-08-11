@@ -13,6 +13,13 @@
 
 using namespace LNLib;
 
+LNLib::UV::UV()
+{
+	m_uv[0] = 0;
+	m_uv[1] = 0;
+}
+
+
 UV::UV(double u, double v) {
 
 	m_uv[0] = u;
@@ -118,6 +125,12 @@ double UV::DotProduct(const UV& another) const
 double UV::CrossProduct(const UV& another) const
 {
 	return m_uv[0] * another[1] - another.m_uv[0] * m_uv[1];
+}
+
+double LNLib::UV::Distance(const UV& another) const
+{
+	double squareValue = pow((another.GetU() - m_uv[0]), 2) + pow((another.GetV() - m_uv[1]), 2);
+	return sqrt(squareValue);
 }
 
 UV& UV::operator=(const UV& UV)

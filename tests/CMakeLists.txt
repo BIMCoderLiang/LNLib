@@ -1,7 +1,9 @@
-set(TERGET_NAME LNLibTests)
-project(${TERGET_NAME})
+set(TARGET_NAME Tests)
+project(${TARGET_NAME})
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/$<CONFIG>)
-add_executable(${TERGET_NAME} test.cpp)
+set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+file(GLOB TEST_FILES ${SOURCE_DIR}/*.cpp)
+add_executable(${TARGET_NAME} ${TEST_FILES})
 
 include(FetchContent)
 FetchContent_Declare(
@@ -34,6 +36,6 @@ set_target_properties(
     PROPERTIES FOLDER "gtest"
 )
 
-target_include_directories(${TERGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/src/LNLib/include)
-target_link_libraries(${TERGET_NAME} LNLib gtest gtest_main)
-add_dependencies(${TERGET_NAME} LNLib)
+target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/src/LNLib/include)
+target_link_libraries(${TARGET_NAME} LNLib gtest gtest_main)
+add_dependencies(${TARGET_NAME} LNLib)

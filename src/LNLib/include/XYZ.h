@@ -14,10 +14,14 @@
 
 namespace LNLib
 {
+	/// <summary>
+	/// Represents three-dimension location/vector/offset
+	/// </summary>
 	class LNLIB_EXPORT XYZ
 	{
 
 	public:
+
 		XYZ();
 		XYZ(double x, double y, double z);
 
@@ -51,8 +55,6 @@ namespace LNLib
 		XYZ Negative() const;
 		double DotProduct(const XYZ& another) const;
 		XYZ CrossProduct(const XYZ& another) const;
-
-	public:
 		double Distance(const XYZ& another) const;
 
 	public:
@@ -74,7 +76,6 @@ namespace LNLib
 		double m_xyz[3];
 
 	};
-
 
 	XYZ operator *(const XYZ& source, const double d);
 	XYZ operator *(const double& d, const XYZ& source);

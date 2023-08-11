@@ -15,9 +15,12 @@
 
 namespace LNLib
 {
-
+	/// <summary>
+	/// Represents four-dimension location/vector/offset
+	/// </summary>
 	class LNLIB_EXPORT XYZW
 	{
+
 	public:
 
 		XYZW();
@@ -45,11 +48,13 @@ namespace LNLib
 		double& W();
 
 	public:
+
 		XYZ ToXYZ(bool divideWeight);
 		bool IsAlmostEqualTo(const XYZW& another) const;
 		double Distance(const XYZW& another) const;
 
 	public:
+
 		double& operator[](int index);
 		const double& operator[](int index) const;
 		XYZW  operator +(const XYZW& xyzw) const;
