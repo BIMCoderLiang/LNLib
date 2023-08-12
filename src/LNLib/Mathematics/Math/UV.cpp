@@ -9,6 +9,7 @@
  */
 
 #include "UV.h"
+#include "MathUtils.h"
 #include <math.h>
 
 using namespace LNLib;
@@ -76,7 +77,8 @@ bool LNLib::UV::IsUnit(const double epsilon) const
 
 bool LNLib::UV::IsAlmostEqualTo(const UV& another) const
 {
-	return (*this - another).SqrLength() <= Constants::DoubleEpsilon * Constants::DoubleEpsilon;
+	return MathUtils::IsAlmostEqualTo(m_uv[0], another.m_uv[0]) &&
+		   MathUtils::IsAlmostEqualTo(m_uv[1], another.m_uv[1]);
 }
 
 double UV::Length() const
@@ -89,7 +91,7 @@ double UV::SqrLength() const
 	return m_uv[0] * m_uv[0] + m_uv[1] * m_uv[1];
 }
 
-double UV::Normalize()
+UV UV::Normalize()
 {
 	double length = Length();
 	if (length > 0)
@@ -98,7 +100,7 @@ double UV::Normalize()
 		m_uv[0] *= invLength;
 		m_uv[1] *= invLength;
 	}
-	return length;
+	return *this;
 }
 
 UV UV::Add(const UV& another) const
@@ -133,10 +135,10 @@ double LNLib::UV::Distance(const UV& another) const
 	return sqrt(squareValue);
 }
 
-UV& UV::operator=(const UV& UV)
+UV& UV::operator=(const UV& uv)
 {
-	m_uv[0] = UV.m_uv[0];
-	m_uv[1] = UV.m_uv[1];
+	m_uv[0] = uv.m_uv[0];
+	m_uv[1] = uv.m_uv[1];
 	return *this;
 }
 
@@ -150,19 +152,19 @@ const double& UV::operator[](int index) const
 	return m_uv[index];
 }
 
-UV UV::operator+(const UV& UV) const
+UV UV::operator+(const UV& uv) const
 {
-	return LNLib::UV(m_uv[0] + UV.m_uv[0], m_uv[1] + UV.m_uv[1]);
+	return LNLib::UV(m_uv[0] + uv.m_uv[0], m_uv[1] + uv.m_uv[1]);
 }
 
-UV UV::operator-(const UV& UV) const
+UV UV::operator-(const UV& uv) const
 {
-	return LNLib::UV(m_uv[0] - UV.m_uv[0], m_uv[1] - UV.m_uv[1]);
+	return LNLib::UV(m_uv[0] - uv.m_uv[0], m_uv[1] - uv.m_uv[1]);
 }
 
-double UV::operator*(const UV& UV) const
+double UV::operator*(const UV& uv) const
 {
-	return DotProduct(UV);
+	return DotProduct(uv);
 }
 
 UV& UV::operator*=(const double& d)
@@ -179,17 +181,17 @@ UV& UV::operator/=(const double& d)
 	return *this;
 }
 
-UV& UV::operator+=(const UV& UV)
+UV& UV::operator+=(const UV& uv)
 {
-	m_uv[0] += UV.m_uv[0];
-	m_uv[1] += UV.m_uv[1];
+	m_uv[0] += uv.m_uv[0];
+	m_uv[1] += uv.m_uv[1];
 	return *this;
 }
 
-UV& UV::operator-=(const UV& UV)
+UV& UV::operator-=(const UV& uv)
 {
-	m_uv[0] -= UV.m_uv[0];
-	m_uv[1] -= UV.m_uv[1];
+	m_uv[0] -= uv.m_uv[0];
+	m_uv[1] -= uv.m_uv[1];
 	return *this;
 }
 
@@ -198,19 +200,19 @@ UV UV::operator-() const
 	return UV(-m_uv[0], -m_uv[1]);
 }
 
-UV LNLib::operator*(const UV& source, const double d)
+LNLib::UV LNLib::operator*(const UV& source, const double d)
 {
 	return UV(source.GetU() * d, source.GetV() * d);
 }
-UV LNLib::operator*(const double& d, const UV& source)
+LNLib::UV LNLib::operator*(const double& d, const UV& source)
 {
 	return UV(source.GetU() * d, source.GetV() * d);
 }
-double LNLib::operator^(const UV& UV1, const UV& UV2)
+double LNLib::operator^(const UV& uv1, const UV& uv2)
 {
-	return UV1.CrossProduct(UV2);
+	return uv1.CrossProduct(uv2);
 }
-UV LNLib::operator/(const UV& source, double d)
+LNLib::UV LNLib::operator/(const UV& source, double d)
 {
 	return UV(source.GetU() / d, source.GetV() / d);
 }

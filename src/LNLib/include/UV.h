@@ -45,7 +45,7 @@ namespace LNLib
 		bool IsAlmostEqualTo(const UV& another) const;
 		double Length() const;
 		double SqrLength() const;
-		double Normalize();
+		UV Normalize();
 		UV Add(const UV& another) const;
 		UV Substract(const UV& another) const;
 		UV Negative() const;
@@ -55,16 +55,16 @@ namespace LNLib
 
 	public:
 
-		UV& operator =(const UV& xyz);
+		UV& operator =(const UV& uv);
 		double& operator[](int index);
 		const double& operator[](int index) const;
-		UV operator +(const UV& xyz) const;
-		UV operator -(const UV& xyz) const;
-		double operator *(const UV& xyz) const;
+		UV operator +(const UV& uv) const;
+		UV operator -(const UV& uv) const;
+		double operator *(const UV& uv) const;
 		UV& operator *=(const double& d);
 		UV& operator /=(const double& d);
-		UV& operator +=(const UV& xyz);
-		UV& operator -=(const UV& xyz);
+		UV& operator +=(const UV& uv);
+		UV& operator -=(const UV& uv);
 		UV  operator-() const;
 
 	private:
@@ -72,10 +72,10 @@ namespace LNLib
 		double m_uv[2];
 	};
 
-	UV operator *(const UV& source, const double d);
-	UV operator *(const double& d, const UV& source);
-	double operator ^(const UV& xyz1, const UV& xyz2);
-	UV operator /(const UV& source, double d);
+	LNLIB_EXPORT UV operator *(const UV& source, const double d);
+	LNLIB_EXPORT UV operator *(const double& d, const UV& source);
+	LNLIB_EXPORT double operator ^(const UV& uv1, const UV& uv2);
+	LNLIB_EXPORT UV operator /(const UV& source, double d);
 }
 
 

@@ -4,12 +4,6 @@
 #include "NurbsCurve.h"
 using namespace LNLib;
 
-
-int main(int argc, char** argv) {
-	::testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
-}
-
 TEST(TestLNLib, GetPointOnCurve)
 {
 	constexpr auto degree = 3;
