@@ -29,12 +29,10 @@ namespace LNLib
 
 	public:
 
-		void SetWX(const double wx);
 		double GetWX() const;
-		void SetWY(const double wy);
 		double GetWY() const;
-		void SetWZ(const double wz);
 		double GetWZ() const;
+
 		void SetW(const double w);
 		double GetW() const;
 
@@ -66,8 +64,8 @@ namespace LNLib
 		double m_xyzw[4];
 	};
 
-	XYZW operator *(const XYZW& source, const double d);
-	XYZW operator *(const double& d, const XYZW& source);
-	XYZW operator /(const XYZW& source, double d);
+	LNLIB_EXPORT XYZW operator *(const XYZW& source, const double d);
+	LNLIB_EXPORT XYZW operator *(const double& d, const XYZW& source);
+	LNLIB_EXPORT XYZW operator /(const XYZW& source, double d);
 }
 

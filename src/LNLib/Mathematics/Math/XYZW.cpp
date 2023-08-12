@@ -38,31 +38,16 @@ LNLib::XYZW::XYZW(double wx, double wy, double wz, double w)
 	m_xyzw[3] = w;
 }
 
-void XYZW::SetWX(const double wx)
-{
-	m_xyzw[0] = wx;
-}
-
 double XYZW::GetWX() const { return m_xyzw[0]; };
 
-void XYZW::SetWY(const double wy)
-{
-	m_xyzw[1] = wy;
-}
-
-
 double XYZW::GetWY() const { return m_xyzw[1]; };
-
-void XYZW::SetWZ(const double wz)
-{
-	m_xyzw[2] = wz;
-}
 
 double XYZW::GetWZ() const { return m_xyzw[2]; }
 
 void XYZW::SetW(const double w)
 {
-	m_xyzw[3] = w;
+	XYZ origin = this->ToXYZ(true);
+	*this = XYZW(origin, w);
 }
 
 double XYZW::GetW() const { return m_xyzw[3]; }
@@ -131,7 +116,7 @@ bool LNLib::XYZW::IsAlmostEqualTo(const XYZW& another) const
 {
 	XYZW self = *this;
 	XYZW temp = another;
-	return (self.ToXYZ(true) - temp.ToXYZ(true)).SqrLength() <= Constants::DoubleEpsilon * Constants::DoubleEpsilon;
+	return  self.ToXYZ(true).IsAlmostEqualTo(temp.ToXYZ(true));
 }
 
 double LNLib::XYZW::Distance(const XYZW& another) const

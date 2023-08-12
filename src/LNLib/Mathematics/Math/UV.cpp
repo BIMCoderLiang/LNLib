@@ -111,7 +111,6 @@ UV UV::Normalize()
 
 UV UV::Add(const UV& another) const
 {
-
 	return *this + another;
 }
 
