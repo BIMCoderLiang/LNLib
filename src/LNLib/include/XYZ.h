@@ -77,10 +77,10 @@ namespace LNLib
 
 	};
 
-	XYZ operator *(const XYZ& source, const double d);
-	XYZ operator *(const double& d, const XYZ& source);
-	XYZ operator ^(const XYZ& xyz1, const XYZ& xyz2);
-	XYZ operator /(const XYZ& source, double d);
+	LNLIB_EXPORT XYZ operator *(const XYZ& source, const double d);
+	LNLIB_EXPORT XYZ operator *(const double& d, const XYZ& source);
+	LNLIB_EXPORT XYZ operator ^(const XYZ& xyz1, const XYZ& xyz2);
+	LNLIB_EXPORT XYZ operator /(const XYZ& source, double d);
 }
 
 

@@ -45,6 +45,7 @@ namespace LNLib
 		bool IsAlmostEqualTo(const UV& another) const;
 		double Length() const;
 		double SqrLength() const;
+		double AngleTo(const UV& another) const;
 		UV Normalize();
 		UV Add(const UV& another) const;
 		UV Substract(const UV& another) const;

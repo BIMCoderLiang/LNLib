@@ -91,16 +91,22 @@ double UV::SqrLength() const
 	return m_uv[0] * m_uv[0] + m_uv[1] * m_uv[1];
 }
 
+double LNLib::UV::AngleTo(const UV& another) const
+{
+	return 0.0;
+}
+
 UV UV::Normalize()
 {
 	double length = Length();
+	UV newUV = *this;
 	if (length > 0)
 	{
 		double invLength = (double)(1.0 / length);
-		m_uv[0] *= invLength;
-		m_uv[1] *= invLength;
+		newUV.m_uv[0] *= invLength;
+		newUV.m_uv[1] *= invLength;
 	}
-	return *this;
+	return newUV;
 }
 
 UV UV::Add(const UV& another) const

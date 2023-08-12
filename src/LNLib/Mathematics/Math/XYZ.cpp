@@ -92,7 +92,9 @@ bool LNLib::XYZ::IsUnit(const double epsilon) const
 
 bool LNLib::XYZ::IsAlmostEqualTo(const XYZ& another) const
 {
-	return (*this - another).SqrLength() <= Constants::DoubleEpsilon * Constants::DoubleEpsilon;
+	return MathUtils::IsAlmostEqualTo(m_xyz[0], another.m_xyz[0]) &&
+		   MathUtils::IsAlmostEqualTo(m_xyz[1], another.m_xyz[1]) &&
+		   MathUtils::IsAlmostEqualTo(m_xyz[2], another.m_xyz[2]);
 }
 
 double XYZ::Length() const
@@ -123,14 +125,15 @@ double LNLib::XYZ::AngleTo(const XYZ& another) const
 XYZ XYZ::Normalize()
 {
 	double length = Length();
+	XYZ newXYZ = *this;
 	if (length > 0)
 	{
 		double invLength = (double)(1.0 / length);
-		m_xyz[0] *= invLength;
-		m_xyz[1] *= invLength;
-		m_xyz[2] *= invLength;
+		newXYZ.m_xyz[0] *= invLength;
+		newXYZ.m_xyz[1] *= invLength;
+		newXYZ.m_xyz[2] *= invLength;
 	}
-	return *this;
+	return newXYZ;
 }
 
 XYZ XYZ::Add(const XYZ& another) const

@@ -49,7 +49,7 @@ TEST(Test_UV, Common)
 	double distance = uv.Distance(another);
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(distance, 6.708203));
 	EXPECT_FALSE(uv.IsAlmostEqualTo(another));
-	UV uv1 = UV(2 + 1e-7, 4 + 1e-7);
+	UV uv1 = UV(2 + Constants::DoubleEpsilon, 4 + Constants::DoubleEpsilon);
 	EXPECT_TRUE(uv.IsAlmostEqualTo(uv1));
 	double dot = uv.DotProduct(another);
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(dot, 50));
