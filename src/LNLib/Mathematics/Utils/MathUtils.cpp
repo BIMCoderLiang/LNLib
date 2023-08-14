@@ -121,9 +121,8 @@ std::vector<std::vector<double>> LNLib::MathUtils::MatrixMultiply(const std::vec
     return result;
 }
 
-std::vector<std::vector<double>> LNLib::MathUtils::MakeDiagonal(const std::vector<double>& data)
+std::vector<std::vector<double>> LNLib::MathUtils::MakeDiagonal(int size)
 {
-    int size = static_cast<int>(data.size());
     std::vector<std::vector<double>> result(size);
     for (int i = 0; i < size; i++)
     {
@@ -132,7 +131,7 @@ std::vector<std::vector<double>> LNLib::MathUtils::MakeDiagonal(const std::vecto
         {
             if (i == j)
             {
-                result[i][j] = data[i];
+                result[i][j] = 1;
             }
             else
             {
@@ -156,7 +155,7 @@ std::vector<std::vector<double>> LNLib::MathUtils::CreateMatrix(int row, int col
     return result;
 }
 
-bool LNLib::MathUtils::MakeInverse(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>> inverse)
+bool LNLib::MathUtils::MakeInverse(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& inverse)
 {
     int rows = matrix.size();
     int columns = matrix[0].size();
@@ -172,8 +171,13 @@ bool LNLib::MathUtils::MakeInverse(const std::vector<std::vector<double>>& matri
         return false;
     }
 
-    std::vector<std::vector<double>> inverseLower;
-    std::vector<std::vector<double>> inverseUpper;
+    std::vector<std::vector<double>> inverseLower(n);
+    std::vector<std::vector<double>> inverseUpper(n);
+    for (int i = 0; i < n; i++)
+    {
+        inverseLower[i].resize(n);
+        inverseUpper[i].resize(n);
+    }
 
     for (int i = 0; i < n; i++)
     {
@@ -209,7 +213,16 @@ bool LNLib::MathUtils::MakeInverse(const std::vector<std::vector<double>>& matri
         }
     }
 
-    inverse = MatrixMultiply(inverseUpper, inverseLower);
+    for (int i = 0; i < n; i++)           
+    {
+        for (int j = 0; j < n; j++)
+        {
+            for (int k = 0; k < n; k++)
+            {
+                inverse[i][j] += inverseUpper[i][k] * inverseLower[k][j];
+            }
+        }
+    }
     return true;
 }
 

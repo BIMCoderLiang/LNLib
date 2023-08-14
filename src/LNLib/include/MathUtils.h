@@ -78,12 +78,12 @@ namespace LNLib
 
 		static std::vector<std::vector<double>> MatrixMultiply(const std::vector<std::vector<double>>& matrix0, const std::vector<std::vector<double>>& matrix1);
 	
-		static std::vector<std::vector<double>> MakeDiagonal(const std::vector<double>& data);
+		static std::vector<std::vector<double>> MakeDiagonal(int size);
 		
 		static std::vector<std::vector<double>> CreateMatrix(int row, int column);
 
-		static bool MakeInverse(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>> inverse);
-		
+		static bool MakeInverse(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& inverse);
+
 		static bool LUDecomposition(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& lowerTriMatrix, std::vector<std::vector<double>>& upperTriMatrix);
 		
 		static std::vector<double> ForwardSubstitution(const std::vector<std::vector<double>>& lowerTriMatrix, const std::vector<double>& column);

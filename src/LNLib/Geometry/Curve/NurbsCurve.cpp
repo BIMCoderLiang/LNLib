@@ -1553,7 +1553,7 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(unsigned 
 	std::vector<std::vector<double>> NT;
 	MathUtils::Transpose(N, NT);
 
-	std::vector<std::vector<double>> NTW  = MathUtils::MatrixMultiply(NT, MathUtils::MakeDiagonal(W));
+	std::vector<std::vector<double>> NTW  = MathUtils::MatrixMultiply(NT, MathUtils::MakeDiagonal(W.size()));
 	std::vector<std::vector<double>> NTWN = MathUtils::MatrixMultiply(NTW,N);
 
 	std::vector<XYZ> NTWS = Interpolation::ComputerMatrixMultiplyPoints(NTW, S);

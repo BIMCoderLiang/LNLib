@@ -12,6 +12,7 @@
 #include "XYZ.h"
 #include "XYZW.h"
 #include "MathUtils.h"
+#include <algorithm>
 #include <cstring>
 
 using namespace LNLib;
@@ -19,13 +20,13 @@ using namespace LNLib;
 LNLib::Matrix4d::Matrix4d()
 {
 	memset(m_matrix4d, 0, sizeof(double) * 16);
-	m_matrix4d[0][0] = 1;
-	m_matrix4d[1][1] = 1;
-	m_matrix4d[2][2] = 1;
-	m_matrix4d[3][3] = 1;
+	for (int i = 0; i <= 3; i++)
+	{
+		m_matrix4d[i][i] = 1;
+	}
 }
 
-LNLib::Matrix4d::Matrix4d(XYZ basisX, XYZ basisY, XYZ basisZ, XYZ origin)
+LNLib::Matrix4d::Matrix4d(XYZ basisX, XYZ basisY, XYZ basisZ, XYZ basisW)
 {
 	m_matrix4d[0][0] = basisX[0];
 	m_matrix4d[1][0] = basisX[1];
@@ -42,10 +43,10 @@ LNLib::Matrix4d::Matrix4d(XYZ basisX, XYZ basisY, XYZ basisZ, XYZ origin)
 	m_matrix4d[2][2] = basisZ[2];
 	m_matrix4d[3][2] = 0;
 
-	m_matrix4d[0][3] = origin[0];
-	m_matrix4d[1][3] = origin[1];
-	m_matrix4d[2][3] = origin[2];
-	m_matrix4d[3][3] = 0;
+	m_matrix4d[0][3] = basisW[0];
+	m_matrix4d[1][3] = basisW[1];
+	m_matrix4d[2][3] = basisW[2];
+	m_matrix4d[3][3] = 1;
 }
 
 LNLib::Matrix4d::Matrix4d(double a00, double a01, double a02, double a03, double a10, double a11, double a12, double a13, double a20, double a21, double a22, double a23, double a30, double a31, double a32, double a33)
@@ -71,27 +72,29 @@ LNLib::Matrix4d::Matrix4d(double a00, double a01, double a02, double a03, double
 	m_matrix4d[3][3] = a33;
 }
 
-Matrix4d LNLib::Matrix4d::CreateReflection(const XYZ& origin, const XYZ& normal)
+Matrix4d LNLib::Matrix4d::CreateReflection(const XYZ& normal)
 {
 	Matrix4d result = Matrix4d();
 
-	XYZ nTemp = const_cast<XYZ&>(normal).Normalize();
-	XYZW wNormal = XYZW(nTemp.GetX(), nTemp.GetY(), nTemp.GetZ(), -origin.DotProduct(nTemp));
+	XYZ t = const_cast<XYZ&>(normal).Normalize();
+	double x = t[0];
+	double y = t[1];
+	double z = t[2];
 
-	result.m_matrix4d[0][0] = 1 - 2 * wNormal[0] * wNormal[0];
-	result.m_matrix4d[0][1] = - 2 * wNormal[1] * wNormal[0];
-	result.m_matrix4d[0][2] = - 2 * wNormal[2] * wNormal[0];
-	result.m_matrix4d[0][3] = - 2 * wNormal[3] * wNormal[0];
+	result.m_matrix4d[0][0] = 1 - 2 * x * x;
+	result.m_matrix4d[0][1] = -2 * x * y;
+	result.m_matrix4d[0][2] = -2 * x * z;
+	result.m_matrix4d[0][3] = 0;
 
-	result.m_matrix4d[0][0] = - 2 * wNormal[0] * wNormal[1];
-	result.m_matrix4d[0][0] = 1 - 2 * wNormal[1] * wNormal[1];
-	result.m_matrix4d[0][0] = - 2 * wNormal[2] * wNormal[1];
-	result.m_matrix4d[0][0] = - 2 * wNormal[3] * wNormal[1];
+	result.m_matrix4d[1][0] = - 2 * x * y;
+	result.m_matrix4d[1][1] = 1 - 2 * y * y;
+	result.m_matrix4d[1][2] = - 2 * y * z;
+	result.m_matrix4d[1][3] = 0;
 
-	result.m_matrix4d[0][0] = - 2 * wNormal[0] * wNormal[2];
-	result.m_matrix4d[0][0] = - 2 * wNormal[1] * wNormal[2];
-	result.m_matrix4d[0][0] = 1 - 2 * wNormal[2] * wNormal[2];
-	result.m_matrix4d[0][0] = - 2 * wNormal[3] * wNormal[0];
+	result.m_matrix4d[2][0] = - 2 * x * z;
+	result.m_matrix4d[2][1] = - 2 * y * z;
+	result.m_matrix4d[2][2] = 1 - 2 * z * z;
+	result.m_matrix4d[2][3] = 0;
 
 	result.m_matrix4d[3][0] = 0.0;
 	result.m_matrix4d[3][1] = 0.0;
@@ -112,19 +115,19 @@ Matrix4d LNLib::Matrix4d::CreateRotation(const XYZ& axis, double rad)
 	double z = nAxis.GetZ();
 
 	Matrix4d result = Matrix4d();
-	result.m_matrix4d[0][0] = 1 + t * (x * x - 1);
-	result.m_matrix4d[0][1] = z * s + t * x * y;
-	result.m_matrix4d[0][2] = -y * s + t * x * z;
+	result.m_matrix4d[0][0] = c + x * x * t;
+	result.m_matrix4d[0][1] = x * y * t - z * s;
+	result.m_matrix4d[0][2] = x * z * t + y * s;
 	result.m_matrix4d[0][3] = 0.0;
 
-	result.m_matrix4d[1][0] = -z * s + t * x * y;
-	result.m_matrix4d[1][1] = 1 + t * (y * y - 1);
-	result.m_matrix4d[1][2] = x * s + t * y * z;
+	result.m_matrix4d[1][0] = y * x * t + z * s;
+	result.m_matrix4d[1][1] = c * y * y * t;
+	result.m_matrix4d[1][2] = y * z * t - x * s;
 	result.m_matrix4d[1][3] = 0.0;
 
-	result.m_matrix4d[2][0] = y * s + t * x * z;
-	result.m_matrix4d[2][1] = -x * s + t * y * z;
-	result.m_matrix4d[2][2] = 1 + t * (z * z - 1);
+	result.m_matrix4d[2][0] = z * x * t - y * s;
+	result.m_matrix4d[2][1] = z * y * t + x * s;
+	result.m_matrix4d[2][2] = c + z * z * t;
 	result.m_matrix4d[2][3] = 0.0;
 
 	result.m_matrix4d[3][0] = 0.0;
@@ -134,28 +137,24 @@ Matrix4d LNLib::Matrix4d::CreateRotation(const XYZ& axis, double rad)
 	return result;
 }
 
+Matrix4d LNLib::Matrix4d::CreateRotationAtPoint(const XYZ& origin, const XYZ& axis, double rad)
+{
+	Matrix4d rodrigues = CreateRotation(axis, rad);
+	double x = rodrigues.GetElement(0, 0) * origin[0] + rodrigues.GetElement(0, 1) * origin[1] + rodrigues.GetElement(0, 2) * origin[2];
+	double y = rodrigues.GetElement(1, 0) * origin[0] + rodrigues.GetElement(1, 1) * origin[1] + rodrigues.GetElement(1, 2) * origin[2];
+	double z = rodrigues.GetElement(2, 0) * origin[0] + rodrigues.GetElement(2, 1) * origin[1] + rodrigues.GetElement(2, 2) * origin[2];
+	XYZ Rv = XYZ(x,y,z);
+	XYZ offset = origin - Rv;
+	rodrigues.SetBasisW(offset);
+	return rodrigues;
+}
+
 Matrix4d LNLib::Matrix4d::CreateTranslation(const XYZ& vector)
 {
 	Matrix4d result = Matrix4d();
 	result.m_matrix4d[0][3] = vector[0];
 	result.m_matrix4d[1][3] = vector[1];
 	result.m_matrix4d[2][3] = vector[2];
-	return result;
-}
-
-Matrix4d LNLib::Matrix4d::CreateScale(double scale, bool isScaleOrigin)
-{
-	Matrix4d result = Matrix4d();
-	result.m_matrix4d[0][0] *= scale;
-	result.m_matrix4d[1][1] *= scale;
-	result.m_matrix4d[2][2] *= scale;
-
-	if (isScaleOrigin)
-	{
-		result.m_matrix4d[0][3] *= scale;
-		result.m_matrix4d[1][3] *= scale;
-		result.m_matrix4d[2][3] *= scale;
-	}
 	return result;
 }
 
@@ -333,7 +332,7 @@ Matrix4d LNLib::Matrix4d::PerspectiveMultiFovs(double fovX, double fovY, double 
 	return result;
 }
 
-void LNLib::Matrix4d::SetBasisX(const XYZ basisX)
+void LNLib::Matrix4d::SetBasisX(const XYZ& basisX)
 {
 	m_matrix4d[0][0] = basisX[0];
 	m_matrix4d[1][0] = basisX[1];
@@ -345,7 +344,7 @@ XYZ LNLib::Matrix4d::GetBasisX() const
 	return XYZ(m_matrix4d[0][0], m_matrix4d[1][0], m_matrix4d[2][0]);
 }
 
-void LNLib::Matrix4d::SetBasisY(const XYZ basisY)
+void LNLib::Matrix4d::SetBasisY(const XYZ& basisY)
 {
 	m_matrix4d[0][1] = basisY[0];
 	m_matrix4d[1][1] = basisY[1];
@@ -357,7 +356,7 @@ XYZ LNLib::Matrix4d::GetBasisY() const
 	return XYZ(m_matrix4d[0][1], m_matrix4d[1][1], m_matrix4d[2][1]);
 }
 
-void LNLib::Matrix4d::SetBasisZ(const XYZ basisZ)
+void LNLib::Matrix4d::SetBasisZ(const XYZ& basisZ)
 {
 	m_matrix4d[0][2] = basisZ[0];
 	m_matrix4d[1][2] = basisZ[1];
@@ -367,6 +366,28 @@ void LNLib::Matrix4d::SetBasisZ(const XYZ basisZ)
 XYZ LNLib::Matrix4d::GetBasisZ() const
 {
 	return XYZ(m_matrix4d[0][2], m_matrix4d[1][2], m_matrix4d[2][2]);
+}
+
+void LNLib::Matrix4d::SetBasisW(const XYZ& basisW)
+{
+	m_matrix4d[0][3] = basisW[0];
+	m_matrix4d[1][3] = basisW[1];
+	m_matrix4d[2][3] = basisW[2];
+}
+
+XYZ LNLib::Matrix4d::GetBasisW() const
+{
+	return XYZ(m_matrix4d[0][3], m_matrix4d[1][3], m_matrix4d[2][3]);
+}
+
+double LNLib::Matrix4d::GetElement(int row, int column) const
+{
+	return m_matrix4d[row][column];
+}
+
+void LNLib::Matrix4d::SetElement(int row, int column, double value)
+{
+	m_matrix4d[row][column] = value;
 }
 
 Matrix4d LNLib::Matrix4d::Multiply(const Matrix4d& right)
@@ -418,22 +439,24 @@ XYZ LNLib::Matrix4d::OfVector(const XYZ& vector)
 
 bool LNLib::Matrix4d::GetInverse(Matrix4d& inverse)
 {
-	std::vector<std::vector<double>> currentMatrix(4);
-	for (int i = 0; i < 4; i++)
+	int n = 4;
+	std::vector<std::vector<double>> currentMatrix(n);
+	for (int i = 0; i < n; i++)
 	{
-		for (int j = 0; j < 4; j++)
+		currentMatrix[i].resize(n);
+		for (int j = 0; j < n; j++)
 		{
 			currentMatrix[i][j] = m_matrix4d[i][j];
 		}
 	}
-	std::vector<std::vector<double>> inverseMatrix(4);
+	std::vector<std::vector<double>> inverseMatrix;
 	if (!MathUtils::MakeInverse(currentMatrix, inverseMatrix))
 	{
 		return false;
 	}
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < n; i++)
 	{
-		for (int j = 0; j < 4; j++)
+		for (int j = 0; j < n; j++)
 		{
 			inverse.m_matrix4d[i][j] = inverseMatrix[i][j];
 		}
@@ -456,14 +479,38 @@ XYZ LNLib::Matrix4d::GetScale()
 
 double LNLib::Matrix4d::GetDeterminant()
 {
-	return m_matrix4d[0][0] * m_matrix4d[1][1] * m_matrix4d[2][2] * m_matrix4d[3][3] +
-		   m_matrix4d[0][1] * m_matrix4d[1][2] * m_matrix4d[2][3] * m_matrix4d[3][0] +
-		   m_matrix4d[0][2] * m_matrix4d[1][3] * m_matrix4d[2][0] * m_matrix4d[3][1] +
-		   m_matrix4d[0][3] * m_matrix4d[1][0] * m_matrix4d[2][1] * m_matrix4d[3][2] -
-		   m_matrix4d[0][3] * m_matrix4d[1][1] * m_matrix4d[2][2] * m_matrix4d[3][0] -
-		   m_matrix4d[0][2] * m_matrix4d[1][3] * m_matrix4d[2][0] * m_matrix4d[3][1] -
-		   m_matrix4d[0][1] * m_matrix4d[1][0] * m_matrix4d[2][3] * m_matrix4d[3][2] -
-		   m_matrix4d[0][0] * m_matrix4d[1][2] * m_matrix4d[2][1] * m_matrix4d[3][3];
+	Matrix4d copy = *this;
+	double det = 1.0;
+	for (int i = 0; i < 4; i++) 
+	{
+		int pivot = i;
+		for (int j = i + 1; j < 4; j++) 
+		{
+			if (abs(copy.m_matrix4d[j][i]) > abs(copy.m_matrix4d[pivot][i])) 
+			{
+				pivot = j;
+			}
+		}
+		if (pivot != i)
+		{
+			std::swap(copy.m_matrix4d[i], copy.m_matrix4d[pivot]);
+			det *= -1;
+		}
+		if (copy.m_matrix4d[i][i] == 0) 
+		{
+			return 0.0;
+		}
+		det *= copy.m_matrix4d[i][i];
+		for (int j = i + 1; j < 4; j++)
+		{
+			double factor = copy.m_matrix4d[j][i] / copy.m_matrix4d[i][i];
+			for (int k = i + 1; k < 4; k++) 
+			{
+				copy.m_matrix4d[j][k] -= factor * copy.m_matrix4d[i][k];
+			}
+		}
+	}
+	return det;
 }
 
 bool LNLib::Matrix4d::IsIdentity()
@@ -528,4 +575,37 @@ Matrix4d& LNLib::Matrix4d::operator=(const Matrix4d& another)
 {
 	std::memcpy(m_matrix4d, another.m_matrix4d, sizeof(double) * 16);
 	return *this;
+}
+
+LNLIB_EXPORT Matrix4d LNLib::operator*(const Matrix4d& left, const Matrix4d& right)
+{
+	Matrix4d l = left;
+	Matrix4d r = right;
+	return l.Multiply(r);
+}
+
+LNLIB_EXPORT Matrix4d LNLib::operator+(const Matrix4d& left, const Matrix4d& right)
+{
+	Matrix4d result;
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			result.SetElement(i, j, left.GetElement(i, j) + right.GetElement(i, j));
+		}
+	}
+	return result;
+}
+
+LNLIB_EXPORT Matrix4d LNLib::operator-(const Matrix4d& left, const Matrix4d& right)
+{
+	Matrix4d result;
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 4; j++)
+		{
+			result.SetElement(i,j,left.GetElement(i,j)-right.GetElement(i,j));
+		}
+	}
+	return result;
 }
