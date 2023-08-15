@@ -76,16 +76,22 @@ namespace LNLib
 			}
 		}
 
-		static std::vector<std::vector<double>> MatrixMultiply(const std::vector<std::vector<double>>& matrix0, const std::vector<std::vector<double>>& matrix1);
+		static std::vector<std::vector<double>> MatrixMultiply(const std::vector<std::vector<double>>& left, const std::vector<std::vector<double>>& right);
 	
 		static std::vector<std::vector<double>> MakeDiagonal(int size);
 		
 		static std::vector<std::vector<double>> CreateMatrix(int row, int column);
 
+		static bool IsSquareMatrix(const std::vector<std::vector<double>>& matrix);
+
+		static double GetDeterminant(const std::vector<std::vector<double>>& matrix);
+
 		static bool MakeInverse(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& inverse);
 
 		static bool LUDecomposition(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& lowerTriMatrix, std::vector<std::vector<double>>& upperTriMatrix);
 		
+		static bool LUPDecomposition(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& lowerTriMatrix, std::vector<std::vector<double>>& upperTriMatrix, std::vector<std::vector<double>>& permutationMatrix);
+
 		static std::vector<double> ForwardSubstitution(const std::vector<std::vector<double>>& lowerTriMatrix, const std::vector<double>& column);
 
 		static std::vector<double> BackwardSubstitution(const std::vector<std::vector<double>>& upperTriMatrix, const std::vector<double>& column);

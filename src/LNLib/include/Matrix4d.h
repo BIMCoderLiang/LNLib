@@ -39,14 +39,6 @@ namespace LNLib
 		static Matrix4d CreateScale(const XYZ& scale);
 
 	public:
-		static Matrix4d CreateCamera(const XYZ& eyePoint, const XYZ& lookDirection, const XYZ& upDirection, const XYZ& rightDirection);
-		static Matrix4d CreateLookAt(const XYZ& eyePoint, const XYZ& targetPoint, const XYZ& upDirection);
-		static Matrix4d Orthogonal(double width, double height, double zNear, double zFar);
-		static Matrix4d Perspective(double width, double height, double zNear, double zFar);
-		static Matrix4d PerspectiveFov(double fov, double aspect, double zNear, double zFar);
-		static Matrix4d PerspectiveMultiFovs(double fovX, double fovY, double zNear, double zFar);
-
-	public:
 		void SetBasisX(const XYZ& basisX);
 		XYZ GetBasisX() const;
 		void SetBasisY(const XYZ& basisY);

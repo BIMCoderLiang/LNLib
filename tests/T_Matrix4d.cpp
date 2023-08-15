@@ -55,14 +55,10 @@ TEST(Test_Matrix4d, Creation)
 	rted = rotation.OfPoint(rt);
 	EXPECT_TRUE(rted.IsAlmostEqualTo(XYZ(3, 0, 1)));
 	Matrix4d reflection = Matrix4d::CreateReflection(XYZ(-1, 0, 0));
+	EXPECT_TRUE(reflection.HasReflection());
 	XYZ re = XYZ(-1, 0, 1);
 	XYZ red = reflection.OfPoint(re);
 	EXPECT_TRUE(red.IsAlmostEqualTo(XYZ(1, 0, 1)));
-}
-
-TEST(Test_Matrix4d, View)
-{
-
 }
 
 TEST(Test_Matrix4d, GetSet)
@@ -121,7 +117,16 @@ TEST(Test_Matrix4d, Matrix)
 
 TEST(Test_Matrix4d, OperatorOverride)
 {
-
+	Matrix4d m0 = Matrix4d(2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2);
+	Matrix4d m1 = Matrix4d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+	Matrix4d sub = m0 - m1;
+	EXPECT_TRUE(sub.IsIdentity());
+	Matrix4d mul = m0 * m1;
+	sub = mul - m1;
+	EXPECT_TRUE(sub.IsIdentity());
+	Matrix4d m2 = Matrix4d(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	Matrix4d add = m2 + m1;
+	EXPECT_TRUE(add.IsIdentity());
 }
 
 

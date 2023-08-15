@@ -167,171 +167,6 @@ Matrix4d LNLib::Matrix4d::CreateScale(const XYZ& scale)
 	return result;
 }
 
-Matrix4d LNLib::Matrix4d::CreateCamera(const XYZ& eyePoint, const XYZ& lookDirection, const XYZ& upDirection, const XYZ& rightDirection)
-{
-	XYZ look = const_cast<XYZ&>(lookDirection).Normalize();
-	XYZ up = const_cast<XYZ&>(upDirection).Normalize();
-	XYZ right = const_cast<XYZ&>(upDirection).Normalize();
-
-	Matrix4d result = Matrix4d();
-	result.m_matrix4d[0][0] = right.GetX();
-	result.m_matrix4d[1][0] = right.GetY();
-	result.m_matrix4d[2][0] = right.GetZ();
-	result.m_matrix4d[3][0] = -right.DotProduct(eyePoint);
-
-	result.m_matrix4d[0][1] = up.GetX();
-	result.m_matrix4d[1][1] = up.GetY();
-	result.m_matrix4d[2][1] = up.GetZ();
-	result.m_matrix4d[3][1] = -up.DotProduct(eyePoint);
-
-	result.m_matrix4d[0][2] = look.GetX();
-	result.m_matrix4d[1][2] = look.GetY();
-	result.m_matrix4d[2][2] = look.GetZ();
-	result.m_matrix4d[3][2] = -look.DotProduct(eyePoint);
-
-	result.m_matrix4d[0][3] = 0.0;
-	result.m_matrix4d[1][3] = 0.0;
-	result.m_matrix4d[2][3] = 0.0;
-	result.m_matrix4d[3][3] = 1.0;
-	return result;
-}
-
-Matrix4d LNLib::Matrix4d::CreateLookAt(const XYZ& eyePoint, const XYZ& targetPoint, const XYZ& upDirection)
-{
-	XYZ xAxis, yAxis, zAxis;
-	zAxis = (eyePoint - targetPoint).Normalize();
-	xAxis = (upDirection.CrossProduct(zAxis)).Normalize();
-	yAxis = (zAxis.CrossProduct(xAxis)).Normalize();
-
-	Matrix4d result = Matrix4d();
-	result.m_matrix4d[0][0] = xAxis.GetX();
-	result.m_matrix4d[1][0] = xAxis.GetY();
-	result.m_matrix4d[2][0] = xAxis.GetZ();
-	result.m_matrix4d[3][0] = -xAxis.DotProduct(eyePoint);
-
-	result.m_matrix4d[0][1] = yAxis.GetX();
-	result.m_matrix4d[1][1] = yAxis.GetY();
-	result.m_matrix4d[2][1] = yAxis.GetZ();
-	result.m_matrix4d[3][1] = -yAxis.DotProduct(eyePoint);
-
-	result.m_matrix4d[0][2] = zAxis.GetX();
-	result.m_matrix4d[1][2] = zAxis.GetY();
-	result.m_matrix4d[2][2] = zAxis.GetZ();
-	result.m_matrix4d[3][2] = -zAxis.DotProduct(eyePoint);
-
-	result.m_matrix4d[0][3] = 0.0;
-	result.m_matrix4d[1][3] = 0.0;
-	result.m_matrix4d[2][3] = 0.0;
-	result.m_matrix4d[3][3] = 1.0;
-	return result;
-}
-
-Matrix4d LNLib::Matrix4d::Orthogonal(double width, double height, double zNear, double zFar)
-{
-	Matrix4d result = Matrix4d();
-	result.m_matrix4d[0][0] = 2.0 / width;
-	result.m_matrix4d[1][0] = 0.0;
-	result.m_matrix4d[2][0] = 0.0;
-	result.m_matrix4d[3][0] = 0.0;
-
-	result.m_matrix4d[0][1] = 0.0;
-	result.m_matrix4d[1][1] = 2.0 / height;
-	result.m_matrix4d[2][1] = 0.0;
-	result.m_matrix4d[3][1] = 0.0;
-
-	result.m_matrix4d[0][2] = 0.0;
-	result.m_matrix4d[1][2] = 0.0;
-	result.m_matrix4d[2][2] = 1.0 / (zNear - zFar);
-	result.m_matrix4d[3][2] = zNear / (zNear - zFar);
-
-	result.m_matrix4d[0][3] = 0.0;
-	result.m_matrix4d[1][3] = 0.0;
-	result.m_matrix4d[2][3] = 0.0;
-	result.m_matrix4d[3][3] = 1.0;
-	return result;
-}
-
-Matrix4d LNLib::Matrix4d::Perspective(double width, double height, double zNear, double zFar)
-{
-	Matrix4d result = Matrix4d();
-	result.m_matrix4d[0][0] = 2.0 * zNear / width;
-	result.m_matrix4d[1][0] = 0.0;
-	result.m_matrix4d[2][0] = 0.0;
-	result.m_matrix4d[3][0] = 0.0;
-
-	result.m_matrix4d[0][1] = 0.0;
-	result.m_matrix4d[1][1] = 2.0 * zNear / height;
-	result.m_matrix4d[2][1] = 0.0;
-	result.m_matrix4d[3][1] = 0.0;
-
-	result.m_matrix4d[0][2] = 0.0;
-	result.m_matrix4d[1][2] = 0.0;
-	result.m_matrix4d[2][2] = zFar / (zNear - zFar);
-	result.m_matrix4d[3][2] = zFar * zNear / (zNear - zFar);
-
-	result.m_matrix4d[0][3] = 0.0;
-	result.m_matrix4d[1][3] = 0.0;
-	result.m_matrix4d[2][3] = -1.0;
-	result.m_matrix4d[3][3] = 0.0;
-	return result;
-}
-
-Matrix4d LNLib::Matrix4d::PerspectiveFov(double fov, double aspect, double zNear, double zFar)
-{
-	double width = 1.0f / tan(fov / 2.0);
-    double height = aspect / tan(fov / 2.0);
-
-	Matrix4d result = Matrix4d();
-	result.m_matrix4d[0][0] = width;
-	result.m_matrix4d[1][0] = 0.0;
-	result.m_matrix4d[2][0] = 0.0;
-	result.m_matrix4d[3][0] = 0.0;
-
-	result.m_matrix4d[0][1] = 0.0;
-	result.m_matrix4d[1][1] = height;
-	result.m_matrix4d[2][1] = 0.0;
-	result.m_matrix4d[3][1] = 0.0;
-
-	result.m_matrix4d[0][2] = 0.0;
-	result.m_matrix4d[1][2] = 0.0;
-	result.m_matrix4d[2][2] = zFar / (zNear - zFar);
-	result.m_matrix4d[3][2] = zFar * zNear / (zNear - zFar);
-
-	result.m_matrix4d[0][3] = 0.0;
-	result.m_matrix4d[1][3] = 0.0;
-	result.m_matrix4d[2][3] = -1.0;
-	result.m_matrix4d[3][3] = 0.0;
-	return result;
-}
-
-Matrix4d LNLib::Matrix4d::PerspectiveMultiFovs(double fovX, double fovY, double zNear, double zFar)
-{
-	double width = 1.0 / tan(fovX / 2.0);
-	double height = 1.0f / tan(fovY / 2.0);
-
-	Matrix4d result = Matrix4d();
-	result.m_matrix4d[0][0] = width;
-	result.m_matrix4d[1][0] = 0.0;
-	result.m_matrix4d[2][0] = 0.0;
-	result.m_matrix4d[3][0] = 0.0;
-
-	result.m_matrix4d[0][1] = 0.0;
-	result.m_matrix4d[1][1] = height;
-	result.m_matrix4d[2][1] = 0.0;
-	result.m_matrix4d[3][1] = 0.0;
-
-	result.m_matrix4d[0][2] = 0.0;
-	result.m_matrix4d[1][2] = 0.0;
-	result.m_matrix4d[2][2] = zFar / (zNear - zFar);
-	result.m_matrix4d[3][2] = zFar * zNear / (zNear - zFar);
-
-	result.m_matrix4d[0][3] = 0.0;
-	result.m_matrix4d[1][3] = 0.0;
-	result.m_matrix4d[2][3] = -1.0;
-	result.m_matrix4d[3][3] = 0.0;
-	return result;
-}
-
 void LNLib::Matrix4d::SetBasisX(const XYZ& basisX)
 {
 	m_matrix4d[0][0] = basisX[0];
@@ -479,38 +314,15 @@ XYZ LNLib::Matrix4d::GetScale()
 
 double LNLib::Matrix4d::GetDeterminant()
 {
-	Matrix4d copy = *this;
-	double det = 1.0;
-	for (int i = 0; i < 4; i++) 
+	std::vector<std::vector<double>> matrix(4, (std::vector<double>(4,0.0)));
+	for (int i = 0; i < 4; i++)
 	{
-		int pivot = i;
-		for (int j = i + 1; j < 4; j++) 
+		for (int j = 0; j < 4; j++)
 		{
-			if (abs(copy.m_matrix4d[j][i]) > abs(copy.m_matrix4d[pivot][i])) 
-			{
-				pivot = j;
-			}
-		}
-		if (pivot != i)
-		{
-			std::swap(copy.m_matrix4d[i], copy.m_matrix4d[pivot]);
-			det *= -1;
-		}
-		if (copy.m_matrix4d[i][i] == 0) 
-		{
-			return 0.0;
-		}
-		det *= copy.m_matrix4d[i][i];
-		for (int j = i + 1; j < 4; j++)
-		{
-			double factor = copy.m_matrix4d[j][i] / copy.m_matrix4d[i][i];
-			for (int k = i + 1; k < 4; k++) 
-			{
-				copy.m_matrix4d[j][k] -= factor * copy.m_matrix4d[i][k];
-			}
+			matrix[i][j] = m_matrix4d[i][j];
 		}
 	}
-	return det;
+	return MathUtils::GetDeterminant(matrix);
 }
 
 bool LNLib::Matrix4d::IsIdentity()
@@ -547,12 +359,7 @@ bool LNLib::Matrix4d::HasReflection()
 {
 	XYZ cross = GetBasisX().CrossProduct(GetBasisY());
 	double dot = cross.DotProduct(GetBasisZ());
-
-	if (MathUtils::IsLessThan(dot, 0.0))
-	{
-		return true;
-	}
-	return false;
+	return MathUtils::IsLessThan(dot, 0.0);
 }
 
 bool LNLib::Matrix4d::IsTranslation()
