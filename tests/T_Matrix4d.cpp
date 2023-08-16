@@ -92,14 +92,16 @@ TEST(Test_Matrix4d, Matrix)
 	Matrix4d m1 = Matrix4d(0, 0, 5, 2, 0, 0, 2, 1, 1, -2, 0, 0, 1, 1, 0, 0);
 	result = m1.GetInverse(inverse);
 	EXPECT_TRUE(result);
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(inverse.GetElement(0, 2), 1.0/3));
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(inverse.GetElement(0, 3), 2.0/3));
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(inverse.GetElement(0, 0), 0)   &&
 				MathUtils::IsAlmostEqualTo(inverse.GetElement(0, 1), 0)   &&
-				MathUtils::IsAlmostEqualTo(inverse.GetElement(0, 2), 1/3) &&
-				MathUtils::IsAlmostEqualTo(inverse.GetElement(0, 3), 2/3) &&
+				MathUtils::IsAlmostEqualTo(inverse.GetElement(0, 2), 1.0/3) &&
+				MathUtils::IsAlmostEqualTo(inverse.GetElement(0, 3), 2.0/3) &&
 				MathUtils::IsAlmostEqualTo(inverse.GetElement(1, 0), 0)   &&
 				MathUtils::IsAlmostEqualTo(inverse.GetElement(1, 1), 0)   &&
-				MathUtils::IsAlmostEqualTo(inverse.GetElement(1, 2), -1/3)&&
-				MathUtils::IsAlmostEqualTo(inverse.GetElement(1, 3), 1/3) &&
+				MathUtils::IsAlmostEqualTo(inverse.GetElement(1, 2), -1.0/3)&&
+				MathUtils::IsAlmostEqualTo(inverse.GetElement(1, 3), 1.0/3) &&
 				MathUtils::IsAlmostEqualTo(inverse.GetElement(2, 0), 1)   &&
 				MathUtils::IsAlmostEqualTo(inverse.GetElement(2, 1), -2)  &&
 				MathUtils::IsAlmostEqualTo(inverse.GetElement(2, 2), 0)   &&

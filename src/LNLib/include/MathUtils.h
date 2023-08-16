@@ -50,7 +50,7 @@ namespace LNLib
 		static double ComputerCubicEquationsWithOneVariable(double cubic, double quadratic, double linear, double constant);
 
 		template<typename T>
-		static void Transpose(const std::vector<std::vector<T>>& matrix, std::vector<std::vector<T>> transposed)
+		static void Transpose(const std::vector<std::vector<T>>& matrix, std::vector<std::vector<T>>& transposed)
 		{
 			std::vector<T> temp;
 
@@ -90,7 +90,7 @@ namespace LNLib
 
 		static bool LUDecomposition(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& lowerTriMatrix, std::vector<std::vector<double>>& upperTriMatrix);
 		
-		static bool LUPDecomposition(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& lowerTriMatrix, std::vector<std::vector<double>>& upperTriMatrix, std::vector<std::vector<double>>& permutationMatrix);
+		static bool LUPDecomposition(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& lowerTriMatrix, std::vector<std::vector<double>>& upperTriMatrix, std::vector<double>& pivot);
 
 		static std::vector<double> ForwardSubstitution(const std::vector<std::vector<double>>& lowerTriMatrix, const std::vector<double>& column);
 

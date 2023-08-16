@@ -213,62 +213,105 @@ bool LNLib::MathUtils::MakeInverse(const std::vector<std::vector<double>>& matri
         return false;
     }
 
+    int n = static_cast<int>(matrix.size());
     std::vector<std::vector<double>> lower;
     std::vector<std::vector<double>> upper;
-    if (!LUDecomposition(matrix, lower, upper))
+    if (LUDecomposition(matrix, lower, upper))
     {
-        return false;
-    }
+        std::vector<std::vector<double>> inverseLower(n, std::vector<double>(n));
+        std::vector<std::vector<double>> inverseUpper(n, std::vector<double>(n));
 
-    int n = static_cast<int>(matrix.size());
-
-    std::vector<std::vector<double>> inverseLower(n, std::vector<double>(n));
-    std::vector<std::vector<double>> inverseUpper(n, std::vector<double>(n));
-    
-    for (int i = 0; i < n; i++)
-    {
-        inverseUpper[i][i] = 1 / upper[i][i];
-        for (int k = i - 1; k >= 0; k--)
+        for (int i = 0; i < n; i++)
         {
-            double s = 0;
-            for (int j = k + 1; j <= i; j++)
+            inverseUpper[i][i] = 1 / upper[i][i];
+            for (int k = i - 1; k >= 0; k--)
             {
-                s = s + upper[k][j] * inverseUpper[j][i];
-            }
-            if (IsAlmostEqualTo(abs(s), 0.0))
-            {
-                inverseUpper[k][i] = 0.0;
-            }
-            else
-            {
-                inverseUpper[k][i] = -s / upper[k][k];
-            }
-        }
-    }
-
-    for (int i = 0; i < n; i++)
-    {
-        inverseLower[i][i] = 1;
-        for (int k = i + 1; k < n; k++)
-        {
-            for (int j = i; j <= k - 1; j++)
-            {
-                double temp = inverseLower[k][i] - lower[k][j] * inverseLower[j][i];
-                if (IsAlmostEqualTo(temp, 0.0))
+                double s = 0;
+                for (int j = k + 1; j <= i; j++)
                 {
-                    inverseLower[k][i] = 0.0;
+                    s = s + upper[k][j] * inverseUpper[j][i];
+                }
+                if (IsAlmostEqualTo(abs(s), 0.0))
+                {
+                    inverseUpper[k][i] = 0.0;
                 }
                 else
                 {
-                    inverseLower[k][i] = temp;
+                    inverseUpper[k][i] = -s / upper[k][k];
                 }
             }
         }
+
+        for (int i = 0; i < n; i++)
+        {
+            inverseLower[i][i] = 1;
+            for (int k = i + 1; k < n; k++)
+            {
+                for (int j = i; j <= k - 1; j++)
+                {
+                    double temp = inverseLower[k][i] - lower[k][j] * inverseLower[j][i];
+                    if (IsAlmostEqualTo(temp, 0.0))
+                    {
+                        inverseLower[k][i] = 0.0;
+                    }
+                    else
+                    {
+                        inverseLower[k][i] = temp;
+                    }
+                }
+            }
+        }
+
+        inverse = MatrixMultiply(inverseUpper, inverseLower);
+        return true;
     }
+    else
+    {
+        bool rs = true;
+        std::vector<std::vector<double>> tempInverse;
+        for (int i = 0; i < n; i++)
+        {
+            std::vector<double> b(n, 0.0);
+            b[i] = 1;
+            std::vector<double> pivot;
+            if (!LUPDecomposition(matrix, lower, upper, pivot))
+            {
+                rs = false;
+                break;
+            }
+            std::vector<double> x(n);
+            std::vector<double> y(n);
 
-    inverse = MatrixMultiply(inverseUpper, inverseLower);
-
-    return true;
+            for (int i = 0; i < n; i++)
+            {
+                y[i] = b[pivot[i]];
+                for (int j = 0; j < i; j++)
+                {
+                    y[i] = y[i] - lower[i][j] * y[j];
+                }
+            }
+            for (int i = n - 1; i >= 0; i--)
+            {
+                x[i] = y[i];
+                for (int j = n - 1; j > i; j--)
+                {
+                    x[i] = x[i] - upper[i][j] * x[j];
+                }
+                x[i] /= upper[i][i];
+            }
+            tempInverse.emplace_back(x);
+        }
+        if (rs)
+        {
+            Transpose(tempInverse, inverse);
+            return true;
+        }
+        else
+        {
+            //to do...
+            return true;
+        }
+    }
 }
 
 bool LNLib::MathUtils::LUDecomposition(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& lowerTriMatrix, std::vector<std::vector<double>>& upperTriMatrix)
@@ -338,10 +381,94 @@ bool LNLib::MathUtils::LUDecomposition(const std::vector<std::vector<double>>& m
     return true;
 }
 
-bool LNLib::MathUtils::LUPDecomposition(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& lowerTriMatrix, std::vector<std::vector<double>>& upperTriMatrix, std::vector<std::vector<double>>& permutationMatrix)
+bool LNLib::MathUtils::LUPDecomposition(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& lowerTriMatrix, std::vector<std::vector<double>>& upperTriMatrix, std::vector<double>& pivot)
 {
-    return false;
+    if (!IsSquareMatrix(matrix))
+    {
+        return false;
+    }
+
+    int n = static_cast<int>(matrix.size());
+    std::vector<std::vector<double>> copy(n, std::vector<double>(n));
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+            copy[i][j] = matrix[i][j];
+            lowerTriMatrix[i][j] = 0.0;
+            upperTriMatrix[i][j] = 0.0;
+        }
+    }
+    pivot.resize(n);
+    for (int i = 0; i < n; i++)
+    {
+        pivot[i] = i;
+    }
+
+    int row = 0;
+    for (int i = 0; i < n - 1; i++)
+    {
+        double p = 0.0;
+        for (int j = i; j < n; j++)
+        {
+            if (IsGreaterThan(abs(copy[j][i]),p))
+            {
+                p = abs(copy[j][i]);
+                row = j;
+            }
+        }
+        if (IsAlmostEqualTo(p,0.0))
+        {
+            return false;
+        }
+
+        int tmp = pivot[i];
+        pivot[i] = pivot[row];
+        pivot[row] = tmp;
+
+        double tmp2 = 0.0;
+        for (int j = 0; j < n; j++)
+        {
+            tmp2 = copy[i][j];
+            copy[i][j] = copy[row][j];
+            copy[row][j] = tmp2;
+        }
+
+        double u = copy[i][i];
+        double l = 0.0;
+        for (int j = i + 1; j < n; j++)
+        {
+            l = copy[j][i] / u;
+            copy[j][i] = l;
+            for (int k = i + 1; k < n; k++)
+            {
+                copy[j][k] = copy[j][k] - copy[i][k] * l;
+            }
+        }
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j <= i; j++)
+        {
+            if (i != j)
+            {
+                lowerTriMatrix[i][j] = copy[i][j];
+            }
+            else
+            {
+                lowerTriMatrix[i][j] = 1;
+            }
+        }
+        for (int k = i; k < n; k++)
+        {
+            upperTriMatrix[i][k] = copy[i][k];
+        }
+    }
+    return true;
 }
+
+
 
 std::vector<double> LNLib::MathUtils::ForwardSubstitution(const std::vector<std::vector<double>>& lowerTriMatrix, const std::vector<double>& column)
 {
