@@ -11,6 +11,43 @@
 #include "MathUtils.h"
 #include <limits>
 
+namespace LNLib
+{
+    void GetCoFactor(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& temp, int row, int column, int n)
+    {
+        int i = 0, j = 0;
+        for (int r = 0; r < n; r++) {
+            for (int col = 0; col < n; col++) {
+                if (r != row && col != column) {
+                    temp[i][j++] = matrix[r][col];
+                    if (j == n - 1) {
+                        j = 0;
+                        i++;
+                    }
+                }
+            }
+        }
+    }
+
+    void GetAdjointMatrix(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& adjointMatrix)
+    {
+        int n = static_cast<int>(matrix.size());
+        if (n == 1) {
+            adjointMatrix[0][0] = 1;
+            return;
+        }
+
+        int sign = 1; 
+        std::vector<std::vector<double>> temp(n, std::vector<double>(n));
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                GetCoFactor(matrix, temp, i, j, n);
+                sign = ((i + j) % 2 == 0) ? 1 : -1;
+                adjointMatrix[j][i] = (sign) * (LNLib::MathUtils::GetDeterminant(temp, n - 1));
+            }
+        }
+    }
+}
 
 bool LNLib::MathUtils::IsAlmostEqualTo(double value1, double value2, double tolerance)
 {
@@ -159,46 +196,28 @@ bool LNLib::MathUtils::IsSquareMatrix(const std::vector<std::vector<double>>& ma
     return row == column;
 }
 
-double LNLib::MathUtils::GetDeterminant(const std::vector<std::vector<double>>& matrix)
+double LNLib::MathUtils::GetDeterminant(const std::vector<std::vector<double>>& matrix, int dimension)
 {
     if (!IsSquareMatrix(matrix))
     {
         return 0.0;
     }
-       
-    int n = static_cast<int>(matrix.size());
+   
     std::vector<std::vector<double>> temp = matrix;
-    double det = 1.0;
-    for (int i = 0; i < n; i++)
+    double result = 0.0;
+    if (dimension == 1)
     {
-        int pivot = i;
-        for (int j = i + 1; j < n; j++)
-        {
-            if (abs(temp[j][i]) > abs(temp[pivot][i]))
-            {
-                pivot = j;
-            }
-        }
-        if (pivot != i)
-        {
-            std::swap(temp[i], temp[pivot]);
-            det *= -1;
-        }
-        if (temp[i][i] == 0)
-        {
-            return 0.0;
-        }
-        det *= temp[i][i];
-        for (int j = i + 1; j < n; j++)
-        {
-            double factor = temp[j][i] / temp[i][i];
-            for (int k = i + 1; k < n; k++)
-            {
-                temp[j][k] -= factor * temp[i][k];
-            }
-        }
+        return matrix[0][0];
     }
-    return det;
+       
+    int sign = 1; 
+    for (int f = 0; f < dimension; f++) {
+        GetCoFactor(matrix, temp, 0, f, dimension);
+        result += sign * matrix[0][f] * GetDeterminant(temp, dimension - 1);
+        sign = -sign;
+    }
+
+    return result;
 }
 
 bool LNLib::MathUtils::MakeInverse(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& inverse)
@@ -207,13 +226,14 @@ bool LNLib::MathUtils::MakeInverse(const std::vector<std::vector<double>>& matri
     {
         return false;
     }
-    double det = GetDeterminant(matrix);
+
+    int n = static_cast<int>(matrix.size());
+    double det = GetDeterminant(matrix, n);
     if (IsAlmostEqualTo(det, 0.0))
     {
         return false;
     }
 
-    int n = static_cast<int>(matrix.size());
     std::vector<std::vector<double>> lower;
     std::vector<std::vector<double>> upper;
     if (LUDecomposition(matrix, lower, upper))
@@ -267,12 +287,16 @@ bool LNLib::MathUtils::MakeInverse(const std::vector<std::vector<double>>& matri
     }
     else
     {
-        bool rs = true;
-        std::vector<std::vector<double>> tempInverse;
-        for (int i = 0; i < n; i++)
+        bool rs = false;
+        inverse.resize(n);
+        for (int k = 0; k < n; k++)
+        {
+            inverse[k].resize(n);
+        }
+        for (int k = 0; k < n; k++)
         {
             std::vector<double> b(n, 0.0);
-            b[i] = 1;
+            b[k] = 1;
             std::vector<double> pivot;
             if (!LUPDecomposition(matrix, lower, upper, pivot))
             {
@@ -284,7 +308,7 @@ bool LNLib::MathUtils::MakeInverse(const std::vector<std::vector<double>>& matri
 
             for (int i = 0; i < n; i++)
             {
-                y[i] = b[pivot[i]];
+                y[i] = b[static_cast<int>(pivot[i])];
                 for (int j = 0; j < i; j++)
                 {
                     y[i] = y[i] - lower[i][j] * y[j];
@@ -299,16 +323,27 @@ bool LNLib::MathUtils::MakeInverse(const std::vector<std::vector<double>>& matri
                 }
                 x[i] /= upper[i][i];
             }
-            tempInverse.emplace_back(x);
+            
+            for (int i = 0; i < n; i++)
+            {
+                inverse[i][k] = x[i];
+            }
         }
         if (rs)
         {
-            Transpose(tempInverse, inverse);
             return true;
         }
         else
         {
-            //to do...
+            std::vector<std::vector<double>> adjoint(n, std::vector<double>(n));
+            GetAdjointMatrix(matrix, adjoint);
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    inverse[i][j] = adjoint[i][j] / float(det);
+                }
+            }       
             return true;
         }
     }

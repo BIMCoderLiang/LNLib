@@ -84,7 +84,7 @@ namespace LNLib
 
 		static bool IsSquareMatrix(const std::vector<std::vector<double>>& matrix);
 
-		static double GetDeterminant(const std::vector<std::vector<double>>& matrix);
+		static double GetDeterminant(const std::vector<std::vector<double>>& matrix, int dimension);
 
 		static bool MakeInverse(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& inverse);
 
