@@ -19,7 +19,7 @@
 
 #define VALIDATE_ARGUMENT_RANGE(arg, min, max)\
 	if(((arg)<(min) && fabs((arg)-(min))>Constants::DoubleEpsilon) || \
-	  ((arg)>(max) && fabs((arg)-(min))>Constants::DoubleEpsilon)){\
+	  ((arg)>(max) && fabs((arg)-(max))>Constants::DoubleEpsilon)){\
 		throw std::out_of_range("Argument is out of range["#min","#max"]"##"\r\nParameter name: "#arg);\
 	}
 
