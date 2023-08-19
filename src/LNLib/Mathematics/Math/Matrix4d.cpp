@@ -13,7 +13,6 @@
 #include "XYZW.h"
 #include "MathUtils.h"
 #include <algorithm>
-#include <cstring>
 
 using namespace LNLib;
 

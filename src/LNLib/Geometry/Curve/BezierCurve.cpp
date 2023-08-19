@@ -16,6 +16,7 @@
 #include "Polynomials.h"
 #include "Intersection.h"
 #include "ValidationUtils.h"
+#include "LNLibExceptions.h"
 #include <vector>
 
 using namespace LNLib;
@@ -63,8 +64,8 @@ namespace LNLib
 
 XYZ BezierCurve::GetPointOnCurveByBernstein(const std::vector<XYZ>& controlPoints, unsigned int degree, double paramT)
 {
-	std::vector<double> bernsteinArray;
-	Polynomials::AllBernstein(degree, paramT, bernsteinArray);
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	std::vector<double> bernsteinArray = Polynomials::AllBernstein(degree, paramT);
 
 	XYZ temp(0,0,0);
 	for (unsigned int k = 0; k <= degree; k++)

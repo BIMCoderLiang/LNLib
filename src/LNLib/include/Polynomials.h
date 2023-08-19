@@ -25,23 +25,23 @@ namespace LNLib
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page20
 		/// Algorithm A1.1
-		/// power basis curve computed using Horner's method.
+		/// Compute point on power basis curve.
 		/// </summary>
 		static double Horner(const std::vector<double>& coefficients, unsigned int degree, double paramT);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page7
 		/// Algorithm A1.2
-		/// compute values of the Berstein polynomials.
+		/// compute the value of a Berstein polynomial.
 		/// </summary>
-		static double Bernstein(unsigned int i, unsigned int degree, double paramT);
+		static double Bernstein(unsigned int index, unsigned int degree, double paramT);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page21
 		/// Algorithm A1.3
 		/// Compute All nth-degree Berstein polynomials.
 		/// </summary>
-		static void AllBernstein(unsigned int degree, double paramT, std::vector<double>& bernsteinArray);
+		static std::vector<double> AllBernstein(unsigned int degree, double paramT);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page36

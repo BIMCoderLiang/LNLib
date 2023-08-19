@@ -12,6 +12,7 @@
 #include "UV.h"
 #include "ValidationUtils.h"
 #include "MathUtils.h"
+#include "LNLibExceptions.h"
 #include <algorithm>
 
 using namespace LNLib;
@@ -45,6 +46,8 @@ namespace LNLib
 
 double Polynomials::Horner(const std::vector<double>& coefficients, unsigned int degree, double paramT)
 {
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(degree < static_cast<int>(coefficients.size()), "degree", "Degree must less than coefficients size.");
 	double result = coefficients[degree];
 	for (int i = degree - 1; i >= 0; i--)
 	{
@@ -53,25 +56,27 @@ double Polynomials::Horner(const std::vector<double>& coefficients, unsigned int
 	return result;
 }
 
-double Polynomials::Bernstein(unsigned int i, unsigned int degree, double paramT)
+double Polynomials::Bernstein(unsigned int index, unsigned int degree, double paramT)
 {
-	if (i < 0 || i > degree)
+	if (index < 0 || 
+		index > degree)
 	{
 		return 0.0;
 	}
-
-	if (i == degree)
+	if (index == 0 ||
+		index == degree)
 	{
 		return 1.0;
 	}
 
-	std::vector<double> temp;
-	temp.resize(degree + 1);
-
-	temp[degree - i] = 1.0;
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT_RANGE(paramT, 0.0, 1.0);
+	
+	std::vector<double> temp(degree + 1,0.0);
+	temp[degree - index] = 1.0;
 	double t1 = 1.0 - paramT;
 
-	for (unsigned int k = i; k <= degree; k++)
+	for (unsigned int k = index; k <= degree; k++)
 	{
 		for (unsigned int j = degree; j >= k; j--)
 		{
@@ -81,11 +86,14 @@ double Polynomials::Bernstein(unsigned int i, unsigned int degree, double paramT
 	return temp[degree];
 }
 
-void Polynomials::AllBernstein(unsigned int degree, double paramT, std::vector<double>& bernsteinArray)
+std::vector<double> Polynomials::AllBernstein(unsigned int degree, double paramT)
 {
-	bernsteinArray.resize(degree + 1);
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT_RANGE(paramT, 0.0, 1.0);
 
+	std::vector<double> bernsteinArray(degree + 1);
 	bernsteinArray[0] = 1.0;
+
 	double t1 = 1.0 - paramT;
 	for (unsigned int j = 1; j <= degree; j++)
 	{
@@ -98,6 +106,7 @@ void Polynomials::AllBernstein(unsigned int degree, double paramT, std::vector<d
 		}
 		bernsteinArray[j] = saved;
 	}
+	return bernsteinArray;
 }
 
 double Polynomials::Horner(const std::vector<std::vector<double>>& coefficients, unsigned int n, unsigned int m, UV& uv)
