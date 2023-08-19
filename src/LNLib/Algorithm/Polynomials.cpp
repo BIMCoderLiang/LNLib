@@ -10,8 +10,8 @@
 
 #include "Polynomials.h"
 #include "UV.h"
-#include "ValidationUtils.h"
 #include "MathUtils.h"
+#include "ValidationUtils.h"
 #include "LNLibExceptions.h"
 #include <algorithm>
 
@@ -42,9 +42,7 @@ namespace LNLib
 	}
 }
 
-
-
-double Polynomials::Horner(const std::vector<double>& coefficients, unsigned int degree, double paramT)
+double Polynomials::Horner(const std::vector<double>& coefficients, int degree, double paramT)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(degree < static_cast<int>(coefficients.size()), "degree", "Degree must less than coefficients size.");
@@ -56,7 +54,7 @@ double Polynomials::Horner(const std::vector<double>& coefficients, unsigned int
 	return result;
 }
 
-double Polynomials::Bernstein(unsigned int index, unsigned int degree, double paramT)
+double Polynomials::Bernstein(int index, int degree, double paramT)
 {
 	if (index < 0 || 
 		index > degree)
@@ -76,9 +74,9 @@ double Polynomials::Bernstein(unsigned int index, unsigned int degree, double pa
 	temp[degree - index] = 1.0;
 	double t1 = 1.0 - paramT;
 
-	for (unsigned int k = index; k <= degree; k++)
+	for (int k = index; k <= degree; k++)
 	{
-		for (unsigned int j = degree; j >= k; j--)
+		for (int j = degree; j >= k; j--)
 		{
 			temp[j] = t1 * temp[j] + paramT * temp[j - 1];
 		}
@@ -86,7 +84,7 @@ double Polynomials::Bernstein(unsigned int index, unsigned int degree, double pa
 	return temp[degree];
 }
 
-std::vector<double> Polynomials::AllBernstein(unsigned int degree, double paramT)
+std::vector<double> Polynomials::AllBernstein(int degree, double paramT)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT_RANGE(paramT, 0.0, 1.0);
@@ -95,10 +93,10 @@ std::vector<double> Polynomials::AllBernstein(unsigned int degree, double paramT
 	bernsteinArray[0] = 1.0;
 
 	double t1 = 1.0 - paramT;
-	for (unsigned int j = 1; j <= degree; j++)
+	for (int j = 1; j <= degree; j++)
 	{
 		double saved = 0.0;
-		for (unsigned int k = 0; k < j; k++)
+		for (int k = 0; k < j; k++)
 		{
 			double temp = bernsteinArray[k];
 			bernsteinArray[k] = saved + t1 * temp;

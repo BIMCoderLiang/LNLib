@@ -22,8 +22,6 @@ namespace LNLib
 	{
 	public:
 
-		static bool IsInRange(double input, double min, double max);
-
 		static bool IsValidBezier(unsigned int degree, unsigned int controlPointsCount);
 
 		static bool IsValidBspline(unsigned int degree, unsigned int knotVectorCount, unsigned int controlPointsCount);

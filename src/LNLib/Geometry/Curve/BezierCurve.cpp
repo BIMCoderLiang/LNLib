@@ -62,36 +62,72 @@ namespace LNLib
 	}
 }
 
-XYZ BezierCurve::GetPointOnCurveByBernstein(const std::vector<XYZ>& controlPoints, unsigned int degree, double paramT)
+XYZ BezierCurve::GetPointOnCurveByBernstein(int degree, const std::vector<XYZ>& controlPoints, double paramT)
 {
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidBezier(degree, controlPoints.size()), "controlPoints", "ControlPoints count equals degree plus one.");
+	VALIDATE_ARGUMENT_RANGE(paramT, 0.0, 1.0);
+	
 	std::vector<double> bernsteinArray = Polynomials::AllBernstein(degree, paramT);
-
 	XYZ temp(0,0,0);
-	for (unsigned int k = 0; k <= degree; k++)
+	for (int k = 0; k <= degree; k++)
 	{
 		temp += bernsteinArray[k] * controlPoints[k];
 	}
 	return temp;
 }
 
-XYZ BezierCurve::GetPointOnCurveByDeCasteljau(const std::vector<XYZ>& controlPoints, unsigned int degree, double paramT)
+XYZ BezierCurve::GetPointOnCurveByDeCasteljau(int degree, const std::vector<XYZ>& controlPoints, double paramT)
 {
-	std::vector<XYZ> temp;
-	temp.resize(degree + 1);
-
-	for (unsigned int i = 0; i <= degree; i++)
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidBezier(degree, controlPoints.size()), "controlPoints", "ControlPoints count equals degree plus one.");
+	VALIDATE_ARGUMENT_RANGE(paramT, 0.0, 1.0);
+	
+	std::vector<XYZ> temp = controlPoints;
+	for (int k = 1; k <= degree; k++)
 	{
-		temp[i] = controlPoints[i];
-	}
-	for (unsigned int k = 1; k <= degree; k++)
-	{
-		for (unsigned int i = 0; i <= degree - k; i++)
+		for (int i = 0; i <= degree - k; i++)
 		{
 			temp[i] = (1.0 - paramT) * temp[i] + paramT * temp[i + 1];
 		}
 	}
 	return temp[0];
+}
+
+XYZ LNLib::BezierCurve::GetPointOnRationalCurveByBernstein(int degree, const std::vector<XYZW>& controlPoints, double paramT)
+{
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidBezier(degree, controlPoints.size()), "controlPoints", "ControlPoints count equals degree plus one.");
+	VALIDATE_ARGUMENT_RANGE(paramT, 0.0, 1.0);
+	
+	std::vector<double> bernsteinArray = Polynomials::AllBernstein(degree, paramT);
+	XYZW temp(0, 0, 0, 0);
+	for (int k = 0; k <= degree; k++)
+	{
+		temp += controlPoints[k] * bernsteinArray[k];
+	}
+	return temp.ToXYZ(true);
+}
+
+XYZ LNLib::BezierCurve::GetPointOnRationalCurveByDeCasteljau(int degree, const std::vector<XYZW>& controlPoints, double paramT)
+{
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidBezier(degree, controlPoints.size()), "controlPoints", "ControlPoints count equals degree plus one.");
+	VALIDATE_ARGUMENT_RANGE(paramT, 0.0, 1.0);
+
+	std::vector<XYZW> temp = controlPoints;
+	for (int k = 1; k <= degree; k++)
+	{
+		for (int i = 0; i <= degree - k; i++)
+		{
+			temp[i] = (1.0 - paramT) * temp[i] + paramT * temp[i + 1];
+		}
+	}
+	return temp[0].ToXYZ(true);
 }
 
 XYZ LNLib::BezierCurve::GetPointOnQuadraticArc(const XYZW& startPoint, const XYZW& middlePoint, const XYZW& endPoint, double paramT)

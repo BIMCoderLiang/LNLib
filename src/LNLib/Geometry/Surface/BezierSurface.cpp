@@ -22,7 +22,7 @@ void BezierSurface::GetPointOnSurfaceByDeCasteljau(const std::vector<std::vector
 
 	for (unsigned int i = 0; i <= n; i++)
 	{
-		temp[i] = BezierCurve::GetPointOnCurveByDeCasteljau(controlPoints[i], m, uv.GetV());
+		temp[i] = BezierCurve::GetPointOnCurveByDeCasteljau(m, controlPoints[i], uv.GetV());
 	}
-	point = BezierCurve::GetPointOnCurveByDeCasteljau(temp, n, uv.GetU());
+	point = BezierCurve::GetPointOnCurveByDeCasteljau(n, temp, uv.GetU());
 }

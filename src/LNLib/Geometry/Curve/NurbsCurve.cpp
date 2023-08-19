@@ -1397,7 +1397,7 @@ bool LNLib::NurbsCurve::LeastSquaresApproximation(unsigned int degree, const std
 	int size = static_cast<int>(throughPoints.size());
 	int m = size - 1;
 	int n = controlPointsCount - 1;
-	if (!ValidationUtils::IsInRange(n, degree, m - 1)) return false;
+	if(n < degree || n > m - 1) return false;
 
 	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
 	knotVector = Interpolation::ComputeKnotVector(degree, size, controlPointsCount, uk);
@@ -2180,8 +2180,8 @@ bool LNLib::NurbsCurve::LocalNonRationalCubicCurveApproximation(int startPointIn
 			std::vector<XYZW> cps = { XYZW(startPoint,1), XYZW(P1,1), XYZW(P2,1),  XYZW(endPoint,1) };
 			double tempParam = GetParamOnCurve(3, uh, cps, throughPoints[startPointIndex + k]);
 			std::vector<XYZ> cpts = { startPoint, P1, P2, endPoint };
-			XYZ t = BezierCurve::GetPointOnCurveByBernstein(cpts, 3, tempParam);
-			XYZ p = BezierCurve::GetPointOnCurveByBernstein(cpts, 3, u);
+			XYZ t = BezierCurve::GetPointOnCurveByBernstein(3, cpts, tempParam);
+			XYZ p = BezierCurve::GetPointOnCurveByBernstein(3, cpts, u);
 			double ek = p.Distance(t);
 			if (MathUtils::IsGreaterThan(ek, maxError))
 			{

@@ -20,4 +20,9 @@ TEST(Test_Polynomials, All)
 	EXPECT_THROW(Polynomials::Bernstein(1, degree, -2), std::out_of_range);
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(Polynomials::Bernstein(0, degree, 0.5),1));
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(Polynomials::Bernstein(degree, degree, 0.5), 1));
+
+	EXPECT_THROW(Polynomials::AllBernstein(-1,0.5), std::invalid_argument);
+	EXPECT_THROW(Polynomials::AllBernstein(degree, 1.5), std::out_of_range);
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(Polynomials::AllBernstein(degree, 0.5)[0], 0.25));
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(Polynomials::AllBernstein(degree, 0.5)[degree], 0.25));
 }

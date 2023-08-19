@@ -19,7 +19,6 @@ namespace LNLib
 	class XYZW;
 	class LNLIB_EXPORT BezierCurve
 	{
-
 	public:
 
 		/// <summary>
@@ -27,14 +26,26 @@ namespace LNLib
 		/// Algorithm A1.4
 		/// Compute point on Bezier curve.
 		/// </summary>
-		static XYZ GetPointOnCurveByBernstein(const std::vector<XYZ>& controlPoints, unsigned int degree, double paramT);
+		static XYZ GetPointOnCurveByBernstein(int degree, const std::vector<XYZ>& controlPoints, double paramT);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page24
 		/// Algorithm A1.5
-		/// Compute point on Bezier curve using deCasteljau.
+		/// Compute point on Bezier curve.
 		/// </summary>
-		static XYZ GetPointOnCurveByDeCasteljau(const std::vector<XYZ>& controlPoints, unsigned int degree, double paramT);
+		static XYZ GetPointOnCurveByDeCasteljau(int degree, const std::vector<XYZ>& controlPoints, double paramT);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page27
+		/// Compute point on Rational Bezier curve.
+		/// </summary>
+		static XYZ GetPointOnRationalCurveByBernstein(int degree, const std::vector<XYZW>& controlPoints, double paramT);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page33
+		/// Compute point on Rational Bezier curve.
+		/// </summary>
+		static XYZ GetPointOnRationalCurveByDeCasteljau(int degree, const std::vector<XYZW>& controlPoints, double paramT);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page291
