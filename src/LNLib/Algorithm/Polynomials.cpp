@@ -45,7 +45,7 @@ namespace LNLib
 double Polynomials::Horner(const std::vector<double>& coefficients, int degree, double paramT)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
-	VALIDATE_ARGUMENT(degree < static_cast<int>(coefficients.size()), "degree", "Degree must less than coefficients size.");
+	VALIDATE_ARGUMENT(degree + 1 == static_cast<int>(coefficients.size()), "degree", "Coefficients size equals degree plus one.");
 	double result = coefficients[degree];
 	for (int i = degree - 1; i >= 0; i--)
 	{
@@ -107,16 +107,22 @@ std::vector<double> Polynomials::AllBernstein(int degree, double paramT)
 	return bernsteinArray;
 }
 
-double Polynomials::Horner(const std::vector<std::vector<double>>& coefficients, unsigned int n, unsigned int m, UV& uv)
+double Polynomials::Horner(int degreeU, int degreeV, const std::vector<std::vector<double>>& coefficients, UV& uv)
 {
-	std::vector<double> temp;
-	temp.resize(n + 1);
+	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(coefficients.size() > 0, "coefficients", "Coefficients size must greater than zero.");
+	VALIDATE_ARGUMENT(degreeU + 1 == static_cast<int>(coefficients.size()), "degreeU", "Coefficients row size equals degreeU plus one.");
+	VALIDATE_ARGUMENT(degreeV + 1 == static_cast<int>(coefficients[0].size()), "degreeV", "Coefficients column size equals degreeV plus one.");
+	VALIDATE_ARGUMENT_RANGE(uv.GetU(), 0.0, 1.0);
+	VALIDATE_ARGUMENT_RANGE(uv.GetV(), 0.0, 1.0);
 
-	for (unsigned int i = 0; i <= n; i++)
+	std::vector<double> temp(degreeU + 1);
+	for (int i = 0; i <= degreeU; i++)
 	{
-		temp[i] = Horner(coefficients[i], m, uv.GetV());
+		temp[i] = Horner(coefficients[i], degreeV, uv.GetV());
 	}
-	return Horner(temp, n, uv.GetU());
+	return Horner(temp, degreeU, uv.GetU());
 }
 
 int LNLib::Polynomials::GetKnotSpanIndex(unsigned int n, unsigned int degree, double paramT, const std::vector<double>& knotVector)

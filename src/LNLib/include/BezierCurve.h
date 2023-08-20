@@ -39,13 +39,13 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page27
 		/// Compute point on Rational Bezier curve.
 		/// </summary>
-		static XYZ GetPointOnRationalCurveByBernstein(int degree, const std::vector<XYZW>& controlPoints, double paramT);
+		static XYZW GetPointOnRationalCurveByBernstein(int degree, const std::vector<XYZW>& controlPoints, double paramT);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page33
 		/// Compute point on Rational Bezier curve.
 		/// </summary>
-		static XYZ GetPointOnRationalCurveByDeCasteljau(int degree, const std::vector<XYZW>& controlPoints, double paramT);
+		static XYZW GetPointOnRationalCurveByDeCasteljau(int degree, const std::vector<XYZW>& controlPoints, double paramT);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page291

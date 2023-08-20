@@ -96,7 +96,7 @@ XYZ BezierCurve::GetPointOnCurveByDeCasteljau(int degree, const std::vector<XYZ>
 	return temp[0];
 }
 
-XYZ LNLib::BezierCurve::GetPointOnRationalCurveByBernstein(int degree, const std::vector<XYZW>& controlPoints, double paramT)
+XYZW LNLib::BezierCurve::GetPointOnRationalCurveByBernstein(int degree, const std::vector<XYZW>& controlPoints, double paramT)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
@@ -104,30 +104,30 @@ XYZ LNLib::BezierCurve::GetPointOnRationalCurveByBernstein(int degree, const std
 	VALIDATE_ARGUMENT_RANGE(paramT, 0.0, 1.0);
 	
 	std::vector<double> bernsteinArray = Polynomials::AllBernstein(degree, paramT);
-	XYZW temp(0, 0, 0, 0);
+	XYZW result(0, 0, 0, 0);
 	for (int k = 0; k <= degree; k++)
 	{
-		temp += controlPoints[k] * bernsteinArray[k];
+		result += controlPoints[k] * bernsteinArray[k];
 	}
-	return temp.ToXYZ(true);
+	return result;
 }
 
-XYZ LNLib::BezierCurve::GetPointOnRationalCurveByDeCasteljau(int degree, const std::vector<XYZW>& controlPoints, double paramT)
+XYZW LNLib::BezierCurve::GetPointOnRationalCurveByDeCasteljau(int degree, const std::vector<XYZW>& controlPoints, double paramT)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidBezier(degree, controlPoints.size()), "controlPoints", "ControlPoints count equals degree plus one.");
 	VALIDATE_ARGUMENT_RANGE(paramT, 0.0, 1.0);
 
-	std::vector<XYZW> temp = controlPoints;
+	std::vector<XYZW> result = controlPoints;
 	for (int k = 1; k <= degree; k++)
 	{
 		for (int i = 0; i <= degree - k; i++)
 		{
-			temp[i] = (1.0 - paramT) * temp[i] + paramT * temp[i + 1];
+			result[i] = (1.0 - paramT) * result[i] + paramT * result[i + 1];
 		}
 	}
-	return temp[0].ToXYZ(true);
+	return result[0];
 }
 
 XYZ LNLib::BezierCurve::GetPointOnQuadraticArc(const XYZW& startPoint, const XYZW& middlePoint, const XYZW& endPoint, double paramT)

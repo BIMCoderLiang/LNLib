@@ -10,19 +10,49 @@
 
 #include "BezierSurface.h"
 #include "BezierCurve.h"
-#include "XYZ.h"
 #include "UV.h"
+#include "XYZ.h"
+#include "XYZW.h"
+#include "LNLibExceptions.h"
 
 using namespace LNLib;
 
-void BezierSurface::GetPointOnSurfaceByDeCasteljau(const std::vector<std::vector<XYZ>>& controlPoints, unsigned int n, unsigned int m, UV uv, XYZ& point)
+XYZ BezierSurface::GetPointOnSurfaceByDeCasteljau(int degreeU, int degreeV, const std::vector<std::vector<XYZ>>& controlPoints, UV uv)
 {
-	std::vector<XYZ> temp;
-	temp.resize(n + 1);
+	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(degreeU + 1 == static_cast<int>(controlPoints.size()), "controlPoints", "ControlPoints row size equals degreeU plus one.");
+	VALIDATE_ARGUMENT(degreeV + 1 == static_cast<int>(controlPoints[0].size()), "controlPoints", "ControlPoints column size equals degreeV plus one.");
+	VALIDATE_ARGUMENT_RANGE(uv.GetU(), 0.0, 1.0);
+	VALIDATE_ARGUMENT_RANGE(uv.GetV(), 0.0, 1.0);
 
-	for (unsigned int i = 0; i <= n; i++)
+	XYZ point(0,0,0);
+	std::vector<XYZ> temp(degreeU + 1);
+	for (int i = 0; i <= degreeU; i++)
 	{
-		temp[i] = BezierCurve::GetPointOnCurveByDeCasteljau(m, controlPoints[i], uv.GetV());
+		temp[i] = BezierCurve::GetPointOnCurveByDeCasteljau(degreeV, controlPoints[i], uv.GetV());
 	}
-	point = BezierCurve::GetPointOnCurveByDeCasteljau(n, temp, uv.GetU());
+	point = BezierCurve::GetPointOnCurveByDeCasteljau(degreeU, temp, uv.GetU());
+	return point;
+}
+
+XYZW LNLib::BezierSurface::GetPointOnRationalSurfaceByDeCasteljau(int degreeU, int degreeV, const std::vector<std::vector<XYZW>>& controlPoints, UV uv)
+{
+	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(degreeU + 1 == static_cast<int>(controlPoints.size()), "controlPoints", "ControlPoints row size equals degreeU plus one.");
+	VALIDATE_ARGUMENT(degreeV + 1 == static_cast<int>(controlPoints[0].size()), "controlPoints", "ControlPoints column size equals degreeV plus one.");
+	VALIDATE_ARGUMENT_RANGE(uv.GetU(), 0.0, 1.0);
+	VALIDATE_ARGUMENT_RANGE(uv.GetV(), 0.0, 1.0);
+
+	XYZW point(0, 0, 0, 0);
+	std::vector<XYZW> temp(degreeU + 1);
+	for (int i = 0; i <= degreeU; i++)
+	{
+		temp[i] = BezierCurve::GetPointOnRationalCurveByDeCasteljau(degreeV, controlPoints[i], uv.GetV());
+	}
+	point = BezierCurve::GetPointOnRationalCurveByDeCasteljau(degreeU, temp, uv.GetU());
+	return point;
 }

@@ -13,14 +13,13 @@
 #include "LNLibDefinitions.h"
 #include <vector>
 
-
 namespace LNLib {
 
-	class XYZ;
 	class UV;
+	class XYZ;
+	class XYZW;
 	class LNLIB_EXPORT BezierSurface
 	{
-
 	public:
 
 		/// <summary>
@@ -28,7 +27,7 @@ namespace LNLib {
 		/// Algorithm A1.7
 		/// Compute a point on a Bezier surface by the deCasteljau.
 		/// 
-		/// controlpoints with (n+1) * (m+1)
+		/// Controlpoints with (n+1) rows * (m+1) columns
 		///  
 		///  [0][0]  [0][1] ... ...  [0][m]     ------- v direction
 		///  [1][0]  [1][1] ... ...  [1][m]    |
@@ -38,7 +37,13 @@ namespace LNLib {
 		///  [n][0]  [n][1] ... ...  [n][m]      
 		/// 
 		/// </summary>
-		static void GetPointOnSurfaceByDeCasteljau(const std::vector<std::vector<XYZ>>& controlPoints, unsigned int n, unsigned int m, UV uv, XYZ& point);
+		static XYZ GetPointOnSurfaceByDeCasteljau(int degreeU, int degreeV, const std::vector<std::vector<XYZ>>& controlPoints, UV uv);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page40
+		/// Compute a point on a Rational Bezier surface by the deCasteljau.
+		/// </summary>
+		static XYZW GetPointOnRationalSurfaceByDeCasteljau(int degreeU, int degreeV, const std::vector<std::vector<XYZW>>& controlPoints, UV uv);
 	};
 }
 
