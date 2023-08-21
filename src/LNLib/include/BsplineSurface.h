@@ -31,16 +31,14 @@ namespace LNLib
 		static void GetPointOnSurface(const std::vector<std::vector<T>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, T& point)
 		{
 			int n = static_cast<int>(knotVectorU.size() - degreeU - 2);
-			int uSpanIndex = Polynomials::GetKnotSpanIndex(n, degreeU, uv.GetU(), knotVectorU);
+			int uSpanIndex = Polynomials::GetKnotSpanIndex(degreeU, knotVectorU, uv.GetU());
 
-			std::vector<double> basisFunctionsU;
-			Polynomials::BasisFunctions(uSpanIndex, degreeU, uv.GetU(), knotVectorU, basisFunctionsU);
+			std::vector<double> basisFunctionsU = Polynomials::BasisFunctions(uSpanIndex, degreeU, knotVectorU, uv.GetU());
 
 			int m = static_cast<int>(knotVectorV.size() - degreeV - 2);
-			int vSpanIndex = Polynomials::GetKnotSpanIndex(m, degreeV, uv.GetV(), knotVectorV);
+			int vSpanIndex = Polynomials::GetKnotSpanIndex(degreeV, knotVectorV, uv.GetV());
 
-			std::vector<double> basisFunctionsV;
-			Polynomials::BasisFunctions(vSpanIndex, degreeV, uv.GetV(), knotVectorV, basisFunctionsV);
+			std::vector<double> basisFunctionsV = Polynomials::BasisFunctions(vSpanIndex, degreeV, knotVectorV, uv.GetV());
 
 			int uind = uSpanIndex - degreeU;
 			for (int l = 0; l <= static_cast<int>(degreeV); l++)
@@ -73,12 +71,12 @@ namespace LNLib
 			int dv = std::min(derivative, degreeV);
 
 			int n = static_cast<int>(knotVectorU.size() - degreeU - 2);
-			int uSpanIndex = Polynomials::GetKnotSpanIndex(n, degreeU, uv.GetU(), knotVectorU);
+			int uSpanIndex = Polynomials::GetKnotSpanIndex(degreeU, knotVectorU, uv.GetU());
 			std::vector<std::vector<double>> derivativeBasisFunctionsU;
 			Polynomials::BasisFunctionsDerivatives(uSpanIndex, degreeU, uv.GetU(), du, knotVectorU, derivativeBasisFunctionsU);
 
 			int m = static_cast<int>(knotVectorV.size() - degreeV - 2);
-			int vSpanIndex = Polynomials::GetKnotSpanIndex(m, degreeV, uv.GetV(), knotVectorV);
+			int vSpanIndex = Polynomials::GetKnotSpanIndex(degreeV, knotVectorV, uv.GetV());
 			std::vector<std::vector<double>> derivativeBasisFunctionsV;
 			Polynomials::BasisFunctionsDerivatives(vSpanIndex, degreeV, uv.GetV(), dv, knotVectorV, derivativeBasisFunctionsV);
 

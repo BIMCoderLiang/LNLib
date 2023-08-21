@@ -32,10 +32,9 @@ namespace LNLib
 		{
 			T point;
 			int n = static_cast<int>(controlPoints.size() - 1);
-			int spanIndex = Polynomials::GetKnotSpanIndex(n, degree, paramT, knotVector);
+			int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, paramT);
 
-			std::vector<double> N;
-			Polynomials::BasisFunctions(spanIndex, degree, paramT, knotVector, N);
+			std::vector<double> N = Polynomials::BasisFunctions(spanIndex, degree, knotVector, paramT);
 
 			for (int i = 0; i <= static_cast<int>(degree); i++)
 			{
@@ -48,7 +47,7 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page88
 		/// Compute the continuity.
 		/// </summary>
-		static int GetContinuity(unsigned int degree, const std::vector<double>& knotVector, double knot);
+		static int GetContinuity(int degree, const std::vector<double>& knotVector, double knot);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page93
@@ -62,7 +61,7 @@ namespace LNLib
 
 			int du = std::min(derivative, degree);
 			int n = static_cast<int>(controlPoints.size() - 1);
-			int spanIndex = Polynomials::GetKnotSpanIndex(n, degree, paramT, knotVector);
+			int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, paramT);
 
 			std::vector<std::vector<double>> nders;
 			Polynomials::BasisFunctionsDerivatives(spanIndex, degree, paramT, du, knotVector, nders);

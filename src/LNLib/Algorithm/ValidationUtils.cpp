@@ -11,6 +11,7 @@
 #include "ValidationUtils.h"
 #include "XYZW.h"
 #include "Constants.h"
+#include "LNLibExceptions.h"
 #include <algorithm>
 
 
@@ -22,12 +23,19 @@ namespace LNLib
 	}
 }
 
-bool LNLib::ValidationUtils::IsValidBezier(unsigned int degree, unsigned int controlPointsCount)
+bool LNLib::ValidationUtils::IsValidBezier(int degree, int controlPointsCount)
 {
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+
 	return controlPointsCount == degree + 1;
 }
 
-bool LNLib::ValidationUtils::IsValidBspline(unsigned int degree, unsigned int knotVectorCount, unsigned int controlPointsCount)
+bool LNLib::ValidationUtils::IsValidKnotVector(const std::vector<double>& knotVector)
+{
+	return std::is_sorted(knotVector.begin(), knotVector.end());
+}
+
+bool LNLib::ValidationUtils::IsValidBspline(int degree, int knotVectorCount, int controlPointsCount)
 {
 	return (knotVectorCount - 1) == (controlPointsCount - 1) + degree + 1;
 }
@@ -42,10 +50,6 @@ bool LNLib::ValidationUtils::IsValidDegreeReduction(unsigned int degree)
 	return degree > 1;
 }
 
-bool LNLib::ValidationUtils::IsValidKnotVector(const std::vector<double>& knotVector)
-{
-	return std::is_sorted(knotVector.begin(), knotVector.end());
-}
 
 double LNLib::ValidationUtils::ComputeCurveModifyTolerance(const std::vector<XYZW>& controlPoints)
 {

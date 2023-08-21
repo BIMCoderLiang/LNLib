@@ -22,19 +22,19 @@ namespace LNLib
 	{
 	public:
 
-		static bool IsValidBezier(unsigned int degree, unsigned int controlPointsCount);
-
-		static bool IsValidBspline(unsigned int degree, unsigned int knotVectorCount, unsigned int controlPointsCount);
-
-		static bool IsValidNurbs(unsigned int degree, unsigned int knotVectorCount, unsigned int controlPointsCount, unsigned int weightsCount);
-
-		static bool IsValidDegreeReduction(unsigned int degree);
+		static bool IsValidBezier(int degree, int controlPointsCount);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page50
 		/// Knot Vector is a nondecreasing sequence of real numbers.
 		/// </summary>
 		static bool IsValidKnotVector(const std::vector<double>& knotVector);
+
+		static bool IsValidBspline(int degree, int knotVectorCount, int controlPointsCount);
+
+		static bool IsValidNurbs(unsigned int degree, unsigned int knotVectorCount, unsigned int controlPointsCount, unsigned int weightsCount);
+
+		static bool IsValidDegreeReduction(unsigned int degree);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page185

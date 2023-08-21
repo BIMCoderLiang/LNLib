@@ -144,9 +144,8 @@ std::vector<std::vector<double>> LNLib::Interpolation::MakeInterpolationMatrix(u
 
 	for (int i = 0; i <= n; i++)
 	{
-		int spanIndex = Polynomials::GetKnotSpanIndex(n, degree, params[i], knotVector);
-		std::vector<double> basis;
-		Polynomials::BasisFunctions(spanIndex, degree, knotVector[i], knotVector, basis);
+		int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, params[i]);
+		std::vector<double> basis = Polynomials::BasisFunctions(spanIndex, degree, knotVector, knotVector[i]);
 
 		for (int k = 0; k < static_cast<int>(degree); k++)
 		{

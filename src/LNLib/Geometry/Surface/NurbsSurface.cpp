@@ -123,8 +123,8 @@ void LNLib::NurbsSurface::ComputeRationalSurfaceDerivatives(const std::vector<st
 void LNLib::NurbsSurface::InsertKnot(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVector, unsigned int degree, double insertKnot, unsigned int times, bool isUDirection, std::vector<double>& insertedKnotVector, std::vector<std::vector<XYZW>>& updatedControlPoints)
 {
 	int n = static_cast<int>(knotVector.size() - degree - 2);
-	int knotSpanIndex = Polynomials::GetKnotSpanIndex(n, degree, insertKnot, knotVector);
-	int multiplicity = Polynomials::GetKnotMultiplicity(insertKnot, knotVector);
+	int knotSpanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, insertKnot);
+	int multiplicity = Polynomials::GetKnotMultiplicity(knotVector, insertKnot);
 
 	if (multiplicity == degree)
 	{

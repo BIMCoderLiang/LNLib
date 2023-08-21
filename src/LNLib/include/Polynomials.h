@@ -27,7 +27,7 @@ namespace LNLib
 		/// Algorithm A1.1
 		/// Compute point on power basis curve.
 		/// </summary>
-		static double Horner(const std::vector<double>& coefficients, int degree, double paramT);
+		static double Horner(int degree, const std::vector<double>& coefficients, double paramT);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page7
@@ -60,26 +60,24 @@ namespace LNLib
 		static double Horner(int degreeU, int degreeV, const std::vector<std::vector<double>>& coefficients, UV& uv);
 
 		/// <summary>
-		/// The NURBS Book 2nd Edition Page68
-		/// Algorithm A2.1
-		/// Get the knot span index.
-		/// </summary>
-		static int GetKnotSpanIndex(unsigned int n, unsigned int degree, double paramT, const std::vector<double>& knotVector);
-
-		/// <summary>
-		/// The NURBS Book 2nd Edition Page152
+		/// The NURBS Book 2nd Edition Page63
 		/// Get the knot multiplicity.
 		/// </summary>
-		static int GetKnotMultiplicity(double knot, const std::vector<double>& knotVector);
+		static int GetKnotMultiplicity(const std::vector<double>& knotVector, double paramT);
 
-		static void GetInsertedKnotElement(const std::vector<double> knotVector0, const std::vector<double> knotVector1, std::vector<double>& insertElements0, std::vector<double>& insertElements1);
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page68
+		/// Algorithm A2.1
+		/// Determine the knot span index.
+		/// </summary>
+		static int GetKnotSpanIndex(int degree, const std::vector<double>& knotVector, double paramT);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page70
 		/// Algorithm A2.2
 		/// Compute the nonvanishing basis functions.
 		/// </summary>
-		static void BasisFunctions(unsigned int spanIndex, unsigned int degree, double paramT, const std::vector<double>& knotVector, std::vector<double>& basisFunctions);
+		static std::vector<double> BasisFunctions(int spanIndex, int degree, const std::vector<double>& knotVector, double paramT);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page72
@@ -101,6 +99,11 @@ namespace LNLib
 		/// Compute a single basis function and its derivative.
 		/// </summary>
 		static void OneBasisFunctionDerivative(unsigned int index, unsigned int degree, const std::vector<double>& knotVector, double paramT, unsigned int derivative, std::vector<double>& derivatives);
+
+		/// <summary>
+		/// 
+		/// </summary>
+		static void GetInsertedKnotElement(const std::vector<double> knotVector0, const std::vector<double> knotVector1, std::vector<double>& insertElements0, std::vector<double>& insertElements1);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page269

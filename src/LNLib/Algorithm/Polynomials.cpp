@@ -35,14 +35,14 @@ namespace LNLib
 			auto got = result.find(i);
 			if (got == result.end())
 			{
-				result.insert({ i, LNLib::Polynomials::GetKnotMultiplicity(knotVector[i], knotVector) });
+				result.insert({ i, LNLib::Polynomials::GetKnotMultiplicity(knotVector, knotVector[i]) });
 			}
 		}
 		return result;
 	}
 }
 
-double Polynomials::Horner(const std::vector<double>& coefficients, int degree, double paramT)
+double Polynomials::Horner(int degree, const std::vector<double>& coefficients, double paramT)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(degree + 1 == static_cast<int>(coefficients.size()), "degree", "Coefficients size equals degree plus one.");
@@ -109,8 +109,8 @@ std::vector<double> Polynomials::AllBernstein(int degree, double paramT)
 
 double Polynomials::Horner(int degreeU, int degreeV, const std::vector<std::vector<double>>& coefficients, UV& uv)
 {
-	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "Degree must greater than zero.");
-	VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "DegreeU must greater than zero.");
+	VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "DegreeV must greater than zero.");
 	VALIDATE_ARGUMENT(coefficients.size() > 0, "coefficients", "Coefficients size must greater than zero.");
 	VALIDATE_ARGUMENT(degreeU + 1 == static_cast<int>(coefficients.size()), "degreeU", "Coefficients row size equals degreeU plus one.");
 	VALIDATE_ARGUMENT(degreeV + 1 == static_cast<int>(coefficients[0].size()), "degreeV", "Coefficients column size equals degreeV plus one.");
@@ -120,41 +120,17 @@ double Polynomials::Horner(int degreeU, int degreeV, const std::vector<std::vect
 	std::vector<double> temp(degreeU + 1);
 	for (int i = 0; i <= degreeU; i++)
 	{
-		temp[i] = Horner(coefficients[i], degreeV, uv.GetV());
+		temp[i] = Horner(degreeV, coefficients[i], uv.GetV());
 	}
-	return Horner(temp, degreeU, uv.GetU());
+	return Horner(degreeU, temp, uv.GetU());
 }
 
-int LNLib::Polynomials::GetKnotSpanIndex(unsigned int n, unsigned int degree, double paramT, const std::vector<double>& knotVector)
+int LNLib::Polynomials::GetKnotMultiplicity(const std::vector<double>& knotVector, double knot)
 {
-
-	if (MathUtils::IsGreaterThan(paramT, knotVector[n + 1]))
-	{
-		return n;
-	}
-
-	if (MathUtils::IsLessThan(paramT, knotVector[degree]))
-	{
-		return degree;
-	}
-
-	int low = degree;
-	int high = n + 1;
-	int mid = static_cast<int>(floor((low + high) / 2.0));
-
-	while (paramT < knotVector[mid] || paramT >= knotVector[mid + 1])
-	{
-		if (paramT < knotVector[mid])
-			high = mid;
-		else
-			low = mid;
-		mid = static_cast<int>(floor((low + high) / 2.0));
-	}
-	return mid;
-}
-
-int LNLib::Polynomials::GetKnotMultiplicity(double knot, const std::vector<double>& knotVector)
-{
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT_RANGE(knot, knotVector[0], knotVector[knotVector.size() - 1]);
+	
 	int size = static_cast<int>(knotVector.size());
 	int multi = 0;
 
@@ -163,10 +139,80 @@ int LNLib::Polynomials::GetKnotMultiplicity(double knot, const std::vector<doubl
 		if (MathUtils::IsAlmostEqualTo(knot, knotVector[index]))
 		{
 			multi++;
-		}	
+		}
 	}
 
 	return multi;
+}
+
+int LNLib::Polynomials::GetKnotSpanIndex(int degree, const std::vector<double>& knotVector, double paramT)
+{
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT_RANGE(paramT, knotVector[0], knotVector[knotVector.size() - 1]);
+
+	int n = knotVector.size() - degree - 2;
+	VALIDATE_ARGUMENT(n >= 0, "degree", "Arguments must fit: m = n + p + 1");
+
+	if (MathUtils::IsAlmostEqualTo(paramT, knotVector[n + 1]))
+	{
+		return n;
+	}
+
+	int low = degree;
+	int high = n + 1;
+	int mid = static_cast<int>(floor((low + high) / 2.0));
+
+	while (paramT < knotVector[mid] || 
+		   paramT >= knotVector[mid + 1])
+	{
+		if (paramT < knotVector[mid])
+		{
+			high = mid;
+		}
+		else
+		{
+			low = mid;
+		}	
+		mid = static_cast<int>(floor((low + high) / 2.0));
+	}
+	return mid;
+}
+
+std::vector<double> LNLib::Polynomials::BasisFunctions(int spanIndex, int degree, const std::vector<double>& knotVector, double paramT)
+{
+	VALIDATE_ARGUMENT(spanIndex >= 0, "spanIndex", "SpanIndex must greater than or equals zero.");
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT_RANGE(paramT, knotVector[0], knotVector[knotVector.size() - 1]);
+
+	std::vector<double> basisFunctions(degree + 1);
+	basisFunctions[0] = 1.0;
+
+	double saved = 0.0;
+	double temp = 0.0;
+
+	std::vector<double> left(degree + 1);
+	std::vector<double> right(degree + 1);
+
+	for (int j = 1; j <= degree; j++)
+	{
+		left[j] = paramT - knotVector[spanIndex + 1 - j];
+		right[j] = knotVector[spanIndex + j] - paramT;
+
+		saved = 0.0;
+
+		for (int r = 0; r < j; r++)
+		{
+			temp = basisFunctions[r] / (right[r + 1] + left[j - r]);
+			basisFunctions[r] = saved + right[r + 1] * temp;
+			saved = left[j - r] * temp;
+		}
+		basisFunctions[j] = saved;
+	}
+	return basisFunctions;
 }
 
 void LNLib::Polynomials::GetInsertedKnotElement(const std::vector<double> knotVector0, const std::vector<double> knotVector1, std::vector<double>& insertElements0, std::vector<double>& insertElements1)
@@ -226,37 +272,6 @@ void LNLib::Polynomials::GetInsertedKnotElement(const std::vector<double> knotVe
 
 	std::sort(insertElements0.begin(), insertElements0.end());
 	std::sort(insertElements1.begin(), insertElements1.end());
-}
-
-
-void LNLib::Polynomials::BasisFunctions(unsigned int spanIndex, unsigned int degree, double paramT, const std::vector<double>& knotVector, std::vector<double>& basisFunctions)
-{
-	basisFunctions.resize(degree + 1);
-	double saved = 0.0;
-	double temp = 0.0;
-	
-	std::vector<double> left;
-	left.resize(degree + 1);
-	std::vector<double> right;
-	right.resize(degree + 1);
-
-	basisFunctions[0] = 1.0;
-
-	for (unsigned int j = 1; j <= degree; j++)
-	{		
-		left[j] = paramT - knotVector[spanIndex + 1 - j];
-		right[j] = knotVector[spanIndex + j] - paramT;
-
-		saved = 0.0;
-
-		for (unsigned int r = 0; r < j; r++)
-		{
-			temp = basisFunctions[r] / (right[r + 1] + left[j - r]);
-			basisFunctions[r] = saved + right[r + 1] * temp;
-			saved = left[j - r] * temp;
-		}
-		basisFunctions[j] = saved;
-	}
 }
 
 void LNLib::Polynomials::BasisFunctionsDerivatives(unsigned int spanIndex, unsigned int degree, double paramT,  unsigned int derivative, const std::vector<double>& knotVector, std::vector<std::vector<double>>& derivatives)

@@ -17,9 +17,9 @@
 #include <algorithm>
 
 
-int LNLib::BsplineCurve::GetContinuity(unsigned int degree, const std::vector<double>& knotVector, double knot)
+int LNLib::BsplineCurve::GetContinuity(int degree, const std::vector<double>& knotVector, double knot)
 {
-	int multi = Polynomials::GetKnotMultiplicity(knot, knotVector);
+	int multi = Polynomials::GetKnotMultiplicity(knotVector, knot);
 	return degree - multi;
 }
 

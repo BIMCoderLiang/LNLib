@@ -65,8 +65,8 @@ std::vector<LNLib::XYZ> LNLib::NurbsCurve::ComputeRationalCurveDerivatives(unsig
 void LNLib::NurbsCurve::InsertKnot(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double insertKnot, unsigned int times, std::vector<double>& insertedKnotVector, std::vector<XYZW>& updatedControlPoints)
 {
 	int np = static_cast<int>(controlPoints.size() - 1);
-	int knotSpanIndex = Polynomials::GetKnotSpanIndex(np, degree, insertKnot, knotVector);
-	int originMultiplicity = Polynomials::GetKnotMultiplicity(insertKnot, knotVector);
+	int knotSpanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, insertKnot);
+	int originMultiplicity = Polynomials::GetKnotMultiplicity(knotVector, insertKnot);
 
 	if (originMultiplicity + times > degree)
 	{
@@ -139,8 +139,8 @@ LNLib::XYZ LNLib::NurbsCurve::GetPointOnCurveByInsertKnot(unsigned int degree,co
 		return point;
 	}
 
-	int knotSpanIndex = Polynomials::GetKnotSpanIndex(n, degree, insertKnot, knotVector);
-	int originMultiplicity = Polynomials::GetKnotMultiplicity(insertKnot, knotVector);
+	int knotSpanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, insertKnot);
+	int originMultiplicity = Polynomials::GetKnotMultiplicity(knotVector, insertKnot);
 
 	int times = degree - originMultiplicity;
 	std::vector<XYZW> temp;
@@ -167,8 +167,8 @@ void LNLib::NurbsCurve::RefineKnotVector(unsigned int degree, const std::vector<
 	int m = n + degree + 1;
 	int r = static_cast<int>(insertKnotElements.size() - 1);
 
-	int a = Polynomials::GetKnotSpanIndex(n, degree, insertKnotElements[0], knotVector);
-	int b = Polynomials::GetKnotSpanIndex(n, degree, insertKnotElements[r], knotVector);
+	int a = Polynomials::GetKnotSpanIndex(degree, knotVector, insertKnotElements[0]);
+	int b = Polynomials::GetKnotSpanIndex(degree, knotVector, insertKnotElements[r]);
 
 	b = b + 1;
 
@@ -303,8 +303,8 @@ void LNLib::NurbsCurve::RemoveKnot(unsigned int degree, const std::vector<double
 	int n = static_cast<int>(controlPoints.size() - 1);
 
 	int order = degree + 1;
-	int originMultiplicity = Polynomials::GetKnotMultiplicity(removeKnot, knotVector);
-	int removeIndex = Polynomials::GetKnotSpanIndex(n, degree, removeKnot, knotVector);
+	int originMultiplicity = Polynomials::GetKnotMultiplicity(knotVector, removeKnot);
+	int removeIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, removeKnot);
 
 	int first = removeIndex - degree;
 	int last = removeIndex - originMultiplicity;
@@ -1287,7 +1287,7 @@ void LNLib::NurbsCurve::GlobalInterpolationByTangents(unsigned int degree, const
 	for (int i = 1; i < static_cast<int>(uk.size()) - 1; ++i)
 	{
 		int np = static_cast<int>(knotVector.size() - degree) - 2;
-		int spanIndex = Polynomials::GetKnotSpanIndex(np, degree, uk[i], knotVector);
+		int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, uk[i]);
 
 		if (tangentsIndices[tangentIndex] == i)
 		{
@@ -1307,8 +1307,7 @@ void LNLib::NurbsCurve::GlobalInterpolationByTangents(unsigned int degree, const
 		}
 		else
 		{
-			std::vector<double> basis;
-			Polynomials::BasisFunctions(spanIndex, degree, uk[i], knotVector, basis);
+			std::vector<double> basis = Polynomials::BasisFunctions(spanIndex, degree, knotVector, uk[i]);
 
 			row++;
 			for (int k = 0; k < static_cast<int>(degree); k++)
@@ -1502,7 +1501,7 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(unsigned 
 
 	for (int i = 0; i <= r; i++)
 	{
-		int spanIndex = Polynomials::GetKnotSpanIndex(n, degree, uk[i], knotVector);
+		int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, uk[i]);
 		int dflag = 0;
 		if (j <= s)
 		{
@@ -1514,7 +1513,7 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(unsigned 
 		std::vector<std::vector<double>> basis;
 		if (dflag == 0)
 		{
-			Polynomials::BasisFunctions(spanIndex, degree, uk[i], knotVector, basis[i]);
+			Polynomials::BasisFunctions(spanIndex, degree, knotVector, uk[i]);
 		}
 		else
 		{
@@ -1604,7 +1603,7 @@ double LNLib::NurbsCurve::ComputerRemoveKnotErrorBound(unsigned int degree, cons
 	int ord = static_cast<int>(degree + 1);
 	int r = removalIndex;
 	double u = knotVector[r];
-	int s = Polynomials::GetKnotMultiplicity(u, knotVector);
+	int s = Polynomials::GetKnotMultiplicity(knotVector, u);
 	int last = r - s;
 	int first = static_cast<int>(r - degree);
 	int off = first - 1;
@@ -1667,7 +1666,7 @@ void LNLib::NurbsCurve::RemoveKnotsByGivenBound(unsigned int degree, const std::
 		if (knotVector[i] < knotVector[i + 1]) 
 		{
 			Br[i] = ComputerRemoveKnotErrorBound(degree, knotVector, controlPoints, i);
-			S[i] = Polynomials::GetKnotMultiplicity(knotVector[i],knotVector);
+			S[i] = Polynomials::GetKnotMultiplicity(knotVector, knotVector[i]);
 			s = 1;
 		}
 		else {
@@ -1681,7 +1680,7 @@ void LNLib::NurbsCurve::RemoveKnotsByGivenBound(unsigned int degree, const std::
 	for (int i = 0; i < ukSize; i++)
 	{
 		int np = static_cast<int>(knotVector.size() - degree) - 2;
-		int spanIndex = Polynomials::GetKnotSpanIndex(np, degree, uk[i], knotVector);
+		int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, uk[i]);
 		if (!Nl[spanIndex])
 		{
 			Nl[spanIndex] = i;
@@ -1768,7 +1767,7 @@ void LNLib::NurbsCurve::RemoveKnotsByGivenBound(unsigned int degree, const std::
 			for (int k = Rstart; k <= Rend; k++) 
 			{
 				int np = static_cast<int>(tempNewU.size() - degree) - 2;
-				spanIndex = Polynomials::GetKnotSpanIndex(np, degree, uk[i], tempNewU);
+				spanIndex = Polynomials::GetKnotSpanIndex(degree, tempNewU, uk[i]);
 				if (spanIndex != oldspanIndex)
 				{
 					Nl[spanIndex] = k;
