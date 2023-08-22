@@ -63,8 +63,7 @@ namespace LNLib
 			int n = static_cast<int>(controlPoints.size() - 1);
 			int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, paramT);
 
-			std::vector<std::vector<double>> nders;
-			Polynomials::BasisFunctionsDerivatives(spanIndex, degree, paramT, du, knotVector, nders);
+			std::vector<std::vector<double>> nders = Polynomials::BasisFunctionsDerivatives(spanIndex, degree, du, knotVector, paramT);
 
 			for (int k = 0; k <= du; k++)
 			{

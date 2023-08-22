@@ -84,21 +84,21 @@ namespace LNLib
 		/// Algorithm A2.3
 		/// Compute nonzero basis functions and their derivative.
 		/// </summary>
-		static void BasisFunctionsDerivatives(unsigned int spanIndex, unsigned int degree, double paramT, unsigned int derivative, const std::vector<double>& knotVector, std::vector<std::vector<double>>& derivatives);
+		static std::vector<std::vector<double>> BasisFunctionsDerivatives(int spanIndex, int degree, int derivative, const std::vector<double>& knotVector, double paramT);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page74
 		/// Algorithm A2.4
-		/// Compute a single basis function.
+		/// Compute the basis function Ni,p.
 		/// </summary>
-		static double OneBasisFunction(unsigned int index, unsigned int degree, const std::vector<double>& knotVector, double paramT);
+		static double OneBasisFunction(int spanIndex, int degree, const std::vector<double>& knotVector, double paramT);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page76
 		/// Algorithm A2.5
 		/// Compute a single basis function and its derivative.
 		/// </summary>
-		static void OneBasisFunctionDerivative(unsigned int index, unsigned int degree, const std::vector<double>& knotVector, double paramT, unsigned int derivative, std::vector<double>& derivatives);
+		static std::vector<double> OneBasisFunctionDerivative(int spanIndex, int degree, int derivative, const std::vector<double>& knotVector, double paramT);
 
 		/// <summary>
 		/// 

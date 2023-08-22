@@ -32,4 +32,7 @@ TEST(Test_Polynomials, All)
 	EXPECT_TRUE(Polynomials::GetKnotMultiplicity(knotVector, 1.0) == 3);
 	EXPECT_TRUE(Polynomials::GetKnotSpanIndex(2, knotVector, 1) == 2);
 
+	/*knotVector = { 0,0,0,1,2,3,4,4,5,5,5 };
+	int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, 5.0 / 2);
+	std::vector<double> basis = Polynomials::BasisFunctions(spanIndex, degree, knotVector, 5.0 / 2);*/
 }

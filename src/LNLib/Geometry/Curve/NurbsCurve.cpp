@@ -1291,8 +1291,7 @@ void LNLib::NurbsCurve::GlobalInterpolationByTangents(unsigned int degree, const
 
 		if (tangentsIndices[tangentIndex] == i)
 		{
-			std::vector<std::vector<double>> derivatives;
-			Polynomials::BasisFunctionsDerivatives(spanIndex, degree,uk[i],1,knotVector, derivatives);
+			std::vector<std::vector<double>> derivatives = Polynomials::BasisFunctionsDerivatives(spanIndex, degree, 1,knotVector, uk[i]);
 			
 			for (int r = 0; r < 2; r++)
 			{
@@ -1513,11 +1512,11 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(unsigned 
 		std::vector<std::vector<double>> basis;
 		if (dflag == 0)
 		{
-			Polynomials::BasisFunctions(spanIndex, degree, knotVector, uk[i]);
+			basis[i] = Polynomials::BasisFunctions(spanIndex, degree, knotVector, uk[i]);
 		}
 		else
 		{
-			Polynomials::BasisFunctionsDerivatives(spanIndex, degree, uk[i], 1, knotVector, basis);
+			basis = Polynomials::BasisFunctionsDerivatives(spanIndex, degree,1, knotVector, uk[i]);
 		}
 		if (MathUtils::IsGreaterThan(weights[i],0.0))
 		{

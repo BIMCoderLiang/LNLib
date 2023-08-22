@@ -72,13 +72,11 @@ namespace LNLib
 
 			int n = static_cast<int>(knotVectorU.size() - degreeU - 2);
 			int uSpanIndex = Polynomials::GetKnotSpanIndex(degreeU, knotVectorU, uv.GetU());
-			std::vector<std::vector<double>> derivativeBasisFunctionsU;
-			Polynomials::BasisFunctionsDerivatives(uSpanIndex, degreeU, uv.GetU(), du, knotVectorU, derivativeBasisFunctionsU);
+			std::vector<std::vector<double>> derivativeBasisFunctionsU = Polynomials::BasisFunctionsDerivatives(uSpanIndex, degreeU, du, knotVectorU, uv.GetU());
 
 			int m = static_cast<int>(knotVectorV.size() - degreeV - 2);
 			int vSpanIndex = Polynomials::GetKnotSpanIndex(degreeV, knotVectorV, uv.GetV());
-			std::vector<std::vector<double>> derivativeBasisFunctionsV;
-			Polynomials::BasisFunctionsDerivatives(vSpanIndex, degreeV, uv.GetV(), dv, knotVectorV, derivativeBasisFunctionsV);
+			std::vector<std::vector<double>> derivativeBasisFunctionsV = Polynomials::BasisFunctionsDerivatives(vSpanIndex, degreeV, dv, knotVectorV, uv.GetV());
 
 			std::vector<T> temp;
 			temp.resize(degreeV + 1);
