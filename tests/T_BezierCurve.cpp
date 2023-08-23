@@ -15,8 +15,8 @@ TEST(Test_Bezier, All)
 	EXPECT_TRUE(result.IsAlmostEqualTo(XYZ(0.75, 1.0, 0.0)));
 
 	std::vector<XYZW> weightedControlPoints = {XYZW(1,0,0,1),XYZW(1,1,0,1),XYZW(0,2,0,2)};
-	XYZW weightedResult = BezierCurve::GetPointOnRationalCurveByBernstein(2, weightedControlPoints, 0.5);
+	XYZW weightedResult = BezierCurve::GetPointOnCurveByBernstein(2, weightedControlPoints, 0.5);
 	EXPECT_TRUE(weightedResult.ToXYZ(true).IsAlmostEqualTo(XYZ(3.0 / 5, 4.0 / 5, 0)));
-	weightedResult = BezierCurve::GetPointOnRationalCurveByDeCasteljau(2, weightedControlPoints, 0.5);
+	weightedResult = BezierCurve::GetPointOnCurveByDeCasteljau(2, weightedControlPoints, 0.5);
 	EXPECT_TRUE(weightedResult.ToXYZ(true).IsAlmostEqualTo(XYZ(3.0 / 5, 4.0 / 5, 0)));
 }

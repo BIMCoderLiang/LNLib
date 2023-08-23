@@ -30,6 +30,6 @@ TEST(Test_BezierSurface, All)
 	weightedControlPoints[0][1] = XYZW(-1, 1, 0, 1);
 	weightedControlPoints[1][1] = XYZW(-1, 1, 1, 1);
 	weightedControlPoints[2][1] = XYZW(-2, 0, 2, 2);	
-	XYZW weightedResult = BezierSurface::GetPointOnRationalSurfaceByDeCasteljau(degreeU, degreeV, weightedControlPoints, uv);
+	XYZW weightedResult = BezierSurface::GetPointOnSurfaceByDeCasteljau(degreeU, degreeV, weightedControlPoints, uv);
 	EXPECT_TRUE(weightedResult.ToXYZ(true).IsAlmostEqualTo(XYZ(0, 3.0 / 5, 4.0 / 5)));
 }

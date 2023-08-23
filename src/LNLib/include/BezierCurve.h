@@ -10,7 +10,10 @@
 
 #pragma once
 
+#include "Polynomials.h"
+#include "ValidationUtils.h"
 #include "LNLibDefinitions.h"
+#include "LNLibExceptions.h"
 #include <vector>
 
 namespace LNLib
@@ -25,27 +28,51 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page22
 		/// Algorithm A1.4
 		/// Compute point on Bezier curve.
+		/// 
+		/// Rational Bezier Curve:Use XYZW 
 		/// </summary>
-		static XYZ GetPointOnCurveByBernstein(int degree, const std::vector<XYZ>& controlPoints, double paramT);
+		template <typename T>
+		static T GetPointOnCurveByBernstein(int degree, const std::vector<T>& controlPoints, double paramT)
+		{
+			VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+			VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+			VALIDATE_ARGUMENT(ValidationUtils::IsValidBezier(degree, controlPoints.size()), "controlPoints", "ControlPoints count equals degree plus one.");
+			VALIDATE_ARGUMENT_RANGE(paramT, 0.0, 1.0);
+
+			std::vector<double> bernsteinArray = Polynomials::AllBernstein(degree, paramT);
+			T temp;
+			for (int k = 0; k <= degree; k++)
+			{
+				temp += bernsteinArray[k] * controlPoints[k];
+			}
+			return temp;
+		}
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page24
 		/// Algorithm A1.5
 		/// Compute point on Bezier curve.
+		/// 
+		/// Rational Bezier Curve:Use XYZW 
 		/// </summary>
-		static XYZ GetPointOnCurveByDeCasteljau(int degree, const std::vector<XYZ>& controlPoints, double paramT);
+		template <typename T>
+		static T GetPointOnCurveByDeCasteljau(int degree, const std::vector<T>& controlPoints, double paramT)
+		{
+			VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+			VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+			VALIDATE_ARGUMENT(ValidationUtils::IsValidBezier(degree, controlPoints.size()), "controlPoints", "ControlPoints count equals degree plus one.");
+			VALIDATE_ARGUMENT_RANGE(paramT, 0.0, 1.0);
 
-		/// <summary>
-		/// The NURBS Book 2nd Edition Page27
-		/// Compute point on Rational Bezier curve.
-		/// </summary>
-		static XYZW GetPointOnRationalCurveByBernstein(int degree, const std::vector<XYZW>& controlPoints, double paramT);
-
-		/// <summary>
-		/// The NURBS Book 2nd Edition Page33
-		/// Compute point on Rational Bezier curve.
-		/// </summary>
-		static XYZW GetPointOnRationalCurveByDeCasteljau(int degree, const std::vector<XYZW>& controlPoints, double paramT);
+			std::vector<T> temp = controlPoints;
+			for (int k = 1; k <= degree; k++)
+			{
+				for (int i = 0; i <= degree - k; i++)
+				{
+					temp[i] = (1.0 - paramT) * temp[i] + paramT * temp[i + 1];
+				}
+			}
+			return temp[0];
+		}
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page291

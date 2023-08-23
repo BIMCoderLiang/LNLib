@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include "BezierSurface.h"
+#include "BezierCurve.h"
 #include "LNLibDefinitions.h"
 #include <vector>
 
@@ -36,14 +38,28 @@ namespace LNLib {
 		///    .							   
 		///  [n][0]  [n][1] ... ...  [n][m]      
 		/// 
+		/// Rational Bezier Surface:Use XYZW
 		/// </summary>
-		static XYZ GetPointOnSurfaceByDeCasteljau(int degreeU, int degreeV, const std::vector<std::vector<XYZ>>& controlPoints, UV uv);
+		template <typename T>
+		static T GetPointOnSurfaceByDeCasteljau(int degreeU, int degreeV, const std::vector<std::vector<T>>& controlPoints, UV uv)
+		{
+			VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "Degree must greater than zero.");
+			VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "Degree must greater than zero.");
+			VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+			VALIDATE_ARGUMENT(degreeU + 1 == static_cast<int>(controlPoints.size()), "controlPoints", "ControlPoints row size equals degreeU plus one.");
+			VALIDATE_ARGUMENT(degreeV + 1 == static_cast<int>(controlPoints[0].size()), "controlPoints", "ControlPoints column size equals degreeV plus one.");
+			VALIDATE_ARGUMENT_RANGE(uv.GetU(), 0.0, 1.0);
+			VALIDATE_ARGUMENT_RANGE(uv.GetV(), 0.0, 1.0);
 
-		/// <summary>
-		/// The NURBS Book 2nd Edition Page40
-		/// Compute a point on a Rational Bezier surface by the deCasteljau.
-		/// </summary>
-		static XYZW GetPointOnRationalSurfaceByDeCasteljau(int degreeU, int degreeV, const std::vector<std::vector<XYZW>>& controlPoints, UV uv);
+			T point;
+			std::vector<T> temp(degreeU + 1);
+			for (int i = 0; i <= degreeU; i++)
+			{
+				temp[i] = BezierCurve::GetPointOnCurveByDeCasteljau(degreeV, controlPoints[i], uv.GetV());
+			}
+			point = BezierCurve::GetPointOnCurveByDeCasteljau(degreeU, temp, uv.GetU());
+			return point;
+		}
 	};
 }
 
