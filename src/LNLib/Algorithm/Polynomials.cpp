@@ -333,22 +333,30 @@ double LNLib::Polynomials::OneBasisFunction(int spanIndex, int degree, const std
 	{
 		return 1.0;
 	}
-	if (MathUtils::IsLessThan(paramT, knotVector[spanIndex]) || MathUtils::IsGreaterThanOrEqual(paramT, knotVector[spanIndex + degree + 1]))
+	if (MathUtils::IsLessThan(paramT, knotVector[spanIndex]) || 
+		MathUtils::IsGreaterThanOrEqual(paramT, knotVector[spanIndex + degree + 1]))
 	{
 		return 0.0;
 	}
 
-	std::vector<double> N(degree + 1);
-
+	std::vector<double> N(degree + spanIndex + 1, 0.0);
 	for (int j = 0; j <= degree; j++)
 	{
-		N[j] = MathUtils::IsGreaterThanOrEqual(paramT, knotVector[spanIndex + j]) &&
-				MathUtils::IsLessThan(paramT, knotVector[spanIndex + j + 1]) ? 1.0 : 0.0;
+		if (MathUtils::IsGreaterThanOrEqual(paramT, knotVector[spanIndex + j]) &&
+			MathUtils::IsLessThan(paramT, knotVector[spanIndex + j + 1]))
+		{
+			N[j] = 1.0;
+		}
 	}
+	
 	for (int k = 1; k <= degree; k++)
 	{
-		double saved = MathUtils::IsAlmostEqualTo(N[0], 0.0) ? 
-						0.0: ((paramT - knotVector[spanIndex] * N[0])) / (knotVector[spanIndex + k] - knotVector[spanIndex]);
+		double saved = 0.0;
+		if (!MathUtils::IsAlmostEqualTo(N[0], 0.0))
+		{
+			saved = ((paramT - knotVector[spanIndex]) * N[0]) / (knotVector[spanIndex + k] - knotVector[spanIndex]);
+		}
+						
 		for (int j = 0; j < degree - k + 1; j++)
 		{
 			double knotLeft = knotVector[spanIndex + j + 1];
@@ -378,82 +386,82 @@ std::vector<double> LNLib::Polynomials::OneBasisFunctionDerivative(int spanIndex
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
 	VALIDATE_ARGUMENT_RANGE(paramT, knotVector[0], knotVector[knotVector.size() - 1]);
 
-	std::vector<double> derivatives(derivative + 1);
+	std::vector<double> derivatives(derivative + 1, 0.0);
 
 	if (MathUtils::IsLessThan(paramT, knotVector[spanIndex]) ||
 		MathUtils::IsGreaterThanOrEqual(paramT, knotVector[spanIndex + degree + 1]))
 	{
-		for (int k = 0; k <= derivative; k++)
-		{
-			derivatives[k] = 0.0;
-		}
 		return derivatives;
 	}
 
-	std::vector<std::vector<double>> basisFunctions(degree + 1, std::vector<double>(degree + 1));
+	std::vector<std::vector<double>> N(degree + 1, std::vector<double>(degree + 1,0.0));
 
 	for (int j = 0; j <= degree; j++)
 	{
-		basisFunctions[j][0] = MathUtils::IsGreaterThanOrEqual(paramT, knotVector[spanIndex + j]) &&
-								MathUtils::IsLessThan(paramT, knotVector[spanIndex + j + 1]) ?
-								  1.0 : 0.0;
+		if (MathUtils::IsGreaterThanOrEqual(paramT, knotVector[spanIndex + j]) &&
+			MathUtils::IsLessThan(paramT, knotVector[spanIndex + j + 1]))
+		{
+			N[j][0] = 1.0;
+		}
 	}
 	for (int k = 1; k <= degree; k++)
 	{
-		double saved = MathUtils::IsAlmostEqualTo(basisFunctions[0][k - 1], 0.0)?
-						0.0: ((paramT - knotVector[spanIndex] * basisFunctions[0][k - 1])) / (knotVector[spanIndex + k] - knotVector[spanIndex]);
+		double saved = 0.0;
+		if (!MathUtils::IsAlmostEqualTo(N[0][k - 1], 0.0))
+		{
+			saved = ((paramT - knotVector[spanIndex]) * N[0][k - 1]) / (knotVector[spanIndex + k] - knotVector[spanIndex]);
+		}
 		for (int j = 0; j < degree - k + 1; j++)
 		{
 			double knotLeft = knotVector[spanIndex + j + 1];
 			double knotRight = knotVector[spanIndex + j + k + 1];
 
-			if (MathUtils::IsAlmostEqualTo(basisFunctions[j + 1][k - 1], 0.0))
+			if (MathUtils::IsAlmostEqualTo(N[j + 1][k - 1], 0.0))
 			{
-				basisFunctions[j][k] = saved;
+				N[j][k] = saved;
 				saved = 0.0;
 			}
 			else
 			{
-				double temp = basisFunctions[j + 1][k - 1] / (knotRight - knotLeft);
-				basisFunctions[j][k] = saved + (knotRight - paramT) * temp;
+				double temp = N[j + 1][k - 1] / (knotRight - knotLeft);
+				N[j][k] = saved + (knotRight - paramT) * temp;
 				saved = (paramT - knotLeft) * temp;
 			}
 		}
 	}
 
-	derivatives[0] = basisFunctions[0][degree];
-
-	std::vector<double> basisFunctionsDerivative(derivative);
+	derivatives[0] = N[0][degree];
 
 	for (int k = 1; k <= derivative; k++)
 	{
+		std::vector<double> ND(k+1,0.0);
 		for (int j = 0; j <= k; j++)
 		{
-			basisFunctionsDerivative[j] = basisFunctions[j][degree - k];
+			ND[j] = N[j][degree - k];
 		}
 		for (int jj = 1; jj <= k; jj++)
 		{
-			double saved = MathUtils::IsAlmostEqualTo(basisFunctionsDerivative[0], 0.0)?
-							0.0: basisFunctionsDerivative[0] / (knotVector[spanIndex + degree - k + jj]) - knotVector[spanIndex];
+			double saved = MathUtils::IsAlmostEqualTo(ND[0], 0.0)?
+							0.0: ND[0] / (knotVector[spanIndex + degree - k + jj] - knotVector[spanIndex]);
 			for (int j = 0; j < k - jj + 1; j++)
 			{
 				double knotLeft = knotVector[spanIndex + j + 1];
-				double knotRight = knotVector[spanIndex + j + degree + jj + 1];
+				double knotRight = knotVector[spanIndex + j + degree - k + jj + 1];
 
-				if (MathUtils::IsAlmostEqualTo(basisFunctionsDerivative[j + 1], 0.0))
+				if (MathUtils::IsAlmostEqualTo(ND[j + 1], 0.0))
 				{
-					basisFunctionsDerivative[j] = (degree - k + jj) * saved;
+					ND[j] = (degree - k + jj) * saved;
 					saved = 0.0;
 				}
 				else
 				{
-					double temp = basisFunctionsDerivative[j + 1] / (knotRight - knotLeft);
-					basisFunctionsDerivative[j] = (degree - k + jj) * (saved - temp);
+					double temp = ND[j + 1] / (knotRight - knotLeft);
+					ND[j] = (degree - k + jj) * (saved - temp);
 					saved = temp;
 				}
 			}
 		}
-		derivatives[k] = basisFunctionsDerivative[0];
+		derivatives[k] = ND[0];
 	}
 	return derivatives;
 }
