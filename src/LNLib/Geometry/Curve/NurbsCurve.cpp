@@ -26,7 +26,7 @@
 LNLib::XYZ LNLib::NurbsCurve::GetPointOnCurve(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double paramT)
 {
 	XYZW temp = XYZW();
-	temp = BsplineCurve::GetPointOnCurve(controlPoints, degree, paramT, knotVector);
+	temp = BsplineCurve::GetPointOnCurve(degree, knotVector, paramT, controlPoints);
 	return temp.ToXYZ(true);
 }
 
@@ -35,7 +35,7 @@ std::vector<LNLib::XYZ> LNLib::NurbsCurve::ComputeRationalCurveDerivatives(unsig
 	std::vector<LNLib::XYZ> derivatives(derivative + 1);
 
 	std::vector<XYZW> ders;
-	ders = BsplineCurve::ComputeDerivatives(degree, knotVector, controlPoints, paramT, derivative);
+	ders = BsplineCurve::ComputeDerivatives(degree, derivative, knotVector, paramT, controlPoints);
 
 	std::vector<XYZ> Aders;
 	Aders.resize(derivative + 1);

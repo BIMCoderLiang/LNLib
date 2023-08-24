@@ -183,16 +183,12 @@ int LNLib::Polynomials::GetKnotSpanIndex(int degree, const std::vector<double>& 
 std::vector<double> LNLib::Polynomials::BasisFunctions(int spanIndex, int degree, const std::vector<double>& knotVector, double paramT)
 {
 	VALIDATE_ARGUMENT(spanIndex >= 0, "spanIndex", "SpanIndex must greater than or equals zero.");
-	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
 	VALIDATE_ARGUMENT_RANGE(paramT, knotVector[0], knotVector[knotVector.size() - 1]);
 
 	std::vector<double> basisFunctions(degree + 1);
 	basisFunctions[0] = 1.0;
-
-	double saved = 0.0;
-	double temp = 0.0;
 
 	std::vector<double> left(degree + 1);
 	std::vector<double> right(degree + 1);
@@ -202,11 +198,11 @@ std::vector<double> LNLib::Polynomials::BasisFunctions(int spanIndex, int degree
 		left[j] = paramT - knotVector[spanIndex + 1 - j];
 		right[j] = knotVector[spanIndex + j] - paramT;
 
-		saved = 0.0;
+		double saved = 0.0;
 
 		for (int r = 0; r < j; r++)
 		{
-			temp = basisFunctions[r] / (right[r + 1] + left[j - r]);
+			double temp = basisFunctions[r] / (right[r + 1] + left[j - r]);
 			basisFunctions[r] = saved + right[r + 1] * temp;
 			saved = left[j - r] * temp;
 		}

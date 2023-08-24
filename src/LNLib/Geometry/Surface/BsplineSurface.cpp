@@ -47,7 +47,7 @@ void LNLib::BsplineSurface::ComputeControlPointsOfDerivatives(const std::vector<
 			points.emplace_back(controlPoints[i][j]);
 		}
 
-		std::vector<std::vector<XYZ>> temp = BsplineCurve::ComputeControlPointsOfDerivatives(degreeU, knotVectorU, points, du, derMinU, derMaxU);
+		std::vector<std::vector<XYZ>> temp = BsplineCurve::ComputeControlPointsOfDerivatives(degreeU, du, derMinU, derMaxU, knotVectorU, points);
 		for (int k = 0; k <= du; k++)
 		{
 			for (int i = 0; i <= rangeU - k; i++)
@@ -62,7 +62,7 @@ void LNLib::BsplineSurface::ComputeControlPointsOfDerivatives(const std::vector<
 		{
 			std::vector<XYZ> points = controlPointsOfDerivative[k][0][i];
 			int dd = std::min(static_cast<int>(derivative - k), dv);
-			std::vector<std::vector<XYZ>> temp = BsplineCurve::ComputeControlPointsOfDerivatives(degreeV, knotVectorV, points, dd,0,rangeV);
+			std::vector<std::vector<XYZ>> temp = BsplineCurve::ComputeControlPointsOfDerivatives(degreeV, dd, 0, rangeV, knotVectorV, points);
 			for (int l = 1; l <= dd; l++)
 			{
 				for (int j = 0; j < rangeV - l; j++)

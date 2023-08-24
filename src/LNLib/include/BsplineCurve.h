@@ -12,6 +12,8 @@
 
 #include "LNLibDefinitions.h"
 #include "Polynomials.h"
+#include "ValidationUtils.h"
+#include "LNLibExceptions.h"
 #include <vector>
 
 namespace LNLib
@@ -28,15 +30,20 @@ namespace LNLib
 		/// Compute Bspline curve point.
 		/// </summary>
 		template <typename T>
-		static T GetPointOnCurve(const std::vector<T>& controlPoints, unsigned int degree, double paramT, const std::vector<double>& knotVector)
+		static T GetPointOnCurve(int degree, const std::vector<double>& knotVector, double paramT, const std::vector<T>& controlPoints)
 		{
-			T point;
-			int n = static_cast<int>(controlPoints.size() - 1);
-			int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, paramT);
+			VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+			VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+			VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+			VALIDATE_ARGUMENT_RANGE(paramT, knotVector[0], knotVector[knotVector.size() - 1]);
+			VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+			VALIDATE_ARGUMENT(ValidationUtils::IsValidBspline(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
 
+			T point;
+			int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, paramT);
 			std::vector<double> N = Polynomials::BasisFunctions(spanIndex, degree, knotVector, paramT);
 
-			for (int i = 0; i <= static_cast<int>(degree); i++)
+			for (int i = 0; i <= degree; i++)
 			{
 				point += N[i] * controlPoints[spanIndex - degree + i];
 			}
@@ -55,15 +62,21 @@ namespace LNLib
 		/// Compute curve derivatives. (Usually Use)
 		/// </summary>
 		template<typename T>
-		static std::vector<T> ComputeDerivatives(unsigned int degree, const std::vector<double>& knotVector, const std::vector<T>& controlPoints, double paramT, unsigned int derivative)
+		static std::vector<T> ComputeDerivatives(int degree, int derivative, const std::vector<double>& knotVector, double paramT, const std::vector<T>& controlPoints)
 		{
+			VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+			VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+			VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+			VALIDATE_ARGUMENT_RANGE(paramT, knotVector[0], knotVector[knotVector.size() - 1]);
+			VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+			VALIDATE_ARGUMENT(ValidationUtils::IsValidBspline(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+			
 			std::vector<T> derivatives(derivative + 1);
 
 			int du = std::min(derivative, degree);
-			int n = static_cast<int>(controlPoints.size() - 1);
 			int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, paramT);
-
-			std::vector<std::vector<double>> nders = Polynomials::BasisFunctionsDerivatives(spanIndex, degree, du, knotVector, paramT);
+			std::vector<std::vector<double>> nders = 
+				Polynomials::BasisFunctionsDerivatives(spanIndex, degree, du, knotVector, paramT);
 
 			for (int k = 0; k <= du; k++)
 			{
@@ -80,7 +93,7 @@ namespace LNLib
 		/// Algorithm A3.3
 		/// Compute control points of curve derivatives.
 		/// </summary>
-		static std::vector<std::vector<XYZ>> ComputeControlPointsOfDerivatives(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZ>& controlPoints, unsigned int derivative, unsigned int min, unsigned int max);
+		static std::vector<std::vector<XYZ>> ComputeControlPointsOfDerivatives(int degree, int derivative, int minSpanIndex, int maxSpanIndex, const std::vector<double>& knotVector, const std::vector<XYZ>& controlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page99
@@ -88,37 +101,39 @@ namespace LNLib
 		/// Compute curve detivatives.
 		/// </summary>
 		template<typename T>
-		static std::vector<T> ComputeDerivativesByAllBasisFunctions(unsigned int degree, const std::vector<double>& knotVector, const std::vector<T>& controlPoints, double paramT, unsigned int derivative)
+		static std::vector<T> ComputeDerivativesByAllBasisFunctions(int degree, int derivative, const std::vector<double>& knotVector, double paramT, const std::vector<T>& controlPoints)
 		{
-			std::vector<T> derivatives(derivative + 1);
+			VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+			VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+			VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+			VALIDATE_ARGUMENT_RANGE(paramT, knotVector[0], knotVector[knotVector.size() - 1]);
+			VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+			VALIDATE_ARGUMENT(ValidationUtils::IsValidBspline(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
 
 			int du = std::min(derivative, degree);
-			int n = static_cast<int>(controlPoints.size() - 1);
-			int spanIndex = Polynomials::GetKnotSpanIndex(n, degree, paramT, knotVector);
-
-			std::vector<std::vector<double>> allBasisFunctions;
-			allBasisFunctions.resize(degree + 1);
-			for (int i = 0; i <= static_cast<int>(degree); i++)
+			std::vector<T> derivatives(derivative + 1);
+			int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, paramT);
+			std::vector<std::vector<double>> N(degree + 1, std::vector<double>(degree + 1));
+			for (int i = 0; i < degree + 1; i++)
 			{
-				allBasisFunctions[i].resize(degree + 1);
+				auto basis = Polynomials::BasisFunctions(spanIndex, i, knotVector, paramT);
+				for (int j = 0; j < i + 1; j++)
+				{
+					N[j][i] = basis[j];
+				}
 			}
-			for (int i = 0; i <= static_cast<int>(degree); i++)
-			{
-				std::vector<double> basisFunctions;
-				Polynomials::BasisFunctions(spanIndex, i, paramT, knotVector, basisFunctions);
-				allBasisFunctions[i] = basisFunctions;
-			}
-
-			std::vector<std::vector<T>> controlPointsOfDerivative;
-			ComputeControlPointsOfDerivatives(degree, knotVector, controlPoints, du, spanIndex - degree, spanIndex, controlPointsOfDerivative);
+			
+			std::vector<std::vector<T>> PK = ComputeControlPointsOfDerivatives(degree, du, spanIndex - degree, spanIndex, knotVector, controlPoints);
 
 			for (int k = 0; k <= du; k++)
 			{
-				for (int j = 0; j <= static_cast<int>(degree) - k; j++)
+				for (int j = 0; j <= degree - k; j++)
 				{
-					derivatives[k] += allBasisFunctions[j][degree - k] * controlPointsOfDerivative[k][j];
+					derivatives[k] += N[j][degree - k] * PK[k][j];
 				}
 			}
+
+			return derivatives;
 		}
 	};
 }

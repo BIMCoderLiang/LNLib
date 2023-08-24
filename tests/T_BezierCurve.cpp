@@ -6,7 +6,7 @@
 
 using namespace LNLib;
 
-TEST(Test_Bezier, All)
+TEST(Test_BezierCurve, All)
 {
 	std::vector<XYZ> controlPoints = { XYZ(1,0,0),XYZ(1,1,0),XYZ(0,2,0) };
 	XYZ result = BezierCurve::GetPointOnCurveByBernstein(2, controlPoints, 0.5);
