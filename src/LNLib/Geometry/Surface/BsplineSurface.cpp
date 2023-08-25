@@ -18,28 +18,28 @@
 #include "ValidationUtils.h"
 #include <algorithm>
 
-void LNLib::BsplineSurface::ComputeControlPointsOfDerivatives(const std::vector<std::vector<XYZ>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, unsigned int derMinU, unsigned int derMaxU, unsigned int derMinV, unsigned int derMaxV, unsigned int derivative,  std::vector<std::vector<std::vector<std::vector<XYZ>>>>& controlPointsOfDerivative)
+std::vector<std::vector<std::vector<std::vector<LNLib::XYZ>>>> LNLib::BsplineSurface::ComputeControlPointsOfDerivatives(const std::vector<std::vector<XYZ>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, int degreeU, int degreeV, UV uv, int minSpanIndexU, int maxSpanIndexU, int minSpanIndexV, int maxSpanIndexV, int derivative)
 {
-	controlPointsOfDerivative.resize(derivative + 1);
-	for (int k = 0; k <= static_cast<int>(derivative); k++)
+	std::vector<std::vector<std::vector<std::vector<LNLib::XYZ>>>> controlPointsOfDerivative(derivative + 1);
+	for (int k = 0; k <= derivative; k++)
 	{
 		controlPointsOfDerivative[k].resize(derivative + 1);
-		for (int l = 0; l <= static_cast<int>(derivative); l++)
+		for (int l = 0; l <= derivative; l++)
 		{
-			controlPointsOfDerivative[k][l].resize(derMaxU - derivative - derMinU + 1);
-			for (int i = 0; i <= static_cast<int>(derMaxU - derivative - derMinU); i++)
+			controlPointsOfDerivative[k][l].resize(maxSpanIndexU - derivative - minSpanIndexU + 1);
+			for (int i = 0; i <= maxSpanIndexU - derivative - minSpanIndexU; i++)
 			{
-				controlPointsOfDerivative[k][l][i].resize(derMaxV - derivative - derMinV + 1);
+				controlPointsOfDerivative[k][l][i].resize(maxSpanIndexV - derivative - minSpanIndexV + 1);
 			}
 		}
 	}
 
 	int du = std::min(derivative, degreeU);
 	int dv = std::min(derivative, degreeV);
-	int rangeU = derMaxU - derMinU;
-	int rangeV = derMaxV - derMinV;
+	int rangeU = maxSpanIndexU - minSpanIndexU;
+	int rangeV = maxSpanIndexV - minSpanIndexV;
 
-	for (int j = derMinV; j <= static_cast<int>(derMaxV); j++)
+	for (int j = minSpanIndexV; j <= maxSpanIndexV; j++)
 	{
 		std::vector<XYZ> points;
 		for (int i = 0; i < controlPoints.size(); i++)
@@ -47,12 +47,12 @@ void LNLib::BsplineSurface::ComputeControlPointsOfDerivatives(const std::vector<
 			points.emplace_back(controlPoints[i][j]);
 		}
 
-		std::vector<std::vector<XYZ>> temp = BsplineCurve::ComputeControlPointsOfDerivatives(degreeU, du, derMinU, derMaxU, knotVectorU, points);
+		std::vector<std::vector<XYZ>> temp = BsplineCurve::ComputeControlPointsOfDerivatives(degreeU, du, minSpanIndexU, maxSpanIndexU, knotVectorU, points);
 		for (int k = 0; k <= du; k++)
 		{
 			for (int i = 0; i <= rangeU - k; i++)
 			{
-				controlPointsOfDerivative[k][0][i][j - derMinV] = temp[k][i];
+				controlPointsOfDerivative[k][0][i][j - minSpanIndexV] = temp[k][i];
 			}
 		}
 	}
@@ -72,4 +72,5 @@ void LNLib::BsplineSurface::ComputeControlPointsOfDerivatives(const std::vector<
 			}
 		}
 	}
+	return controlPointsOfDerivative;
 }

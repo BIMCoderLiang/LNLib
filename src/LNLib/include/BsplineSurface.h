@@ -28,29 +28,27 @@ namespace LNLib
 		/// Compute surface point.
 		/// </summary>
 		template <typename T>
-		static void GetPointOnSurface(const std::vector<std::vector<T>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, T& point)
+		static T GetPointOnSurface(const std::vector<std::vector<T>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, int degreeU, int degreeV, UV uv)
 		{
-			int n = static_cast<int>(knotVectorU.size() - degreeU - 2);
 			int uSpanIndex = Polynomials::GetKnotSpanIndex(degreeU, knotVectorU, uv.GetU());
-
 			std::vector<double> basisFunctionsU = Polynomials::BasisFunctions(uSpanIndex, degreeU, knotVectorU, uv.GetU());
 
-			int m = static_cast<int>(knotVectorV.size() - degreeV - 2);
 			int vSpanIndex = Polynomials::GetKnotSpanIndex(degreeV, knotVectorV, uv.GetV());
-
 			std::vector<double> basisFunctionsV = Polynomials::BasisFunctions(vSpanIndex, degreeV, knotVectorV, uv.GetV());
 
 			int uind = uSpanIndex - degreeU;
-			for (int l = 0; l <= static_cast<int>(degreeV); l++)
+			T point;
+			for (int l = 0; l <= degreeV; l++)
 			{
 				T temp = T();
 				int vind = vSpanIndex - degreeV + 1;
-				for (int k = 0; k <= static_cast<int>(degreeU); k++)
+				for (int k = 0; k <= degreeU; k++)
 				{
 					temp += basisFunctionsU[k] * controlPoints[uind + k][vind];
 				}
 				point += basisFunctionsV[l] * temp;
 			}
+			return point;
 		}
 
 		/// <summary>
@@ -59,55 +57,48 @@ namespace LNLib
 		/// Compute surface derivatives. (Usually Use)
 		/// </summary>
 		template <typename T>
-		static void ComputeDerivatives(const std::vector<std::vector<T>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, unsigned int derivative, std::vector<std::vector<T>>& derivatives)		
+		static std::vector<std::vector<T>> ComputeDerivatives(const std::vector<std::vector<T>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, int degreeU, int degreeV, UV uv, int derivative)
 		{
-			derivatives.resize(derivative + 1);
-			for (int i = 0; i <= static_cast<int>(derivative); i++)
-			{
-				derivatives[i].resize(derivative + 1);
-			}
+			std::vector<std::vector<T>> derivatives(derivative + 1, std::vector<T>(derivative + 1));
 
 			int du = std::min(derivative, degreeU);
 			int dv = std::min(derivative, degreeV);
 
-			int n = static_cast<int>(knotVectorU.size() - degreeU - 2);
 			int uSpanIndex = Polynomials::GetKnotSpanIndex(degreeU, knotVectorU, uv.GetU());
 			std::vector<std::vector<double>> derivativeBasisFunctionsU = Polynomials::BasisFunctionsDerivatives(uSpanIndex, degreeU, du, knotVectorU, uv.GetU());
 
-			int m = static_cast<int>(knotVectorV.size() - degreeV - 2);
 			int vSpanIndex = Polynomials::GetKnotSpanIndex(degreeV, knotVectorV, uv.GetV());
 			std::vector<std::vector<double>> derivativeBasisFunctionsV = Polynomials::BasisFunctionsDerivatives(vSpanIndex, degreeV, dv, knotVectorV, uv.GetV());
 
-			std::vector<T> temp;
-			temp.resize(degreeV + 1);
+			std::vector<T> temp(degreeV + 1);
 
 			for (int k = 0; k <= du; k++)
 			{
-				for (int s = 0; s <= static_cast<int>(degreeV); s++)
+				for (int s = 0; s <= degreeV; s++)
 				{
-					for (int r = 0; r <= static_cast<int>(degreeU); r++)
+					for (int r = 0; r <= degreeU; r++)
 					{
 						temp[s] += derivativeBasisFunctionsU[k][r] * controlPoints[uSpanIndex - degreeU + r][vSpanIndex - degreeV + s];
 					}
-					int dd = std::min(static_cast<int>(derivative) - k, dv);
+					int dd = std::min(derivative - k, dv);
 					for (int l = 0; l <= dd; l++)
 					{
-						for (int s = 0; s <= static_cast<int>(degreeV); s++)
+						for (int s = 0; s <= degreeV; s++)
 						{
 							derivatives[k][l] += derivativeBasisFunctionsV[l][s] * temp[s];
 						}
 					}
 				}
 			}
+			return derivatives;
 		}
-
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page114.
 		/// Algorithm A3.7
 		/// Compute control points of derivative surfaces.
 		/// </summary>
-		static void ComputeControlPointsOfDerivatives(const std::vector<std::vector<XYZ>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, unsigned int derMinU, unsigned int derMaxU, unsigned int derMinV, unsigned int derMaxV, unsigned int derivative, std::vector<std::vector<std::vector<std::vector<XYZ>>>>& controlPointsOfDerivative);
+		static std::vector<std::vector<std::vector<std::vector<XYZ>>>> ComputeControlPointsOfDerivatives(const std::vector<std::vector<XYZ>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, int degreeU, int degreeV, UV uv, int minSpanIndexU, int maxSpanIndexU, int minSpanIndexV, int maxSpanIndexV, int derivative);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page115.
@@ -115,51 +106,41 @@ namespace LNLib
 		/// Compute surface derivatives.
 		/// </summary>
 		template <typename T>
-		static void ComputeDerivativesByAllBasisFunctions(const std::vector<std::vector<T>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, unsigned int derivative, std::vector<std::vector<T>>& derivatives)
+		static std::vector<std::vector<T>> ComputeDerivativesByAllBasisFunctions(const std::vector<std::vector<T>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, unsigned int derivative)
 		{
-			derivatives.resize(derivative + 1);
-			for (int i = 0; i <= derivative; i++)
-			{
-				derivatives[i].resize(derivative + 1);
-			}
+			std::vector<std::vector<T>> derivatives(derivative + 1, std::vector<T>(derivative + 1));
 
 			int du = std::min(derivative, degreeU);
 			int dv = std::min(derivative, degreeV);
 
-			int n = static_cast<int>(knotVectorU.size() - degreeU) - 2;
-			int uSpanIndex = Polynomials::GetKnotSpanIndex(n, degreeU, uv.GetU(), knotVectorU);
-			std::vector<std::vector<double>> allBasisFunctionsU;
-			allBasisFunctionsU.resize(degreeU + 1);
-			for (int i = 0; i <= static_cast<int>(degreeU); i++)
+			int uSpanIndex = Polynomials::GetKnotSpanIndex(degreeU, uv.GetU(), knotVectorU);
+			std::vector<std::vector<double>> allBasisFunctionsU(degreeU + 1);
+
+			for (int i = 0; i <= degreeU; i++)
 			{
-				std::vector<double> basisFunctions;
-				Polynomials::BasisFunctions(uSpanIndex, i, uv.GetU(), knotVectorU, basisFunctions);
+				std::vector<double> basisFunctions = Polynomials::BasisFunctions(uSpanIndex, i, knotVectorU, uv.GetU());
 				allBasisFunctionsU[i] = basisFunctions;
 			}
 
-			int m = static_cast<int>(knotVectorV.size() - degreeV) - 2;
-			int vSpanIndex = Polynomials::GetKnotSpanIndex(m, degreeV, uv.GetV(), knotVectorV);
-			std::vector<std::vector<double>> allBasisFunctionsV;
-			allBasisFunctionsV.resize(degreeV + 1);
-			for (int i = 0; i <= static_cast<int>(degreeV); i++)
+			int vSpanIndex = Polynomials::GetKnotSpanIndex(degreeV, uv.GetV(), knotVectorV);
+			std::vector<std::vector<double>> allBasisFunctionsV(degreeV + 1);
+			for (int i = 0; i <= degreeV; i++)
 			{
-				std::vector<double> basisFunctions;
-				Polynomials::BasisFunctions(vSpanIndex, i, uv.GetV(), knotVectorV, basisFunctions);
+				std::vector<double> basisFunctions = Polynomials::BasisFunctions(vSpanIndex, i, knotVectorV, uv.GetV());
 				allBasisFunctionsV[i] = basisFunctions;
 			}
 
-			std::vector<std::vector<std::vector<std::vector<T>>>> controlPointsOfDerivative;
-			ComputeControlPointsOfDerivatives(controlPoints, knotVectorU, knotVectorV, degreeU, degreeV, uv, uSpanIndex - degreeU, uSpanIndex, vSpanIndex - degreeV, vSpanIndex, derivative, controlPointsOfDerivative);
+			std::vector<std::vector<std::vector<std::vector<T>>>> controlPointsOfDerivative = ComputeControlPointsOfDerivatives(controlPoints, knotVectorU, knotVectorV, degreeU, degreeV, uv, uSpanIndex - degreeU, uSpanIndex, vSpanIndex - degreeV, vSpanIndex, derivative);
 
 			for (int k = 0; k <= du; k++)
 			{
-				int dd = std::min(static_cast<int>(derivative - k), dv);
+				int dd = std::min(derivative - k, dv);
 				for (int l = 0; l <= dd; l++)
 				{
-					for (int i = 0; i <= static_cast<int>(degreeV) - l; i++)
+					for (int i = 0; i <= degreeV - l; i++)
 					{
 						T temp = T();
-						for (int j = 0; j <= static_cast<int>(degreeU) - k; j++)
+						for (int j = 0; j <= degreeU - k; j++)
 						{
 							temp += allBasisFunctionsU[j][degreeU - k] * controlPointsOfDerivative[k][l][j][i];
 						}
@@ -167,6 +148,8 @@ namespace LNLib
 					}
 				}
 			}
+
+			return derivatives;
 		}
 	};
 }

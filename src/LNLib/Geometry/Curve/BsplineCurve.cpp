@@ -26,6 +26,7 @@ int LNLib::BsplineCurve::GetContinuity(int degree, const std::vector<double>& kn
 std::vector<std::vector<LNLib::XYZ>> LNLib::BsplineCurve::ComputeControlPointsOfDerivatives(int degree, int derivative, int minSpanIndex, int maxSpanIndex, const std::vector<double>& knotVector, const std::vector<XYZ>& controlPoints)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT_RANGE(minSpanIndex, 0, maxSpanIndex);
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
 	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");

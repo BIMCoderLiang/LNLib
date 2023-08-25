@@ -67,7 +67,7 @@ double Polynomials::Bernstein(int index, int degree, double paramT)
 		return 1.0;
 	}
 
-	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(degree >= 0, "degree", "Degree must greater than or equals zero.");
 	VALIDATE_ARGUMENT_RANGE(paramT, 0.0, 1.0);
 	
 	std::vector<double> temp(degree + 1,0.0);
@@ -147,7 +147,7 @@ int LNLib::Polynomials::GetKnotMultiplicity(const std::vector<double>& knotVecto
 
 int LNLib::Polynomials::GetKnotSpanIndex(int degree, const std::vector<double>& knotVector, double paramT)
 {
-	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(degree >= 0, "degree", "Degree must greater than or equals zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
 	VALIDATE_ARGUMENT_RANGE(paramT, knotVector[0], knotVector[knotVector.size() - 1]);
@@ -183,6 +183,7 @@ int LNLib::Polynomials::GetKnotSpanIndex(int degree, const std::vector<double>& 
 std::vector<double> LNLib::Polynomials::BasisFunctions(int spanIndex, int degree, const std::vector<double>& knotVector, double paramT)
 {
 	VALIDATE_ARGUMENT(spanIndex >= 0, "spanIndex", "SpanIndex must greater than or equals zero.");
+	VALIDATE_ARGUMENT(degree >= 0, "degree", "Degree must greater than or equals zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
 	VALIDATE_ARGUMENT_RANGE(paramT, knotVector[0], knotVector[knotVector.size() - 1]);
