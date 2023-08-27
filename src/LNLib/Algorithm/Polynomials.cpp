@@ -537,6 +537,12 @@ void LNLib::Polynomials::PowerToBezierMatrix(unsigned int degree, const std::vec
 	}
 }
 
+int LNLib::Polynomials::GetContinuity(int degree, const std::vector<double>& knotVector, double knot)
+{
+	int multi = GetKnotMultiplicity(knotVector, knot);
+	return degree - multi;
+}
+
 void LNLib::Polynomials::GetInsertedKnotElement(const std::vector<double> knotVector0, const std::vector<double> knotVector1, std::vector<double>& insertElements0, std::vector<double>& insertElements1)
 {
 	std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> map0 = GetKnotMultiplicityMap(knotVector0);

@@ -101,6 +101,12 @@ namespace LNLib
 		static std::vector<double> OneBasisFunctionDerivative(int spanIndex, int degree, int derivative, const std::vector<double>& knotVector, double paramT);
 
 		/// <summary>
+		/// The NURBS Book 2nd Edition Page88
+		/// Compute the continuity.
+		/// </summary>
+		static int GetContinuity(int degree, const std::vector<double>& knotVector, double knot);
+
+		/// <summary>
 		/// 
 		/// </summary>
 		static void GetInsertedKnotElement(const std::vector<double> knotVector0, const std::vector<double> knotVector1, std::vector<double>& insertElements0, std::vector<double>& insertElements1);

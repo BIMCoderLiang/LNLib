@@ -62,7 +62,7 @@ namespace LNLib
 
 void LNLib::NurbsSurface::GetPointOnSurface(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, XYZ& point)
 {
-	XYZW sw = BsplineSurface::GetPointOnSurface(controlPoints, knotVectorU, knotVectorV, degreeU, degreeV, uv);
+	XYZW sw = BsplineSurface::GetPointOnSurface(degreeU, degreeV, knotVectorU, knotVectorV, uv, controlPoints);
 	point = sw.ToXYZ(true);
 }
 
@@ -70,7 +70,7 @@ void LNLib::NurbsSurface::GetPointOnSurface(const std::vector<std::vector<XYZW>>
 void LNLib::NurbsSurface::ComputeRationalSurfaceDerivatives(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, unsigned int derivative, std::vector<std::vector<XYZ>>& derivatives)
 {
 	
-	std::vector<std::vector<XYZW>> ders = BsplineSurface::ComputeDerivatives(controlPoints, knotVectorU, knotVectorV, degreeU, degreeV, uv, derivative);
+	std::vector<std::vector<XYZW>> ders = BsplineSurface::ComputeDerivatives(degreeU, degreeV, derivative, knotVectorU, knotVectorV, uv, controlPoints);
 
 	std::vector<std::vector<XYZ>> Aders;
 	for (int i = 0; i <= static_cast<int>(degreeU); i++)

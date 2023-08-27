@@ -18,21 +18,26 @@
 #include "ValidationUtils.h"
 #include <algorithm>
 
-std::vector<std::vector<std::vector<std::vector<LNLib::XYZ>>>> LNLib::BsplineSurface::ComputeControlPointsOfDerivatives(const std::vector<std::vector<XYZ>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, int degreeU, int degreeV, UV uv, int minSpanIndexU, int maxSpanIndexU, int minSpanIndexV, int maxSpanIndexV, int derivative)
+std::vector<std::vector<std::vector<std::vector<LNLib::XYZ>>>> LNLib::BsplineSurface::ComputeControlPointsOfDerivatives(int degreeU, int degreeV, int derivative, int minSpanIndexU, int maxSpanIndexU, int minSpanIndexV, int maxSpanIndexV, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, UV uv, const std::vector<std::vector<XYZ>>& controlPoints)
 {
-	std::vector<std::vector<std::vector<std::vector<LNLib::XYZ>>>> controlPointsOfDerivative(derivative + 1);
-	for (int k = 0; k <= derivative; k++)
-	{
-		controlPointsOfDerivative[k].resize(derivative + 1);
-		for (int l = 0; l <= derivative; l++)
-		{
-			controlPointsOfDerivative[k][l].resize(maxSpanIndexU - derivative - minSpanIndexU + 1);
-			for (int i = 0; i <= maxSpanIndexU - derivative - minSpanIndexU; i++)
-			{
-				controlPointsOfDerivative[k][l][i].resize(maxSpanIndexV - derivative - minSpanIndexV + 1);
-			}
-		}
-	}
+	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(degreeV > 0, "degreeU", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(derivative >= 0, "derivative", "derivative must greater than or equals zero.");
+	VALIDATE_ARGUMENT_RANGE(minSpanIndexU, 0, maxSpanIndexU);
+	VALIDATE_ARGUMENT_RANGE(minSpanIndexV, 0, maxSpanIndexV);
+	VALIDATE_ARGUMENT(knotVectorU.size() > 0, "knotVectorU", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorU), "knotVectorU", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT_RANGE(uv.GetU(), knotVectorU[0], knotVectorU[knotVectorU.size() - 1]);
+	VALIDATE_ARGUMENT(knotVectorV.size() > 0, "knotVectorV", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorV), "knotVectorV", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT_RANGE(uv.GetV(), knotVectorV[0], knotVectorV[knotVectorV.size() - 1]);
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidBspline(degreeU, knotVectorU.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidBspline(degreeV, knotVectorV.size(), controlPoints[0].size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+	std::vector<std::vector<std::vector<std::vector<LNLib::XYZ>>>> controlPointsOfDerivative(derivative + 1, 
+		std::vector<std::vector<std::vector<LNLib::XYZ>>>(maxSpanIndexU - minSpanIndexU + 1, 
+			std::vector<std::vector<LNLib::XYZ>>(maxSpanIndexV - minSpanIndexV + 1)));
 
 	int du = std::min(derivative, degreeU);
 	int dv = std::min(derivative, degreeV);
@@ -61,7 +66,7 @@ std::vector<std::vector<std::vector<std::vector<LNLib::XYZ>>>> LNLib::BsplineSur
 		for (int i = 0; i <= rangeU - k; i++)
 		{
 			std::vector<XYZ> points = controlPointsOfDerivative[k][0][i];
-			int dd = std::min(static_cast<int>(derivative - k), dv);
+			int dd = std::min(derivative - k, dv);
 			std::vector<std::vector<XYZ>> temp = BsplineCurve::ComputeControlPointsOfDerivatives(degreeV, dd, 0, rangeV, knotVectorV, points);
 			for (int l = 1; l <= dd; l++)
 			{
