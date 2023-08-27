@@ -59,7 +59,7 @@ namespace LNLib
 		static std::vector<T> ComputeDerivatives(int degree, int derivative, const std::vector<double>& knotVector, double paramT, const std::vector<T>& controlPoints)
 		{
 			VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
-			VALIDATE_ARGUMENT(derivative >= 0, "derivative", "derivative must greater than or equals zero.");
+			VALIDATE_ARGUMENT(derivative > 0, "derivative", "derivative must greater than zero.");
 			VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 			VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
 			VALIDATE_ARGUMENT_RANGE(paramT, knotVector[0], knotVector[knotVector.size() - 1]);
@@ -92,7 +92,7 @@ namespace LNLib
 		static std::vector<std::vector<T>> ComputeControlPointsOfDerivatives(int degree, int derivative, int minSpanIndex, int maxSpanIndex, const std::vector<double>& knotVector, const std::vector<T>& controlPoints)
 		{
 			VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
-			VALIDATE_ARGUMENT(derivative >= 0, "derivative", "derivative must greater than or equals zero.");
+			VALIDATE_ARGUMENT(derivative > 0, "derivative", "derivative must greater than zero.");
 			VALIDATE_ARGUMENT_RANGE(minSpanIndex, 0, maxSpanIndex);
 			VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 			VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -126,14 +126,13 @@ namespace LNLib
 		static std::vector<T> ComputeDerivativesByAllBasisFunctions(int degree, int derivative, const std::vector<double>& knotVector, double paramT, const std::vector<T>& controlPoints)
 		{
 			VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
-			VALIDATE_ARGUMENT(derivative >= 0, "derivative", "derivative must greater than or equals zero.");
+			VALIDATE_ARGUMENT(derivative > 0, "derivative", "derivative must greater than zero.");
 			VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 			VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
 			VALIDATE_ARGUMENT_RANGE(paramT, knotVector[0], knotVector[knotVector.size() - 1]);
 			VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
 			VALIDATE_ARGUMENT(ValidationUtils::IsValidBspline(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
 
-			int du = std::min(derivative, degree);
 			std::vector<T> derivatives(derivative + 1);
 			int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, paramT);
 			std::vector<std::vector<double>> N(degree + 1, std::vector<double>(degree + 1));
@@ -145,7 +144,8 @@ namespace LNLib
 					N[j][i] = basis[j];
 				}
 			}
-			
+
+			int du = std::min(derivative, degree);
 			std::vector<std::vector<T>> PK = ComputeControlPointsOfDerivatives(degree, du, spanIndex - degree, spanIndex, knotVector, controlPoints);
 
 			for (int k = 0; k <= du; k++)
