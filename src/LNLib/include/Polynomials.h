@@ -107,6 +107,12 @@ namespace LNLib
 		static int GetContinuity(int degree, const std::vector<double>& knotVector, double knot);
 
 		/// <summary>
+		/// The NURBS Book 2nd Edition Page99
+		/// A simple modification of A2.2 to return all nonzero basis functions of all degrees from 0 up to degree.
+		/// </summary>
+		static std::vector<std::vector<double>> AllBasisFunctions(int spanIndex, int degree, const std::vector<double>& knotVector, double knot);
+
+		/// <summary>
 		/// 
 		/// </summary>
 		static void GetInsertedKnotElement(const std::vector<double> knotVector0, const std::vector<double> knotVector1, std::vector<double>& insertElements0, std::vector<double>& insertElements1);

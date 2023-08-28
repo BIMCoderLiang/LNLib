@@ -135,15 +135,7 @@ namespace LNLib
 
 			std::vector<T> derivatives(derivative + 1);
 			int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, paramT);
-			std::vector<std::vector<double>> N(degree + 1, std::vector<double>(degree + 1));
-			for (int i = 0; i < degree + 1; i++)
-			{
-				auto basis = Polynomials::BasisFunctions(spanIndex, i, knotVector, paramT);
-				for (int j = 0; j < i + 1; j++)
-				{
-					N[j][i] = basis[j];
-				}
-			}
+			std::vector<std::vector<double>> N = Polynomials::AllBasisFunctions(spanIndex, degree, knotVector, paramT);
 
 			int du = std::min(derivative, degree);
 			std::vector<std::vector<T>> PK = ComputeControlPointsOfDerivatives(degree, du, spanIndex - degree, spanIndex, knotVector, controlPoints);

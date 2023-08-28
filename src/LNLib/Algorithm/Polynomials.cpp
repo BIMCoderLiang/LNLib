@@ -463,6 +463,33 @@ std::vector<double> LNLib::Polynomials::OneBasisFunctionDerivative(int spanIndex
 	return derivatives;
 }
 
+int LNLib::Polynomials::GetContinuity(int degree, const std::vector<double>& knotVector, double knot)
+{
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	int multi = GetKnotMultiplicity(knotVector, knot);
+	return degree - multi;
+}
+
+std::vector<std::vector<double>> LNLib::Polynomials::AllBasisFunctions(int spanIndex, int degree, const std::vector<double>& knotVector, double knot)
+{
+	VALIDATE_ARGUMENT(spanIndex >= 0, "spanIndex", "SpanIndex must greater than or equals zero.");
+	VALIDATE_ARGUMENT(degree >= 0, "degree", "Degree must greater than or equals zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT_RANGE(knot, knotVector[0], knotVector[knotVector.size() - 1]);
+
+	std::vector<std::vector<double>> result(degree + 1, std::vector<double>(degree + 1));
+	for (int i = 0; i <= degree; i++)
+	{
+		std::vector<double> basis = Polynomials::BasisFunctions(spanIndex, i, knotVector, knot);
+		for (int j = 0; j <= i; j++)
+		{
+			result[j][i] = basis[j];
+		}
+	}
+	return result;
+}
+
 void LNLib::Polynomials::BezierToPowerMatrix(unsigned int degree, std::vector<std::vector<double>>& matrix)
 {
 	matrix.resize(degree+1);
@@ -537,11 +564,7 @@ void LNLib::Polynomials::PowerToBezierMatrix(unsigned int degree, const std::vec
 	}
 }
 
-int LNLib::Polynomials::GetContinuity(int degree, const std::vector<double>& knotVector, double knot)
-{
-	int multi = GetKnotMultiplicity(knotVector, knot);
-	return degree - multi;
-}
+
 
 void LNLib::Polynomials::GetInsertedKnotElement(const std::vector<double> knotVector0, const std::vector<double> knotVector1, std::vector<double>& insertElements0, std::vector<double>& insertElements1)
 {

@@ -12,6 +12,7 @@
 #include "LNLibDefinitions.h"
 #include "Polynomials.h"
 #include "UV.h"
+#include "BsplineCurve.h"
 #include "ValidationUtils.h"
 #include "LNLibExceptions.h"
 #include <vector>
@@ -45,22 +46,22 @@ namespace LNLib
 			VALIDATE_ARGUMENT(ValidationUtils::IsValidBspline(degreeV, knotVectorV.size(), controlPoints[0].size()), "controlPoints", "Arguments must fit: m = n + p + 1");
 
 			int uSpanIndex = Polynomials::GetKnotSpanIndex(degreeU, knotVectorU, uv.GetU());
-			std::vector<double> basisFunctionsU = Polynomials::BasisFunctions(uSpanIndex, degreeU, knotVectorU, uv.GetU());
+			std::vector<double> Nu = Polynomials::BasisFunctions(uSpanIndex, degreeU, knotVectorU, uv.GetU());
 
 			int vSpanIndex = Polynomials::GetKnotSpanIndex(degreeV, knotVectorV, uv.GetV());
-			std::vector<double> basisFunctionsV = Polynomials::BasisFunctions(vSpanIndex, degreeV, knotVectorV, uv.GetV());
+			std::vector<double> Nv = Polynomials::BasisFunctions(vSpanIndex, degreeV, knotVectorV, uv.GetV());
 
 			int uind = uSpanIndex - degreeU;
 			T point;
 			for (int l = 0; l <= degreeV; l++)
 			{
-				T temp = T();
-				int vind = vSpanIndex - degreeV + 1;
+				T temp;
+				int vind = vSpanIndex - degreeV + l;
 				for (int k = 0; k <= degreeU; k++)
 				{
-					temp += basisFunctionsU[k] * controlPoints[uind + k][vind];
+					temp += Nu[k] * controlPoints[uind + k][vind];
 				}
-				point += basisFunctionsV[l] * temp;
+				point += Nv[l] * temp;
 			}
 			return point;
 		}
@@ -88,14 +89,14 @@ namespace LNLib
 
 			std::vector<std::vector<T>> derivatives(derivative + 1, std::vector<T>(derivative + 1));
 
-			int du = std::min(derivative, degreeU);
-			int dv = std::min(derivative, degreeV);
-
 			int uSpanIndex = Polynomials::GetKnotSpanIndex(degreeU, knotVectorU, uv.GetU());
-			std::vector<std::vector<double>> derivativeBasisFunctionsU = Polynomials::BasisFunctionsDerivatives(uSpanIndex, degreeU, du, knotVectorU, uv.GetU());
+			std::vector<std::vector<double>> Nu = Polynomials::BasisFunctionsDerivatives(uSpanIndex, degreeU, derivative, knotVectorU, uv.GetU());
 
 			int vSpanIndex = Polynomials::GetKnotSpanIndex(degreeV, knotVectorV, uv.GetV());
-			std::vector<std::vector<double>> derivativeBasisFunctionsV = Polynomials::BasisFunctionsDerivatives(vSpanIndex, degreeV, dv, knotVectorV, uv.GetV());
+			std::vector<std::vector<double>> Nv = Polynomials::BasisFunctionsDerivatives(vSpanIndex, degreeV, derivative, knotVectorV, uv.GetV());
+
+			int du = std::min(derivative, degreeU);
+			int dv = std::min(derivative, degreeV);
 
 			std::vector<T> temp(degreeV + 1);
 
@@ -103,17 +104,18 @@ namespace LNLib
 			{
 				for (int s = 0; s <= degreeV; s++)
 				{
+					temp[s] = T();
 					for (int r = 0; r <= degreeU; r++)
 					{
-						temp[s] += derivativeBasisFunctionsU[k][r] * controlPoints[uSpanIndex - degreeU + r][vSpanIndex - degreeV + s];
+						temp[s] += Nu[k][r] * controlPoints[uSpanIndex - degreeU + r][vSpanIndex - degreeV + s];
 					}
-					int dd = std::min(derivative - k, dv);
-					for (int l = 0; l <= dd; l++)
+				}
+				int dd = std::min(derivative, dv);
+				for (int l = 0; l <= dd; l++)
+				{
+					for (int s = 0; s <= degreeV; s++)
 					{
-						for (int s = 0; s <= degreeV; s++)
-						{
-							derivatives[k][l] += derivativeBasisFunctionsV[l][s] * temp[s];
-						}
+						derivatives[k][l] += Nv[l][s] * temp[s];
 					}
 				}
 			}
@@ -143,9 +145,9 @@ namespace LNLib
 			VALIDATE_ARGUMENT(ValidationUtils::IsValidBspline(degreeU, knotVectorU.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
 			VALIDATE_ARGUMENT(ValidationUtils::IsValidBspline(degreeV, knotVectorV.size(), controlPoints[0].size()), "controlPoints", "Arguments must fit: m = n + p + 1");
 
-			std::vector<std::vector<std::vector<std::vector<T>>>> controlPointsOfDerivative(derivative + 1,
-				std::vector<std::vector<std::vector<T>>>(maxSpanIndexU - minSpanIndexU + 1,
-					std::vector<std::vector<T>>(maxSpanIndexV - minSpanIndexV + 1)));
+			std::vector<std::vector<std::vector<std::vector<T>>>> PKL(derivative + 1,
+				std::vector<std::vector<std::vector<T>>>(derivative + 1,
+					std::vector<std::vector<T>>(controlPoints.size(), std::vector<T>(controlPoints[0].size()))));
 
 			int du = std::min(derivative, degreeU);
 			int dv = std::min(derivative, degreeV);
@@ -165,27 +167,27 @@ namespace LNLib
 				{
 					for (int i = 0; i <= rangeU - k; i++)
 					{
-						controlPointsOfDerivative[k][0][i][j - minSpanIndexV] = temp[k][i];
+						PKL[k][0][i][j - minSpanIndexV] = temp[k][i];
 					}
 				}
 			}
+			std::vector<double> tempKv(knotVectorV.size(), minSpanIndexV);
 			for (int k = 0; k < du; k++)
 			{
 				for (int i = 0; i <= rangeU - k; i++)
 				{
-					std::vector<T> points = controlPointsOfDerivative[k][0][i];
 					int dd = std::min(derivative - k, dv);
-					std::vector<std::vector<T>> temp = BsplineCurve::ComputeControlPointsOfDerivatives(degreeV, dd, 0, rangeV, knotVectorV, points);
+					std::vector<std::vector<T>> temp = BsplineCurve::ComputeControlPointsOfDerivatives(degreeV, dd, 0, rangeV, tempKv, PKL[k][0][i]);
 					for (int l = 1; l <= dd; l++)
 					{
 						for (int j = 0; j < rangeV - l; j++)
 						{
-							controlPointsOfDerivative[k][l][i][j] = temp[l][j];
+							PKL[k][l][i][j] = temp[l][j];
 						}
 					}
 				}
 			}
-			return controlPointsOfDerivative;
+			return PKL;
 		}
 
 		/// <summary>
@@ -209,46 +211,36 @@ namespace LNLib
 			VALIDATE_ARGUMENT(ValidationUtils::IsValidBspline(degreeU, knotVectorU.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
 			VALIDATE_ARGUMENT(ValidationUtils::IsValidBspline(degreeV, knotVectorV.size(), controlPoints[0].size()), "controlPoints", "Arguments must fit: m = n + p + 1");
 
-			std::vector<std::vector<T>> derivatives(derivative + 1, std::vector<T>(derivative + 1));
+			std::vector<std::vector<T>> SKL(derivative + 1, std::vector<T>(derivative + 1));
+
+			int uSpanIndex = Polynomials::GetKnotSpanIndex(degreeU, knotVectorU, uv.GetU());
+			int vSpanIndex = Polynomials::GetKnotSpanIndex(degreeV, knotVectorV, uv.GetV());
+			std::vector<std::vector<double>> Nu = Polynomials::AllBasisFunctions(uSpanIndex, degreeU, knotVectorU, uv.GetU());
+			std::vector<std::vector<double>> Nv = Polynomials::AllBasisFunctions(vSpanIndex, degreeV, knotVectorV, uv.GetV());
+
+			std::vector<std::vector<std::vector<std::vector<T>>>> PKL = ComputeControlPointsOfDerivatives(degreeU, degreeV, derivative, uSpanIndex - degreeU, uSpanIndex, vSpanIndex - degreeV, vSpanIndex, knotVectorU, knotVectorV, uv, controlPoints);
 
 			int du = std::min(derivative, degreeU);
 			int dv = std::min(derivative, degreeV);
-
-			int uSpanIndex = Polynomials::GetKnotSpanIndex(degreeU, uv.GetU(), knotVectorU);
-			std::vector<std::vector<double>> allBasisFunctionsU(degreeU + 1);
-
-			for (int i = 0; i <= degreeU; i++)
-			{
-				std::vector<double> basisFunctions = Polynomials::BasisFunctions(uSpanIndex, i, knotVectorU, uv.GetU());
-				allBasisFunctionsU[i] = basisFunctions;
-			}
-
-			int vSpanIndex = Polynomials::GetKnotSpanIndex(degreeV, uv.GetV(), knotVectorV);
-			std::vector<std::vector<double>> allBasisFunctionsV(degreeV + 1);
-			for (int i = 0; i <= degreeV; i++)
-			{
-				allBasisFunctionsV[i] = Polynomials::BasisFunctions(vSpanIndex, i, knotVectorV, uv.GetV());
-			}
-
-			std::vector<std::vector<std::vector<std::vector<T>>>> controlPointsOfDerivative = ComputeControlPointsOfDerivatives(controlPoints, knotVectorU, knotVectorV, degreeU, degreeV, uv, uSpanIndex - degreeU, uSpanIndex, vSpanIndex - degreeV, vSpanIndex, derivative);
 
 			for (int k = 0; k <= du; k++)
 			{
 				int dd = std::min(derivative - k, dv);
 				for (int l = 0; l <= dd; l++)
 				{
+					SKL[k][l] = T();
 					for (int i = 0; i <= degreeV - l; i++)
 					{
 						T temp = T();
 						for (int j = 0; j <= degreeU - k; j++)
 						{
-							temp += allBasisFunctionsU[j][degreeU - k] * controlPointsOfDerivative[k][l][j][i];
+							temp += Nu[j][degreeU - k] * PKL[k][l][j][i];
 						}
-						derivatives[k][l] += allBasisFunctionsV[i][degreeV - l] * temp;
+						SKL[k][l] += Nv[i][degreeV - l] * temp;
 					}
 				}
 			}
-			return derivatives;
+			return SKL;
 		}
 	};
 }
