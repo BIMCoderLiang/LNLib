@@ -27,14 +27,14 @@ namespace LNLib
 		/// Algorithm A4.1
 		/// Compute point on rational B-spline curve.
 		/// </summary>
-		static XYZ GetPointOnCurve(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double paramT);
+		static XYZ GetPointOnCurve(int degree, const std::vector<double>& knotVector, double paramT, const std::vector<XYZW>& controlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page127
 		/// Algorithm A4.2
 		/// Compute C(paramT) derivatives from Cw(paramT) deraivatives.
 		/// </summary>
-		static std::vector<XYZ> ComputeRationalCurveDerivatives(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double paramT, unsigned int derivative);
+		static std::vector<XYZ> ComputeRationalCurveDerivatives(int degree, int derivative, const std::vector<double>& knotVector, double paramT, const std::vector<XYZW>& controlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page151

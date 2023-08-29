@@ -20,37 +20,48 @@
 #include "Intersection.h"
 #include "ValidationUtils.h"
 #include "Interpolation.h"
+#include "LNLibExceptions.h"
 #include <vector>
 #include <algorithm>
 
-LNLib::XYZ LNLib::NurbsCurve::GetPointOnCurve(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double paramT)
+LNLib::XYZ LNLib::NurbsCurve::GetPointOnCurve(int degree, const std::vector<double>& knotVector, double paramT, const std::vector<XYZW>& controlPoints)
 {
-	XYZW temp = XYZW();
-	temp = BsplineCurve::GetPointOnCurve(degree, knotVector, paramT, controlPoints);
-	return temp.ToXYZ(true);
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT_RANGE(paramT, knotVector[0], knotVector[knotVector.size() - 1]);
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	
+	XYZW weightPoint =  BsplineCurve::GetPointOnCurve(degree, knotVector, paramT, controlPoints);
+	return weightPoint.ToXYZ(true);
 }
 
-std::vector<LNLib::XYZ> LNLib::NurbsCurve::ComputeRationalCurveDerivatives(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double paramT, unsigned int derivative)
+std::vector<LNLib::XYZ> LNLib::NurbsCurve::ComputeRationalCurveDerivatives(int degree, int derivative, const std::vector<double>& knotVector, double paramT, const std::vector<XYZW>& controlPoints)
 {
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(derivative > 0, "derivative", "derivative must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT_RANGE(paramT, knotVector[0], knotVector[knotVector.size() - 1]);
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
 	std::vector<LNLib::XYZ> derivatives(derivative + 1);
+	std::vector<XYZW> ders = BsplineCurve::ComputeDerivatives(degree, derivative, knotVector, paramT, controlPoints);
 
-	std::vector<XYZW> ders;
-	ders = BsplineCurve::ComputeDerivatives(degree, derivative, knotVector, paramT, controlPoints);
-
-	std::vector<XYZ> Aders;
-	Aders.resize(derivative + 1);
-	for (int i = 0; i < static_cast<int>(ders.size()); i++)
+	std::vector<XYZ> Aders(derivative + 1);
+	for (int i = 0; i < ders.size(); i++)
 	{
 		Aders[i] = ders[i].ToXYZ(false);
 	}
-	std::vector<double> wders;
-	wders.resize(derivative + 1);
-	for (int i = 0; i < static_cast<int>(ders.size()); i++)
+	std::vector<double> wders(derivative + 1);
+	for (int i = 0; i < ders.size(); i++)
 	{
 		wders[i] = ders[i].GetW();
 	}
 
-	for (int k = 0; k <= static_cast<int>(derivative); k++)
+	for (int k = 0; k <= derivative; k++)
 	{
 		XYZ v = Aders[k];
 		for (int i = 1; i <= k; i++)
@@ -837,10 +848,10 @@ double LNLib::NurbsCurve::GetParamOnCurve(unsigned int degree, const std::vector
 	for (int i = 0; i < samples - 1; i++)
 	{
 		double currentU = minParam + span * i; 
-		XYZ currentPoint = NurbsCurve::GetPointOnCurve(degree, knotVector, controlPoints, currentU);
+		XYZ currentPoint = NurbsCurve::GetPointOnCurve(degree, knotVector, currentU, controlPoints);
 
 		double nextU = minParam + span * (i + 1);
-		XYZ nextPoint = NurbsCurve::GetPointOnCurve(degree, knotVector, controlPoints, nextU);		
+		XYZ nextPoint = NurbsCurve::GetPointOnCurve(degree, knotVector, nextU, controlPoints);
 
 		XYZ vector1 = currentPoint - givenPoint;
 		XYZ vector2 = nextPoint - currentPoint;
@@ -880,7 +891,7 @@ double LNLib::NurbsCurve::GetParamOnCurve(unsigned int degree, const std::vector
 	int counters = 0;
 	while (counters < maxIterations)
 	{
-		std::vector<XYZ> derivatives = ComputeRationalCurveDerivatives(degree, knotVector, controlPoints, paramT, 2);
+		std::vector<XYZ> derivatives = ComputeRationalCurveDerivatives(degree, 2, knotVector, paramT, controlPoints);
 		XYZ difference = derivatives[0] - givenPoint;
 		double f = derivatives[1].DotProduct(difference);
 
@@ -1872,7 +1883,7 @@ void LNLib::NurbsCurve::GlobalCurveApproximationByErrorBound(unsigned int degree
 			{
 				double param = GetParamOnCurve(deg + 1, U, P, throughPoints[i]);
 				uk[i] = param;
-				XYZ p = GetPointOnCurve(deg + 1, U, P, param);
+				XYZ p = GetPointOnCurve(deg + 1, U, param, P);
 				error[i] = p.Distance(throughPoints[i]);
 			}
 		}
@@ -1895,7 +1906,7 @@ void LNLib::NurbsCurve::GlobalCurveApproximationByErrorBound(unsigned int degree
 			{
 				double param = GetParamOnCurve(degree, U, P, throughPoints[i]);
 				uk[i] = param;
-				XYZ p = GetPointOnCurve(degree, U, P, param);
+				XYZ p = GetPointOnCurve(degree, U, param, P);
 				error[i] = p.Distance(throughPoints[i]);
 			}
 

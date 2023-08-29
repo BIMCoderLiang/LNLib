@@ -17,7 +17,7 @@
 
 namespace LNLib
 {
-	static double GetCoefficient(int index, unsigned int degree)
+	static double GetCoefficient(int index, int degree)
 	{
 		return index / degree;
 	}
@@ -25,8 +25,6 @@ namespace LNLib
 
 bool LNLib::ValidationUtils::IsValidBezier(int degree, int controlPointsCount)
 {
-	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
-
 	return controlPointsCount == degree + 1;
 }
 
@@ -40,16 +38,15 @@ bool LNLib::ValidationUtils::IsValidBspline(int degree, int knotVectorCount, int
 	return (knotVectorCount - 1) == (controlPointsCount - 1) + degree + 1;
 }
 
-bool LNLib::ValidationUtils::IsValidNurbs(unsigned int degree, unsigned int knotVectorCount, unsigned int controlPointsCount, unsigned int weightsCount)
+bool LNLib::ValidationUtils::IsValidNurbs(int degree, int knotVectorCount, int weightedControlPointsCount)
 {
-	return (knotVectorCount - 1) == (controlPointsCount - 1) + degree + 1 && controlPointsCount == weightsCount;
+	return (knotVectorCount - 1) == (weightedControlPointsCount - 1) + degree + 1;
 }
 
-bool LNLib::ValidationUtils::IsValidDegreeReduction(unsigned int degree)
+bool LNLib::ValidationUtils::IsValidDegreeReduction(int degree)
 {
 	return degree > 1;
 }
-
 
 double LNLib::ValidationUtils::ComputeCurveModifyTolerance(const std::vector<XYZW>& controlPoints)
 {
@@ -67,7 +64,7 @@ double LNLib::ValidationUtils::ComputeCurveModifyTolerance(const std::vector<XYZ
 	return Constants::DistanceEpsilon * minWeight / (1 + std::abs(maxDistance));
 }
 
-double LNLib::ValidationUtils::ComputeMaxErrorOfBezierReduction(unsigned int degree, const std::vector<XYZW>& currentControlPoints, const std::vector<XYZW>& reductedControlPoints)
+double LNLib::ValidationUtils::ComputeMaxErrorOfBezierReduction(int degree, const std::vector<XYZW>& currentControlPoints, const std::vector<XYZW>& reductedControlPoints)
 {
 	int r = (degree - 1)/2;
 

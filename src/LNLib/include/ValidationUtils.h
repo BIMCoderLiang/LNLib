@@ -32,9 +32,9 @@ namespace LNLib
 
 		static bool IsValidBspline(int degree, int knotVectorCount, int controlPointsCount);
 
-		static bool IsValidNurbs(unsigned int degree, unsigned int knotVectorCount, unsigned int controlPointsCount, unsigned int weightsCount);
+		static bool IsValidNurbs(int degree, int knotVectorCount, int weightedControlPointsCount);
 
-		static bool IsValidDegreeReduction(unsigned int degree);
+		static bool IsValidDegreeReduction(int degree);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page185
@@ -46,7 +46,7 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page221
 		/// Implements Bezier degree reduction and computation of the maximum error.
 		/// </summary>
-		static double ComputeMaxErrorOfBezierReduction(unsigned int degree, const std::vector<XYZW>& currentControlPoints, const std::vector<XYZW>& reductedControlPoints);
+		static double ComputeMaxErrorOfBezierReduction(int degree, const std::vector<XYZW>& currentControlPoints, const std::vector<XYZW>& reductedControlPoints);
 
 		template <typename T>
 		static bool IsClosed(const std::vector<T>& controlPoints)

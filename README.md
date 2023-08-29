@@ -20,8 +20,7 @@ NURBS Algorithms:
 - Curve Transform
 - Create Arc and Conic Curve
 - Create Bilinear/Cylindrical/Ruled/Revolved Surface
-- Global/Local Curve/Surface Interpolation 
-- Global/Local Curve/Surface Approximation
+- Global/Local Curve/Surface Interpolation & Approximation
 
 This library is **under development.**
 
