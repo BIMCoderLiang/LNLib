@@ -11,7 +11,7 @@ Basic Elements:
 NURBS Algorithms:
 - Basis Function Computation
 - Bezier/B-Spline/NURBS Curve and Surface
-- Curve and Surface Decomposion
+- Curve and Surface Decomposition
 - Knot Insertion and Removal
 - Knot Refinement
 - Degree Elevation and Reduction
