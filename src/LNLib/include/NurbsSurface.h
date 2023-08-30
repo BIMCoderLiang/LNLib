@@ -26,14 +26,14 @@ namespace LNLib
 		/// Algorithm A4.3
 		/// Compute point on rational B-spline surface.
 		/// </summary>
-		static void GetPointOnSurface(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, XYZ& point);
+		static XYZ GetPointOnSurface(int degreeU, int degreeV, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, UV uv, const std::vector<std::vector<XYZW>>& controlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page137
 		/// Algorithm A4.4
 		/// Compute S(paramU,paramV) derivatives.
 		/// </summary>
-		static void ComputeRationalSurfaceDerivatives(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, unsigned int derivative, std::vector<std::vector<XYZ>>& derivatives);
+		static std::vector<std::vector<XYZ>> ComputeRationalSurfaceDerivatives(int degreeU, int degreeV, int derivative, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, UV uv, const std::vector<std::vector<XYZW>>& controlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page137

@@ -20,6 +20,7 @@
 #include "Intersection.h"
 #include "Interpolation.h"
 #include "ValidationUtils.h"
+#include "LNLibExceptions.h"
 
 namespace LNLib
 {
@@ -60,39 +61,57 @@ namespace LNLib
 	}
 }
 
-void LNLib::NurbsSurface::GetPointOnSurface(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, XYZ& point)
+LNLib::XYZ LNLib::NurbsSurface::GetPointOnSurface(int degreeU, int degreeV, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, UV uv, const std::vector<std::vector<XYZW>>& controlPoints)
 {
-	XYZW sw = BsplineSurface::GetPointOnSurface(degreeU, degreeV, knotVectorU, knotVectorV, uv, controlPoints);
-	point = sw.ToXYZ(true);
+	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVectorU.size() > 0, "knotVectorU", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorU), "knotVectorU", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT_RANGE(uv.GetU(), knotVectorU[0], knotVectorU[knotVectorU.size() - 1]);
+	VALIDATE_ARGUMENT(knotVectorV.size() > 0, "knotVectorV", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorV), "knotVectorV", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT_RANGE(uv.GetV(), knotVectorV[0], knotVectorV[knotVectorV.size() - 1]);
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degreeU, knotVectorU.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degreeV, knotVectorV.size(), controlPoints[0].size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+	XYZW result = BsplineSurface::GetPointOnSurface(degreeU, degreeV, knotVectorU, knotVectorV, uv, controlPoints);
+	return result.ToXYZ(true);
 }
 
 
-void LNLib::NurbsSurface::ComputeRationalSurfaceDerivatives(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, UV uv, unsigned int derivative, std::vector<std::vector<XYZ>>& derivatives)
+std::vector<std::vector<LNLib::XYZ>> LNLib::NurbsSurface::ComputeRationalSurfaceDerivatives(int degreeU, int degreeV, int derivative, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, UV uv, const std::vector<std::vector<XYZW>>& controlPoints)
 {
-	
-	std::vector<std::vector<XYZW>> ders = BsplineSurface::ComputeDerivatives(degreeU, degreeV, derivative, knotVectorU, knotVectorV, uv, controlPoints);
+	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(degreeV > 0, "degreeU", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(derivative > 0, "derivative", "derivative must greater than zero.");
+	VALIDATE_ARGUMENT(knotVectorU.size() > 0, "knotVectorU", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorU), "knotVectorU", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT_RANGE(uv.GetU(), knotVectorU[0], knotVectorU[knotVectorU.size() - 1]);
+	VALIDATE_ARGUMENT(knotVectorV.size() > 0, "knotVectorV", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorV), "knotVectorV", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT_RANGE(uv.GetV(), knotVectorV[0], knotVectorV[knotVectorV.size() - 1]);
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degreeU, knotVectorU.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degreeV, knotVectorV.size(), controlPoints[0].size()), "controlPoints", "Arguments must fit: m = n + p + 1");
 
-	std::vector<std::vector<XYZ>> Aders;
-	for (int i = 0; i <= static_cast<int>(degreeU); i++)
+	std::vector<std::vector<XYZ>> derivatives(derivative + 1, std::vector<XYZ>(derivative + 1));
+
+	std::vector<std::vector<XYZW>> ders = BsplineSurface::ComputeDerivatives(degreeU, degreeV, derivative, knotVectorU, knotVectorV, uv, controlPoints);
+	std::vector<std::vector<XYZ>> Aders(derivative + 1, std::vector<XYZ>(derivative + 1));
+	std::vector<std::vector<double>> wders(derivative + 1, std::vector<double>(derivative + 1));
+	for (int i = 0; i < ders.size(); i++)
 	{
-		for (int j = 0; j <= static_cast<int>(degreeV); j++)
+		for (int j = 0; j < ders[0].size(); j++)
 		{
 			Aders[i][j] = ders[i][j].ToXYZ(false);
-		}
-	}
-
-	std::vector<std::vector<double>> wders;
-	for (int i = 0; i <= static_cast<int>(degreeU); i++)
-	{
-		for (int j = 0; j <= static_cast<int>(degreeV); j++)
-		{
 			wders[i][j] = ders[i][j].GetW();
 		}
 	}
 
-	for (int k = 0; k <= static_cast<int>(derivative); k++)
+	for (int k = 0; k <= derivative; k++)
 	{
-		for (int l = 0; l <= static_cast<int>(derivative - k); l++)
+		for (int l = 0; l <= derivative - k; l++)
 		{
 			XYZ v = Aders[k][l];
 			for ( int j = 1; j <= l; j++)
@@ -104,18 +123,17 @@ void LNLib::NurbsSurface::ComputeRationalSurfaceDerivatives(const std::vector<st
 			{
 				v = v - MathUtils::Binomial(k, i) * wders[i][0] * derivatives[k - i][l];
 
-				XYZ v2 = XYZ();
+				XYZ v2 = XYZ(0,0,0);
 				for (int j = 1; j <= l; j++)
 				{
 					v2 = v2 + MathUtils::Binomial(l, j) * wders[i][j] * derivatives[k - i][l - j];
 				}
-
 				v = v - MathUtils::Binomial(k, i) * v2;
 			}
-
 			derivatives[k][l] = v / wders[0][0];
 		}
 	}
+	return derivatives;
 }
 
 void LNLib::NurbsSurface::InsertKnot(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVector, unsigned int degree, double insertKnot, unsigned int times, bool isUDirection, std::vector<double>& insertedKnotVector, std::vector<std::vector<XYZW>>& updatedControlPoints)
@@ -554,11 +572,9 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const std::vector<std::vector<X
 		{
 			double v = minVParam + spanV * j;
 			
-			XYZ currentPoint;
-			NurbsSurface::GetPointOnSurface(controlPoints, knotVectorU, knotVectorV, degreeU, degreeV, UV(currentU, v), currentPoint);
+			XYZ currentPoint = NurbsSurface::GetPointOnSurface(degreeU, degreeV, knotVectorU, knotVectorV,  UV(currentU, v), controlPoints);
 			
-			XYZ nextPoint;
-			NurbsSurface::GetPointOnSurface(controlPoints, knotVectorU, knotVectorV, degreeU, degreeV, UV(nextU, v), nextPoint);
+			XYZ nextPoint = NurbsSurface::GetPointOnSurface(degreeU, degreeV, knotVectorU, knotVectorV, UV(nextU, v), controlPoints);
 
 			XYZ vector1 = currentPoint - givenPoint;
 			XYZ vector2 = nextPoint - currentPoint;
@@ -595,8 +611,7 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const std::vector<std::vector<X
 	int counters = 0;
 	while (counters < maxIterations)
 	{
-		std::vector<std::vector<XYZ>> derivatives;
-		ComputeRationalSurfaceDerivatives(controlPoints,knotVectorU,knotVectorV,degreeU,degreeV,param,2,derivatives);
+		std::vector<std::vector<XYZ>> derivatives = ComputeRationalSurfaceDerivatives(degreeU, degreeV, 2, knotVectorU,knotVectorV,param,controlPoints);
 		XYZ difference = derivatives[0][0] - givenPoint;
 		double fa = derivatives[1][0].DotProduct(difference);
 		double fb = derivatives[0][1].DotProduct(difference);
@@ -700,7 +715,7 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const std::vector<std::vector<X
 bool LNLib::NurbsSurface::GetUVTangent(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, const UV param, const XYZ& tangent, UV& uvTangent)
 {
 	std::vector<std::vector<XYZ>> derivatives;
-	ComputeRationalSurfaceDerivatives(controlPoints, knotVectorU, knotVectorV, degreeU, degreeV, param, 1, derivatives);
+	ComputeRationalSurfaceDerivatives(degreeU, degreeV, 1, knotVectorU, knotVectorV, param, controlPoints);
 	XYZ Su = derivatives[1][0];
 	XYZ Sv = derivatives[0][1];
 
