@@ -42,14 +42,14 @@ namespace LNLib
 		/// Curve knot insertion.
 		/// Note that multiplicity + times <= degree.
 		/// </summary>
-		static void InsertKnot(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double insertKnot, unsigned int times, std::vector<double>& insertedKnotVector, std::vector<XYZW>& updatedControlPoints);
+		static void InsertKnot(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double insertKnot, int times, std::vector<double>& insertedKnotVector, std::vector<XYZW>& updatedControlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page155
 		/// Algorithm A5.2
-		/// Computes a point on a curve by using knot insertion ("corner cutting").
+		/// Computes point on rational B-spline curve.
 		/// </summary>
-		static XYZ GetPointOnCurveByInsertKnot(unsigned int degree, const std::vector<double>& knotVector, std::vector<XYZW>& controlPoints, double insertKnot);
+		static XYZ GetPointOnCurveByCornerCut(int degree, const std::vector<double>& knotVector, double paramT, std::vector<XYZW>& controlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page164
