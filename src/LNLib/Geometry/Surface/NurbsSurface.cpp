@@ -136,9 +136,22 @@ std::vector<std::vector<LNLib::XYZ>> LNLib::NurbsSurface::ComputeRationalSurface
 	return derivatives;
 }
 
-void LNLib::NurbsSurface::InsertKnot(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVector, unsigned int degree, double insertKnot, unsigned int times, bool isUDirection, std::vector<double>& insertedKnotVector, std::vector<std::vector<XYZW>>& updatedControlPoints)
+void LNLib::NurbsSurface::InsertKnot(int degree, const std::vector<double>& knotVector, const std::vector<std::vector<XYZW>>& controlPoints, double insertKnot, int times, bool isUDirection, std::vector<double>& insertedKnotVector, std::vector<std::vector<XYZW>>& updatedControlPoints)
 {
-	int n = static_cast<int>(knotVector.size() - degree - 2);
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(times > 0, "times", "Times must greater than zero.");
+	if (isUDirection)
+	{
+		VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	}
+	else
+	{
+		VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints[0].size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	}
+	
 	int knotSpanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, insertKnot);
 	int multiplicity = Polynomials::GetKnotMultiplicity(knotVector, insertKnot);
 
@@ -160,74 +173,61 @@ void LNLib::NurbsSurface::InsertKnot(const std::vector<std::vector<XYZW>>& contr
 		insertedKnotVector[i] = knotVector[i];
 	}
 
-	for (int i = 1; i <= static_cast<int>(times); i++)
+	for (int i = 1; i <= times; i++)
 	{
 		insertedKnotVector[knotSpanIndex + i] = insertKnot;
 	}
 
-	for (int i = knotSpanIndex + 1; i < static_cast<int>(knotVector.size()); i++)
+	for (int i = knotSpanIndex + 1; i < knotVector.size(); i++)
 	{
 		insertedKnotVector[i + times] = knotVector[i];
 	}
 
-	std::vector<std::vector<double>> alpha;
-	alpha.resize(degree - multiplicity);
-	for (int i = 0; i < static_cast<int>(degree) - multiplicity; i++)
-	{
-		alpha[i].resize(times + 1);
-	}
-
-	for (int j = 1; j <= static_cast<int>(times); j++)
+	std::vector<std::vector<double>> alpha(degree - multiplicity,std::vector<double>(times + 1));
+	for (int j = 1; j <= times; j++)
 	{
 		int L = knotSpanIndex - degree + j;
-		for (int i = 0; i <= static_cast<int>(degree) - j - multiplicity; i++)
+		for (int i = 0; i <= degree - j - multiplicity; i++)
 		{
 			alpha[i][j] = (insertKnot - knotVector[L + i]) / (knotVector[i + knotSpanIndex + 1] - knotVector[L + i]);
 		}
 	}
 
-	std::vector<XYZW> temp;
-	temp.resize(degree + 1);
+	std::vector<XYZW> temp(degree + 1);
 
-	int controlPointsRows = static_cast<int>(controlPoints.size());
-	int controlPointsColumns = static_cast<int>(controlPoints[0].size());
+	int rows = static_cast<int>(controlPoints.size());
+	int columns = static_cast<int>(controlPoints[0].size());
 
 	if (isUDirection)
 	{
-		updatedControlPoints.resize(controlPointsRows + times);
-		for (int i = 0; i < controlPointsRows + static_cast<int>(times); i++)
-		{
-			updatedControlPoints[i].resize(controlPointsColumns);
-		}
+		updatedControlPoints.resize(rows + times,std::vector<XYZW>(columns));
 
-		for (int col = 0; col < controlPointsColumns; col++)
+		for (int col = 0; col < columns; col++)
 		{
-			for (int i = 0; i <= knotSpanIndex - static_cast<int>(degree); i++)
+			for (int i = 0; i <= knotSpanIndex - degree; i++)
 			{
 				updatedControlPoints[i][col] = controlPoints[i][col];
 			}
 
-			for (int i = knotSpanIndex - multiplicity; i < controlPointsRows; i++)
+			for (int i = knotSpanIndex - multiplicity; i < rows; i++)
 			{
 				updatedControlPoints[i + times][col] = controlPoints[i][col];
 			}
 
-			for (int i = 0; i < static_cast<int>(degree) - multiplicity + 1; i++)
+			for (int i = 0; i < degree - multiplicity + 1; i++)
 			{
 				temp[i] = controlPoints[knotSpanIndex - degree + i][col];
 			}
 
-
 			int L = 0;
-			for (int j = 1; j <= static_cast<int>(times); j++)
+			for (int j = 1; j <= times; j++)
 			{
 				L = knotSpanIndex - degree + j;
-				for (int i = 0; i <= static_cast<int>(degree) - j - multiplicity; i++)
+				for (int i = 0; i <= degree - j - multiplicity; i++)
 				{
 					double a = alpha[i][j];
 					temp[i] = a * temp[i + 1] + (1.0 - a) * temp[i];
 				}
-
 				updatedControlPoints[L][col] = temp[0];
 				updatedControlPoints[knotSpanIndex + times - j - multiplicity][col] = temp[degree - j - multiplicity];
 			}
@@ -240,40 +240,34 @@ void LNLib::NurbsSurface::InsertKnot(const std::vector<std::vector<XYZW>>& contr
 	}
 	else
 	{
-		updatedControlPoints.resize(controlPointsRows);
-		for (int i = 0; i < controlPointsRows; i++)
-		{
-			updatedControlPoints[i].resize(controlPointsColumns + times);
-		}
+		updatedControlPoints.resize(rows,std::vector<XYZW>(columns+times));
 
-		for (int row = 0; row < controlPointsRows; row++)
+		for (int row = 0; row < rows; row++)
 		{
-			for (int i = 0; i <= knotSpanIndex - static_cast<int>(degree); i++)
+			for (int i = 0; i <= knotSpanIndex - degree; i++)
 			{
 				updatedControlPoints[row][i] = controlPoints[row][i];
 			}
 
-			for (int i = knotSpanIndex - multiplicity; i < controlPointsColumns; i++)
+			for (int i = knotSpanIndex - multiplicity; i < columns; i++)
 			{
 				updatedControlPoints[row][i+times] = controlPoints[row][i];
 			}
 
-			for (int i = 0; i < static_cast<int>(degree) - multiplicity + 1; i++)
+			for (int i = 0; i < degree - multiplicity + 1; i++)
 			{
 				temp[i] = controlPoints[row][knotSpanIndex - degree + i];
 			}
 
-
 			int L = 0;
-			for (int j = 1; j <= static_cast<int>(times); j++)
+			for (int j = 1; j <= times; j++)
 			{
 				L = knotSpanIndex - degree + j;
-				for (int i = 0; i <= static_cast<int>(degree) - j - multiplicity; i++)
+				for (int i = 0; i <= degree - j - multiplicity; i++)
 				{
 					double a = alpha[i][j];
 					temp[i] = a * temp[i + 1] + (1.0 - a) * temp[i];
 				}
-
 				updatedControlPoints[row][L] = temp[0];
 				updatedControlPoints[row][knotSpanIndex + times - j - multiplicity] = temp[degree - j - multiplicity];
 			}

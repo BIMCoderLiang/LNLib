@@ -40,7 +40,7 @@ namespace LNLib
 		/// Algorithm A5.3
 		/// Surface knot insertion along U or V direction.
 		/// </summary>
-		static void InsertKnot(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVector, unsigned int degree, double insertKnot, unsigned int times, bool isUDirection, std::vector<double>& insertedKnotVector, std::vector<std::vector<XYZW>>& updatedControlPoints);
+		static void InsertKnot(int degree, const std::vector<double>& knotVector, const std::vector<std::vector<XYZW>>& controlPoints, double insertKnot, int times, bool isUDirection, std::vector<double>& insertedKnotVector, std::vector<std::vector<XYZW>>& updatedControlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page167

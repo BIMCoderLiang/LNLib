@@ -80,6 +80,7 @@ void LNLib::NurbsCurve::InsertKnot(int degree, const std::vector<double>& knotVe
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
 	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	VALIDATE_ARGUMENT(times > 0, "times", "Times must greater than zero.");
 
 	int knotSpanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, insertKnot);
 	int originMultiplicity = Polynomials::GetKnotMultiplicity(knotVector, insertKnot);
@@ -120,7 +121,7 @@ void LNLib::NurbsCurve::InsertKnot(int degree, const std::vector<double>& knotVe
 	}
 
 	int L = 0;
-	for (int j = 1; j <= static_cast<int>(times); j++)
+	for (int j = 1; j <= times; j++)
 	{
 		L = knotSpanIndex - degree + j;
 		for (int i = 0; i <= degree - j - originMultiplicity; i++)
@@ -132,7 +133,7 @@ void LNLib::NurbsCurve::InsertKnot(int degree, const std::vector<double>& knotVe
 		updatedControlPoints[knotSpanIndex + times - j - originMultiplicity] = temp[degree - j - originMultiplicity];
 	}
 
-	for (int i = L +1 ; i < knotSpanIndex - originMultiplicity; i++)
+	for (int i = L + 1 ; i < knotSpanIndex - originMultiplicity; i++)
 	{
 		updatedControlPoints[i] = temp[i - L];
 	}
