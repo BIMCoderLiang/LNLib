@@ -56,7 +56,7 @@ namespace LNLib
 		/// Algorithm A5.4
 		/// Refine curve knot vector.
 		/// </summary>
-		static void RefineKnotVector(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double>& insertKnotElements, std::vector<double>& insertedKnotVector, std::vector<XYZW>& updatedControlPoints);
+		static void RefineKnotVector(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double>& insertKnotElements, std::vector<double>& insertedKnotVector, std::vector<XYZW>& updatedControlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page173

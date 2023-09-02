@@ -280,10 +280,10 @@ void LNLib::NurbsSurface::InsertKnot(int degree, const std::vector<double>& knot
 	}
 }
 
-void LNLib::NurbsSurface::RefineKnotVector(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, std::vector<double>& insertKnotElements, bool isUDirection, std::vector<double>& insertedKnotVectorU, std::vector<double>& insertedKnotVectorV, std::vector<std::vector<XYZW>>& updatedControlPoints)
+void LNLib::NurbsSurface::RefineKnotVector(int degreeU, int degreeV, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, const std::vector<std::vector<XYZW>>& controlPoints, std::vector<double>& insertKnotElements, bool isUDirection, std::vector<double>& insertedKnotVectorU, std::vector<double>& insertedKnotVectorV, std::vector<std::vector<XYZW>>& updatedControlPoints)
 {
 	std::vector<double> knots;
-	unsigned int degree;
+	int degree;
 	std::vector<std::vector<XYZW>> tempControlPoints;
 	std::vector<std::vector<XYZW>> newControlPoints;
 
