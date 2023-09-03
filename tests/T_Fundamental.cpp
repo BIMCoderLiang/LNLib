@@ -130,27 +130,51 @@ TEST(Test_Fundamental, All)
 	}
 
 	{
-		int degree = 3;
-		std::vector<double> kv = { 0,0,0,0,1,2,3,4,5,5,5,5 };
-		double insertKnot = 2.0;
+		int degree = 4;
+		std::vector<double> kv = { 0,0,0,0,0,0.2,0.4,0.6,0.8,1,1,1,1,1 };
+		std::vector<double> ike = { 0.1,0.1,0.1,0.1,0.2,0.2,0.2,0.3,0.3,0.3,0.3,0.4,0.4,0.4,0.5,0.5,0.5,0.5,
+									0.6,0.6,0.6,0.7,0.7,0.7,0.7,0.8,0.8,0.8,0.9,0.9,0.9,0.9};
 
-		XYZW P0 = XYZW(XYZ(0, 0, 0), 1);
-		XYZW P1 = XYZW(XYZ(1, 5, 0), 1);
-		XYZW P2 = XYZW(XYZ(2, 10, 0), 1);
-		XYZW P3 = XYZW(XYZ(3, 15, 0), 1);
-		XYZW P4 = XYZW(XYZ(4, 20, 0), 1);
-		XYZW P5 = XYZW(XYZ(5, 15, 0), 1);
-		XYZW P6 = XYZW(XYZ(6, 10, 0), 1);
-		XYZW P7 = XYZW(XYZ(7, 5, 0), 1);
+		XYZW P0 = XYZW(XYZ(5, 10, 0), 1);
+		XYZW P1 = XYZW(XYZ(15, 25, 0), 1);
+		XYZW P2 = XYZW(XYZ(30, 30, 0), 1);
+		XYZW P3 = XYZW(XYZ(45, 5, 0), 1);
+		XYZW P4 = XYZW(XYZ(55, 5, 0), 1);
+		XYZW P5 = XYZW(XYZ(70, 40, 0), 1);
+		XYZW P6 = XYZW(XYZ(60, 60, 0), 1);
+		XYZW P7 = XYZW(XYZ(35, 60, 0), 1);
+		XYZW P8 = XYZW(XYZ(20, 40, 0), 1);
 
-		std::vector<XYZW> cp = { P0,P1,P2,P3,P4,P5,P6,P7 };
+		std::vector<XYZW> cp = { P0,P1,P2,P3,P4,P5,P6,P7,P8 };
 		std::vector<double> newKv;
 		std::vector<XYZW> newCp;
-		std::vector<double> ike = { insertKnot };
 		NurbsCurve::RefineKnotVector(degree, kv, cp, ike, newKv, newCp);
-		EXPECT_TRUE(newKv.size() == kv.size() + 1 &&
-					MathUtils::IsAlmostEqualTo(newKv[5], newKv[6]) &&
-					MathUtils::IsAlmostEqualTo(newKv[5], 2.0));
-		EXPECT_TRUE(newCp.size() == cp.size() + 1);
+		EXPECT_TRUE(newKv.size() == 46 && newCp.size() == 41);
+		EXPECT_TRUE(newCp[20].ToXYZ(true).IsAlmostEqualTo(XYZ(55.9157986, 12.17447916,0)));
+	}
+
+	{
+		int degreeU = 3;
+		int degreeV = 3;
+		std::vector<double> kvU = { 0,0,0,0,1,2,3,3,3,3 };
+		std::vector<double> kvV = { 0,0,0,0,1,2,3,3,3,3 };
+
+		std::vector < std::vector<XYZW>> cps = {
+
+			{XYZW(25,-25,0,1),XYZW(15,-25,0,1),XYZW(5,-25,0,1),XYZW(-5,-25,0,1),XYZW(-15,-25,0,1),XYZW(-25,-25,0,1)},
+			{XYZW(25,-15,0,1),XYZW(15,-15,0,1),XYZW(5,-15,0,1),XYZW(-5,-15,0,1),XYZW(-15,-15,0,1),XYZW(-25,-15,0,1)},
+			{XYZW(25,-5,5,1),XYZW(15,-5,5,1),XYZW(5,-5,5,1),XYZW(-5,-5,5,1),XYZW(-15,-5,5,1),XYZW(-25,-5,5,1)},
+			{XYZW(25,5,5,1),XYZW(15,5,5,1),XYZW(5,5,5,1),XYZW(-5,5,5,1),XYZW(-15,5,5,1),XYZW(-25,5,5,1)},
+			{XYZW(25,15,0,1),XYZW(15,15,0,1),XYZW(5,15,5,1),XYZW(-5,15,5,1),XYZW(-15,15,0,1),XYZW(-25,15,0,1)},
+			{XYZW(25,25,0,1),XYZW(15,25,0,1),XYZW(5,25,5,1),XYZW(-5,25,5,1),XYZW(-15,25,0,1),XYZW(-25,25,0,1)},
+			
+		};
+		std::vector<double> newKu;
+		std::vector<double> newKv;
+		std::vector < std::vector<XYZW>> newCps;
+		std::vector<double> ike = { 0.5,0.5,0.5,1.0,1.0,1.5,1.5,1.5,2,2,2.5,2.5,2.5 };
+		NurbsSurface::RefineKnotVector(degreeU, degreeV, kvU, kvV, cps, ike, true, newKu, newKv, newCps);
+		EXPECT_TRUE(newKu.size() == 23 && newKv.size() == kvV.size());
+		EXPECT_TRUE(newCps[4][0].ToXYZ(true).IsAlmostEqualTo(XYZ(25, -10.208333, 2.1875)));
 	}
 }

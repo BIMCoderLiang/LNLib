@@ -194,7 +194,7 @@ void LNLib::NurbsCurve::RefineKnotVector(int degree, const std::vector<double>& 
 	int a = Polynomials::GetKnotSpanIndex(degree, knotVector, insertKnotElements[0]);
 	int b = Polynomials::GetKnotSpanIndex(degree, knotVector, insertKnotElements[r]) + 1;
 
-	insertedKnotVector.resize(knotVector.size() + insertKnotElements.size());
+	insertedKnotVector.resize(m + r + 2);
 	for (int j = 0; j <= a; j++)
 	{
 		insertedKnotVector[j] = knotVector[j];
@@ -229,7 +229,7 @@ void LNLib::NurbsCurve::RefineKnotVector(int degree, const std::vector<double>& 
 		updatedControlPoints[k - degree - 1] = updatedControlPoints[k - degree];
 		for (int l = 1; l <= degree; l++)
 		{
-			int ind = k - degree + 1;
+			int ind = k - degree + l;
 			double alpha = insertedKnotVector[k + l] - insertKnotElements[j];
 			if (MathUtils::IsAlmostEqualTo(abs(alpha), 0.0))
 			{
@@ -237,7 +237,7 @@ void LNLib::NurbsCurve::RefineKnotVector(int degree, const std::vector<double>& 
 			}
 			else
 			{
-				alpha = alpha / (insertedKnotVector[k + 1] - knotVector[i - degree + 1]);
+				alpha = alpha / (insertedKnotVector[k + l] - knotVector[i - degree + l]);
 				updatedControlPoints[ind - 1] = alpha * updatedControlPoints[ind - 1] + (1.0 - alpha) * updatedControlPoints[ind];
 			}
 		}
