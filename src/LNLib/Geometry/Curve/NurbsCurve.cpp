@@ -247,27 +247,28 @@ void LNLib::NurbsCurve::RefineKnotVector(int degree, const std::vector<double>& 
 	}
 }
 
-void LNLib::NurbsCurve::ToBezierCurves(unsigned int degree, const std::vector<double>& knotVector,const std::vector<XYZW>& controlPoints, int& bezierCurvesCount, std::vector<std::vector<XYZW>>& decomposedControlPoints)
+std::vector<std::vector<LNLib::XYZW>> LNLib::NurbsCurve::DecomposeToBeziers(int degree, const std::vector<double>& knotVector,const std::vector<XYZW>& controlPoints)
 {
-	int n = static_cast<int>(controlPoints.size() - 1);
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+	std::vector<std::vector<XYZW>> decomposedControlPoints(controlPoints.size() - degree, std::vector<XYZW>(degree+1));
+
+	int n = controlPoints.size() - 1;
 	int m = n + degree + 1;
 
-	int a = static_cast<int>(degree);
-	int b = static_cast<int>(degree) + 1;
+	int a = degree;
+	int b = degree + 1;
 
-	int bezierCurves = static_cast<int>(knotVector.size() / (degree + 1)) - 1;
-	decomposedControlPoints.resize(bezierCurves);
-	for (int i = 0; i < bezierCurves; i++)
+	int nb = 0;
+	for (int i = 0; i <= degree; i++)
 	{
-		decomposedControlPoints[i].resize(degree + 1);
+		decomposedControlPoints[nb][i] = controlPoints[i];
 	}
-
-	bezierCurvesCount = 0;
-	for (int i = 0; i <= static_cast<int>(degree); i++)
-	{
-		decomposedControlPoints[bezierCurvesCount][i] = controlPoints[i];
-	}
-
+	
 	while (b < m)
 	{
 		int i = b;
@@ -276,12 +277,10 @@ void LNLib::NurbsCurve::ToBezierCurves(unsigned int degree, const std::vector<do
 			b++;
 		}
 		int multi = b - i + 1;
-		if (multi < static_cast<int>(degree))
+		if (multi < degree)
 		{
 			double numerator = knotVector[b] - knotVector[a];
-
-			std::vector<double> alhpaVector;
-			alhpaVector.resize(degree - multi);
+			std::vector<double> alhpaVector(degree + 1);
 			for (int j = degree; j > multi; j--)
 			{
 				alhpaVector[j - multi - 1] = numerator / (knotVector[a + j] - knotVector[a]);
@@ -295,21 +294,21 @@ void LNLib::NurbsCurve::ToBezierCurves(unsigned int degree, const std::vector<do
 				for (int k = degree; k >= s; k--)
 				{
 					double alpha = alhpaVector[k - s];
-					decomposedControlPoints[bezierCurvesCount][k] = alpha * decomposedControlPoints[bezierCurvesCount][k] + (1.0 - alpha) * decomposedControlPoints[bezierCurvesCount][k - 1];
+					decomposedControlPoints[nb][k] = alpha * decomposedControlPoints[nb][k] + (1.0 - alpha) * decomposedControlPoints[nb][k - 1];
 				}
 
 				if (b < m)
 				{
-					decomposedControlPoints[bezierCurvesCount + 1][save] = decomposedControlPoints[bezierCurvesCount][degree];
+					decomposedControlPoints[nb + 1][save] = decomposedControlPoints[nb][degree];
 				}
 			}
 
-			bezierCurvesCount += 1;
+			nb++;
 			if (b < m)
 			{
-				for (int i = static_cast<int>(degree) - multi; i <= static_cast<int>(degree); i++)
+				for (int i = degree - multi; i <= degree; i++)
 				{
-					decomposedControlPoints[bezierCurvesCount][i] = controlPoints[b - degree + i];
+					decomposedControlPoints[nb][i] = controlPoints[b - degree + i];
 				}
 
 				a = b;
@@ -317,6 +316,7 @@ void LNLib::NurbsCurve::ToBezierCurves(unsigned int degree, const std::vector<do
 			}
 		}
 	}
+	return decomposedControlPoints;
 }
 
 void LNLib::NurbsCurve::RemoveKnot(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double removeKnot, unsigned int times, std::vector<double>& restKnotVector, std::vector<XYZW>& updatedControlPoints)

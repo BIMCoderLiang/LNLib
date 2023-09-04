@@ -340,8 +340,7 @@ void LNLib::NurbsSurface::ToBezierPatches(const std::vector<std::vector<XYZW>>& 
 		MathUtils::GetColumn(controlPoints, col, uDirectionPoints);
 
 		ubezierCurvesCount = 0;
-		std::vector<std::vector<XYZW>> decomposedUPoints;
-		NurbsCurve::ToBezierCurves(degreeU, knotVectorU, uDirectionPoints, ubezierCurvesCount, decomposedUPoints);
+		std::vector<std::vector<XYZW>> decomposedUPoints = NurbsCurve::DecomposeToBeziers(degreeU, knotVectorU, uDirectionPoints);
 
 		temp.emplace_back(decomposedUPoints);
 	}
@@ -360,8 +359,7 @@ void LNLib::NurbsSurface::ToBezierPatches(const std::vector<std::vector<XYZW>>& 
 			}
 
 			vbezierCurvesCount = 0;
-			std::vector<std::vector<XYZW>> decomposedVPoints;
-			NurbsCurve::ToBezierCurves(degreeV, knotVectorV, vDirectionPoints, vbezierCurvesCount, decomposedVPoints);
+			std::vector<std::vector<XYZW>> decomposedVPoints = NurbsCurve::DecomposeToBeziers(degreeV, knotVectorV, vDirectionPoints);
 
 			for (int v = 0; v < vbezierCurvesCount; v++)
 			{

@@ -177,4 +177,12 @@ TEST(Test_Fundamental, All)
 		EXPECT_TRUE(newKu.size() == 23 && newKv.size() == kvV.size());
 		EXPECT_TRUE(newCps[4][0].ToXYZ(true).IsAlmostEqualTo(XYZ(25, -10.208333, 2.1875)));
 	}
+
+	{
+		int degree = 2;
+		std::vector<double> kv = { 0,0,0,1,2,3,3,3 };
+		std::vector<XYZW> cps = { XYZW(XYZ(0,0,0),1), XYZW(XYZ(1,1,0),4), XYZW(XYZ(3,2,0),1), XYZW(XYZ(4,1,0),1), XYZW(XYZ(5,-1,0),1) };
+		std::vector<std::vector<XYZW>> result = NurbsCurve::DecomposeToBeziers(degree, kv, cps);
+		EXPECT_TRUE(result[0][2].IsAlmostEqualTo(XYZW(3.5,3,0,2.5)));
+	}
 }
