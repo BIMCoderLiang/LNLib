@@ -324,51 +324,156 @@ void LNLib::NurbsSurface::RefineKnotVector(int degreeU, int degreeV, const std::
 	}
 }
 
-void LNLib::NurbsSurface::ToBezierPatches(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, int& bezierPatchesCount, std::vector<std::vector<std::vector<XYZW>>>& decomposedControlPoints)
+std::vector<std::vector<std::vector<LNLib::XYZW>>> LNLib::NurbsSurface::DecomposeToBeziers(int degreeU, int degreeV, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, const std::vector<std::vector<XYZW>>& controlPoints)
 {
-	int controlPointsRow = static_cast<int>(controlPoints.size());
-	int controlPointsColumn = static_cast<int>(controlPoints[0].size());
+	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVectorU.size() > 0, "knotVectorU", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(knotVectorV.size() > 0, "knotVectorV", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorU), "knotVectorU", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorV), "knotVectorV", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degreeU, knotVectorU.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degreeV, knotVectorV.size(), controlPoints[0].size()), "controlPoints", "Arguments must fit: m = n + p + 1");
 
-	std::vector<std::vector<std::vector<XYZW>>> temp;
-	temp.resize(controlPointsColumn);
+	std::vector<std::vector<std::vector<LNLib::XYZW>>> decomposedControlPoints;
+	
+	int rows = static_cast<int>(controlPoints.size());
+	int columns = static_cast<int>(controlPoints[0].size());
 
-	int ubezierCurvesCount = 0;
-	for (int col = 0; col < controlPointsColumn; col++)
+	std::vector<std::vector<std::vector<LNLib::XYZW>>> temp(rows - degreeU, std::vector<std::vector<XYZW>>(degreeU + 1, std::vector<XYZW>(columns)));
+
+	int m = rows - 1 + degreeU + 1;
+	int a = degreeU;
+	int b = degreeU + 1;
+
+	int nb = 0;
+
+	for (int i = 0; i <= degreeU; i++)
 	{
-		std::vector<XYZW> uDirectionPoints;
-		uDirectionPoints.resize(controlPointsRow);
-		MathUtils::GetColumn(controlPoints, col, uDirectionPoints);
-
-		ubezierCurvesCount = 0;
-		std::vector<std::vector<XYZW>> decomposedUPoints = NurbsCurve::DecomposeToBeziers(degreeU, knotVectorU, uDirectionPoints);
-
-		temp.emplace_back(decomposedUPoints);
-	}
-
-	int vbezierCurvesCount = 0;
-	for (int i = 0; i < ubezierCurvesCount; i++)
-	{
-		int row = static_cast<int>(temp[0][i].size());
-		for (int r = 0; r < row; r++)
+		for (int col = 0; col < columns; col++)
 		{
-			std::vector<XYZW> vDirectionPoints;
-			for (int j = 0; j < controlPointsColumn; j++)
-			{
-				std::vector<XYZW> segement = temp[j][i];
-				vDirectionPoints.emplace_back(segement[r]);
-			}
-
-			vbezierCurvesCount = 0;
-			std::vector<std::vector<XYZW>> decomposedVPoints = NurbsCurve::DecomposeToBeziers(degreeV, knotVectorV, vDirectionPoints);
-
-			for (int v = 0; v < vbezierCurvesCount; v++)
-			{
-				decomposedControlPoints[i * vbezierCurvesCount + v][r] = decomposedVPoints[v];
-			}			
+			temp[nb][i][col] = controlPoints[i][col];
 		}
 	}
 
-	bezierPatchesCount = ubezierCurvesCount * vbezierCurvesCount;
+	std::vector<double> alphaVector(std::max(degreeU,degreeV) + 1);
+	while (b < m)
+	{
+		int i = b;
+		while (b < m && MathUtils::IsLessThanOrEqual(knotVectorU[b + 1], knotVectorU[b]))
+		{
+			b++;
+		}
+		int multi = b - i + 1;
+		if (multi < degreeU)
+		{
+			double numerator = knotVectorU[b] - knotVectorU[a];
+			
+			for (int j = degreeU; j > multi; j--)
+			{
+				alphaVector[j - multi - 1] = numerator / (knotVectorU[a + j]-knotVectorU[a]);
+			}
+			int r = degreeU - multi;
+			for (int j = 1; j <= r; j++)
+			{
+				int save = r - j;
+				int s = multi + j;
+				for (int k = degreeU; k >= s; k--)
+				{
+					double alpha = alphaVector[k - s];
+					for (int col = 0; col < columns; col++)
+					{
+						temp[nb][k][col] = alpha * decomposedControlPoints[nb][k][col] + (1.0 - alpha) * decomposedControlPoints[nb][k - 1][col];
+					}
+				}
+				if (b < m)
+				{
+					for (int col = 0; col < columns; col++)
+					{
+						temp[nb + 1][save][col] = decomposedControlPoints[nb][degreeU][col];
+					}
+				}
+			}
+		}
+		nb++;
+		if (b < m)
+		{
+			for (int i = degreeU - multi; i <= degreeU; i++)
+			{
+				for (int col = 0; col < columns; col++)
+				{
+					temp[nb][i][col] = controlPoints[b - degreeU + i][col];
+				}
+			}
+			a = b;
+			b++;
+		}
+	}
+
+	decomposedControlPoints.resize(nb * (columns - degreeV), std::vector<std::vector<XYZW>>(degreeU + 1, std::vector<XYZW>(degreeV + 1)));
+
+	nb = 0;
+	for (int np = 0; np < nb; np++)
+	{
+		for (int i = 0; i <= degreeU; i++)
+		{
+			for (int j = 0; j <= degreeV; j++)
+			{
+				decomposedControlPoints[nb][i][j] = temp[np][i][j];
+			}
+		}
+
+		m = columns + degreeV;
+		a = degreeV;
+		b = degreeV + 1;
+
+		while (b < m)
+		{
+			int i = b;
+			while (b < m && MathUtils::IsLessThanOrEqual(knotVectorV[b + 1], knotVectorV[b]))
+			{
+				b++;
+			}
+			int multi = b - i + 1;
+			if (multi < degreeV)
+			{
+				double numrator = knotVectorV[b] - knotVectorV[a];
+				for (int j = degreeV; j > multi; j--)
+				{
+					alphaVector[j - multi - 1] = numrator / (knotVectorV[a + j] - knotVectorV[a]);
+				}
+				int r = degreeV - multi;
+				for (int j = 1; j <= r; j++)
+				{
+					int save = r - j;
+					int s = multi + j;
+					for (int k = degreeV; k >= s; k--)
+					{
+						double alpha = alphaVector[k - s];
+						for (int row = 0; row <= degreeU; row++)
+						{
+							decomposedControlPoints[nb][row][k] = alpha * decomposedControlPoints[nb][row][k] + (1.0 - alpha) * decomposedControlPoints[nb][row][k - 1];
+						}
+					}
+				}
+			}
+			nb++;
+			if (b < m)
+			{
+				for (int i = degreeV - multi; i <= degreeV; i++)
+				{
+					for (int row = 0; row <= degreeU; row++)
+					{
+						decomposedControlPoints[nb][row][i] = temp[np][row][b - degreeV + i];
+					}
+				}
+				a = b;
+				b++;
+			}
+		}
+	}
+	return decomposedControlPoints;
 }
 
 void LNLib::NurbsSurface::RemoveKnot(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, double removeKnot, unsigned int times, bool isUDirection, std::vector<double>& restKnotVectorU, std::vector<double>& restKnotVectorV, std::vector<std::vector<XYZW>>& updatedControlPoints)
