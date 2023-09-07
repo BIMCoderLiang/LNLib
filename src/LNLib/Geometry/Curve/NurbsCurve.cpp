@@ -336,14 +336,22 @@ void LNLib::NurbsCurve::RemoveKnot(int degree, const std::vector<double>& knotVe
 	int s = Polynomials::GetKnotMultiplicity(knotVector, removeKnot);
 	int r = Polynomials::GetKnotSpanIndex(degree, knotVector, removeKnot);
 
-	int fout = (2 * r - s - degree) / 2;
 	int first = r - degree;
 	int last = r - s;
 
 	restKnotVector = knotVector;
-	updatedControlPoints = controlPoints;
+	int m = n + degree + 1;
+	for (int k = r + 1; k <= m; k++)
+	{
+		restKnotVector[k - times] = restKnotVector[k];
+	}
+	for (int i = 0; i < times; i++)
+	{
+		restKnotVector.pop_back();
+	}
 
-	std::vector<XYZW> temp(times);
+	updatedControlPoints = controlPoints;
+	std::vector<XYZW> temp(2 * degree + 1);
 
 	int t = 0;
 	for (t = 0; t < times; t++)
@@ -351,14 +359,13 @@ void LNLib::NurbsCurve::RemoveKnot(int degree, const std::vector<double>& knotVe
 		int off = first - 1;
 		temp[0] = controlPoints[off];
 		temp[last + 1 - off] = controlPoints[last + 1];
-
 		int i = first;
 		int j = last;
-
 		int ii = 1;
 		int jj = last - off;
 		bool remflag = false;
-		while (j - i > t)
+
+		while (j - i >= t)
 		{
 			double alphai = (removeKnot - knotVector[i]) / (knotVector[i + order + t] - knotVector[i]);
 			double alphaj = (removeKnot - knotVector[j - t]) / (knotVector[j + order] - knotVector[j - t]);
@@ -389,11 +396,7 @@ void LNLib::NurbsCurve::RemoveKnot(int degree, const std::vector<double>& knotVe
 			}
 		}
 
-		if (!remflag)
-		{
-			break;
-		}
-		else
+		if (remflag)
 		{
 			i = first;
 			j = last;
@@ -403,7 +406,7 @@ void LNLib::NurbsCurve::RemoveKnot(int degree, const std::vector<double>& knotVe
 				updatedControlPoints[i] = temp[i - off];
 				updatedControlPoints[j] = temp[j - off];
 				i = i + 1;
-				j = j + 1;
+				j = j - 1;
 			}
 		}
 		first = first - 1;
@@ -414,18 +417,13 @@ void LNLib::NurbsCurve::RemoveKnot(int degree, const std::vector<double>& knotVe
 	{
 		return;
 	}
-	int m = n + degree + 1;
-	for (int k = r + 1; k <= m; k++)
-	{
-		restKnotVector[k - t] = restKnotVector[k];
-	}
 
-	int j = fout;
+	int j = (2 * r - s - degree) / 2;
 	int i = j;
-	
+
 	for (int k = 1; k < t; k++)
 	{
-		if ( k%2 == 1)
+		if (k % 2 == 1)
 		{
 			i = i + 1;
 		}
@@ -437,8 +435,12 @@ void LNLib::NurbsCurve::RemoveKnot(int degree, const std::vector<double>& knotVe
 
 	for (int k = i + 1; k <= n; k++)
 	{
-		updatedControlPoints[j] = updatedControlPoints[k];
+		updatedControlPoints[j] = controlPoints[k];
 		j = j + 1;
+	}
+	for (int i = 0; i < t; i++)
+	{
+		updatedControlPoints.pop_back();
 	}
 	return;
 }

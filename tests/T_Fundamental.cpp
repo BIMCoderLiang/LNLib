@@ -178,5 +178,23 @@ TEST(Test_Fundamental, All)
 		EXPECT_TRUE(newCps[4][0].ToXYZ(true).IsAlmostEqualTo(XYZ(25, -10.208333, 2.1875)));
 	}
 
-
+	{
+		int degree = 3;
+		std::vector<double> kv = { 0,0,0,0,0.33,0.66,1.0,1.0,1.0,1.0 };
+		std::vector<XYZW> cps = {
+			XYZW(5,5,0,1),XYZW(10,10,0,1),XYZW(20,15,0,1),XYZW(35,15,0,1),XYZW(45,10,0,1),XYZW(50,5,0,1)
+		};
+		std::vector<double> newKv;
+		std::vector<XYZW> newCps;
+		NurbsCurve::RemoveKnot(degree, kv, cps, 0.66, 1, newKv, newCps);
+		EXPECT_TRUE(newKv.size() == kv.size()-1);
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newKv[4], 0.33));
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newKv[5], 1.0));
+		EXPECT_TRUE(newCps.size() == 5);
+		EXPECT_TRUE(newCps[0].IsAlmostEqualTo(XYZW(5, 5, 0, 1)));
+		EXPECT_TRUE(newCps[1].IsAlmostEqualTo(XYZW(10, 10, 0, 1)));
+		EXPECT_TRUE(newCps[2].IsAlmostEqualTo(XYZW(25.15151515, 17.5757575757, 0, 1)));
+		EXPECT_TRUE(newCps[3].IsAlmostEqualTo(XYZW(45, 10, 0, 1)));
+		EXPECT_TRUE(newCps[4].IsAlmostEqualTo(XYZW(50, 5, 0, 1)));
+	}
 }
