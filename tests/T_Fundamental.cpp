@@ -197,4 +197,32 @@ TEST(Test_Fundamental, All)
 		EXPECT_TRUE(newCps[3].IsAlmostEqualTo(XYZW(45, 10, 0, 1)));
 		EXPECT_TRUE(newCps[4].IsAlmostEqualTo(XYZW(50, 5, 0, 1)));
 	}
+
+	{
+		int degree = 3;
+		std::vector<double> kvU = { 0,0,0,0,0.33,0.66,1.0,1.0,1.0,1.0 };
+		std::vector<double> kvV = { 0,0,0,0,0.33,0.66,1.0,1.0,1.0,1.0 };
+		std::vector<std::vector<XYZW>> cps = 
+		{
+			{XYZW(5,5,0,1),XYZW(10,10,0,1),XYZW(20,15,0,1),XYZW(35,15,0,1),XYZW(45,10,0,1),XYZW(50,5,0,1)},
+			{XYZW(5,15,0,1),XYZW(10,20,0,1),XYZW(20,25,0,1),XYZW(35,25,0,1),XYZW(45,20,0,1),XYZW(50,15,0,1)},
+			{XYZW(5,25,0,1),XYZW(10,30,0,1),XYZW(20,35,0,1),XYZW(35,35,0,1),XYZW(45,30,0,1),XYZW(50,25,0,1)},
+			{XYZW(5,35,0,1),XYZW(10,40,0,1),XYZW(20,45,0,1),XYZW(35,45,0,1),XYZW(45,40,0,1),XYZW(50,35,0,1)},
+			{XYZW(5,45,0,1),XYZW(10,50,0,1),XYZW(20,55,0,1),XYZW(35,55,0,1),XYZW(45,50,0,1),XYZW(50,45,0,1)},
+			{XYZW(5,55,0,1),XYZW(10,60,0,1),XYZW(20,65,0,1),XYZW(35,65,0,1),XYZW(45,60,0,1),XYZW(50,55,0,1)},
+		};
+		std::vector<double> restkvU;
+		std::vector<double> restkvV;
+		std::vector<std::vector<XYZW>> newCps;
+		NurbsSurface::RemoveKnot(degree, degree, kvU, kvV, cps, 0.66, 1, false, restkvU, restkvV, newCps);
+		EXPECT_TRUE(restkvV.size() == kvV.size() - 1);
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(restkvV[4], 0.33));
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(restkvV[5], 1.0));
+		EXPECT_TRUE(newCps[0].size() == 5);
+		EXPECT_TRUE(newCps[0][0].IsAlmostEqualTo(XYZW(5, 5, 0, 1)));
+		EXPECT_TRUE(newCps[0][1].IsAlmostEqualTo(XYZW(10, 10, 0, 1)));
+		EXPECT_TRUE(newCps[0][2].IsAlmostEqualTo(XYZW(25.15151515, 17.5757575757, 0, 1)));
+		EXPECT_TRUE(newCps[0][3].IsAlmostEqualTo(XYZW(45, 10, 0, 1)));
+		EXPECT_TRUE(newCps[0][4].IsAlmostEqualTo(XYZW(50, 5, 0, 1)));
+	}
 }
