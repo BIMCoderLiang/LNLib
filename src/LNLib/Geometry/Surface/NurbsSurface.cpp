@@ -527,112 +527,92 @@ void LNLib::NurbsSurface::RemoveKnot(int degreeU, int degreeV, const std::vector
 	}
 }
 
-void LNLib::NurbsSurface::ElevateDegree(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, unsigned int times, bool isUDirection, std::vector<double>& updatedKnotVectorU, std::vector<double>& updatedKnotVectorV, std::vector<std::vector<XYZW>>& updatedControlPoints)
+void LNLib::NurbsSurface::ElevateDegree(int degreeU, int degreeV, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, const std::vector<std::vector<XYZW>>& controlPoints, int times, bool isUDirection, std::vector<double>& updatedKnotVectorU, std::vector<double>& updatedKnotVectorV, std::vector<std::vector<XYZW>>& updatedControlPoints)
 {
-	std::vector<double> knots;
-	unsigned int degree;
-	std::vector<std::vector<XYZW>> tempControlPoints;
-	std::vector<std::vector<XYZW>> newControlPoints;
-
-	if (isUDirection)
-	{
-		MathUtils::Transpose(controlPoints, tempControlPoints);
-		int size = static_cast<int>(knotVectorU.size());
-		knots.resize(size);
-		for (int i = 0; i < size; i++)
-		{
-			knots[i] = knotVectorU[i];
-		}
-		degree = degreeU;
-	}
-	else
-	{
-		tempControlPoints = controlPoints;
-		int size = static_cast<int>(knotVectorV.size());
-		knots.resize(size);
-		for (int i = 0; i < size; i++)
-		{
-			knots[i] = knotVectorV[i];
-		}
-		degree = degreeV;
-	}
+	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVectorU.size() > 0, "knotVectorU", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(knotVectorV.size() > 0, "knotVectorV", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorU), "knotVectorU", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorV), "knotVectorV", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degreeU, knotVectorU.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degreeV, knotVectorV.size(), controlPoints[0].size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	VALIDATE_ARGUMENT(times > 0, "times", "Times must greater than zero.");
 
 	std::vector<double> tempKnotVector;
-
-	for (int i = 0; i < static_cast<int>(tempControlPoints.size()); i++)
-	{
-		tempKnotVector.clear();
-		std::vector<XYZW> updatedCurveControlPoints;
-		NurbsCurve::ElevateDegree(degree, knots, tempControlPoints[i], times, tempKnotVector, updatedCurveControlPoints);
-		newControlPoints[i] = updatedCurveControlPoints;
-	}
-
+	std::vector<std::vector<XYZW>> tempControlPoints;
 	if (isUDirection)
 	{
+		std::vector<std::vector<XYZW>> transposedControlPoints;
+		MathUtils::Transpose(controlPoints, transposedControlPoints);
+		std::vector<XYZW> temp;
+		for (int i = 0; i < transposedControlPoints.size(); i++)
+		{
+			NurbsCurve::ElevateDegree(degreeU, knotVectorU, transposedControlPoints[i], times, tempKnotVector, temp);
+			tempControlPoints.emplace_back(temp);
+		}
 		updatedKnotVectorU = tempKnotVector;
 		updatedKnotVectorV = knotVectorV;
-		MathUtils::Transpose(newControlPoints, updatedControlPoints);
+		MathUtils::Transpose(tempControlPoints, updatedControlPoints);
 	}
 	else
 	{
+		std::vector<XYZW> temp;
+		for (int i = 0; i < controlPoints.size(); i++)
+		{
+			NurbsCurve::ElevateDegree(degreeU, knotVectorU, controlPoints[i], times, tempKnotVector, temp);
+			tempControlPoints.emplace_back(temp);
+		}
 		updatedKnotVectorU = knotVectorU;
 		updatedKnotVectorV = tempKnotVector;
-		updatedControlPoints = newControlPoints;
+		updatedControlPoints = tempControlPoints;
 	}
 }
 
-bool LNLib::NurbsSurface::ReduceDegree(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, bool isUDirection, std::vector<double>& updatedKnotVectorU, std::vector<double>& updatedKnotVectorV, std::vector<std::vector<XYZW>>& updatedControlPoints)
+bool LNLib::NurbsSurface::ReduceDegree(int degreeU, int degreeV, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, const std::vector<std::vector<XYZW>>& controlPoints, bool isUDirection, std::vector<double>& updatedKnotVectorU, std::vector<double>& updatedKnotVectorV, std::vector<std::vector<XYZW>>& updatedControlPoints)
 {
-	std::vector<double> knots;
-	unsigned int degree;
-	std::vector<std::vector<XYZW>> tempControlPoints;
-	std::vector<std::vector<XYZW>> newControlPoints;
-
-	if (isUDirection)
-	{
-		MathUtils::Transpose(controlPoints, tempControlPoints);
-		int size = static_cast<int>(knotVectorU.size());
-		knots.resize(size);
-		for (int i = 0; i < size; i++)
-		{
-			knots[i] = knotVectorU[i];
-		}
-		degree = degreeU;
-	}
-	else
-	{
-		tempControlPoints = controlPoints;
-		int size = static_cast<int>(knotVectorV.size());
-		knots.resize(size);
-		for (int i = 0; i < size; i++)
-		{
-			knots[i] = knotVectorV[i];
-		}
-		degree = degreeV;
-	}
+	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVectorU.size() > 0, "knotVectorU", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(knotVectorV.size() > 0, "knotVectorV", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorU), "knotVectorU", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorV), "knotVectorV", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degreeU, knotVectorU.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degreeV, knotVectorV.size(), controlPoints[0].size()), "controlPoints", "Arguments must fit: m = n + p + 1");
 
 	std::vector<double> tempKnotVector;
-
-	for (int i = 0; i < static_cast<int>(tempControlPoints.size()); i++)
-	{
-		tempKnotVector.clear();
-		std::vector<XYZW> updatedCurveControlPoints;
-		bool result  = NurbsCurve::ReduceDegree(degree, knots, tempControlPoints[i], tempKnotVector, updatedCurveControlPoints);
-		if (!result) return false;
-		newControlPoints[i] = updatedCurveControlPoints;
-	}
-
+	std::vector<std::vector<XYZW>> tempControlPoints;
 	if (isUDirection)
 	{
+		std::vector<std::vector<XYZW>> transposedControlPoints;
+		MathUtils::Transpose(controlPoints, transposedControlPoints);
+		std::vector<XYZW> temp;
+		for (int i = 0; i < transposedControlPoints.size(); i++)
+		{
+			bool result = NurbsCurve::ReduceDegree(degreeU, knotVectorU, transposedControlPoints[i], tempKnotVector, temp);
+			if (!result)
+				return false;
+			tempControlPoints.emplace_back(temp);
+		}
 		updatedKnotVectorU = tempKnotVector;
 		updatedKnotVectorV = knotVectorV;
-		MathUtils::Transpose(newControlPoints, updatedControlPoints);
+		MathUtils::Transpose(tempControlPoints, updatedControlPoints);
 	}
 	else
 	{
+		std::vector<XYZW> temp;
+		for (int i = 0; i < controlPoints.size(); i++)
+		{
+			bool result = NurbsCurve::ReduceDegree(degreeU, knotVectorU, controlPoints[i],  tempKnotVector, temp);
+			if (!result)
+				return false;
+			tempControlPoints.emplace_back(temp);
+		}
 		updatedKnotVectorU = knotVectorU;
 		updatedKnotVectorV = tempKnotVector;
-		updatedControlPoints = newControlPoints;
+		updatedControlPoints = tempControlPoints;
 	}
 	return true;
 }

@@ -108,7 +108,7 @@ double LNLib::MathUtils::AngleToRadians(double angle)
     return angle * Constants::Pi / 180.0;
 }
 
-int LNLib::MathUtils::Factorial(unsigned int number)
+int LNLib::MathUtils::Factorial(int number)
 {
     if (number == 0)
         return 1;
@@ -116,7 +116,7 @@ int LNLib::MathUtils::Factorial(unsigned int number)
         return number * Factorial(number - 1);
 }
 
-double LNLib::MathUtils::Binomial(unsigned int number, unsigned int i)
+double LNLib::MathUtils::Binomial(int number, int i)
 {
     return Factorial(number) / (Factorial(i) * Factorial(number - 1));
 }

@@ -39,9 +39,9 @@ namespace LNLib
 
 		static double AngleToRadians(double angle);
 
-		static int Factorial(unsigned int number);
+		static int Factorial(int number);
 
-		static double Binomial(unsigned int number, unsigned int i);
+		static double Binomial(int number, int i);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page445

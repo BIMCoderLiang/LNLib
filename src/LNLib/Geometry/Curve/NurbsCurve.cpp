@@ -445,36 +445,29 @@ void LNLib::NurbsCurve::RemoveKnot(int degree, const std::vector<double>& knotVe
 	return;
 }
 
-void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, unsigned int times,  std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints)
+void LNLib::NurbsCurve::ElevateDegree(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, int times,  std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints)
 {
-	if (degree + times <= degree)
-	{
-		updatedKnotVector = knotVector;
-		updatedControlPoints = controlPoints;
-		return;
-	}
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	VALIDATE_ARGUMENT(times > 0, "times", "Times must greater than zero.");
 
 	int n = static_cast<int>(controlPoints.size() - 1);
 	int m = n + degree + 1;
-
 	int ph = degree + times;
-	int ph2 = static_cast<int>(ph / 2);
+	int ph2 = floor(ph / 2);
 
-	std::vector<std::vector<double>> bezalfs;
-	bezalfs.resize(degree + times + 1);
-	for (int i = 0; i < static_cast<int>(degree + times + 1); i++)
-	{
-		bezalfs[i].resize(degree + 1);
-	}
-
+	std::vector<std::vector<double>> bezalfs(degree + times + 1, std::vector<double>(degree + 1));
 	bezalfs[0][0] = bezalfs[ph][degree] = 1.0;
 
 	for (int i = 1; i <= ph2; i++)
 	{
 		double inv = 1.0 / MathUtils::Binomial(ph, i);
-		int mpi = std::min(static_cast<int>(degree), i);
+		int mpi = std::min(degree, i);
 
-		for (int j = std::max(0, i - static_cast<int>(times)); j <= mpi; j++)
+		for (int j = std::max(0, i - times); j <= mpi; j++)
 		{
 			bezalfs[i][j] = inv * MathUtils::Binomial(degree, j) * MathUtils::Binomial(times, i - j);
 		}
@@ -482,8 +475,8 @@ void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<dou
 
 	for (int i = ph2 + 1; i <= ph - 1; i++)
 	{
-		int mpi = std::min(static_cast<int>(degree), i);
-		for (int j = std::max(0, i - static_cast<int>(times)); j <= mpi; j++)
+		int mpi = std::min(degree, i);
+		for (int j = std::max(0, i - times); j <= mpi; j++)
 		{
 			bezalfs[i][j] = bezalfs[ph-i][degree - j];
 		}
@@ -492,27 +485,28 @@ void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<dou
 	int mh = ph;
 	int kind = ph + 1;
 	int r = -1;
-	int a = static_cast<int>(degree);
-	int b = static_cast<int>(degree) + 1;
+	int a = degree;
+	int b = degree + 1;
 	int cind = 1;
 	double ua = knotVector[0];
 
-	updatedControlPoints.resize(kind);
+	updatedControlPoints.resize(n + n*times);
 	updatedControlPoints[0] = controlPoints[0];
 
-	updatedKnotVector.resize(ph + 1, ua);
+	updatedKnotVector.resize(n + n * times + ph + 1);
+	for (int i = 0; i <= ph; i++)
+	{
+		updatedKnotVector[i] = ua;
+	}
 
-	std::vector<XYZW> bpts;
-	bpts.resize(degree + 1);
-	for (int i = 0; i <= static_cast<int>(degree); i++)
+	std::vector<XYZW> bpts(degree + 1);
+	for (int i = 0; i <= degree; i++)
 	{
 		bpts[i] = controlPoints[i];
 	}
 
-	std::vector<XYZW> nextbpts;
-	nextbpts.resize(degree - 1);
+	std::vector<XYZW> nextbpts(degree - 1);
 	
-	int nh = 0;
 	while (b < m)
 	{
 		int i = b;
@@ -525,17 +519,16 @@ void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<dou
 		double ub = knotVector[b];
 
 		int oldr = r;
-		r = static_cast<int>(degree) - mul;
+		r = degree - mul;
 
-		int lbz = oldr > 0? (oldr + 2) / 2: 1;
-		int rbz = r>0? ph - (r + 1) / 2: ph;
+		int lbz = oldr > 0? floor((oldr + 2) / 2): 1;
+		int rbz = r>0? floor(ph - (r + 1) / 2): ph;
 
 		if (r > 0)
 		{
 			double numer = ub - ua;
-			std::vector<double> alfs;
-			alfs.resize(degree - 1);
-			for (int k = static_cast<int>(degree); k > mul; k--)
+			std::vector<double> alfs(degree - 1);
+			for (int k = degree; k > mul; k--)
 			{
 				alfs[k - mul - 1] = numer / (knotVector[a + k] - ua);
 			}
@@ -544,22 +537,20 @@ void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<dou
 				int save = r - j;
 				int s = mul + j;
 
-				for (int k = static_cast<int>(degree); k >= s; k--)
+				for (int k = degree; k >= s; k--)
 				{
 					bpts[k] = alfs[k - s] * bpts[k] + (1.0 - alfs[k - s]) * bpts[k - 1];
 				}
-
 				nextbpts[save] = bpts[degree];
 			}
 		}
 
-		std::vector<XYZW> ebpts;
-		ebpts.resize(degree + times + 1);
+		std::vector<XYZW> ebpts(degree + times + 1);
 		for (int i = lbz; i <= ph; i++)
 		{
 			ebpts[i] = XYZW(0.0,0.0,0.0,0.0);
-			int mpi = std::min(static_cast<int>(degree), i);
-			for (int j = std::max(0, static_cast<int>(i - times)); j <= mpi; j++)
+			int mpi = std::min(degree, i);
+			for (int j = std::max(0, i - times); j <= mpi; j++)
 			{
 				ebpts[i] += bezalfs[i][j] * bpts[j];
 			}
@@ -570,7 +561,7 @@ void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<dou
 			int first = kind - 2;
 			int last = kind;
 			double den = ub - ua;
-			double bet = (ub - updatedKnotVector[kind - 1] / den);
+			double bet = (ub - updatedKnotVector[kind - 1]) / den;
 			
 			for (int tr = 1; tr < oldr; tr++)
 			{
@@ -590,7 +581,7 @@ void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<dou
 					{
 						if (j - tr <= kind - ph + oldr)
 						{
-							double gam = (ub - updatedKnotVector[j - tr] / den);
+							double gam = (ub - updatedKnotVector[j - tr]) / den;
 							ebpts[kj] = gam * ebpts[kj] + (1.0 - gam) * ebpts[kj + 1];
 						}
 						else
@@ -604,8 +595,8 @@ void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<dou
 					kj = kj - 1;
 				}
 
-				first = first - 1;
-				last += 1;
+				first -= 1;
+				last  += 1;
 			}
 		}
 
@@ -613,15 +604,13 @@ void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<dou
 		{
 			for (int i = 0; i < ph - oldr; i++)
 			{
-				updatedKnotVector[kind] = ua;
-				kind += 1;
+				updatedKnotVector[kind++] = ua;
 			}
 		}
 
 		for (int j = lbz; j <= rbz; j++)
 		{
-			updatedControlPoints[cind] = ebpts[j];
-			cind += 1;
+			updatedControlPoints[cind++] = ebpts[j];
 		}
 
 		if (b < m)
@@ -630,7 +619,7 @@ void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<dou
 			{
 				bpts[j] = nextbpts[j];
 			}
-			for (int j = r; j <= static_cast<int>(degree); j++)
+			for (int j = r; j <= degree; j++)
 			{
 				bpts[j] = controlPoints[b - degree + j];
 			}
@@ -647,46 +636,53 @@ void LNLib::NurbsCurve::ElevateDegree(unsigned int degree, const std::vector<dou
 			}
 		}
 	}
-	nh = mh - ph - 1;
+	if (times > 1)
+	{
+		for (int i = 0; i < times - 1; i++)
+		{
+			updatedKnotVector.pop_back();
+			updatedControlPoints.pop_back();
+		}
+	}
 }
 
-bool LNLib::NurbsCurve::ReduceDegree(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints)
+bool LNLib::NurbsCurve::ReduceDegree(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints)
 {
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
 	bool canReduce = ValidationUtils::IsValidDegreeReduction(degree);
-	if (!canReduce) return false;
+	if (!canReduce)
+	{
+		updatedKnotVector = knotVector;
+		updatedControlPoints = controlPoints;
+		return false;
+	}
 
 	double tol = ValidationUtils::ComputeCurveModifyTolerance(controlPoints);
 
-	int ph = static_cast<int>(degree) - 1;
+	int ph = degree - 1;
 	int mh = ph;
 
 	int kind = ph + 1;
 	int r = -1;
-	int a = static_cast<int>(degree);
+	int a = degree;
 
-	int b = static_cast<int>(degree) + 1;
+	int b = degree + 1;
 	int cind = 1;
-	int mult = static_cast<int>(degree);
+	int mult = degree;
 
 	int n = static_cast<int>(controlPoints.size() - 1);
-	int m = n + static_cast<int>(degree) + 1;
+	int m = n + degree + 1;
 
-	std::vector<XYZW> bpts;
-	bpts.resize(degree + 1);
-
-	std::vector<XYZW> nextbpts;
-	nextbpts.resize(degree - 1);
-
-	std::vector<XYZW> rbpts;
-	rbpts.resize(degree);
-
-	std::vector<double> alphas;
-	alphas.resize(degree - 1);
-
-	std::vector<double> errors;
-	errors.resize(m,0.0);
-
-	int nh = 0;
+	std::vector<XYZW> bpts(degree + 1);
+	std::vector<XYZW> nextbpts(degree - 1);
+	std::vector<XYZW> rbpts(degree);
+	std::vector<double> alphas(degree - 1);
+	std::vector<double> errors(m,0.0);
 
 	updatedControlPoints.resize(degree);
 	updatedControlPoints[0] = controlPoints[0];
@@ -697,7 +693,7 @@ bool LNLib::NurbsCurve::ReduceDegree(unsigned int degree, const std::vector<doub
 		updatedKnotVector[i] = updatedKnotVector[0];
 	}
 
-	for (int i = 0; i <= static_cast<int>(degree); i++)
+	for (int i = 0; i <= degree; i++)
 	{
 		bpts[i] = controlPoints[i];
 	}
@@ -733,7 +729,6 @@ bool LNLib::NurbsCurve::ReduceDegree(unsigned int degree, const std::vector<doub
 				{
 					bpts[k] = alphas[k - s] * bpts[k] + (1.0 - alphas[k - s]) * bpts[k - 1];
 				}
-
 				nextbpts[save] = bpts[degree];
 			}
 		}
@@ -790,7 +785,6 @@ bool LNLib::NurbsCurve::ReduceDegree(unsigned int degree, const std::vector<doub
 						return false;
 					}
 				}
-
 				first = first - 1;
 				last = last - 1;
 			}
@@ -802,15 +796,13 @@ bool LNLib::NurbsCurve::ReduceDegree(unsigned int degree, const std::vector<doub
 		{
 			for (int i = 0; i < ph - oldr; i++)
 			{
-				updatedKnotVector[kind] = knotVector[a];
-				kind += 1;
+				updatedKnotVector[kind++] = knotVector[a];
 			}
 		}
 
 		for (int i = lbz; i <= ph; i++)
 		{
-			updatedControlPoints[cind] = rbpts[i];
-			cind += 1;
+			updatedControlPoints[cind++] = rbpts[i];
 		}
 
 		if (b < m)
@@ -819,7 +811,7 @@ bool LNLib::NurbsCurve::ReduceDegree(unsigned int degree, const std::vector<doub
 			{
 				bpts[i] = nextbpts[i];
 			}
-			for (int i = r; i <= static_cast<int>(degree); i++)
+			for (int i = r; i <= degree; i++)
 			{
 				bpts[i] = controlPoints[b - degree + i];
 			}
@@ -835,8 +827,6 @@ bool LNLib::NurbsCurve::ReduceDegree(unsigned int degree, const std::vector<doub
 			}
 		}
 	}
-
-	nh = mh - ph - 1;
 	return true;
 }
 
