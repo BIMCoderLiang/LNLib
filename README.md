@@ -12,8 +12,7 @@ NURBS Algorithms:
 - Basis Function Computation
 - Bezier/B-Spline/NURBS Curve and Surface
 - Curve and Surface Decomposition
-- Knot Insertion and Removal
-- Knot Refinement
+- Knot Insertion/Refinement/Removal
 - Degree Elevation and Reduction
 - Point and Tangent Inversion
 - Curve and Surface Reverse
@@ -22,17 +21,16 @@ NURBS Algorithms:
 - Create Bilinear/Cylindrical/Ruled/Revolved Surface
 - Global/Local Curve/Surface Interpolation & Approximation
 
-This library is **under development.**
+This library is **in progress.**
 
 ## Roadmap
 - Algorithms of Chapter 10 & 11 in The NURBS Book 2nd Edition
-- Other Common NURBS algorithms
+- Test cases for all algorithms
 
 ## Contributing
 Welcome join this project including discussions in **Issues** and make **Pull requests**.
 
 ## Author
-
 LNLib is created by Yuqing Liang (BIMCoder Liang).
 
 - bim.frankliang@foxmail.com

@@ -648,19 +648,11 @@ void LNLib::NurbsCurve::ElevateDegree(int degree, const std::vector<double>& kno
 
 bool LNLib::NurbsCurve::ReduceDegree(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints)
 {
-	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidDegreeReduction(degree), "degree", "Degree must greater than one.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
 	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
-
-	bool canReduce = ValidationUtils::IsValidDegreeReduction(degree);
-	if (!canReduce)
-	{
-		updatedKnotVector = knotVector;
-		updatedControlPoints = controlPoints;
-		return false;
-	}
 
 	double tol = ValidationUtils::ComputeCurveModifyTolerance(controlPoints);
 
@@ -830,8 +822,35 @@ bool LNLib::NurbsCurve::ReduceDegree(int degree, const std::vector<double>& knot
 	return true;
 }
 
-double LNLib::NurbsCurve::GetParamOnCurve(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const XYZ& givenPoint)
+void LNLib::NurbsCurve::EquallyTessellate(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<XYZ>& tessellatedPoints, std::vector<double>& correspondingKnots)
 {
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+	double minParam = knotVector[0];
+	double maxParam = knotVector[knotVector.size() - 1];
+	int samples = controlPoints.size() * degree;
+	tessellatedPoints.resize(samples);
+	correspondingKnots.resize(samples);
+	double span = (maxParam - minParam) / (samples - 1);
+	for (int i = 0; i < samples ; i++)
+	{
+		correspondingKnots[i] = minParam + span * i;
+		tessellatedPoints[i] = GetPointOnCurve(degree, knotVector, correspondingKnots[i], controlPoints);
+	}
+}
+
+double LNLib::NurbsCurve::GetParamOnCurve(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const XYZ& givenPoint)
+{
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
 	double minValue = Constants::MaxDistance;
 
 	int maxIterations = 10;

@@ -89,9 +89,15 @@ namespace LNLib
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page230
+		/// Equally spaced parameter values on each candidate span.
+		/// </summary>
+		static void EquallyTessellate(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<XYZ>& tessellatedPoints, std::vector<double>& correspondingKnots);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page230
 		/// Point inversion:finding the corresponding parameter make C(u) = P.
 		/// </summary>
-		static double GetParamOnCurve(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const XYZ& givenPoint);
+		static double GetParamOnCurve(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const XYZ& givenPoint);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page236
