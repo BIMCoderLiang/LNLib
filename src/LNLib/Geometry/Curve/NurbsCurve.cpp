@@ -676,10 +676,10 @@ bool LNLib::NurbsCurve::ReduceDegree(int degree, const std::vector<double>& knot
 	std::vector<double> alphas(degree - 1);
 	std::vector<double> errors(m,0.0);
 
-	updatedControlPoints.resize(degree);
+	updatedControlPoints.resize(2 * n);
 	updatedControlPoints[0] = controlPoints[0];
 
-	updatedKnotVector.resize(ph + 1);
+	updatedKnotVector.resize(2 * n + ph + 1);
 	for (int i = 0; i <= ph; i++)
 	{
 		updatedKnotVector[i] = updatedKnotVector[0];
@@ -830,17 +830,23 @@ void LNLib::NurbsCurve::EquallyTessellate(int degree, const std::vector<double>&
 	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
 
-	double minParam = knotVector[0];
-	double maxParam = knotVector[knotVector.size() - 1];
-	int samples = controlPoints.size() * degree;
-	tessellatedPoints.resize(samples);
-	correspondingKnots.resize(samples);
-	double span = (maxParam - minParam) / (samples - 1);
-	for (int i = 0; i < samples ; i++)
+	std::vector<double> uniqueKv = knotVector;
+	uniqueKv.erase(unique(uniqueKv.begin(), uniqueKv.end()), uniqueKv.end());
+	int size = uniqueKv.size();
+	int intervals = 100;
+	for (int i = 0; i < size - 1; i++)
 	{
-		correspondingKnots[i] = minParam + span * i;
-		tessellatedPoints[i] = GetPointOnCurve(degree, knotVector, correspondingKnots[i], controlPoints);
+		double currentU = uniqueKv[i];
+		double nextU = uniqueKv[i - 1];
+		double step = (nextU - currentU) / intervals;
+		for (int j = 0; j < intervals; j++)
+		{
+			correspondingKnots.emplace_back(currentU + step * i);
+			tessellatedPoints.emplace_back(GetPointOnCurve(degree, knotVector, correspondingKnots[i], controlPoints));
+		}
 	}
+	correspondingKnots.emplace_back(knotVector[knotVector.size() - 1]);
+	tessellatedPoints.emplace_back(const_cast<XYZW&>(controlPoints[controlPoints.size() - 1]).ToXYZ(true));
 }
 
 double LNLib::NurbsCurve::GetParamOnCurve(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const XYZ& givenPoint)
