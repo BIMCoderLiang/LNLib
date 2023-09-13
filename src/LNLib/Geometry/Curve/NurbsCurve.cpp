@@ -837,12 +837,13 @@ void LNLib::NurbsCurve::EquallyTessellate(int degree, const std::vector<double>&
 	for (int i = 0; i < size - 1; i++)
 	{
 		double currentU = uniqueKv[i];
-		double nextU = uniqueKv[i - 1];
+		double nextU = uniqueKv[i + 1];
 		double step = (nextU - currentU) / intervals;
 		for (int j = 0; j < intervals; j++)
 		{
-			correspondingKnots.emplace_back(currentU + step * i);
-			tessellatedPoints.emplace_back(GetPointOnCurve(degree, knotVector, correspondingKnots[i], controlPoints));
+			double u = currentU + step * j;
+			correspondingKnots.emplace_back(u);
+			tessellatedPoints.emplace_back(GetPointOnCurve(degree, knotVector, u, controlPoints));
 		}
 	}
 	correspondingKnots.emplace_back(knotVector[knotVector.size() - 1]);
@@ -864,15 +865,16 @@ double LNLib::NurbsCurve::GetParamOnCurve(int degree, const std::vector<double>&
 	double minParam = knotVector[0];
 	double maxParam = knotVector[knotVector.size() - 1];
 
-	int samples = static_cast<int>(controlPoints.size() * degree);
-	double span = (maxParam - minParam) / (samples - 1);
-	for (int i = 0; i < samples - 1; i++)
+	std::vector<XYZ> tessellatedPoints;
+	std::vector<double> correspondingKnots;
+	EquallyTessellate(degree, knotVector, controlPoints, tessellatedPoints, correspondingKnots);
+	for (int i = 0; i < tessellatedPoints.size() - 1; i++)
 	{
-		double currentU = minParam + span * i; 
-		XYZ currentPoint = NurbsCurve::GetPointOnCurve(degree, knotVector, currentU, controlPoints);
+		double currentU = correspondingKnots[i];
+		double nextU = correspondingKnots[i + 1];
 
-		double nextU = minParam + span * (i + 1);
-		XYZ nextPoint = NurbsCurve::GetPointOnCurve(degree, knotVector, nextU, controlPoints);
+		XYZ currentPoint = tessellatedPoints[i];
+		XYZ nextPoint = tessellatedPoints[i + 1];
 
 		XYZ vector1 = currentPoint - givenPoint;
 		XYZ vector2 = nextPoint - currentPoint;
