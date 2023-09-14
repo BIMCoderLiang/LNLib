@@ -636,13 +636,10 @@ void LNLib::NurbsCurve::ElevateDegree(int degree, const std::vector<double>& kno
 			}
 		}
 	}
-	if (times > 1)
+	for (int i = 0; i < 2 * times - 1; i++)
 	{
-		for (int i = 0; i < times - 1; i++)
-		{
-			updatedKnotVector.pop_back();
-			updatedControlPoints.pop_back();
-		}
+		updatedKnotVector.pop_back();
+		updatedControlPoints.pop_back();
 	}
 }
 
@@ -665,7 +662,7 @@ bool LNLib::NurbsCurve::ReduceDegree(int degree, const std::vector<double>& knot
 
 	int b = degree + 1;
 	int cind = 1;
-	int mult = degree;
+	int multi = degree;
 
 	int n = static_cast<int>(controlPoints.size() - 1);
 	int m = n + degree + 1;
@@ -682,7 +679,7 @@ bool LNLib::NurbsCurve::ReduceDegree(int degree, const std::vector<double>& knot
 	updatedKnotVector.resize(2 * n + ph + 1);
 	for (int i = 0; i <= ph; i++)
 	{
-		updatedKnotVector[i] = updatedKnotVector[0];
+		updatedKnotVector[i] = knotVector[0];
 	}
 
 	for (int i = 0; i <= degree; i++)
@@ -698,25 +695,25 @@ bool LNLib::NurbsCurve::ReduceDegree(int degree, const std::vector<double>& knot
 		{
 			b = b + 1;
 		}
-		mult = b - i + 1;
-		mh += mult - 1;
+		multi = b - i + 1;
+		mh += multi - 1;
 		int oldr = r;
-		r = degree - mult;
+		r = degree - multi;
 
 		int lbz = oldr > 0? (oldr + 2) / 2:1;
 
 		if (r > 0)
 		{
 			double numer = knotVector[b] - knotVector[a];
-			for (int k = degree; k >= mult; k--)
+			for (int k = degree; k > multi; k--)
 			{
-				alphas[k - mult - 1] = numer / (knotVector[a + k] - knotVector[a]);
+				alphas[k - multi - 1] = numer / (knotVector[a + k] - knotVector[a]);
 			}
 
 			for (int j = 1; j <= r; j++)
 			{
 				int save = r - j;
-				int s = mult + j;
+				int s = multi + j;
 				for (int k = degree; k >= s; k--)
 				{
 					bpts[k] = alphas[k - s] * bpts[k] + (1.0 - alphas[k - s]) * bpts[k - 1];

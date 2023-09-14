@@ -3,6 +3,7 @@
 #include "XYZW.h"
 #include "NurbsCurve.h"
 #include "NurbsSurface.h"
+#include "ValidationUtils.h"
 #include "MathUtils.h"
 using namespace LNLib;
 
@@ -224,6 +225,40 @@ TEST(Test_Fundamental, All)
 		EXPECT_TRUE(newCps[0][2].IsAlmostEqualTo(XYZW(25.15151515, 17.5757575757, 0, 1)));
 		EXPECT_TRUE(newCps[0][3].IsAlmostEqualTo(XYZW(45, 10, 0, 1)));
 		EXPECT_TRUE(newCps[0][4].IsAlmostEqualTo(XYZW(50, 5, 0, 1)));
+	}
+
+	{
+		int degree = 3;
+		std::vector<double> kv = { 0,0,0,0,1,2,3,4,5,5,5,5 };
+
+		XYZW P0 = XYZW(XYZ(0, 0, 0), 1);
+		XYZW P1 = XYZW(XYZ(1, 5, 0), 1);
+		XYZW P2 = XYZW(XYZ(2, 10, 0), 1);
+		XYZW P3 = XYZW(XYZ(3, 15, 0), 1);
+		XYZW P4 = XYZW(XYZ(4, 20, 0), 1);
+		XYZW P5 = XYZW(XYZ(5, 15, 0), 1);
+		XYZW P6 = XYZW(XYZ(6, 10, 0), 1);
+		XYZW P7 = XYZW(XYZ(7, 5, 0), 1);
+
+		std::vector<XYZW> cp = { P0,P1,P2,P3,P4,P5,P6,P7 };
+		std::vector<double> updatedKv;
+		std::vector<XYZW> updatedCps;
+		NurbsCurve::ElevateDegree(degree, kv, cp, 3, updatedKv, updatedCps);
+		EXPECT_TRUE(ValidationUtils::IsValidNurbs(degree + 3, updatedKv.size(), updatedCps.size()));
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(kv[0], updatedKv[0]));
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(kv[kv.size()-1], updatedKv[updatedKv.size()-1]));
+		EXPECT_TRUE(cp[0].IsAlmostEqualTo(updatedCps[0]));
+		EXPECT_TRUE(cp[7].IsAlmostEqualTo(updatedCps[updatedCps.size()-1]));
+		XYZ result1 = NurbsCurve::GetPointOnCurve(degree, kv, 0.5, cp);
+		XYZ result2 = NurbsCurve::GetPointOnCurve(degree + 3, updatedKv, 0.5, updatedCps);
+
+		/*std::vector<double> reducedKv;
+		std::vector<XYZW> reducedCps;
+		NurbsCurve::ReduceDegree(degree + 3, updatedKv, updatedCps, reducedKv, reducedCps);
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(updatedKv[0], reducedKv[0]));
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(updatedKv[updatedKv.size() - 1], reducedKv[reducedKv.size() - 1]));
+		EXPECT_TRUE(updatedCps[0].IsAlmostEqualTo(reducedCps[0]));
+		EXPECT_TRUE(updatedCps[updatedCps.size() - 1].IsAlmostEqualTo(reducedCps[reducedCps.size() - 1]));*/
 	}
 
 	{
