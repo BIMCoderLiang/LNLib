@@ -15,14 +15,6 @@
 #include <algorithm>
 
 
-namespace LNLib
-{
-	static double GetCoefficient(int index, int degree)
-	{
-		return index / degree;
-	}
-}
-
 bool LNLib::ValidationUtils::IsValidBezier(int degree, int controlPointsCount)
 {
 	return controlPointsCount == degree + 1;
@@ -64,36 +56,47 @@ double LNLib::ValidationUtils::ComputeCurveModifyTolerance(const std::vector<XYZ
 	return Constants::DistanceEpsilon * minWeight / (1 + std::abs(maxDistance));
 }
 
-double LNLib::ValidationUtils::ComputeMaxErrorOfBezierReduction(int degree, const std::vector<XYZW>& currentControlPoints, const std::vector<XYZW>& reductedControlPoints)
+double LNLib::ValidationUtils::ComputeMaxErrorOfBezierReduction(int degree, const std::vector<XYZW>& currentControlPoints, std::vector<XYZW>& reductedControlPoints)
 {
-	int r = (degree - 1)/2;
-
+	int r = floor((degree - 1)/2);
+	
+	reductedControlPoints[0] = currentControlPoints[0];
 	if (degree % 2 == 0)
 	{
-		XYZW cwp = currentControlPoints[r];
-		XYZW rwp = reductedControlPoints[r-1];
-		XYZ Pr = (cwp.ToXYZ(true) - GetCoefficient(r, degree) * rwp.ToXYZ(true)) / (1 - GetCoefficient(r, degree));
+		for (int i = 1; i <= r; i++)
+		{
+			double alpha = (double)i / (double)degree;
+			reductedControlPoints[i] = (currentControlPoints[i] - alpha * reductedControlPoints[i - 1]) / (1 - alpha);
+		}
+		for (int i = degree - 2; i <= r + 1; i++)
+		{
+			double alpha = (double)(i + 1) / (double)degree;
+			reductedControlPoints[i] = (currentControlPoints[i + 1] - (1 - alpha) * reductedControlPoints[i + 1]) / alpha;
+		}
 
-		XYZW cwp1 = currentControlPoints[r + 2];
-		XYZW rwp1 = reductedControlPoints[r + 2];
-		XYZ Pr1 = (cwp1.ToXYZ(true) - (1 - GetCoefficient(r + 2, degree)) * rwp1.ToXYZ(true)) / GetCoefficient(r + 2,degree);
-
-		XYZW cp1 = currentControlPoints[r + 1];
-		XYZ pr = 0.5 * (Pr + Pr1);
-
-		return std::abs((cp1.ToXYZ(true)-pr).Length());
+		reductedControlPoints[degree - 1] = currentControlPoints[degree];
+		return currentControlPoints[r + 1].Distance(0.5 * (reductedControlPoints[r] + reductedControlPoints[r + 1]));
 	}
 	else
 	{
-		XYZW cwp = currentControlPoints[r];
-		XYZW rwp = reductedControlPoints[r - 1];
-		XYZ PLr = (cwp.ToXYZ(true) - GetCoefficient(r, degree) * rwp.ToXYZ(true)) / (1 - GetCoefficient(r, degree));
+		for (int i = 1; i <= r - 1; i++)
+		{
+			double alpha = (double)i / (double)degree;
+			reductedControlPoints[i] = (currentControlPoints[i] - alpha * reductedControlPoints[i - 1]) / (1 - alpha);
+		}
+		for (int i = degree - 2; i <= r; i++)
+		{
+			double alpha = (double)(i + 1) / (double)degree;
+			reductedControlPoints[i] = (currentControlPoints[i + 1] - (1 - alpha) * reductedControlPoints[i + 1]) / alpha;
+		}
 
-		XYZW cwp1 = currentControlPoints[r + 1];
-		XYZW rwp1 = reductedControlPoints[r + 1];
-		XYZ PRr = (cwp1.ToXYZ(true) - (1 - GetCoefficient(r + 1, degree)) * rwp1.ToXYZ(true)) / GetCoefficient(r + 1, degree);
-
-		return std::abs((PLr+PRr).Length());
+		double alpha = (double)r / (double)degree;
+		XYZW PLr = (currentControlPoints[r] - alpha * reductedControlPoints[r - 1]) / (1 - alpha);
+		alpha = (double)(r + 1) / (double)degree;
+		XYZW PRr = (currentControlPoints[r + 1] - (1 - alpha) * reductedControlPoints[r + 1]) / alpha;
+		reductedControlPoints[r] = 0.5 * (PLr + PRr);
+		reductedControlPoints[degree - 1] = currentControlPoints[degree];
+		return std::abs((PLr.ToXYZ(true) + PRr.ToXYZ(true)).Length());
 	}
 }
 

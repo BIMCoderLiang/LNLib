@@ -84,6 +84,8 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page223
 		/// Algorithm A5.11
 		/// Degree reduce a curve from degree to degree - 1.
+		/// 
+		/// This algorithm has more restricts and it is usually causes maxError greater than tol.
 		/// </summary>
 		static bool ReduceDegree(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
 

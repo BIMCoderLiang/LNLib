@@ -46,7 +46,7 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page221
 		/// Implements Bezier degree reduction and computation of the maximum error.
 		/// </summary>
-		static double ComputeMaxErrorOfBezierReduction(int degree, const std::vector<XYZW>& currentControlPoints, const std::vector<XYZW>& reductedControlPoints);
+		static double ComputeMaxErrorOfBezierReduction(int degree, const std::vector<XYZW>& currentControlPoints, std::vector<XYZW>& reductedControlPoints);
 
 		template <typename T>
 		static bool IsClosed(const std::vector<T>& controlPoints)

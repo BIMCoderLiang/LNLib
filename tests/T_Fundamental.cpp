@@ -240,25 +240,15 @@ TEST(Test_Fundamental, All)
 		XYZW P6 = XYZW(XYZ(6, 10, 0), 1);
 		XYZW P7 = XYZW(XYZ(7, 5, 0), 1);
 
-		std::vector<XYZW> cp = { P0,P1,P2,P3,P4,P5,P6,P7 };
+		std::vector<XYZW> cps = { P0,P1,P2,P3,P4,P5,P6,P7 };
 		std::vector<double> updatedKv;
 		std::vector<XYZW> updatedCps;
-		NurbsCurve::ElevateDegree(degree, kv, cp, 3, updatedKv, updatedCps);
-		EXPECT_TRUE(ValidationUtils::IsValidNurbs(degree + 3, updatedKv.size(), updatedCps.size()));
+		NurbsCurve::ElevateDegree(degree, kv, cps, 1, updatedKv, updatedCps);
+		EXPECT_TRUE(ValidationUtils::IsValidNurbs(degree + 1, updatedKv.size(), updatedCps.size()));
 		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(kv[0], updatedKv[0]));
 		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(kv[kv.size()-1], updatedKv[updatedKv.size()-1]));
-		EXPECT_TRUE(cp[0].IsAlmostEqualTo(updatedCps[0]));
-		EXPECT_TRUE(cp[7].IsAlmostEqualTo(updatedCps[updatedCps.size()-1]));
-		XYZ result1 = NurbsCurve::GetPointOnCurve(degree, kv, 0.5, cp);
-		XYZ result2 = NurbsCurve::GetPointOnCurve(degree + 3, updatedKv, 0.5, updatedCps);
-
-		/*std::vector<double> reducedKv;
-		std::vector<XYZW> reducedCps;
-		NurbsCurve::ReduceDegree(degree + 3, updatedKv, updatedCps, reducedKv, reducedCps);
-		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(updatedKv[0], reducedKv[0]));
-		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(updatedKv[updatedKv.size() - 1], reducedKv[reducedKv.size() - 1]));
-		EXPECT_TRUE(updatedCps[0].IsAlmostEqualTo(reducedCps[0]));
-		EXPECT_TRUE(updatedCps[updatedCps.size() - 1].IsAlmostEqualTo(reducedCps[reducedCps.size() - 1]));*/
+		EXPECT_TRUE(cps[0].IsAlmostEqualTo(updatedCps[0]));
+		EXPECT_TRUE(cps[7].IsAlmostEqualTo(updatedCps[updatedCps.size()-1]));
 	}
 
 	{

@@ -673,10 +673,10 @@ bool LNLib::NurbsCurve::ReduceDegree(int degree, const std::vector<double>& knot
 	std::vector<double> alphas(degree - 1);
 	std::vector<double> errors(m,0.0);
 
-	updatedControlPoints.resize(2 * n);
+	updatedControlPoints.resize(controlPoints.size()-1);
 	updatedControlPoints[0] = controlPoints[0];
 
-	updatedKnotVector.resize(2 * n + ph + 1);
+	updatedKnotVector.resize(knotVector.size()-2);
 	for (int i = 0; i <= ph; i++)
 	{
 		updatedKnotVector[i] = knotVector[0];
@@ -721,7 +721,10 @@ bool LNLib::NurbsCurve::ReduceDegree(int degree, const std::vector<double>& knot
 				nextbpts[save] = bpts[degree];
 			}
 		}
-
+		if (!ValidationUtils::IsValidBezier(degree, bpts.size()))
+		{
+			return false;
+		}
 		double maxError = ValidationUtils::ComputeMaxErrorOfBezierReduction(degree, bpts, rbpts);
 		errors[a] += maxError;
 		if (MathUtils::IsGreaterThan(errors[a], tol))
@@ -777,7 +780,6 @@ bool LNLib::NurbsCurve::ReduceDegree(int degree, const std::vector<double>& knot
 				first = first - 1;
 				last = last - 1;
 			}
-
 			cind = i - 1;
 		}
 
