@@ -21,6 +21,7 @@
 #include "Interpolation.h"
 #include "ValidationUtils.h"
 #include "LNLibExceptions.h"
+#include <algorithm>
 
 namespace LNLib
 {
@@ -617,10 +618,70 @@ bool LNLib::NurbsSurface::ReduceDegree(int degreeU, int degreeV, const std::vect
 	return true;
 }
 
+void LNLib::NurbsSurface::EquallyTessellate(int degreeU, int degreeV, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, const std::vector<std::vector<XYZW>>& controlPoints, std::vector<XYZ>& tessellatedPoints, std::vector<UV>& correspondingKnots)
+{
+	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVectorU.size() > 0, "knotVectorU", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(knotVectorV.size() > 0, "knotVectorV", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorU), "knotVectorU", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorV), "knotVectorV", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degreeU, knotVectorU.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degreeV, knotVectorV.size(), controlPoints[0].size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+	std::vector<double> uniqueKvU = knotVectorU;
+	uniqueKvU.erase(unique(uniqueKvU.begin(), uniqueKvU.end()), uniqueKvU.end());
+	int sizeU = uniqueKvU.size();
+
+	std::vector<double> uniqueKvV = knotVectorV;
+	uniqueKvV.erase(unique(uniqueKvV.begin(), uniqueKvV.end()), uniqueKvV.end());
+	int sizeV = uniqueKvV.size();
+
+	std::vector<double> tessellatedU;
+	int intervals = 100;
+	for (int i = 0; i < sizeU - 1; i++)
+	{
+		double currentU = uniqueKvU[i];
+		double nextU = uniqueKvU[i + 1];
+		double stepU = (nextU - currentU) / intervals;
+		for (int j = 0; j < intervals; j++)
+		{
+			double u = currentU + stepU * j;
+			tessellatedU.emplace_back(u);
+		}
+	}
+	std::vector<double> tessellatedV;
+	for (int i = 0; i < sizeV - 1; i++)
+	{
+		double currentV = uniqueKvV[i];
+		double nextV = uniqueKvV[i + 1];
+		double stepV = (nextV - currentV) / intervals;
+		for (int j = 0; j < intervals; j++)
+		{
+			double v = currentV + stepV * j;
+			tessellatedV.emplace_back(v);
+		}
+	}
+
+	for (int i = 0; i < tessellatedU.size(); i++)
+	{
+		for (int j = 0; j < tessellatedV.size(); j++)
+		{
+			UV uv = UV(tessellatedU[i],tessellatedV[j]);
+			correspondingKnots.emplace_back(uv);
+			tessellatedPoints.emplace_back(GetPointOnSurface(degreeU, degreeV, knotVectorU, knotVectorV, uv, controlPoints));
+		}
+	}
+
+	correspondingKnots.emplace_back(UV(knotVectorU[knotVectorU.size() - 1], knotVectorV[knotVectorV.size() - 1]));
+	tessellatedPoints.emplace_back(const_cast<XYZW&>(controlPoints[controlPoints.size() - 1][controlPoints[0].size()-1]).ToXYZ(true));
+}
+
 LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(int degreeU, int degreeV, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, const std::vector<std::vector<XYZW>>& controlPoints, const XYZ& givenPoint)
 {
-	VALIDATE_ARGUMENT(ValidationUtils::IsValidDegreeReduction(degreeU), "degreeU", "Degree must greater than one.");
-	VALIDATE_ARGUMENT(ValidationUtils::IsValidDegreeReduction(degreeV), "degreeV", "Degree must greater than one.");
+	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVectorU.size() > 0, "knotVectorU", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(knotVectorV.size() > 0, "knotVectorV", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorU), "knotVectorU", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -647,58 +708,52 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(int degreeU, int degreeV, const
 	bool isClosedU = ValidationUtils::IsClosedU(controlPoints);
 	bool isClosedV = ValidationUtils::IsClosedV(controlPoints);
 
-	int samplesU = controlPoints.size() * degreeU;
-	int samplesV = controlPoints[0].size() * degreeV;
-	double spanU = (maxUParam - minUParam) / (samplesU - 1);
-	double spanV = (maxVParam - minVParam) / (samplesV - 1);
-	for (int i = 0; i < samplesU - 1; i++)
+	std::vector<XYZ> tessellatedPoints;
+	std::vector<UV> correspondingKnots;
+	EquallyTessellate(degreeU, degreeV, knotVectorU, knotVectorV, controlPoints, tessellatedPoints, correspondingKnots);
+	for (int i = 0; i < tessellatedPoints.size() - 1; i++)
 	{
-		double currentU = minUParam + spanU * i;
-		double nextU = minUParam + spanU * (i + 1);
-		for (int j = 0; j < samplesV; j++)
+		UV currentUV = correspondingKnots[i];
+		UV nextUV = correspondingKnots[i + 1];
+
+		XYZ currentPoint = tessellatedPoints[i];
+		XYZ nextPoint = tessellatedPoints[i + 1];
+
+		XYZ vector1 = currentPoint - givenPoint;
+		XYZ vector2 = nextPoint - currentPoint;
+		double dot = vector1.DotProduct(vector2);
+
+		XYZ projectPoint;
+		UV project = UV(Constants::DoubleEpsilon, Constants::DoubleEpsilon);
+
+		if (dot < 0)
 		{
-			double v = minVParam + spanV * j;
-			
-			XYZ currentPoint = NurbsSurface::GetPointOnSurface(degreeU, degreeV, knotVectorU, knotVectorV,  UV(currentU, v), controlPoints);
-			
-			XYZ nextPoint = NurbsSurface::GetPointOnSurface(degreeU, degreeV, knotVectorU, knotVectorV, UV(nextU, v), controlPoints);
+			projectPoint = currentPoint;
+			project = currentUV;
+		}
+		else if (dot > 1)
+		{
+			projectPoint = nextPoint;
+			project = nextUV;
+		}
+		else
+		{
+			projectPoint = currentPoint + dot * vector1.Normalize();
+			project = currentUV + (nextUV - currentUV) * dot;
+		}
 
-			XYZ vector1 = currentPoint - givenPoint;
-			XYZ vector2 = nextPoint - currentPoint;
-			double dot = vector1.DotProduct(vector2);
-
-			XYZ projectPoint;
-			UV project = UV(Constants::DoubleEpsilon, Constants::DoubleEpsilon);
-
-			if (dot < 0)
-			{
-				projectPoint = currentPoint;
-				project = UV(currentU,v);
-			}
-			else if (dot > 1)
-			{
-				projectPoint = nextPoint;
-				project = UV(nextU, v);
-			}
-			else
-			{
-				projectPoint = currentPoint + dot * vector1.Normalize();
-				project = UV(currentU + (nextU - currentU) * dot, v);
-			}
-
-			double distance = (givenPoint - projectPoint).Length();
-			if (distance < minValue)
-			{
-				minValue = distance;
-				param = project;
-			}
+		double distance = (givenPoint - projectPoint).Length();
+		if (distance < minValue)
+		{
+			minValue = distance;
+			param = project;
 		}
 	}
 
 	int counters = 0;
 	while (counters < maxIterations)
 	{
-		std::vector<std::vector<XYZ>> derivatives = ComputeRationalSurfaceDerivatives(degreeU, degreeV, 2, knotVectorU,knotVectorV, param, controlPoints);
+		std::vector<std::vector<XYZ>> derivatives = ComputeRationalSurfaceDerivatives(degreeU, degreeV, 2, knotVectorU, knotVectorV, param, controlPoints);
 		XYZ difference = derivatives[0][0] - givenPoint;
 		double fa = derivatives[1][0].DotProduct(difference);
 		double fb = derivatives[0][1].DotProduct(difference);
