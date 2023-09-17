@@ -83,7 +83,7 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page232
 		/// Point inversion:finding the corresponding parameter make S(u,v) = P.
 		/// </summary>
-		static UV GetParamOnSurface(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, const XYZ& givenPoint);
+		static UV GetParamOnSurface(int degreeU, int degreeV, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, const std::vector<std::vector<XYZW>>& controlPoints, const XYZ& givenPoint);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page235

@@ -617,8 +617,18 @@ bool LNLib::NurbsSurface::ReduceDegree(int degreeU, int degreeV, const std::vect
 	return true;
 }
 
-LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, const XYZ& givenPoint)
+LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(int degreeU, int degreeV, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, const std::vector<std::vector<XYZW>>& controlPoints, const XYZ& givenPoint)
 {
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidDegreeReduction(degreeU), "degreeU", "Degree must greater than one.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidDegreeReduction(degreeV), "degreeV", "Degree must greater than one.");
+	VALIDATE_ARGUMENT(knotVectorU.size() > 0, "knotVectorU", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(knotVectorV.size() > 0, "knotVectorV", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorU), "knotVectorU", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorV), "knotVectorV", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degreeU, knotVectorU.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degreeV, knotVectorV.size(), controlPoints[0].size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
 	double minValue = Constants::MaxDistance;
 
 	int maxIterations = 10;
@@ -637,8 +647,8 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const std::vector<std::vector<X
 	bool isClosedU = ValidationUtils::IsClosedU(controlPoints);
 	bool isClosedV = ValidationUtils::IsClosedV(controlPoints);
 
-	int samplesU = static_cast<int>(controlPoints.size() * degreeU);
-	int samplesV = static_cast<int>(controlPoints[0].size() * degreeV);
+	int samplesU = controlPoints.size() * degreeU;
+	int samplesV = controlPoints[0].size() * degreeV;
 	double spanU = (maxUParam - minUParam) / (samplesU - 1);
 	double spanV = (maxVParam - minVParam) / (samplesV - 1);
 	for (int i = 0; i < samplesU - 1; i++)
@@ -688,7 +698,7 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const std::vector<std::vector<X
 	int counters = 0;
 	while (counters < maxIterations)
 	{
-		std::vector<std::vector<XYZ>> derivatives = ComputeRationalSurfaceDerivatives(degreeU, degreeV, 2, knotVectorU,knotVectorV,param,controlPoints);
+		std::vector<std::vector<XYZ>> derivatives = ComputeRationalSurfaceDerivatives(degreeU, degreeV, 2, knotVectorU,knotVectorV, param, controlPoints);
 		XYZ difference = derivatives[0][0] - givenPoint;
 		double fa = derivatives[1][0].DotProduct(difference);
 		double fb = derivatives[0][1].DotProduct(difference);
