@@ -74,8 +74,7 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page227
 		/// Degree reduce U or V Direction curve from degree to degree - 1.
 		/// 
-		/// return true means run successed;
-		/// return false means run failed; 
+		/// This algorithm has more restricts: it is usually return false since maxError greater than tolerance.
 		/// </summary>
 		static bool ReduceDegree(int degreeU, int degreeV, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, const std::vector<std::vector<XYZW>>& controlPoints, bool isUDirection, std::vector<double>& updatedKnotVectorU, std::vector<double>& updatedKnotVectorV, std::vector<std::vector<XYZW>>& updatedControlPoints);
 
@@ -95,7 +94,7 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page235
 		/// Surface Tangent Vector Inversion: finding the corresponding UV tangent [du dv] make T = Su*du+Sv*dv.
 		/// </summary>
-		static bool GetUVTangent(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, const UV param, const XYZ& tangent, UV& uvTangent);
+		static bool GetUVTangent(int degreeU, int degreeV, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, const std::vector<std::vector<XYZW>>& controlPoints, const UV param, const XYZ& tangent, UV& uvTangent);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page265

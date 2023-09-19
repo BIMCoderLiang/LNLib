@@ -85,7 +85,7 @@ namespace LNLib
 		/// Algorithm A5.11
 		/// Degree reduce a curve from degree to degree - 1.
 		/// 
-		/// This algorithm has more restricts and it is usually causes maxError greater than tolerance.
+		/// This algorithm has more restricts: it is usually return false since maxError greater than tolerance.
 		/// </summary>
 		static bool ReduceDegree(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
 

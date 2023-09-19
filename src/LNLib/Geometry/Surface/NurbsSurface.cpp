@@ -854,10 +854,19 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(int degreeU, int degreeV, const
 	return param;
 }
 
-bool LNLib::NurbsSurface::GetUVTangent(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, unsigned int degreeU, unsigned int degreeV, const UV param, const XYZ& tangent, UV& uvTangent)
+bool LNLib::NurbsSurface::GetUVTangent(int degreeU, int degreeV, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, const std::vector<std::vector<XYZW>>& controlPoints, const UV param, const XYZ& tangent, UV& uvTangent)
 {
-	std::vector<std::vector<XYZ>> derivatives;
-	ComputeRationalSurfaceDerivatives(degreeU, degreeV, 1, knotVectorU, knotVectorV, param, controlPoints);
+	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVectorU.size() > 0, "knotVectorU", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(knotVectorV.size() > 0, "knotVectorV", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorU), "knotVectorU", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorV), "knotVectorV", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degreeU, knotVectorU.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degreeV, knotVectorV.size(), controlPoints[0].size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+	std::vector<std::vector<XYZ>> derivatives = ComputeRationalSurfaceDerivatives(degreeU, degreeV, 1, knotVectorU, knotVectorV, param, controlPoints);
 	XYZ Su = derivatives[1][0];
 	XYZ Sv = derivatives[0][1];
 

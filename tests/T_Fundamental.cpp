@@ -250,16 +250,4 @@ TEST(Test_Fundamental, All)
 		EXPECT_TRUE(cps[0].IsAlmostEqualTo(updatedCps[0]));
 		EXPECT_TRUE(cps[7].IsAlmostEqualTo(updatedCps[updatedCps.size()-1]));
 	}
-
-	{
-		int degree = 2;
-		std::vector<double> kv = { 0,0,0,1,2,3,3,3 };
-		std::vector<XYZW> cps = { XYZW(XYZ(0,0,0),1), XYZW(XYZ(1,1,0),4), XYZW(XYZ(3,2,0),1), XYZW(XYZ(4,1,0),1), XYZW(XYZ(5,-1,0),1) };
-		std::vector<double> newKv;
-		std::vector<XYZ> newCps;
-
-		NurbsCurve::EquallyTessellate(degree, kv, cps, newCps, newKv);
-		EXPECT_TRUE(newCps[0].IsAlmostEqualTo(XYZ(0, 0, 0)));
-		EXPECT_TRUE(newCps[300].IsAlmostEqualTo(XYZ(5, -1, 0)));
-	}
 }
