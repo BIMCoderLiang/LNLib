@@ -976,6 +976,35 @@ void LNLib::NurbsCurve::CreateTransform(const std::vector<XYZW>& controlPoints, 
 	}
 }
 
+void LNLib::NurbsCurve::Reparameterization(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double alpha, double beta, double gamma, double delta, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints)
+{
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(alpha * delta, gamma * beta), "coefficient", "(alpha * delta - gamma * beta) must greater than zero");
+
+	updatedKnotVector.resize(knotVector.size());
+	for (int i = 0; i < knotVector.size(); i++)
+	{
+		updatedKnotVector[i] = (alpha * knotVector[i] + beta) / (gamma * knotVector[i] + delta);
+	}
+
+	updatedControlPoints.resize(controlPoints.size());
+	for (int i = 0; i < controlPoints.size(); i++)
+	{
+		double temp = 1.0;
+		for (int j = 1; j <= degree; j++)
+		{
+			double lambda = updatedKnotVector[i + j] * gamma - alpha;
+			temp = temp * lambda;
+		}
+		double newW = abs(controlPoints[i].GetW() * temp);
+		updatedControlPoints[i] = XYZW(const_cast<XYZW&>(controlPoints[i]).ToXYZ(true),newW);
+	}
+}
+
 void LNLib::NurbsCurve::ReverseKnotVector(const std::vector<double>& knotVector, std::vector<double> reversedKnotVector)
 {
 	int size = static_cast<int>(knotVector.size());

@@ -91,4 +91,43 @@ TEST(Test_Advanced, All)
 		UV param = NurbsSurface::GetParamOnSurface(degreeU, degreeV, kvU, kvV, cps, result);
 		EXPECT_TRUE(param.IsAlmostEqualTo(uv));
 	}
+
+	{
+		int degree = 3;
+		std::vector<double> kv = { 0,0,0,0,3.0/10,7.0/10,1,1,1,1 };
+		XYZW P0 = XYZW(XYZ(0, 0, 0), 1);
+		XYZW P1 = XYZW(XYZ(10, 10, 0), 1);
+		XYZW P2 = XYZW(XYZ(20, 20, 0), 1);
+		XYZW P3 = XYZW(XYZ(30, 30, 0), 1);
+		XYZW P4 = XYZW(XYZ(40, 20, 0), 1);
+		XYZW P5 = XYZW(XYZ(50, 10, 0), 1);
+		std::vector<XYZW> cps = {P0,P1,P2,P3,P4,P5};
+
+		double alpha = 2;
+		double beta = 1;
+		double gamma = 3;
+		double delta = 2;
+
+		std::vector<double> newKv;
+		std::vector<XYZW> newCps;
+		NurbsCurve::Reparameterization(degree, kv, cps, alpha, beta, gamma, delta, newKv, newCps);
+
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newKv[0], 0.5));
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newKv[1], 0.5));
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newKv[2], 0.5));
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newKv[3], 0.5));
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newKv[4], 0.551724));
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newKv[5], 0.585365));
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newKv[6], 0.6));
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newKv[7], 0.6));
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newKv[8], 0.6));
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newKv[9], 0.6));
+
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newCps[0].GetW(), 0.125));
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newCps[1].GetW(), 0.0862));
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newCps[2].GetW(), 0.04205));
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newCps[3].GetW(), 0.01682));
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newCps[4].GetW(), 0.00975));
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newCps[5].GetW(), 0.008));
+	}
 }

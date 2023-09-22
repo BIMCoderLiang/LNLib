@@ -108,6 +108,12 @@ namespace LNLib
 		static void CreateTransform(const std::vector<XYZW>& controlPoints, const Matrix4d& matrix, std::vector<XYZW>& transformedControlPoints);
 
 		/// <summary>
+		/// The NURBS Book 2nd Edition Page255
+		/// Reparameterization using a linear rational function : (alpha * u + beta)/(gamma * u + delta)
+		/// </summary>
+		static void Reparameterization(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double alpha, double beta, double gamma, double delta, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
+
+		/// <summary>
 		/// The NURBS Book 2nd Edition Page263
 		/// Knot reverse for curve reverse operation.
 		/// </summary>
