@@ -963,8 +963,10 @@ double LNLib::NurbsCurve::GetParamOnCurve(int degree, const std::vector<double>&
 	return paramT;
 }
 
-void LNLib::NurbsCurve::CreateTransform(const std::vector<XYZW>& controlPoints, const Matrix4d& matrix, std::vector<XYZW>& transformedControlPoints)
+void LNLib::NurbsCurve::CreateTransformed(const std::vector<XYZW>& controlPoints, const Matrix4d& matrix, std::vector<XYZW>& transformedControlPoints)
 {
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+
 	int size = static_cast<int>(controlPoints.size());
 	transformedControlPoints.resize(size);
 
@@ -1007,6 +1009,9 @@ void LNLib::NurbsCurve::Reparameterization(int degree, const std::vector<double>
 
 void LNLib::NurbsCurve::ReverseKnotVector(const std::vector<double>& knotVector, std::vector<double> reversedKnotVector)
 {
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+
 	int size = static_cast<int>(knotVector.size());
 
 	double min = knotVector[0];
@@ -1022,12 +1027,9 @@ void LNLib::NurbsCurve::ReverseKnotVector(const std::vector<double>& knotVector,
 
 void LNLib::NurbsCurve::ReverseControlPoints(const std::vector<XYZW>& controlPoints, std::vector<XYZW> reversedControlPoints)
 {
-	int size = static_cast<int>(controlPoints.size());
-	reversedControlPoints.resize(size);
-	for (int i = 0; i < size; i++)
-	{
-		reversedControlPoints[i] = controlPoints[i];
-	}
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+
+	reversedControlPoints = controlPoints;
 	std::reverse(reversedControlPoints.begin(), reversedControlPoints.end());
 }
 

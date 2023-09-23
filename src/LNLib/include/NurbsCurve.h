@@ -105,7 +105,7 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page236
 		/// Curve make Transform.
 		/// </summary>
-		static void CreateTransform(const std::vector<XYZW>& controlPoints, const Matrix4d& matrix, std::vector<XYZW>& transformedControlPoints);
+		static void CreateTransformed(const std::vector<XYZW>& controlPoints, const Matrix4d& matrix, std::vector<XYZW>& transformedControlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page255

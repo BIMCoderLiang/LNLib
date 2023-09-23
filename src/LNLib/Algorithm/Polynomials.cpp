@@ -490,13 +490,12 @@ std::vector<std::vector<double>> LNLib::Polynomials::AllBasisFunctions(int spanI
 	return result;
 }
 
-void LNLib::Polynomials::BezierToPowerMatrix(unsigned int degree, std::vector<std::vector<double>>& matrix)
+void LNLib::Polynomials::BezierToPowerMatrix(int degree, std::vector<std::vector<double>>& matrix)
 {
-	matrix.resize(degree+1);
-	for (int i = 0; i < static_cast<int>(degree); i++)
+	matrix.resize(degree+1, std::vector<double>(degree + 1));
+	for (int i = 0; i < degree; i++)
 	{
-		matrix[i].resize(degree+1);
-		for (int j = i + 1; j <= static_cast<int>(degree); j++)
+		for (int j = i + 1; j <= degree; j++)
 		{
 			matrix[i][j] = 0.0;
 		}
@@ -506,7 +505,7 @@ void LNLib::Polynomials::BezierToPowerMatrix(unsigned int degree, std::vector<st
 	matrix[degree][0] = degree % 2 == 0 ? -1.0 : 1.0;
 
 	double sign = -1.0;
-	for (int i = 1; i < static_cast<int>(degree); i++)
+	for (int i = 1; i < degree; i++)
 	{
 		matrix[i][i] = MathUtils::Binomial(degree,i);
 		matrix[i][0] = matrix[degree][degree - 1] = sign * matrix[i][i];
@@ -527,19 +526,18 @@ void LNLib::Polynomials::BezierToPowerMatrix(unsigned int degree, std::vector<st
 	}
 }
 
-void LNLib::Polynomials::PowerToBezierMatrix(unsigned int degree, const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& inverseMatrix)
+void LNLib::Polynomials::PowerToBezierMatrix(int degree, const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& inverseMatrix)
 {
-	inverseMatrix.resize(degree + 1);
-	for (int i = 0; i < static_cast<int>(degree); i++)
+	inverseMatrix.resize(degree + 1, std::vector<double>(degree + 1));
+	for (int i = 0; i < degree; i++)
 	{
-		inverseMatrix[i].resize(degree + 1);
-		for (int j = i + 1; j <= static_cast<int>(degree); j++)
+		for (int j = i + 1; j <= degree; j++)
 		{
 			inverseMatrix[i][j] = 0.0;
 		}
 	}
 
-	for (int i = 0; i <= static_cast<int>(degree); i++)
+	for (int i = 0; i <= degree; i++)
 	{
 		inverseMatrix[i][0] = inverseMatrix[degree][i] = 1.0;
 		inverseMatrix[i][i] = 1.0 / (matrix[i][i]);

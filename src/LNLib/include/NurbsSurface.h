@@ -95,18 +95,6 @@ namespace LNLib
 		/// Surface Tangent Vector Inversion: finding the corresponding UV tangent [du dv] make T = Su*du+Sv*dv.
 		/// </summary>
 		static bool GetUVTangent(int degreeU, int degreeV, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, const std::vector<std::vector<XYZW>>& controlPoints, const UV param, const XYZ& tangent, UV& uvTangent);
-
-		/// <summary>
-		/// The NURBS Book 2nd Edition Page265
-		/// Surface reverse U direction,but not use reparameterization.
-		/// </summary>
-		static void ReverseU(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorU, std::vector<double>& reversedKnotVectorU, std::vector<std::vector<XYZW>>& reversedControlPoints);
-
-		/// <summary>
-		/// The NURBS Book 2nd Edition Page265
-		/// Surface reverse V direction,but not use reparameterization.
-		/// </summary>
-		static void ReverseV(const std::vector<std::vector<XYZW>>& controlPoints, const std::vector<double>& knotVectorV, std::vector<double>& reversedKnotVectorV, std::vector<std::vector<XYZW>>& reversedControlPoints);
 		
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page334
