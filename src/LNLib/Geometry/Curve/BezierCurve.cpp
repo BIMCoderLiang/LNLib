@@ -64,6 +64,8 @@ namespace LNLib
 
 XYZ LNLib::BezierCurve::GetPointOnQuadraticArc(const XYZW& startPoint, const XYZW& middlePoint, const XYZW& endPoint, double paramT)
 {
+	VALIDATE_ARGUMENT_RANGE(paramT, 0, 1);
+
 	double w0 = startPoint.GetW();
 	XYZ P0 = XYZ(startPoint.GetWX()/w0, startPoint.GetWY()/w0, startPoint.GetWZ()/w0);
 	double w1 = middlePoint.GetW();

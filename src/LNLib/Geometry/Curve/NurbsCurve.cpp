@@ -1041,15 +1041,10 @@ void LNLib::NurbsCurve::Reverse(const std::vector<double>& knotVector, const std
 
 bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ& yAxis, double startRad, double endRad, double xRadius, double yRadius, int& degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
 {
-	XYZ nX = const_cast<XYZ&>(xAxis).Normalize();
-	XYZ nY = const_cast<XYZ&>(yAxis).Normalize();
-
-	if (endRad < startRad)
-	{
-		endRad = 2 * Constants::Pi + startRad;
-	}
+	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(endRad, startRad),"endRad","endRad must greater than startRad");
 	double theta = endRad - startRad;
-	
+	VALIDATE_ARGUMENT_RANGE(theta, 0, 2 * Constants::Pi);
+
 	int narcs = 0;
 	if (MathUtils::IsLessThanOrEqual(theta, Constants::Pi / 2))
 	{
@@ -1077,6 +1072,8 @@ bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ
 	controlPoints.resize(n);
 
 	double w1 = cos(dtheta / 2.0);
+	XYZ nX = const_cast<XYZ&>(xAxis).Normalize();
+	XYZ nY = const_cast<XYZ&>(yAxis).Normalize();
 	XYZ P0 = center + xRadius * cos(startRad) * nX + yRadius * sin(startRad) * nY;
 	XYZ T0 = -sin(startRad) * nX + cos(startRad) * nY;
 
@@ -1130,9 +1127,6 @@ bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ
 
 bool LNLib::NurbsCurve::CreateOneConicArc(const XYZ& start, const XYZ& startTangent, const XYZ& end, const XYZ& endTangent, const XYZ& pointOnConic, XYZ& projectPoint, double& projectPointWeight)
 {
-	XYZ sTemp = start;
-	XYZ eTemp = end;
-
 	double param0, param1 = 0.0;
 	XYZ point = XYZ(0,0,0);
 	CurveCurveIntersectionType type = Intersection::ComputeRays(start, startTangent, end, endTangent, param0, param1, point);
