@@ -11,22 +11,21 @@
 #include "Intersection.h"
 #include "XYZ.h"
 #include "MathUtils.h"
+#include "LNLibExceptions.h"
 
 using namespace LNLib;
 
 CurveCurveIntersectionType Intersection::ComputeRays(const XYZ& point0, const XYZ& vector0, const XYZ& point1, const XYZ& vector1, double& param0, double& param1, XYZ& intersectPoint)
 {
-	XYZ v0 = const_cast<XYZ&>(vector0).Normalize();
-	XYZ v1 = const_cast<XYZ&>(vector1).Normalize();
+	VALIDATE_ARGUMENT(!vector0.IsZero(), "vector0", "Vector0 must not zero vector.");
+	VALIDATE_ARGUMENT(!vector1.IsZero(), "vector1", "Vector1 must not zero vector.")
+
+	XYZ v0 = const_cast<XYZ&>(vector0);
+	XYZ v1 = const_cast<XYZ&>(vector1);
 
 	XYZ cross = v0.CrossProduct(v1);
-
-	XYZ p0Temp = point0;
-	XYZ p1Temp = point1;
-
-	XYZ pDiff = p1Temp - p0Temp;
-	XYZ pDiffNormal = (p1Temp - p0Temp).Normalize();
-	XYZ coinCross = pDiffNormal.CrossProduct(v1);
+	XYZ diff = point1 - point0;
+	XYZ coinCross = diff.CrossProduct(v1);
 
 	if (cross.IsZero())
 	{
@@ -40,16 +39,16 @@ CurveCurveIntersectionType Intersection::ComputeRays(const XYZ& point0, const XY
 		}
 	}
 
-	double dMagn = cross.Length();
-	double dMagnSquare = dMagn * dMagn;
+	double crossLength = cross.Length();
+	double squareLength = crossLength * crossLength;
 
-	XYZ pd0Cross = pDiff.Normalize().CrossProduct(vector1);
-	double d0 = pd0Cross.DotProduct(cross);
-	param0 = d0 / dMagnSquare;
+	XYZ pd1Cross = diff.CrossProduct(vector1);
+	double pd1Dot = pd1Cross.DotProduct(cross);
+	param0 = pd1Dot / squareLength;
 
-	XYZ pd1Cross = pDiff.Normalize().CrossProduct(vector0);
-	double d1 = pd1Cross.DotProduct(cross);
-	param1 = d1 / dMagnSquare;
+	XYZ pd2Cross = diff.CrossProduct(vector0);
+	double pd2Dot = pd2Cross.DotProduct(cross);
+	param1 = pd2Dot / squareLength;
 
 	XYZ rayP0 = point0 + vector0 * param0;
 	XYZ rayP1 = point1 + vector1 * param1;

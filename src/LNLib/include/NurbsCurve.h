@@ -136,7 +136,7 @@ namespace LNLib
 		/// Algorithm A7.1
 		/// Create arbitrary NURBS arc.
 		/// </summary>
-		static bool CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ& yAxis, double xRadius, double yRadius, double startRad, double endRad, int& degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+		static bool CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ& yAxis, double startRad, double endRad, double xRadius, double yRadius, int& degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page314

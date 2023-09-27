@@ -1044,6 +1044,8 @@ bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ
 	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(endRad, startRad),"endRad","endRad must greater than startRad");
 	double theta = endRad - startRad;
 	VALIDATE_ARGUMENT_RANGE(theta, 0, 2 * Constants::Pi);
+	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(xRadius, 0.0), "xRadius", "xRadius must greater than startRad");
+	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(yRadius, 0.0), "yRadius", "yRadius must greater than startRad");
 
 	int narcs = 0;
 	if (MathUtils::IsLessThanOrEqual(theta, Constants::Pi / 2))
@@ -1065,10 +1067,10 @@ bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ
 			narcs = 4;
 		}
 	}
-	double dtheta = theta / narcs;
-	int n = 2 * narcs;
+	double dtheta = theta / (double)narcs;
+	int n = 2 * narcs + 1;
 
-	knotVector.resize(n + 3);
+	knotVector.resize(n + 2 + 1);
 	controlPoints.resize(n);
 
 	double w1 = cos(dtheta / 2.0);
@@ -1086,9 +1088,10 @@ bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ
 		XYZ P2 = center + xRadius * cos(angle) * nX + yRadius * sin(angle) * nY;
 		controlPoints[index + 2] = XYZW(P2, 1);
 		XYZ T2 = -sin(angle) * nX + cos(angle) * nY;
-		XYZ P1;
+		
 		double param0, param2 = 0.0;
-		CurveCurveIntersectionType type =  Intersection::ComputeRays(P0, T0, P2, T2, param0, param2, P1);
+		XYZ P1;
+		CurveCurveIntersectionType type = Intersection::ComputeRays(P0, T0, P2, T2, param0, param2, P1);
 		if (type != CurveCurveIntersectionType::Intersecting) return false;
 		controlPoints[index + 1] = XYZW(P1, w1);
 		index = index + 2;
@@ -1107,19 +1110,22 @@ bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ
 		knotVector[i + j] = 1.0;
 	}
 
-	switch (narcs) {
-	case 2:
-		knotVector[3] = knotVector[4] = 0.5;
-		break;
-	case 3:
-		knotVector[3] = knotVector[4] = 1 / 3;
-		knotVector[5] = knotVector[6] = 2 / 3;
-		break;
-	case 4:
-		knotVector[3] = knotVector[4] = 0.25;
-		knotVector[5] = knotVector[6] = 0.5;
-		knotVector[7] = knotVector[8] = 0.75;
-		break;
+	switch (narcs) 
+	{
+		case 1:
+			break;
+		case 2:
+			knotVector[3] = knotVector[4] = 0.5;
+			break;
+		case 3:
+			knotVector[3] = knotVector[4] = 1 / 3;
+			knotVector[5] = knotVector[6] = 2 / 3;
+			break;
+		case 4:
+			knotVector[3] = knotVector[4] = 0.25;
+			knotVector[5] = knotVector[6] = 0.5;
+			knotVector[7] = knotVector[8] = 0.75;
+			break;
 	}
 	degree = 2;
 	return true;
