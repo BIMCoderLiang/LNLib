@@ -1044,8 +1044,8 @@ bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ
 	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(endRad, startRad),"endRad","endRad must greater than startRad");
 	double theta = endRad - startRad;
 	VALIDATE_ARGUMENT_RANGE(theta, 0, 2 * Constants::Pi);
-	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(xRadius, 0.0), "xRadius", "xRadius must greater than startRad");
-	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(yRadius, 0.0), "yRadius", "yRadius must greater than startRad");
+	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(xRadius, 0.0), "xRadius", "xRadius must greater than zero");
+	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(yRadius, 0.0), "yRadius", "yRadius must greater than zero");
 
 	int narcs = 0;
 	if (MathUtils::IsLessThanOrEqual(theta, Constants::Pi / 2))
@@ -1068,10 +1068,11 @@ bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ
 		}
 	}
 	double dtheta = theta / (double)narcs;
-	int n = 2 * narcs + 1;
-
-	knotVector.resize(n + 2 + 1);
-	controlPoints.resize(n);
+	int n = 2 * narcs;
+	
+	degree = 2
+	knotVector.resize(n + degree + 1 + 1);
+	controlPoints.resize(n + 1);
 
 	double w1 = cos(dtheta / 2.0);
 	XYZ nX = const_cast<XYZ&>(xAxis).Normalize();
@@ -1127,7 +1128,6 @@ bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ
 			knotVector[7] = knotVector[8] = 0.75;
 			break;
 	}
-	degree = 2;
 	return true;
 }
 
