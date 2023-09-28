@@ -17,8 +17,8 @@ using namespace LNLib;
 
 CurveCurveIntersectionType Intersection::ComputeRays(const XYZ& point0, const XYZ& vector0, const XYZ& point1, const XYZ& vector1, double& param0, double& param1, XYZ& intersectPoint)
 {
-	VALIDATE_ARGUMENT(!vector0.IsZero(), "vector0", "Vector0 must not zero vector.");
-	VALIDATE_ARGUMENT(!vector1.IsZero(), "vector1", "Vector1 must not zero vector.")
+	VALIDATE_ARGUMENT(!vector0.IsZero(), "vector0", "Vector0 must not be zero vector.");
+	VALIDATE_ARGUMENT(!vector1.IsZero(), "vector1", "Vector1 must not be zero vector.")
 
 	XYZ v0 = const_cast<XYZ&>(vector0);
 	XYZ v1 = const_cast<XYZ&>(vector1);
