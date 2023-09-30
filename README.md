@@ -1,6 +1,9 @@
 ## Introduction
 **LNLib is a C++ NURBS Algorithms Library.** <br/>These algorithms are primary referenced from [The NURBS Book 2nd Edition](https://link.springer.com/book/10.1007/978-3-642-97385-7). <br/>The APIs are re-designed to make it more friendly to users.
 
+## Run LNLib
+Please run build.bat first and it will construct solution by Cmake.
+
 ## Features
 Basic Elements:
 - UV
@@ -18,7 +21,7 @@ NURBS Algorithms:
 - Surface Tangent Vector Inversion
 - Curve Reparameterization
 - Curve Transform and Reverse
-- Create Arc and Conic Curve
+- Create Arc/Conic Curve
 - Create Bilinear/Cylindrical/Ruled/Revolved Surface
 - Global/Local Curve/Surface Interpolation and Approximation
 

@@ -99,8 +99,9 @@ namespace LNLib
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page334
 		/// construct a NURBS surface by four counter-clockwise points.
+		/// point1 ~ point4 are counter-clock placement.
 		/// </summary>
-		static void CreateBilinearSurface(const XYZ& point0, const XYZ& point1, const XYZ& point2, const XYZ& point3, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints);
+		static void CreateBilinearSurface(const XYZ& point1, const XYZ& point2, const XYZ& point3, const XYZ& point4, int& degreeU, int& degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page336

@@ -891,20 +891,21 @@ bool LNLib::NurbsSurface::GetUVTangent(int degreeU, int degreeV, const std::vect
 	return true;
 }
 
-void LNLib::NurbsSurface::CreateBilinearSurface(const XYZ& point0, const XYZ& point1, const XYZ& point2, const XYZ& point3, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
+void LNLib::NurbsSurface::CreateBilinearSurface(const XYZ& point1, const XYZ& point2, const XYZ& point3, const XYZ& point4, int& degreeU, int& degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
 {
 	int degree = 3;
+	degreeU = degreeV = degree;
 
 	for (int i = 0; i <= degree; i++) 
 	{
 		std::vector<XYZW> row;
 		for (int j = 0; j <= degree; j++) 
 		{
-			double l = 1.0 - i / degree;
-			XYZ inter12 = l * point0 + (1 - l) * point1;
-			XYZ inter34 = l * point3 + (1 - l) * point2;
+			double l = 1.0 - i / (double)degree;
+			XYZ inter12 = l * point1 + (1 - l) * point2;
+			XYZ inter43 = l * point4 + (1 - l) * point3;
 
-			XYZ res = inter12 * (1- j/degree) + (j/degree) * inter34;
+			XYZ res = inter12 * (1- j / (double)degree) + (j / (double)degree) * inter43;
 			row.emplace_back(XYZW(res, 1.0));
 		}
 		controlPoints.emplace_back(row);
@@ -919,26 +920,27 @@ void LNLib::NurbsSurface::CreateBilinearSurface(const XYZ& point0, const XYZ& po
 
 bool LNLib::NurbsSurface::CreateCylindricalSurface(const XYZ& origin, const XYZ& xAxis, const XYZ& yAxis, double startRad, double endRad, double radius, double height, int& degreeU, int& degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
 {
+	VALIDATE_ARGUMENT(!xAxis.IsZero(), "xAxis", "xAxis must not be zero vector.");
+	VALIDATE_ARGUMENT(!yAxis.IsZero(), "yAxis", "yAxis must not be zero vector.")
+	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(endRad, startRad), "endRad", "endRad must greater than startRad.");
+	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(radius, 0.0), "radius", "Radius must greater than zero.");
+	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(height, 0.0), "height", "Height must greater than zero.");
+
 	XYZ nX = const_cast<XYZ&>(xAxis).Normalize();
 	XYZ nY = const_cast<XYZ&>(yAxis).Normalize();
 
 	int arcDegree;
 	std::vector<double> arcKnotVector;
 	std::vector<XYZW> arcControlPoints;
-
 	bool isCreated = NurbsCurve::CreateArc(origin, nX, nY, radius, radius, startRad, endRad, arcDegree, arcKnotVector, arcControlPoints);
 	if (!isCreated) return false;
+
 	XYZ axis = nX.CrossProduct(nY);
 	XYZ translation = height * axis;
 	XYZ halfTranslation = 0.5 * height * axis;
 
-	int size = static_cast<int>(arcControlPoints.size());
-
-	controlPoints.resize(3);
-	for (int i = 0; i < 3; i++)
-	{
-		controlPoints[i].resize(size);
-	}
+	int size = arcControlPoints.size();
+	controlPoints.resize(3,std::vector<XYZW>(size));
 
 	for (int i = 0; i < size; i++)
 	{
@@ -959,8 +961,20 @@ bool LNLib::NurbsSurface::CreateCylindricalSurface(const XYZ& origin, const XYZ&
 
 bool LNLib::NurbsSurface::CreateRuledSurface(int degree0, const std::vector<double>& knotVector0, const std::vector<XYZW> controlPoints0, int degree1, const std::vector<double>& knotVector1, const std::vector<XYZW>& controlPoints1, int& degreeU, int& degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
 {
-	int k0Size = static_cast<int>(knotVector0.size());
-	int k1Size = static_cast<int>(knotVector1.size());
+	VALIDATE_ARGUMENT(degree0 > 0, "degree0", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector0.size() > 0, "knotVector0", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector0), "knotVector0", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints0.size() > 0, "controlPoints0", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree0, knotVector0.size(), controlPoints0.size()), "controlPoints0", "Arguments must fit: m = n + p + 1");
+
+	VALIDATE_ARGUMENT(degree1 > 0, "degree1", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector1.size() > 0, "knotVector1", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector1), "knotVector1", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints1.size() > 0, "controlPoints1", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree1, knotVector1.size(), controlPoints1.size()), "controlPoints1", "Arguments must fit: m = n + p + 1");
+
+	int k0Size = knotVector0.size();
+	int k1Size = knotVector1.size();
 	if (k0Size == k1Size &&
 		!MathUtils::IsAlmostEqualTo(knotVector0[0], knotVector1[0]) ||
 		!MathUtils::IsAlmostEqualTo(knotVector0[k0Size - 1], knotVector1[k1Size - 1]))
@@ -1030,7 +1044,7 @@ bool LNLib::NurbsSurface::CreateRuledSurface(int degree0, const std::vector<doub
 	}
 
 	knotVectorV = { 0,0,1,1 };
-	int size = static_cast<int>(finalControlPoints0.size());
+	int size = finalControlPoints0.size();
 	controlPoints.resize(size);
 	for (int i = 0; i < size; i++)
 	{
@@ -1094,16 +1108,12 @@ bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& ax
 		sines[i] = sin(angle);
 	}
 
-	int m = static_cast<int>(generatrixCurve.size());
+	int m = generatrixCurve.size();
 	XYZ X, Y, O, P0, P2, T0, T2;
 	double r = 0.0;
 	int index = 0;
 
-	controlPoints.resize(n + 1);
-	for (int i = 0; i <= n; i++)
-	{
-		controlPoints[i].resize(m + 1);
-	}
+	controlPoints.resize(n + 1, std::vector<XYZW>(m + 1));
 
 	for (int j = 0; j <= m; j++)
 	{

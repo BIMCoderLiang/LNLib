@@ -1041,6 +1041,8 @@ void LNLib::NurbsCurve::Reverse(const std::vector<double>& knotVector, const std
 
 bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ& yAxis, double startRad, double endRad, double xRadius, double yRadius, int& degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
 {
+	VALIDATE_ARGUMENT(!xAxis.IsZero(), "xAxis", "xAxis must not be zero vector.");
+	VALIDATE_ARGUMENT(!yAxis.IsZero(), "yAxis", "yAxis must not be zero vector.")
 	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(endRad, startRad),"endRad","endRad must greater than startRad.");
 	double theta = endRad - startRad;
 	VALIDATE_ARGUMENT_RANGE(theta, 0, 2 * Constants::Pi);
