@@ -40,4 +40,24 @@ TEST(Test_Circles, All)
 		XYZ C3 = NurbsCurve::GetPointOnCurve(degree, kv, 0.75, cps);
 		EXPECT_TRUE(C3.IsAlmostEqualTo(XYZ(0, -10, 0)));
 	}
+
+	{
+		XYZ start = XYZ(0, 10, 0);
+		XYZ startTangent = XYZ(1, 0, 0);
+		XYZ end = XYZ(0, -10, 0);
+		XYZ endTangent = XYZ(-1, 0, 0);
+		XYZ pointOnConic = XYZ(10, 0, 0);
+
+		int degree;
+		std::vector<double> kv;
+		std::vector<XYZW> cps;
+		bool result = NurbsCurve::CreateOpenConic(start, startTangent, end, endTangent, pointOnConic, degree, kv, cps);
+		EXPECT_TRUE(result);
+		XYZ C0 = NurbsCurve::GetPointOnCurve(degree, kv, 0, cps);
+		EXPECT_TRUE(C0.IsAlmostEqualTo(XYZ(0, 10, 0)));
+		XYZ C1 = NurbsCurve::GetPointOnCurve(degree, kv, 0.5, cps);
+		EXPECT_TRUE(C1.IsAlmostEqualTo(XYZ(10, 0, 0)));
+		XYZ C2 = NurbsCurve::GetPointOnCurve(degree, kv, 1, cps);
+		EXPECT_TRUE(C2.IsAlmostEqualTo(XYZ(0, -10, 0)));
+	}
 }

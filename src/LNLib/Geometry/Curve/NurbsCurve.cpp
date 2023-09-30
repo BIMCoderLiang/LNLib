@@ -1041,11 +1041,11 @@ void LNLib::NurbsCurve::Reverse(const std::vector<double>& knotVector, const std
 
 bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ& yAxis, double startRad, double endRad, double xRadius, double yRadius, int& degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
 {
-	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(endRad, startRad),"endRad","endRad must greater than startRad");
+	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(endRad, startRad),"endRad","endRad must greater than startRad.");
 	double theta = endRad - startRad;
 	VALIDATE_ARGUMENT_RANGE(theta, 0, 2 * Constants::Pi);
-	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(xRadius, 0.0), "xRadius", "xRadius must greater than zero");
-	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(yRadius, 0.0), "yRadius", "yRadius must greater than zero");
+	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(xRadius, 0.0), "xRadius", "xRadius must greater than zero.");
+	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(yRadius, 0.0), "yRadius", "yRadius must greater than zero.");
 
 	int narcs = 0;
 	if (MathUtils::IsLessThanOrEqual(theta, Constants::Pi / 2))
@@ -1070,7 +1070,7 @@ bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ
 	double dtheta = theta / (double)narcs;
 	int n = 2 * narcs;
 	
-	degree = 2
+	degree = 2;
 	knotVector.resize(n + degree + 1 + 1);
 	controlPoints.resize(n + 1);
 
@@ -1133,6 +1133,9 @@ bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ
 
 bool LNLib::NurbsCurve::CreateOneConicArc(const XYZ& start, const XYZ& startTangent, const XYZ& end, const XYZ& endTangent, const XYZ& pointOnConic, XYZ& projectPoint, double& projectPointWeight)
 {
+	VALIDATE_ARGUMENT(!startTangent.IsZero(), "startTangent", "StartTangent must not be zero vector.");
+	VALIDATE_ARGUMENT(!endTangent.IsZero(), "endTangent", "EndTangent must not be zero vector.")
+
 	double param0, param1 = 0.0;
 	XYZ point = XYZ(0,0,0);
 	CurveCurveIntersectionType type = Intersection::ComputeRays(start, startTangent, end, endTangent, param0, param1, point);
@@ -1174,14 +1177,17 @@ bool LNLib::NurbsCurve::CreateOneConicArc(const XYZ& start, const XYZ& startTang
 
 void LNLib::NurbsCurve::SplitArc(const XYZ& start, const XYZ& projectPoint, double projectPointWeight, const XYZ& end, XYZ& insertPointAtStartSide, XYZ& splitPoint, XYZ& insertPointAtEndSide, double insertWeight)
 {
-	insertPointAtStartSide = (start + projectPointWeight * projectPoint) / (1 + projectPointWeight);
-	insertPointAtEndSide = (projectPointWeight * projectPoint + end) / (1 + projectPointWeight);
+	insertPointAtStartSide = start + projectPoint;
+	insertPointAtEndSide = end + projectPoint;
 	splitPoint = (insertPointAtStartSide + insertPointAtEndSide) / 2.0;
-	insertWeight = sqrt((1 + projectPointWeight) / 2);
+	insertWeight = sqrt(1 + projectPointWeight) / 2.0;
 }
 
 bool LNLib::NurbsCurve::CreateOpenConic(const XYZ& start, const XYZ& startTangent, const XYZ& end, const XYZ& endTangent, const XYZ& pointOnConic, int& degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
 {
+	VALIDATE_ARGUMENT(!startTangent.IsZero(), "startTangent", "StartTangent must not be zero vector.");
+	VALIDATE_ARGUMENT(!endTangent.IsZero(), "endTangent", "EndTangent must not be zero vector.")
+
 	XYZ P1;
 	double w1 = 0.0;
 	bool isCreated = CreateOneConicArc(start, startTangent, end, endTangent, pointOnConic, P1, w1);
@@ -1218,9 +1224,9 @@ bool LNLib::NurbsCurve::CreateOpenConic(const XYZ& start, const XYZ& startTangen
 	int n = 2 * nsegs;
 	int j = 2 * nsegs + 1;
 
-	controlPoints.resize(n + 1);
-	knotVector.resize(j + 3);
 	degree = 2;
+	knotVector.resize(j + degree + 1);
+	controlPoints.resize(n + 1);
 
 	for (int i = 0; i < 3; i++)
 	{
