@@ -39,6 +39,8 @@ TEST(Test_Circles, All)
 		EXPECT_TRUE(C2.IsAlmostEqualTo(XYZ(-10, 0, 0)));
 		XYZ C3 = NurbsCurve::GetPointOnCurve(degree, kv, 0.75, cps);
 		EXPECT_TRUE(C3.IsAlmostEqualTo(XYZ(0, -10, 0)));
+		XYZ C4 = NurbsCurve::GetPointOnCurve(degree, kv, 1.0, cps);
+		EXPECT_TRUE(C4.IsAlmostEqualTo(XYZ(10, 0, 0)));
 	}
 
 	{

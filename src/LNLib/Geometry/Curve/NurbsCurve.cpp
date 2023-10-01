@@ -1050,7 +1050,7 @@ bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ
 	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(yRadius, 0.0), "yRadius", "yRadius must greater than zero.");
 
 	int narcs = 0;
-	if (MathUtils::IsLessThanOrEqual(theta, Constants::Pi / 2))
+	if (MathUtils::IsLessThanOrEqual(theta, Constants::Pi / 2.0))
 	{
 		narcs = 1;
 	}
@@ -1060,7 +1060,7 @@ bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ
 		{
 			narcs = 2;
 		}
-		else if (MathUtils::IsLessThanOrEqual(theta, 3 * Constants::Pi / 2))
+		else if (MathUtils::IsLessThanOrEqual(theta, 3 * Constants::Pi / 2.0))
 		{
 			narcs = 3;
 		}
@@ -1085,9 +1085,9 @@ bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ
 	controlPoints[0] = XYZW(P0,1);
 	int index = 0;
 	double angle = startRad;
-	for (int i = 1; i < narcs; i++)
+	for (int i = 1; i <= narcs; i++)
 	{
-		angle = angle + dtheta;
+		angle += dtheta;
 		XYZ P2 = center + xRadius * cos(angle) * nX + yRadius * sin(angle) * nY;
 		controlPoints[index + 2] = XYZW(P2, 1);
 		XYZ T2 = -sin(angle) * nX + cos(angle) * nY;

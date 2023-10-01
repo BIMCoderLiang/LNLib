@@ -120,7 +120,19 @@ namespace LNLib
 		/// Algorithm A8.1
 		/// Create a revolved surface.
 		/// </summary>
-		static bool CreateRevolvedSurface(const XYZ& origin, const XYZ& axis, double rad, const std::vector<XYZW>& generatrixCurve, int& degreeU, std::vector<double>& knotVectorU, std::vector<std::vector<XYZW>>& controlPoints);
+		static bool CreateRevolvedSurface(const XYZ& origin, const XYZ& axis, double rad, const std::vector<XYZW>& generatrixControlPoints, int& degreeU, std::vector<double>& knotVectorU, std::vector<std::vector<XYZW>>& controlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page348
+		/// Nonuniform scaling of surface.
+		/// </summary>
+		static std::vector<std::vector<XYZW>> NonuniformScaling(const std::vector<std::vector<XYZW>>& controlPoints, double xFactor, double yFactor, double zFactor, const XYZ& referencePoint);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page359
+		/// Create Nurbs corner fillet surface.
+		/// </summary>
+		static void MakeCornerFilletSurface();
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page380

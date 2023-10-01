@@ -932,7 +932,7 @@ bool LNLib::NurbsSurface::CreateCylindricalSurface(const XYZ& origin, const XYZ&
 	int arcDegree;
 	std::vector<double> arcKnotVector;
 	std::vector<XYZW> arcControlPoints;
-	bool isCreated = NurbsCurve::CreateArc(origin, nX, nY, radius, radius, startRad, endRad, arcDegree, arcKnotVector, arcControlPoints);
+	bool isCreated = NurbsCurve::CreateArc(origin, nX, nY, startRad, endRad, radius, radius, arcDegree, arcKnotVector, arcControlPoints);
 	if (!isCreated) return false;
 
 	XYZ axis = nX.CrossProduct(nY);
@@ -1056,8 +1056,9 @@ bool LNLib::NurbsSurface::CreateRuledSurface(int degree0, const std::vector<doub
 	return true;
 }
 
-bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& axis, double rad, const std::vector<XYZW>& generatrixCurve, int& degreeU, std::vector<double>& knotVectorU, std::vector<std::vector<XYZW>>& controlPoints)
+bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& axis, double rad, const std::vector<XYZW>& generatrixControlPoints, int& degreeU, std::vector<double>& knotVectorU, std::vector<std::vector<XYZW>>& controlPoints)
 {
+
 	int narcs = 0;
 	if (MathUtils::IsLessThanOrEqual(rad, Constants::Pi / 2))
 	{
@@ -1108,7 +1109,7 @@ bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& ax
 		sines[i] = sin(angle);
 	}
 
-	int m = generatrixCurve.size();
+	int m = generatrixControlPoints.size();
 	XYZ X, Y, O, P0, P2, T0, T2;
 	double r = 0.0;
 	int index = 0;
@@ -1117,7 +1118,7 @@ bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& ax
 
 	for (int j = 0; j <= m; j++)
 	{
-		XYZW gp = generatrixCurve[j];
+		XYZW gp = generatrixControlPoints[j];
 		XYZ p = XYZ(gp[0], gp[1], gp[2]) / gp[3];
 
 		Projection::PointToLine(origin, axis, p, O);
@@ -1161,6 +1162,55 @@ bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& ax
 	degreeU = 2;
 
 	return true;
+}
+
+std::vector<std::vector<LNLib::XYZW>> LNLib::NurbsSurface::NonuniformScaling(const std::vector<std::vector<XYZW>>& controlPoints, double xFactor, double yFactor, double zFactor, const XYZ& referencePoint)
+{
+	std::vector<std::vector<XYZW>> result;
+	int row = controlPoints.size();
+	int col = controlPoints[0].size();
+
+	if (referencePoint.IsAlmostEqualTo(XYZ(0, 0, 0)))
+	{
+		for (int i = 0; i < row; i++)
+		{
+			std::vector<XYZW> row;
+			for (int j = 0; j < col; j++)
+			{
+				XYZW current = controlPoints[i][j];
+				double weight = current.GetW();
+				double x = current.GetWX() / weight;
+				double y = current.GetWY() / weight;
+				double z = current.GetWZ() / weight;
+
+				row.emplace_back(XYZW(x * xFactor, y * yFactor, z * zFactor, weight));
+			}
+			result.emplace_back(row);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < row; i++)
+		{
+			std::vector<XYZW> row;
+			for (int j = 0; j < col; j++)
+			{
+				XYZW current = controlPoints[i][j];
+				double weight = current.GetW();
+				double x = current.GetWX() / weight;
+				double y = current.GetWY() / weight;
+				double z = current.GetWZ() / weight;
+
+				double newX = x * xFactor + (1 - xFactor) * referencePoint[0];
+				double newY = y * yFactor + (1 - yFactor) * referencePoint[1];
+				double newZ = z * zFactor + (1 - zFactor) * referencePoint[2];
+
+				row.emplace_back(XYZW(newX, newY, newZ, weight));
+			}
+			result.emplace_back(row);
+		}
+	}
+	return result;
 }
 
 void LNLib::NurbsSurface::GlobalSurfaceInterpolation(const std::vector<std::vector<XYZ>>& throughPoints, unsigned int degreeU, unsigned int degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
