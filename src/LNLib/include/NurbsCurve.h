@@ -226,11 +226,17 @@ namespace LNLib
 		static bool LocalNonRationalCubicCurveApproximation(int startPointIndex, int endPointIndex, const std::vector<XYZ>& throughPoints, const XYZ& startTangent, const XYZ& endTangent, double maxError, std::vector<XYZW>& middleControlPoints);
 
 		/// <summary>
+		/// The NURBS Book 2nd Edition Page572
+		/// Clamp a unclamped curve.
+		/// </summary>
+		static void ToClampCurve(int degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+
+		/// <summary>
 		/// The NURBS Book 2nd Edition Page577
 		/// Algorithm A12.1
 		/// Unclamp a clamped curve.
 		/// </summary>
-		static void ToUnclampCurve(unsigned int degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+		static void ToUnclampCurve(int degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
 	};
 }
 

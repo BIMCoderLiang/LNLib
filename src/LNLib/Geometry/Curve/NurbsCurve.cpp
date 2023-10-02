@@ -2262,12 +2262,49 @@ bool LNLib::NurbsCurve::LocalNonRationalCubicCurveApproximation(int startPointIn
 	return true;
 }
 
-void LNLib::NurbsCurve::ToUnclampCurve(unsigned int degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+void LNLib::NurbsCurve::ToClampCurve(int degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
 {
-	int n = static_cast<int>(controlPoints.size() - 1);
-	for (int i = 0; i < degree - 2; i++)
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+	std::vector<double> insertKnotVector;
+	std::vector<XYZW> updatedControlPoints;
+	InsertKnot(degree, knotVector, controlPoints, knotVector[degree], degree, insertKnotVector, updatedControlPoints);
+
+	knotVector = insertKnotVector;
+	controlPoints = updatedControlPoints;
+
+	std::vector<double> insertKnotVectorNc;
+	std::vector<XYZW> updatedControlPointsNc;
+	InsertKnot(degree, knotVector, controlPoints, knotVector[controlPoints.size()], degree, insertKnotVectorNc, updatedControlPointsNc);
+
+	knotVector.resize(insertKnotVectorNc.size() - degree - degree, 0.0);
+	controlPoints.resize(knotVector.size() - degree - 1);
+	for (int i = knotVector.size() - 1; i >= 0; i--)
 	{
-		knotVector[degree - i - 1] = knotVector[degree - i] - (knotVector[n - i]);
+		knotVector[i] = insertKnotVectorNc[i + degree];
+		if (i < controlPoints.size())
+		{
+			controlPoints[i] = updatedControlPointsNc[i + degree];
+		}
+	}
+}
+
+void LNLib::NurbsCurve::ToUnclampCurve(int degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+{
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+	int n = controlPoints.size() - 1;
+	for (int i = 0; i <= degree - 2; i++)
+	{
+		knotVector[degree - i - 1] = knotVector[degree - i] - (knotVector[n - i + 1] - knotVector[n - i]);
 		int k = degree - 1;
 		for (int j = i; j >= 0; j--)
 		{
@@ -2276,7 +2313,7 @@ void LNLib::NurbsCurve::ToUnclampCurve(unsigned int degree, std::vector<double>&
 			k = k - 1;
 		}
 	}
-	knotVector[0] = knotVector[1] - (knotVector[n + degree + 2] - knotVector[n - degree + 1]);
+	knotVector[0] = knotVector[1] - (knotVector[n - degree + 2] - knotVector[n - degree + 1]);
 	for (int i = 0; i <= degree - 2; i++)
 	{
 		knotVector[n + i + 2] = knotVector[n + i + 1] + (knotVector[degree + i + 1] - knotVector[degree + i]);

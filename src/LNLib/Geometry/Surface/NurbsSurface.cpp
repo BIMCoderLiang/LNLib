@@ -1058,31 +1058,33 @@ bool LNLib::NurbsSurface::CreateRuledSurface(int degree0, const std::vector<doub
 
 bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& axis, double rad, const std::vector<XYZW>& generatrixControlPoints, int& degreeU, std::vector<double>& knotVectorU, std::vector<std::vector<XYZW>>& controlPoints)
 {
+	VALIDATE_ARGUMENT(!axis.IsZero(), "axis", "Axis must not be zero vector.");
 
 	int narcs = 0;
-	if (MathUtils::IsLessThanOrEqual(rad, Constants::Pi / 2))
+	if (MathUtils::IsLessThanOrEqual(rad, Constants::Pi / 2.0))
 	{
 		narcs = 1;
+		knotVectorU.resize(6 + 2 * (narcs + 1));
 	}
 	else
 	{
 		if (MathUtils::IsLessThanOrEqual(rad, Constants::Pi))
 		{
 			narcs = 2;
-			knotVectorU.resize(6);
+			knotVectorU.resize(6 + 2 * (narcs + 1));
 			knotVectorU[3] = knotVectorU[4] = 0.5;
 		}
 		else if (MathUtils::IsLessThanOrEqual(rad, 3 * Constants::Pi / 2))
 		{
 			narcs = 3;
-			knotVectorU.resize(8);
+			knotVectorU.resize(6 + 2 * (narcs + 1));
 			knotVectorU[3] = knotVectorU[4] = 1.0 / 3.0;
 			knotVectorU[5] = knotVectorU[6] = 2.0 / 3.0;
 		}
 		else
 		{
 			narcs = 4;
-			knotVectorU.resize(10);
+			knotVectorU.resize(6 + 2 * (narcs + 1));
 			knotVectorU[3] = knotVectorU[4] = 0.25;
 			knotVectorU[5] = knotVectorU[6] = 0.5;
 			knotVectorU[7] = knotVectorU[8] = 0.75;
@@ -1091,7 +1093,7 @@ bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& ax
 
 	double dtheta = rad / narcs;
 	int j = 3 + 2 * (narcs - 1);
-	for (int i = 0; i < 3; j++,i++)
+	for (int i = 0; i < 3; j++, i++)
 	{
 		knotVectorU[i] = 0.0;
 		knotVectorU[j] = 1.0;
@@ -1109,7 +1111,7 @@ bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& ax
 		sines[i] = sin(angle);
 	}
 
-	int m = generatrixControlPoints.size();
+	int m = generatrixControlPoints.size() - 1;
 	XYZ X, Y, O, P0, P2, T0, T2;
 	double r = 0.0;
 	int index = 0;
@@ -1119,7 +1121,7 @@ bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& ax
 	for (int j = 0; j <= m; j++)
 	{
 		XYZW gp = generatrixControlPoints[j];
-		XYZ p = XYZ(gp[0], gp[1], gp[2]) / gp[3];
+		XYZ p = gp.ToXYZ(true);
 
 		Projection::PointToLine(origin, axis, p, O);
 		X = p - O;
@@ -1148,7 +1150,7 @@ bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& ax
 			{
 				return false;
 			}
-			controlPoints[index + 1][j] = XYZW(intersectPoint, gp[3]);
+			controlPoints[index + 1][j] = XYZW(intersectPoint, wm * gp[3]);
 
 			index += 2;
 			if (i < narcs)
