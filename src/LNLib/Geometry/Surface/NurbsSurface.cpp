@@ -1064,27 +1064,27 @@ bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& ax
 	if (MathUtils::IsLessThanOrEqual(rad, Constants::Pi / 2.0))
 	{
 		narcs = 1;
-		knotVectorU.resize(6 + 2 * (narcs + 1));
+		knotVectorU.resize(2 * narcs + 3 + 1);
 	}
 	else
 	{
 		if (MathUtils::IsLessThanOrEqual(rad, Constants::Pi))
 		{
 			narcs = 2;
-			knotVectorU.resize(6 + 2 * (narcs + 1));
+			knotVectorU.resize(2 * narcs + 3 + 1);
 			knotVectorU[3] = knotVectorU[4] = 0.5;
 		}
 		else if (MathUtils::IsLessThanOrEqual(rad, 3 * Constants::Pi / 2))
 		{
 			narcs = 3;
-			knotVectorU.resize(6 + 2 * (narcs + 1));
+			knotVectorU.resize(2 * narcs + 3 + 1);
 			knotVectorU[3] = knotVectorU[4] = 1.0 / 3.0;
 			knotVectorU[5] = knotVectorU[6] = 2.0 / 3.0;
 		}
 		else
 		{
 			narcs = 4;
-			knotVectorU.resize(6 + 2 * (narcs + 1));
+			knotVectorU.resize(2 * narcs + 3 + 1);
 			knotVectorU[3] = knotVectorU[4] = 0.25;
 			knotVectorU[5] = knotVectorU[6] = 0.5;
 			knotVectorU[7] = knotVectorU[8] = 0.75;
@@ -1093,20 +1093,21 @@ bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& ax
 
 	double dtheta = rad / narcs;
 	int j = 3 + 2 * (narcs - 1);
-	for (int i = 0; i < 3; j++, i++)
+	for (int i = 0; i < 3; i++)
 	{
 		knotVectorU[i] = 0.0;
-		knotVectorU[j] = 1.0;
+		knotVectorU[j + i] = 1.0;
 	}
 
 	int n = 2 * narcs;
 	double wm = cos(dtheta / 2.0);
 	double angle = 0.0;
-	std::vector<double> cosines(narcs + 1), sines(narcs + 1);
+	std::vector<double> cosines(narcs + 1,0.0);
+	std::vector<double> sines(narcs + 1,0.0);
 
 	for (int i = 1; i <= narcs; i++)
 	{
-		angle = angle + dtheta;
+		angle += dtheta;
 		cosines[i] = cos(angle);
 		sines[i] = sin(angle);
 	}
@@ -1116,6 +1117,7 @@ bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& ax
 	double r = 0.0;
 	int index = 0;
 
+	degreeU = 2;
 	controlPoints.resize(n + 1, std::vector<XYZW>(m + 1));
 
 	for (int j = 0; j <= m; j++)
@@ -1123,11 +1125,17 @@ bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& ax
 		XYZW gp = generatrixControlPoints[j];
 		XYZ p = gp.ToXYZ(true);
 
-		Projection::PointToLine(origin, axis, p, O);
+		XYZ O = Projection::PointToLine(origin, axis, p);
 		X = p - O;
 
 		r = X.Normalize().Length();
 		Y = axis.CrossProduct(X);
+
+		if (MathUtils::IsGreaterThan(r, 0.0))
+		{
+			X = X / r;
+			Y = Y / r;
+		}
 
 		P0 = p;
 		controlPoints[0][j] = XYZW(P0, gp[3]);
@@ -1138,20 +1146,27 @@ bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& ax
 
 		for (int i = 1; i <= narcs; i++)
 		{
-			P2 = O + r * cosines[i] * X + r * sines[i] * Y;
+			P2 = MathUtils::IsAlmostEqualTo(r,0.0)? O : O + r * cosines[i] * X + r * sines[i] * Y;
 			controlPoints[index + 2][j] = XYZW(P2, gp[3]);
 			T2 = -sines[i] * X + cosines[i] * Y;
 
-			XYZ intersectPoint;
-			double param0;
-			double param1;
-			CurveCurveIntersectionType type = Intersection::ComputeRays(P0, T0, P2, T2, param0, param1, intersectPoint);
-			if (type != CurveCurveIntersectionType::Intersecting)
+			if (MathUtils::IsAlmostEqualTo(r, 0.0))
 			{
-				return false;
+				controlPoints[index + 1][j] = XYZW(O, wm * gp[3]);
 			}
-			controlPoints[index + 1][j] = XYZW(intersectPoint, wm * gp[3]);
-
+			else
+			{
+				XYZ intersectPoint;
+				double param0;
+				double param1;
+				CurveCurveIntersectionType type = Intersection::ComputeRays(P0, T0, P2, T2, param0, param1, intersectPoint);
+				if (type != CurveCurveIntersectionType::Intersecting)
+				{
+					return false;
+				}
+				controlPoints[index + 1][j] = XYZW(intersectPoint, wm * gp[3]);
+			}
+			
 			index += 2;
 			if (i < narcs)
 			{
@@ -1160,8 +1175,6 @@ bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& ax
 			}
 		}
 	}
-
-	degreeU = 2;
 
 	return true;
 }

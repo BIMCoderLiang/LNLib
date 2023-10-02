@@ -61,9 +61,9 @@ TEST(Test_CommonSurfaces, All)
 		int degreeU;
 		std::vector<double> kvU;
 		std::vector<std::vector<XYZW>> cps;
-		//bool result = NurbsSurface::CreateRevolvedSurface(origin, axis, rad, cpsV, degreeU, kvU, cps);
-		//EXPECT_TRUE(result);
-		//XYZ C0 = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(0.5, 0.5), cps);
-		//EXPECT_TRUE(C0.IsAlmostEqualTo(XYZ(sqrt(2)/4.0, sqrt(2)/ 4.0, 0.5)));
+		bool result = NurbsSurface::CreateRevolvedSurface(origin, axis, rad, cpsV, degreeU, kvU, cps);
+		EXPECT_TRUE(result);
+		XYZ C0 = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(0.5, 0.5), cps);
+		EXPECT_TRUE(C0.IsAlmostEqualTo(XYZ(sqrt(2)/4.0, sqrt(2)/ 4.0, 0.5)));
 	}
 }

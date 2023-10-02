@@ -18,7 +18,7 @@ namespace LNLib
 	class LNLIB_EXPORT Projection
 	{
 	public:
-		static void PointToLine(const XYZ& origin, const XYZ& vector, const XYZ& Point, XYZ& ProjectPoint);
+		static XYZ PointToLine(const XYZ& origin, const XYZ& vector, const XYZ& Point);
 	};
 }
 
