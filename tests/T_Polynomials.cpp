@@ -55,4 +55,22 @@ TEST(Test_Polynomials, All)
 					MathUtils::IsAlmostEqualTo(oneders[1], checkders[2 - i][1]) && 
 					MathUtils::IsAlmostEqualTo(oneders[2], checkders[2 - i][2]));
 	}
+
+	std::vector<double> u1 = { 0,0,0,1,2,2,4,4,4 };
+	std::vector<double> u2 = { 0,0,0,1,2,3,4,4,4 };
+	std::vector<double> insert1;
+	std::vector<double> insert2;
+	Polynomials::GetInsertedKnotElement(u1, u2, insert1, insert2);
+	EXPECT_TRUE(insert1.size() == 1);
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(insert1[0],3));
+	EXPECT_TRUE(insert2.size() == 1);
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(insert2[0], 2));
+
+	u1 = { 0,0,0,1.0 / 4,1.0 / 2,3.0 / 4,1,1,1 };
+	u2 = { 0,0,0,0,3.0 / 10,7.0 / 10,1,1,1,1 };
+	std::vector<double> i1;
+	std::vector<double> i2;
+	Polynomials::GetInsertedKnotElement(u1, u2, i1, i2);
+	EXPECT_TRUE(i1.size() == 4);
+	EXPECT_TRUE(i2.size() == 3);
 }

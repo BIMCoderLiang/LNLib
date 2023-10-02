@@ -187,9 +187,9 @@ void LNLib::NurbsCurve::RefineKnotVector(int degree, const std::vector<double>& 
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
 	VALIDATE_ARGUMENT(insertKnotElements.size() > 0, "insertKnotElements", "insertKnotElements size must greater than zero.");
 
-	int n = static_cast<int>(controlPoints.size() - 1);
+	int n = controlPoints.size() - 1;
 	int m = n + degree + 1;
-	int r = static_cast<int>(insertKnotElements.size() - 1);
+	int r = insertKnotElements.size() - 1;
 
 	int a = Polynomials::GetKnotSpanIndex(degree, knotVector, insertKnotElements[0]);
 	int b = Polynomials::GetKnotSpanIndex(degree, knotVector, insertKnotElements[r]) + 1;

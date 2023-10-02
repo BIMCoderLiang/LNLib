@@ -30,12 +30,13 @@ namespace LNLib
 	{
 		std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> result;
 
-		for (int i = 0; i < static_cast<int>(knotVector.size()); i++)
+		for (int i = 0; i < knotVector.size(); i++)
 		{
-			auto got = result.find(i);
+			auto got = result.find(knotVector[i]);
 			if (got == result.end())
 			{
-				result.insert({ i, LNLib::Polynomials::GetKnotMultiplicity(knotVector, knotVector[i]) });
+				int multi = LNLib::Polynomials::GetKnotMultiplicity(knotVector, knotVector[i]);
+				result.insert({ knotVector[i], multi });
 			}
 		}
 		return result;
@@ -153,14 +154,16 @@ int LNLib::Polynomials::GetKnotSpanIndex(int degree, const std::vector<double>& 
 	VALIDATE_ARGUMENT_RANGE(paramT, knotVector[0], knotVector[knotVector.size() - 1]);
 
 	int n = knotVector.size() - degree - 2;
-	VALIDATE_ARGUMENT(n >= 0, "degree", "Arguments must fit: m = n + p + 1");
-
-	if (MathUtils::IsAlmostEqualTo(paramT, knotVector[n + 1]))
+	if (MathUtils::IsGreaterThanOrEqual(paramT, knotVector[n + 1]))
 	{
 		return n;
 	}
+	if (MathUtils::IsLessThanOrEqual(paramT, knotVector[degree]))
+	{
+		return degree;
+	}
 
-	int low = degree;
+	int low = 0;
 	int high = n + 1;
 	int mid = static_cast<int>(floor((low + high) / 2.0));
 

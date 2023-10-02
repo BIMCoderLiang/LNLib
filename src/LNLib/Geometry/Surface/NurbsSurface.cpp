@@ -959,7 +959,7 @@ bool LNLib::NurbsSurface::CreateCylindricalSurface(const XYZ& origin, const XYZ&
 	return true;
 }
 
-bool LNLib::NurbsSurface::CreateRuledSurface(int degree0, const std::vector<double>& knotVector0, const std::vector<XYZW> controlPoints0, int degree1, const std::vector<double>& knotVector1, const std::vector<XYZW>& controlPoints1, int& degreeU, int& degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
+void LNLib::NurbsSurface::CreateRuledSurface(int degree0, const std::vector<double>& knotVector0, const std::vector<XYZW> controlPoints0, int degree1, const std::vector<double>& knotVector1, const std::vector<XYZW>& controlPoints1, int& degreeU, int& degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
 {
 	VALIDATE_ARGUMENT(degree0 > 0, "degree0", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector0.size() > 0, "knotVector0", "KnotVector size must greater than zero.");
@@ -975,85 +975,74 @@ bool LNLib::NurbsSurface::CreateRuledSurface(int degree0, const std::vector<doub
 
 	int k0Size = knotVector0.size();
 	int k1Size = knotVector1.size();
-	if (k0Size == k1Size &&
-		!MathUtils::IsAlmostEqualTo(knotVector0[0], knotVector1[0]) ||
-		!MathUtils::IsAlmostEqualTo(knotVector0[k0Size - 1], knotVector1[k1Size - 1]))
-	{
-		return false;
-	}
+	bool knotVectorCheck = MathUtils::IsAlmostEqualTo(knotVector0[0], knotVector1[0]) && MathUtils::IsAlmostEqualTo(knotVector0[k0Size - 1], knotVector1[k1Size - 1]);
+	VALIDATE_ARGUMENT(knotVectorCheck, "knotVector0 & knotVector1", "Ensure that the two curves are defined on the same parameter range.");
 
 	degreeU = std::max(degree0, degree1);
 	degreeV = 1;
 
-	std::vector<double> updatedKnotVector0;
-	std::vector<XYZW> updatedControlPoints0;
-	std::vector<double> updatedKnotVector1;
-	std::vector<XYZW> updatedControlPoints1;
+	std::vector<double> kv0 = knotVector0;
+	std::vector<XYZW> cp0 = controlPoints0;
 	if (degree0 < degreeU)
 	{
+		std::vector<double> updatedKnotVector0;
+		std::vector<XYZW> updatedControlPoints0;
 		int times = degreeU - degree0;
-		NurbsCurve::ElevateDegree(degree0, knotVector0, controlPoints0, times, updatedKnotVector0, updatedControlPoints0);
-	}
-	else
-	{
-		updatedKnotVector0 = knotVector0;
-		updatedControlPoints0 = controlPoints0;
-	}
-	if (degree1 < degreeU)
-	{
-		int times = degreeU - degree1;
-		NurbsCurve::ElevateDegree(degree1, knotVector1, controlPoints1, times, updatedKnotVector1, updatedControlPoints1);
-	}
-	else
-	{
-		updatedKnotVector1 = knotVector1;
-		updatedControlPoints1 = controlPoints1;
+		NurbsCurve::ElevateDegree(degree0, kv0, cp0, times, updatedKnotVector0, updatedControlPoints0);
+		kv0 = updatedKnotVector0;
+		cp0 = updatedControlPoints0;
 	}
 
+	std::vector<double> kv1 = knotVector1;
+	std::vector<XYZW> cp1 = controlPoints1;
+	if (degree1 < degreeU)
+	{
+		std::vector<double> updatedKnotVector1;
+		std::vector<XYZW> updatedControlPoints1;
+		int times = degreeU - degree1;
+		NurbsCurve::ElevateDegree(degree1, kv1, cp1, times, updatedKnotVector1, updatedControlPoints1);
+		kv1 = updatedKnotVector1;
+		cp1 = updatedControlPoints1;
+	}
+	
 	bool isSameKnotVector = true;
 	for (int i = 0; i < k0Size; i++)
 	{
-		if (!MathUtils::IsAlmostEqualTo(knotVector0[i], knotVector1[i]))
+		if (!MathUtils::IsAlmostEqualTo(kv0[i], kv1[i]))
 		{
 			isSameKnotVector = false;
 			break;
 		}
 	}
 	
-	std::vector<XYZW> finalControlPoints0;
-	std::vector<XYZW> finalControlPoints1;
+	knotVectorU = kv0;
 	if (!isSameKnotVector)
 	{
 		std::vector<double> insertedKnotElement0;
 		std::vector<double> insertedKnotElement1;
 
-		Polynomials::GetInsertedKnotElement(updatedKnotVector0, updatedKnotVector1, insertedKnotElement0, insertedKnotElement1);
+		Polynomials::GetInsertedKnotElement(kv0, kv1, insertedKnotElement0, insertedKnotElement1);
 
-		std::vector<double> tempKnotVector0;
-		std::vector<double> tempKnotVector1;
-		NurbsCurve::RefineKnotVector(degreeU, updatedKnotVector0, updatedControlPoints0, insertedKnotElement0, tempKnotVector0, finalControlPoints0);
-		NurbsCurve::RefineKnotVector(degreeV, updatedKnotVector1, updatedControlPoints1, insertedKnotElement1, tempKnotVector1, finalControlPoints1);
+		std::vector<double> updatedKnotVector0;
+		std::vector<double> updatedKnotVector1;
+		std::vector<XYZW> updatedControlPoints0;
+		std::vector<XYZW> updatedControlPoints1;
+		NurbsCurve::RefineKnotVector(degreeU, kv0, cp0, insertedKnotElement0, updatedKnotVector0, updatedControlPoints0);
+		NurbsCurve::RefineKnotVector(degreeU, kv1, cp1, insertedKnotElement1, updatedKnotVector1, updatedControlPoints1);
 
-		knotVectorU = tempKnotVector0;
-	}
-	else
-	{
-		knotVectorU = knotVector0;
-		finalControlPoints0 = updatedControlPoints0;
-		finalControlPoints1 = updatedControlPoints1;
+		knotVectorU = updatedKnotVector0;
+		cp0 = updatedControlPoints0;
+		cp1 = updatedControlPoints1;
 	}
 
 	knotVectorV = { 0,0,1,1 };
-	int size = finalControlPoints0.size();
-	controlPoints.resize(size);
+	int size = cp0.size();
+	controlPoints.resize(size, std::vector<XYZW>(2));
 	for (int i = 0; i < size; i++)
 	{
-		controlPoints[i].resize(2);
-		controlPoints[i][0] = finalControlPoints0[i];
-		controlPoints[i][1] = finalControlPoints1[i];
+		controlPoints[i][0] = cp0[i];
+		controlPoints[i][1] = cp1[i];
 	}
-
-	return true;
 }
 
 bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& axis, double rad, const std::vector<XYZW>& generatrixControlPoints, int& degreeU, std::vector<double>& knotVectorU, std::vector<std::vector<XYZW>>& controlPoints)

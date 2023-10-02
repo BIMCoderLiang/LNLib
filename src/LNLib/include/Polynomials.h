@@ -113,11 +113,6 @@ namespace LNLib
 		static std::vector<std::vector<double>> AllBasisFunctions(int spanIndex, int degree, const std::vector<double>& knotVector, double knot);
 
 		/// <summary>
-		/// 
-		/// </summary>
-		static void GetInsertedKnotElement(const std::vector<double> knotVector0, const std::vector<double> knotVector1, std::vector<double>& insertElements0, std::vector<double>& insertElements1);
-
-		/// <summary>
 		/// The NURBS Book 2nd Edition Page269
 		/// Algorithm A6.1
 		/// Compute pth degree Bezier matrix.
@@ -130,6 +125,12 @@ namespace LNLib
 		/// Compute inverse of pth-degree Bezier matrix.
 		/// </summary>
 		static void PowerToBezierMatrix(int degree, const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& inverseMatrix);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page338
+		/// Get insert elements between two knot vector for create ruled surface.
+		/// </summary>
+		static void GetInsertedKnotElement(const std::vector<double> knotVector0, const std::vector<double> knotVector1, std::vector<double>& insertElements0, std::vector<double>& insertElements1);
 	};
 
 }
