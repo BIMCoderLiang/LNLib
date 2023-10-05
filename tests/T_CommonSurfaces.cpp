@@ -62,11 +62,15 @@ TEST(Test_CommonSurfaces, All)
 		int degreeU, degreeV;
 		std::vector<double> kvU, kvV;
 		std::vector<std::vector<XYZW>> scps;
-		/*NurbsSurface::CreateRuledSurface(degree0, kv0, cp0, degree1, kv1, cp1, degreeU, degreeV, kvU, kvV, scps);
+		NurbsSurface::CreateRuledSurface(degree0, kv0, cp0, degree1, kv1, cp1, degreeU, degreeV, kvU, kvV, scps);
 		XYZ S00 = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(0, 0), scps);
+		EXPECT_TRUE(S00.IsAlmostEqualTo(C00));
 		XYZ S01 = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(1, 0), scps);
+		EXPECT_TRUE(S01.IsAlmostEqualTo(C01));
 		XYZ S10 = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(0, 1), scps);
-		XYZ S11 = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(1, 1), scps);*/
+		EXPECT_TRUE(S10.IsAlmostEqualTo(C10));
+		XYZ S11 = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(1, 1), scps);
+		EXPECT_TRUE(S11.IsAlmostEqualTo(C11));
 	}
 
 	{

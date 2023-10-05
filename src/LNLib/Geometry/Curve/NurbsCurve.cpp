@@ -241,7 +241,6 @@ void LNLib::NurbsCurve::RefineKnotVector(int degree, const std::vector<double>& 
 				updatedControlPoints[ind - 1] = alpha * updatedControlPoints[ind - 1] + (1.0 - alpha) * updatedControlPoints[ind];
 			}
 		}
-
 		insertedKnotVector[k] = insertKnotElements[j];
 		k = k - 1;
 	}
@@ -454,7 +453,7 @@ void LNLib::NurbsCurve::ElevateDegree(int degree, const std::vector<double>& kno
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
 	VALIDATE_ARGUMENT(times > 0, "times", "Times must greater than zero.");
 
-	int n = static_cast<int>(controlPoints.size() - 1);
+	int n = controlPoints.size() - 1;
 	int m = n + degree + 1;
 	int ph = degree + times;
 	int ph2 = floor(ph / 2);
@@ -636,10 +635,16 @@ void LNLib::NurbsCurve::ElevateDegree(int degree, const std::vector<double>& kno
 			}
 		}
 	}
-	for (int i = 0; i < 2 * times - 1; i++)
+
+	int diffcp = n + n * times - (mh - ph);
+	int diffkv = n + n * times + ph + 1 - (mh + 1);
+	for (int i = 0; i < diffcp; i++)
+	{
+		updatedControlPoints.pop_back();
+	}
+	for (int i = 0; i < diffkv; i++)
 	{
 		updatedKnotVector.pop_back();
-		updatedControlPoints.pop_back();
 	}
 }
 
