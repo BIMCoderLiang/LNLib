@@ -1005,34 +1005,28 @@ void LNLib::NurbsSurface::CreateRuledSurface(int degree0, const std::vector<doub
 		cp1 = updatedControlPoints1;
 	}
 	
-	bool isSameKnotVector = true;
-	for (int i = 0; i < k0Size; i++)
-	{
-		if (!MathUtils::IsAlmostEqualTo(kv0[i], kv1[i]))
-		{
-			isSameKnotVector = false;
-			break;
-		}
-	}
-	
 	knotVectorU = kv0;
-	if (!isSameKnotVector)
+	if (kv0 != kv1)
 	{
 		std::vector<double> insertedKnotElement0;
 		std::vector<double> insertedKnotElement1;
-
 		Polynomials::GetInsertedKnotElement(kv0, kv1, insertedKnotElement0, insertedKnotElement1);
 
-		std::vector<double> updatedKnotVector0;
-		std::vector<double> updatedKnotVector1;
-		std::vector<XYZW> updatedControlPoints0;
-		std::vector<XYZW> updatedControlPoints1;
-		NurbsCurve::RefineKnotVector(degreeU, kv0, cp0, insertedKnotElement0, updatedKnotVector0, updatedControlPoints0);
-		NurbsCurve::RefineKnotVector(degreeU, kv1, cp1, insertedKnotElement1, updatedKnotVector1, updatedControlPoints1);
-
-		knotVectorU = updatedKnotVector0;
-		cp0 = updatedControlPoints0;
-		cp1 = updatedControlPoints1;
+		if (insertedKnotElement0.size() > 0)
+		{
+			std::vector<double> updatedKnotVector0;
+			std::vector<XYZW> updatedControlPoints0;
+			NurbsCurve::RefineKnotVector(degreeU, kv0, cp0, insertedKnotElement0, updatedKnotVector0, updatedControlPoints0);
+			knotVectorU = updatedKnotVector0;
+			cp0 = updatedControlPoints0;
+		}
+		if (insertedKnotElement1.size() > 0)
+		{
+			std::vector<double> updatedKnotVector1;
+			std::vector<XYZW> updatedControlPoints1;
+			NurbsCurve::RefineKnotVector(degreeU, kv1, cp1, insertedKnotElement1, updatedKnotVector1, updatedControlPoints1);
+			cp1 = updatedControlPoints1;
+		}
 	}
 
 	knotVectorV = { 0,0,1,1 };
