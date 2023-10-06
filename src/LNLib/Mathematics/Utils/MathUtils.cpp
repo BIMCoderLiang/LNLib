@@ -503,44 +503,15 @@ bool LNLib::MathUtils::LUPDecomposition(const std::vector<std::vector<double>>& 
     return true;
 }
 
-
-
-std::vector<double> LNLib::MathUtils::ForwardSubstitution(const std::vector<std::vector<double>>& lowerTriMatrix, const std::vector<double>& column)
+std::vector<std::vector<double>> LNLib::MathUtils::SolveLinearSystem(const std::vector<std::vector<double>>& matrix, const std::vector<std::vector<double>>& right)
 {
-    int size = static_cast<int>(column.size());
-
-    std::vector<double> result;
-    result.resize(size, 0.0);
-
-    result[0] = column[0] / lowerTriMatrix[0][0];
-    for (int i = 1; i < size; i++)
+    std::vector<std::vector<double>> result;
+    std::vector<std::vector<double>> inverse;
+    bool canInverse = MakeInverse(matrix, inverse);
+    if (canInverse)
     {
-        double temp = 0.0;
-        for (int j = 0; j < i; j++)
-        {
-            temp += lowerTriMatrix[i][j] * result[j];
-        }
-        result[i] = (column[i] - temp) / lowerTriMatrix[i][i];
+        result = MatrixMultiply(inverse, right);
     }
     return result;
 }
 
-std::vector<double> LNLib::MathUtils::BackwardSubstitution(const std::vector<std::vector<double>>& upperTriMatrix, const std::vector<double>& column)
-{
-    int size = static_cast<int>(column.size());
-    int n = size - 1;
-    std::vector<double> result;
-    result.resize(size, 0.0);
-
-    result[n] = column[n] / upperTriMatrix[n][n];
-    for (int i = size - 2; i >= 0; i--)
-    {
-        double temp = 0.0;
-        for (int j = i; j < size; j++)
-        {
-            temp += upperTriMatrix[i][j] * result[j];
-        }
-        result[i] = (column[i] - temp) / upperTriMatrix[i][i];
-    }
-    return result;
-}

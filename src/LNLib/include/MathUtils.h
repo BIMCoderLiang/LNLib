@@ -92,9 +92,10 @@ namespace LNLib
 		
 		static bool LUPDecomposition(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& lowerTriMatrix, std::vector<std::vector<double>>& upperTriMatrix, std::vector<double>& pivot);
 
-		static std::vector<double> ForwardSubstitution(const std::vector<std::vector<double>>& lowerTriMatrix, const std::vector<double>& column);
-
-		static std::vector<double> BackwardSubstitution(const std::vector<std::vector<double>>& upperTriMatrix, const std::vector<double>& column);
+		/// <summary>
+		/// matrix * result = right.
+		/// </summary>
+		static std::vector<std::vector<double>> SolveLinearSystem(const std::vector<std::vector<double>>& matrix, const std::vector<std::vector<double>>& right);
 	};
 }
 

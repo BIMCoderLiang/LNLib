@@ -35,30 +35,56 @@ namespace LNLib
 
 double LNLib::Interpolation::GetTotalChordLength(const std::vector<XYZ>& throughPoints)
 {
-	int size = static_cast<int>(throughPoints.size());
-	int n = size - 1;
-
-	double result = 0.0;
+	int n = throughPoints.size() - 1;
+	double length = 0.0;
 	for (int i = 1; i <= n; i++)
 	{
-		result += throughPoints[i].Distance(throughPoints[i - 1]);
+		length += throughPoints[i].Distance(throughPoints[i - 1]);
 	}
-	return result;
+	return length;
 }
 
 std::vector<double> LNLib::Interpolation::GetChordParameterization(const std::vector<XYZ>& throughPoints)
 {
-	int size = static_cast<int>(throughPoints.size());
+	int size = throughPoints.size();
 	int n = size - 1;
 
-	std::vector<double> uk;
-	uk.resize(size,0.0);
+	std::vector<double> uk(size,0.0);
 	uk[n] = 1.0;
 
 	double d = GetTotalChordLength(throughPoints);
 	for (int i = 1; i <= n - 1; i++)
 	{
 		uk[i] = uk[i - 1] + (throughPoints[i].Distance(throughPoints[i - 1])) / d;
+	}
+	return uk;
+}
+
+double LNLib::Interpolation::GetCentripetalLength(const std::vector<XYZ>& throughPoints)
+{
+	int size = throughPoints.size();
+	int n = size - 1;
+
+	double length = 0.0;
+	for (int i = 1; i <= n; i++)
+	{
+		length += sqrt(throughPoints[i].Distance(throughPoints[i - 1]));
+	}
+	return length;
+}
+
+std::vector<double> LNLib::Interpolation::GetCentripetalParameterization(const std::vector<XYZ>& throughPoints)
+{
+	int size = throughPoints.size();
+	int n = size - 1;
+
+	std::vector<double> uk(size, 0.0);
+	uk[n] = 1.0;
+
+	double d = GetCentripetalLength(throughPoints);
+	for (int i = 1; i <= n - 1; i++)
+	{
+		uk[i] = uk[i - 1] + sqrt(throughPoints[i].Distance(throughPoints[i - 1])) / d;
 	}
 	return uk;
 }
@@ -79,16 +105,15 @@ std::vector<double> LNLib::Interpolation::GetChordParameterization(const std::ve
 	{
 		uk[i] = uk[i - 1] + (throughPoints[i].Distance(throughPoints[i - 1])) / length;
 	}
-
 	return uk;
 }
 
-std::vector<double> LNLib::Interpolation::ComputeKnotVector(unsigned int degree, int pointsCount, const std::vector<double> params)
+std::vector<double> LNLib::Interpolation::ComputeKnotVector(int degree, const std::vector<double> params)
 {
 	std::vector<double> knotVector;
 	std::vector<double> uk = params;
 
-	int size = pointsCount;
+	int size = params.size();
 	int n = size - 1;
 	int m = n + degree + 1;
 
@@ -98,14 +123,14 @@ std::vector<double> LNLib::Interpolation::ComputeKnotVector(unsigned int degree,
 		knotVector[i] = 1.0;
 	}
 
-	for (int j = 1; j <= static_cast<int>(n - degree + 1); j++)
+	for (int j = 1; j <= n - degree; j++)
 	{
-		double temp = 0.0;
-		for (int i = j; i <= static_cast<int>(j + degree - 1); i++)
+		double sum = 0.0;
+		for (int i = j; i <= j + degree - 1; i++)
 		{
-			temp += uk[i];
+			sum += uk[i];
 		}
-		knotVector[j + degree] = (1.0 / degree) * temp;
+		knotVector[j + degree] = (1.0 / degree) * sum;
 	}
 	return knotVector;
 }
@@ -132,29 +157,6 @@ std::vector<double> LNLib::Interpolation::ComputeKnotVector(unsigned int degree,
 	return knotVector;
 }
 
-std::vector<std::vector<double>> LNLib::Interpolation::MakeInterpolationMatrix(unsigned int degree, int dataCount, const std::vector<double>& params, const std::vector<double>& knotVector)
-{
-	int n = dataCount - 1;
-	std::vector<std::vector<double>> A;
-	A.resize(dataCount);
-	for (int i = 0; i <= n; i++)
-	{
-		A[i].resize(dataCount);
-	}
-
-	for (int i = 0; i <= n; i++)
-	{
-		int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, params[i]);
-		std::vector<double> basis = Polynomials::BasisFunctions(spanIndex, degree, knotVector, knotVector[i]);
-
-		for (int k = 0; k < static_cast<int>(degree); k++)
-		{
-			A[i][spanIndex - degree + k] = basis[k];
-		}
-	}
-	return A;
-}
-
 std::vector<LNLib::XYZ> LNLib::Interpolation::ComputerMatrixMultiplyPoints(std::vector<std::vector<double>> matrix, std::vector<XYZ> points)
 {
 	int row = static_cast<int>(matrix.size());
@@ -175,36 +177,6 @@ std::vector<LNLib::XYZ> LNLib::Interpolation::ComputerMatrixMultiplyPoints(std::
 		result.emplace_back(temp);
 	}
 	return result;
-}
-
-std::vector<LNLib::XYZ> LNLib::Interpolation::ComputerControlPointsByLUDecomposition(const std::vector<std::vector<double>>& matrix, const std::vector<XYZ>& data)
-{
-	int size = static_cast<int>(data.size());
-	int n = size - 1;
-
-	std::vector<XYZ> tempControlPoints;
-	tempControlPoints.resize(size);
-
-	std::vector<std::vector<double>> matrixL;
-	std::vector<std::vector<double>> matrixU;
-	MathUtils::LUDecomposition(matrix, matrixL, matrixU);
-
-	for (int i = 0; i < 3; i++)
-	{
-		std::vector<double> rhs;
-		for (int j = 0; j <= n; j++)
-		{
-			rhs[j] = data[j][i];
-		}
-		std::vector<double> column = MathUtils::ForwardSubstitution(matrixL, rhs);
-		std::vector<double> sol = MathUtils::BackwardSubstitution(matrixU, column);
-
-		for (int j = 0; j <= n; j++)
-		{
-			tempControlPoints[j][i] = sol[j];
-		}
-	}
-	return tempControlPoints;
 }
 
 std::vector<double> LNLib::Interpolation::ComputerKnotVectorForTangents(unsigned int degree, const std::vector<double>& params, const std::vector<int>& derivativeIndices)

@@ -32,30 +32,22 @@ namespace LNLib
 		static std::vector<double> GetChordParameterization(const std::vector<XYZ>& throughPoints);
 
 		/// <summary>
-		/// The NURBS Book 2nd Edition Page446
-		/// The chord length parameterization.
+		/// The NURBS Book 2nd Edition Page365
+		/// The total centripetal length.
 		/// </summary>
-		static std::vector<double> GetChordParameterization(const std::vector<XYZ>& throughPoints, int startIndex, int endIndex);
+		static double GetCentripetalLength(const std::vector<XYZ>& throughPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page365
+		/// The centripetal length parameterization.
+		/// </summary>
+		static std::vector<double> GetCentripetalParameterization(const std::vector<XYZ>& throughPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page365
 		/// Technique of averaging.
 		/// </summary>
-		static std::vector<double> ComputeKnotVector(unsigned int degree, int pointsCount, const std::vector<double> params);
-
-		/// <summary>
-		/// The NURBS Book 2nd Edition Page412
-		/// Computes a knot vector ensuring that every knot span has at least one.
-		/// </summary>
-		static std::vector<double> ComputeKnotVector(unsigned int degree, int pointsCount, int controlPointsCount, const std::vector<double> params);
-
-		static std::vector<std::vector<double>> MakeInterpolationMatrix(unsigned int degree, int dataCount, const std::vector<double>& params, const std::vector<double>& knotVector);
-
-		static std::vector<XYZ> ComputerMatrixMultiplyPoints(std::vector<std::vector<double>> matrix, std::vector<XYZ> points);
-
-		static std::vector<XYZ> ComputerControlPointsByLUDecomposition(const std::vector<std::vector<double>>& matrix, const std::vector<XYZ>& data);
-
-		static std::vector<double> ComputerKnotVectorForTangents(unsigned int degree, const std::vector<double>& params, const std::vector<int>& derivativeIndices);
+		static std::vector<double> ComputeKnotVector(int degree, const std::vector<double> params);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page377
@@ -69,5 +61,21 @@ namespace LNLib
 		/// Computer tangent of each through point (at least five points).
 		/// </summary>
 		static bool ComputerTangent(const std::vector<XYZ>& throughPoints, std::vector<XYZ>& tangents);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page412
+		/// Computes a knot vector ensuring that every knot span has at least one.
+		/// </summary>
+		static std::vector<double> ComputeKnotVector(unsigned int degree, int pointsCount, int controlPointsCount, const std::vector<double> params);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page446
+		/// The chord length parameterization.
+		/// </summary>
+		static std::vector<double> GetChordParameterization(const std::vector<XYZ>& throughPoints, int startIndex, int endIndex);	
+
+		static std::vector<XYZ> ComputerMatrixMultiplyPoints(std::vector<std::vector<double>> matrix, std::vector<XYZ> points);
+
+		static std::vector<double> ComputerKnotVectorForTangents(unsigned int degree, const std::vector<double>& params, const std::vector<int>& derivativeIndices);
 	};
 }

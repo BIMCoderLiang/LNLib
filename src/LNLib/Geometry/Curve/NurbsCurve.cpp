@@ -1291,20 +1291,50 @@ bool LNLib::NurbsCurve::CreateOpenConic(const XYZ& start, const XYZ& startTangen
 	return false;
 }
 
-void LNLib::NurbsCurve::GlobalInterpolation(unsigned int degree, const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+void LNLib::NurbsCurve::GlobalInterpolation(int degree, const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
 {
-	int size = static_cast<int>(throughPoints.size());
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(throughPoints.size() > 0, "throughPoints", "ThroughPoints must contains one point at least.");
+
+	int size = throughPoints.size();
 	int n = size - 1;
 
 	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
-	knotVector = Interpolation::ComputeKnotVector(degree, static_cast<int>(throughPoints.size()), uk);
+	knotVector = Interpolation::ComputeKnotVector(degree, uk);
 
-	std::vector<std::vector<double>> A = Interpolation::MakeInterpolationMatrix(degree, size, uk, knotVector);
-	std::vector<XYZ> tempControlPoints = Interpolation::ComputerControlPointsByLUDecomposition(A, throughPoints);
+	std::vector<std::vector<double>> A(size, std::vector<double>(size));
+	for (int i = 1; i < n; i++)
+	{
+		int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, uk[i]);
+		std::vector<double> basis = Polynomials::BasisFunctions(spanIndex, degree, knotVector, uk[i]);
 
+		for (int j = 0; j <= degree; j++)
+		{
+			A[i][spanIndex - degree + j] = basis[j];
+		}
+	}
+	A[0][0] = 1.0;
+	A[n][n] = 1.0;
+
+	std::vector<std::vector<double>> right(size,std::vector<double>(3));
 	for (int i = 0; i < size; i++)
 	{
-		controlPoints[i] = XYZW(tempControlPoints[i], 1);
+		for (int j = 0; j < 3; j++)
+		{
+			right[i][j] = throughPoints[i][j];
+		}
+	}
+
+	controlPoints.resize(size);
+	std::vector<std::vector<double>> result = MathUtils::SolveLinearSystem(A, right);
+	for (int i = 0; i < result.size(); i++)
+	{
+		XYZ temp = XYZ(0, 0, 0);
+		for (int j = 0; j < 3; j++)
+		{
+			temp[j] = result[i][j];
+		}
+		controlPoints[i] = XYZW(temp, 1.0);
 	}
 }
 
@@ -1397,11 +1427,11 @@ void LNLib::NurbsCurve::GlobalInterpolationByTangents(unsigned int degree, const
 	A[0][0] = 1;
 	A[size - 1][size - 1] = 1;
 
-	std::vector<XYZ> tempControlPoints = Interpolation::ComputerControlPointsByLUDecomposition(A, b);
+	/*std::vector<XYZ> tempControlPoints = Interpolation::ComputerControlPointsByLUDecomposition(A, b);
 	for (int i = 0; i < size; i++)
 	{
 		controlPoints[i] = XYZW(tempControlPoints[i], 1);
-	}
+	}*/
 }
 
 void LNLib::NurbsCurve::LocalCubicCurveInterpolation(const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
@@ -1512,11 +1542,11 @@ bool LNLib::NurbsCurve::LeastSquaresApproximation(unsigned int degree, const std
 		R[i] = temp;
 	}
 	
-	std::vector<XYZ> tempControlPoints = Interpolation::ComputerControlPointsByLUDecomposition(A, R);
+	/*std::vector<XYZ> tempControlPoints = Interpolation::ComputerControlPointsByLUDecomposition(A, R);
 	for (int i = 0; i < size; i++)
 	{
 		controlPoints[i] = XYZW(tempControlPoints[i], 1);
-	}
+	}*/
 	return true;
 }
 
@@ -1633,7 +1663,7 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(unsigned 
 
 	std::vector<XYZ> NTWS = Interpolation::ComputerMatrixMultiplyPoints(NTW, S);
 	
-	std::vector<XYZ> tempControlPoints;
+	/*std::vector<XYZ> tempControlPoints;
 	if (mc < 0)
 	{
 		tempControlPoints = Interpolation::ComputerControlPointsByLUDecomposition(NTWN, NTWS);
@@ -1670,7 +1700,7 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(unsigned 
 	for (int i = 0; i < static_cast<int>(tempControlPoints.size()); i++)
 	{
 		controlPoints[i] = XYZW(tempControlPoints[i], 1);
-	}
+	}*/
 	return true;
 }
 

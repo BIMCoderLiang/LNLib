@@ -8,7 +8,7 @@
 
 using namespace LNLib;
 
-TEST(Test_Advanced, All)
+TEST(Test_AdvancedGeometric, All)
 {
 	{
 		int degree = 2;
