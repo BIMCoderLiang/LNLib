@@ -169,7 +169,7 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page369 - 374
 		/// Global interpolation by through points and tangents. (including Algorithm A9.2)
 		/// </summary>
-		static void GlobalInterpolationByTangents(unsigned int degree, const std::vector<XYZ>& throughPoints, const std::vector<XYZ>& tangents, const std::vector<int>& tangentsIndices,  std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+		static void GlobalInterpolation(int degree, const std::vector<XYZ>& throughPoints, const std::vector<XYZ>& tangents, double tangentFactor, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page395

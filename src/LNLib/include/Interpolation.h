@@ -75,7 +75,5 @@ namespace LNLib
 		static std::vector<double> GetChordParameterization(const std::vector<XYZ>& throughPoints, int startIndex, int endIndex);	
 
 		static std::vector<XYZ> ComputerMatrixMultiplyPoints(std::vector<std::vector<double>> matrix, std::vector<XYZ> points);
-
-		static std::vector<double> ComputerKnotVectorForTangents(unsigned int degree, const std::vector<double>& params, const std::vector<int>& derivativeIndices);
 	};
 }

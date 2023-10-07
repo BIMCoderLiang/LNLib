@@ -26,6 +26,21 @@ TEST(Test_Fitting, Interpolation)
 		std::vector<XYZW> cps;
 		NurbsCurve::GlobalInterpolation(degree, Q, kv, cps);
 		EXPECT_TRUE(cps.size() == Q.size());
+		EXPECT_TRUE(cps[0].ToXYZ(true).IsAlmostEqualTo(Q[0]));
+		EXPECT_TRUE(cps[4].ToXYZ(true).IsAlmostEqualTo(Q[4]));
+	}
+
+	{
+		int degree = 2;
+		std::vector<XYZ> Q = { XYZ(100,0,0),XYZ(0,100,0),XYZ(-100,0,0),XYZ(0,-100,0)};
+		std::vector<XYZ> T = { XYZ(0,1,0),XYZ(-1,0,0),XYZ(0,-1,0),XYZ(1,0,0)};
+		std::vector<double> kv;
+		std::vector<XYZW> cps;
+		NurbsCurve::GlobalInterpolation(degree, Q, T, 1, kv, cps);
+		XYZ C0 = NurbsCurve::GetPointOnCurve(degree, kv, 0.0, cps);
+		EXPECT_TRUE(C0.IsAlmostEqualTo(XYZ(100, 0, 0)));
+		XYZ C1 = NurbsCurve::GetPointOnCurve(degree, kv, 1.0, cps);
+		EXPECT_TRUE(C1.IsAlmostEqualTo(XYZ(0, -100, 0)));
 	}
 }
 
