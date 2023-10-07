@@ -154,5 +154,30 @@ namespace LNLib
 		/// Global surface approximation with fixed number of control points.
 		/// </summary>
 		static void GlobalSurfaceApproximation(const std::vector<std::vector<XYZ>>& throughPoints, unsigned int degreeU, unsigned int degreeV, int controlPointsRows, int controlPointsColumns, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page456
+		/// </summary>
+		static bool CreateSwungSurface();
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page457
+		/// </summary>
+		static bool CreateLoftSurface();
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page472
+		/// </summary>
+		static bool CreateSweepSurface();
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page485
+		/// </summary>
+		static bool CreateGordonSurface();
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page485
+		/// </summary>
+		static bool CreateCoonsSurface();
 	};
 }
