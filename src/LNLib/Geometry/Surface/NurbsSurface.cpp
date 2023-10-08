@@ -1211,54 +1211,49 @@ std::vector<std::vector<LNLib::XYZW>> LNLib::NurbsSurface::NonuniformScaling(con
 	return result;
 }
 
-void LNLib::NurbsSurface::GlobalSurfaceInterpolation(const std::vector<std::vector<XYZ>>& throughPoints, unsigned int degreeU, unsigned int degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
+void LNLib::NurbsSurface::GlobalInterpolation(const std::vector<std::vector<XYZ>>& throughPoints, int degreeU, int degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
 {
 	std::vector<double> uk;
 	std::vector<double> vl;
 
 	Interpolation::GetSurfaceMeshParameterization(throughPoints, uk, vl);
 
-	int sizeU = static_cast<int>(throughPoints.size());
-	int n = sizeU - 1;
-	int sizeV = static_cast<int>(throughPoints[0].size());
-	int m = sizeV - 1;
+	int rows = throughPoints.size();
+	int cols = throughPoints[0].size();
 
+	controlPoints.resize(rows, std::vector<XYZW>(cols));
 	knotVectorU = Interpolation::ComputeKnotVector(degreeU, uk);
 	knotVectorV = Interpolation::ComputeKnotVector(degreeV, vl);
 
-	/*std::vector<std::vector<XYZ>> tempResult;
-	std::vector<std::vector<XYZ>> tempControlPoints;
-	for (int l = 0; l <= m; l++)
+	for (int j = 0; j < cols; j++)
 	{
-		std::vector<XYZ> temp;
-		for (int i = 0; i <= n; i++)
+		std::vector<XYZ> temp(rows);
+		for (int i = 0; i < rows; i++)
 		{
-			temp.emplace_back(throughPoints[i][l]);
+			temp[i] = throughPoints[i][j];
 		}
-		std::vector<std::vector<double>> A = Interpolation::MakeInterpolationMatrix(degreeU, sizeU, uk, knotVectorU);
-		tempControlPoints.emplace_back(Interpolation::ComputerControlPointsByLUDecomposition(A, temp));
+		std::vector<XYZW> cps;
+		NurbsCurve::GlobalInterpolation(degreeU, temp, knotVectorU, cps);
+		for (int i = 0; i < rows; i++)
+		{
+			controlPoints[i][j] = cps[i];
+		}
 	}
 
-	for (int i = 0; i <= n; i++)
+	for (int i = 0; i < rows; i++)
 	{
-		std::vector<XYZ> temp;
-		for (int l = 0; l <= m; l++)
+		std::vector<XYZ> temp(cols);
+		for (int j = 0; j < cols; j++)
 		{
-			temp.emplace_back(tempControlPoints[i][l]);
+			temp[j] = throughPoints[i][j];
 		}
-		std::vector<std::vector<double>> A = Interpolation::MakeInterpolationMatrix(degreeV, sizeV, vl, knotVectorV);
-		tempResult.emplace_back(Interpolation::ComputerControlPointsByLUDecomposition(A, temp));
+		std::vector<XYZW> cps;
+		NurbsCurve::GlobalInterpolation(degreeV, temp, knotVectorV, cps);
+		for (int j = 0; j < cols; j++)
+		{
+			controlPoints[i][j] = cps[j];
+		}
 	}
-
-	for (int i = 0; i < static_cast<int>(tempResult.size()); i++)
-	{
-		std::vector<XYZW> temp;
-		for (int j = 0; j < static_cast<int>(tempResult[0].size()); j++)
-		{
-			temp.emplace_back(XYZW(tempResult[i][j],1));
-		}
-		controlPoints.emplace_back(temp);
-	}*/
 }
 
 void LNLib::NurbsSurface::CreateBicubicSurface(const std::vector<std::vector<XYZ>>& throughPoints, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)

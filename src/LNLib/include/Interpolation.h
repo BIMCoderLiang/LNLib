@@ -54,7 +54,7 @@ namespace LNLib
 		/// Algorithm A9.3
 		/// Compute paramters for global surface interpolation.
 		/// </summary>
-		static void GetSurfaceMeshParameterization(const std::vector<std::vector<XYZ>>& throughPoints, std::vector<double>& paramVectorU, std::vector<double>& paramVectorV);
+		static bool GetSurfaceMeshParameterization(const std::vector<std::vector<XYZ>>& throughPoints, std::vector<double>& paramsU, std::vector<double>& paramsV);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page386

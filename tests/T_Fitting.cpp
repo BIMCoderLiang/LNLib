@@ -42,6 +42,83 @@ TEST(Test_Fitting, Interpolation)
 		XYZ C1 = NurbsCurve::GetPointOnCurve(degree, kv, 1.0, cps);
 		EXPECT_TRUE(C1.IsAlmostEqualTo(XYZ(0, -100, 0)));
 	}
+
+	{
+		int degreeU = 2;
+		int degreeV = 2;
+
+		XYZ P20 = XYZ(-1, 2, 4);
+		XYZ P21 = XYZ(0, 2, 4);
+		XYZ P22 = XYZ(0, 6, 4);
+		XYZ P23 = XYZ(0, 2, 0);
+		XYZ P24 = XYZ(1, 2, 0);
+
+		XYZ P10 = 0.9 * P20;
+		XYZ P11 = 0.9 * P21;
+		XYZ P12 = 0.9 * P22;
+		XYZ P13 = 0.9 * P23;
+		XYZ P14 = 0.9 * P24;
+
+		XYZ P00 = 0.9 * P10;
+		XYZ P01 = 0.9 * P11;
+		XYZ P02 = 0.9 * P12;
+		XYZ P03 = 0.9 * P13;
+		XYZ P04 = 0.9 * P14;
+
+		XYZ P30 = XYZ(3, 6, 8);
+		XYZ P31 = XYZ(4, 6, 8);
+		XYZ P32 = XYZ(12, 24, 12);
+		XYZ P33 = XYZ(4, 6, 0);
+		XYZ P34 = XYZ(5, 6, 0);
+
+		XYZ P40 = XYZ(3, 2, 4);
+		XYZ P41 = XYZ(4, 2, 4);
+		XYZ P42 = XYZ(8, 6, 4);
+		XYZ P43 = XYZ(4, 2, 0);
+		XYZ P44 = XYZ(5, 2, 0);
+
+		XYZ P50 = 1.5 * P40;
+		XYZ P51 = 1.5 * P41;
+		XYZ P52 = 1.5 * P42;
+		XYZ P53 = 1.5 * P43;
+		XYZ P54 = 1.5 * P44;
+
+		XYZ P60 = 1.5 * P50;
+		XYZ P61 = 1.5 * P51;
+		XYZ P62 = 1.5 * P52;
+		XYZ P63 = 1.5 * P53;
+		XYZ P64 = 1.5 * P54;
+
+		XYZ P70 = 1.5 * P60;
+		XYZ P71 = 1.5 * P61;
+		XYZ P72 = 1.5 * P62;
+		XYZ P73 = 1.5 * P63;
+		XYZ P74 = 1.5 * P64;
+
+		std::vector<std::vector<XYZ>> Q = {
+
+			{P00, P01, P02, P03, P04},
+			{P10, P11, P12, P13, P14},
+			{P20, P21, P22, P23, P24},
+			{P30, P31, P32, P33, P34},
+			{P40, P41, P42, P43, P44},
+			{P50, P51, P52, P53, P54},
+			{P60, P61, P62, P63, P64},
+			{P70, P71, P72, P73, P74},
+
+		};
+		std::vector<double> kvU, kvV;
+		std::vector<std::vector<XYZW>> cps;
+		NurbsSurface::GlobalInterpolation(Q, degreeU, degreeV, kvU, kvV, cps);
+		XYZ C0 = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(kvU[0], kvV[0]), cps);
+		EXPECT_TRUE(C0.IsAlmostEqualTo(P00));
+		XYZ C1 = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(kvU[0], kvV[kvV.size()-1]), cps);
+		EXPECT_TRUE(C1.IsAlmostEqualTo(P04));
+		XYZ C2 = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(kvU[kvU.size()-1], kvV[0]), cps);
+		EXPECT_TRUE(C2.IsAlmostEqualTo(P70));
+		XYZ C3 = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(kvU[kvU.size() - 1], kvV[kvV.size() - 1]), cps);
+		EXPECT_TRUE(C3.IsAlmostEqualTo(P74));
+	}
 }
 
 TEST(Test_Fitting, Approximation)

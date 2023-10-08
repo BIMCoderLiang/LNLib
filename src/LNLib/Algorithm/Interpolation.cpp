@@ -179,25 +179,21 @@ std::vector<LNLib::XYZ> LNLib::Interpolation::ComputerMatrixMultiplyPoints(std::
 	return result;
 }
 
-void LNLib::Interpolation::GetSurfaceMeshParameterization(const std::vector<std::vector<XYZ>>& throughPoints, std::vector<double>& paramVectorU, std::vector<double>& paramVectorV)
+bool LNLib::Interpolation::GetSurfaceMeshParameterization(const std::vector<std::vector<XYZ>>& throughPoints, std::vector<double>& paramsU, std::vector<double>& paramsV)
 {
-	int sizeU = static_cast<int>(throughPoints.size());
-	int sizeV = static_cast<int>(throughPoints[0].size());
+	int n = throughPoints.size();
+	int m = throughPoints[0].size();
 
-	int n = sizeU - 1;
-	int m = sizeV - 1;
+	std::vector<double> cds(std::max(n, m),0.0);
+	paramsU.resize(n,0.0);
+	paramsV.resize(m,0.0);
 
-	int num = m + 1;
-	paramVectorU.resize(sizeU, 0.0);
-	paramVectorU[n] = 1.0;
+	int num = m;
 	
-	for (int l = 0; l <= m; l++)
+	for (int l = 0; l < m; l++)
 	{
 		double total = 0.0;
-		std::vector<double> cds;
-		cds.resize(n + 1, 0.0);
-
-		for (int k = 1; k <= n; k++)
+		for (int k = 1; k < n; k++)
 		{
 			cds[k] = throughPoints[k][l].Distance(throughPoints[k - 1][l]);
 			total += cds[k];
@@ -205,7 +201,7 @@ void LNLib::Interpolation::GetSurfaceMeshParameterization(const std::vector<std:
 
 		if (MathUtils::IsAlmostEqualTo(total, 0.0))
 		{
-			num = num - 1;
+			num--;
 		}
 		else
 		{
@@ -213,49 +209,55 @@ void LNLib::Interpolation::GetSurfaceMeshParameterization(const std::vector<std:
 			for (int k = 1; k < n; k++)
 			{
 				d += cds[k];
-				paramVectorU[k] = paramVectorU[k] + d / total;
+				paramsU[k] = paramsU[k] + d / total;
 			}
 		}
 	}
-	for (int k = 1; k < n; k++)
+	if (num == 0)
 	{
-		paramVectorU[k] = paramVectorU[k] / num;
+		return false;
 	}
 
-	num = n + 1;
-	paramVectorV.resize(sizeV, 0.0);
-	paramVectorV[m] = 1.0;
+	for (int k = 1; k < n - 1; k++)
+	{
+		paramsU[k] = paramsU[k] / num;
+	}
+	paramsU[n - 1] = 1.0;
 
-	for (int k = 0; k <= n; k++)
+	num = n;
+
+	for (int k = 0; k < n; k++) 
 	{
 		double total = 0.0;
-		std::vector<double> cds;
-		cds.resize(m + 1, 0.0);
-
-		for (int l = 1; l <= m; l++)
+		for (int l = 1; l < m; l++) 
 		{
-			cds[l] = throughPoints[k][l].Distance(throughPoints[k][l - 1]);
+			cds[l] = throughPoints[k][l].Distance(throughPoints[k][l-1]);
 			total += cds[l];
 		}
-
-		if (MathUtils::IsAlmostEqualTo(total, 0.0))
-		{
-			num = num - 1;
-		}
-		else
+		if (total == 0.0)
+			num--;
+		else 
 		{
 			double d = 0.0;
-			for (int l = 1; l < m; l++)
+			for (int l = 1; l < m; l++) 
 			{
 				d += cds[l];
-				paramVectorV[l] = paramVectorU[l] + d / total;
+				paramsV[l] += d / total;
 			}
 		}
 	}
-	for (int l = 1; l < m; l++)
+
+	if (num == 0)
 	{
-		paramVectorV[l] = paramVectorV[l] / num;
+		return false;
 	}
+	for (int l = 1; l < m - 1; l++)
+	{
+		paramsV[l] = paramsV[l] / num;
+	}
+	paramsV[m - 1] = 1.0;
+
+	return true;
 }
 
 bool LNLib::Interpolation::ComputerTangent(const std::vector<XYZ>& throughPoints, std::vector<XYZ>& tangents)

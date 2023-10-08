@@ -139,7 +139,7 @@ namespace LNLib
 		/// Algorithm A9.4
 		/// Global surface interpolation.
 		/// </summary>
-		static void GlobalSurfaceInterpolation(const std::vector<std::vector<XYZ>>& throughPoints, unsigned int degreeU, unsigned int degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints);
+		static void GlobalInterpolation(const std::vector<std::vector<XYZ>>& throughPoints, int degreeU, int degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page404
