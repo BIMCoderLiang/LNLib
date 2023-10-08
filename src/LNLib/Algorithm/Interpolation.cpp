@@ -234,8 +234,10 @@ bool LNLib::Interpolation::GetSurfaceMeshParameterization(const std::vector<std:
 			cds[l] = throughPoints[k][l].Distance(throughPoints[k][l-1]);
 			total += cds[l];
 		}
-		if (total == 0.0)
+		if (MathUtils::IsAlmostEqualTo(total, 0.0))
+		{
 			num--;
+		}	
 		else 
 		{
 			double d = 0.0;
