@@ -175,7 +175,7 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page395
 		/// Local cubic curve interpolation by through points.
 		/// </summary>
-		static void LocalCubicCurveInterpolation(const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+		static bool CubicLocalInterpolation(const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page410

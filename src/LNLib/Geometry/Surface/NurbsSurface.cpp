@@ -1256,36 +1256,23 @@ void LNLib::NurbsSurface::GlobalInterpolation(const std::vector<std::vector<XYZ>
 	}
 }
 
-void LNLib::NurbsSurface::CreateBicubicSurface(const std::vector<std::vector<XYZ>>& throughPoints, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
+bool LNLib::NurbsSurface::BicubicLocalInterpolation(const std::vector<std::vector<XYZ>>& throughPoints, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
 {
-	unsigned int degreeU = 3;
-	unsigned int degreeV = 3;
+	int degreeU = 3;
+	int degreeV = 3;
 
-	int row = static_cast<int>(throughPoints.size());
+	int row = throughPoints.size();
 	int n = row - 1;
-	int column = static_cast<int>(throughPoints[0].size());
+	int column = throughPoints[0].size();
 	int m = column - 1;
 
-	std::vector<std::vector<std::vector<XYZ>>> td;
-	td.resize(n + 1);
-	for (int i = 0; i <= n; i++)
-	{
-		td[i].resize(m + 1);
-		for (int j = 0; j <= m; j++)
-		{
-			td[i][j].resize(3);
-		}
-	}
+	std::vector<std::vector<std::vector<XYZ>>> td(n + 1, std::vector<std::vector<XYZ>>(m+1, std::vector<XYZ>(3)));
 
-	std::vector<double> ub;
-	ub.resize(n + 1, 0.0);
-	std::vector<double> vb;
-	vb.resize(m + 1, 0.0);
+	std::vector<double> ub(n + 1, 0.0);
+	std::vector<double> vb(m + 1, 0.0);
 
-	std::vector<double> r;
-	r.resize(m + 1);
-	std::vector<double> s;
-	s.resize(n + 1);
+	std::vector<double> r(m + 1);
+	std::vector<double> s(n + 1);
 
 	double total = 0.0;
 	for (int l = 0; l <= m; l++)
@@ -1294,8 +1281,8 @@ void LNLib::NurbsSurface::CreateBicubicSurface(const std::vector<std::vector<XYZ
 		MathUtils::GetColumn(throughPoints, l, columnData);
 
 		std::vector<XYZ> tvkl;
-		bool hasTangents = Interpolation::ComputerTangent(columnData, tvkl);
-		if (!hasTangents) return;
+		bool hasTangents = Interpolation::ComputeTangent(columnData, tvkl);
+		if (!hasTangents) return false;
 
 		r[l] = 0.0;
 		for (int k = 0; k <= n; k++)
@@ -1321,8 +1308,8 @@ void LNLib::NurbsSurface::CreateBicubicSurface(const std::vector<std::vector<XYZ
 	for (int k = 0; k <= n; k++)
 	{
 		std::vector<XYZ> tukl;
-		bool hasTangents = Interpolation::ComputerTangent(throughPoints[k], tukl);
-		if (!hasTangents) return;
+		bool hasTangents = Interpolation::ComputeTangent(throughPoints[k], tukl);
+		if (!hasTangents) return false;
 
 		s[k] = 0.0;
 		for (int l = 0; l <= m; l++)
@@ -1371,16 +1358,16 @@ void LNLib::NurbsSurface::CreateBicubicSurface(const std::vector<std::vector<XYZ
 	for (int i = 0; i < row; i++)
 	{
 		std::vector<double> temp;
-		NurbsCurve::LocalCubicCurveInterpolation(throughPoints[i], temp, tcp[i]);
+		NurbsCurve::CubicLocalInterpolation(throughPoints[i], temp, tcp[i]);
 	}	
 
 	std::vector<std::vector<XYZW>> transpose;
-	for (int j = 0; j < static_cast<int>(tcp[0].size()); j++)
+	for (int j = 0; j < tcp[0].size(); j++)
 	{
 		std::vector<XYZ> columnData;
 		MathUtils::GetColumn(ToXYZ(tcp), j, columnData);
 		std::vector<double> temp;
-		NurbsCurve::LocalCubicCurveInterpolation(columnData, temp, transpose[j]);
+		NurbsCurve::CubicLocalInterpolation(columnData, temp, transpose[j]);
 	}
 
 	MathUtils::Transpose(transpose, bcp);
@@ -1426,6 +1413,7 @@ void LNLib::NurbsSurface::CreateBicubicSurface(const std::vector<std::vector<XYZ
 	}
 
 	controlPoints = ToXYZW(bezierControlPoints);
+	return true;
 }
 
 void LNLib::NurbsSurface::GlobalSurfaceApproximation(const std::vector<std::vector<XYZ>>& throughPoints, unsigned int degreeU, unsigned int degreeV, int controlPointsRows, int controlPointsColumns, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)

@@ -60,7 +60,7 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page386
 		/// Computer tangent of each through point (at least five points).
 		/// </summary>
-		static bool ComputerTangent(const std::vector<XYZ>& throughPoints, std::vector<XYZ>& tangents);
+		static bool ComputeTangent(const std::vector<XYZ>& throughPoints, std::vector<XYZ>& tangents);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page412

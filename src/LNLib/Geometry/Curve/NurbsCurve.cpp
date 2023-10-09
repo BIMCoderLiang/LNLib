@@ -1463,37 +1463,34 @@ void LNLib::NurbsCurve::GlobalInterpolation(int degree, const std::vector<XYZ>& 
 	}
 }
 
-void LNLib::NurbsCurve::LocalCubicCurveInterpolation(const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+bool LNLib::NurbsCurve::CubicLocalInterpolation(const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
 {
-	unsigned int degree = 3;
+	int degree = 3;
 
-	int size = static_cast<int>(throughPoints.size());
-	int n = size - 1;
 	std::vector<XYZ> tangents;
-	bool hasTangents = Interpolation::ComputerTangent(throughPoints, tangents);
-	if (!hasTangents) return;
+	bool hasTangents = Interpolation::ComputeTangent(throughPoints, tangents);
+	if (!hasTangents) return false;
 
-	std::vector<double> uk;
-	uk.resize(n);
+	int size = throughPoints.size();
+	std::vector<double> uk(size);
+	int n = size - 1;
 	uk[0] = 0;
 
 	std::vector<XYZW> tempControlPoints;
-	for (int k = 0; k < size; k++)
+	for (int k = 0; k <= n; k++)
 	{
-		XYZ qk = throughPoints[k];
-
 		XYZ t0 = tangents[k];
 		XYZ t3 = tangents[k + 1];
-		XYZ p0 = qk;
+		XYZ p0 = throughPoints[k];
 		XYZ p3 = throughPoints[k + 1];
 
-		double a = 16 - (t0 + t3).Length();
+		double a = 16 - (t0 + t3).SqrLength();
 		double b = 12 * (p3 - p0).DotProduct(t0 + t3);
 		double c = -36 * (p3 - p0).SqrLength();
 
 		double alpha = (-b + sqrt(b * b - 4 * a * c)) / (2 * a);
 
-		XYZ pk0 = qk;
+		XYZ pk0 = throughPoints[k];
 		XYZ pk1 = p0 + (1 / 3) * alpha * t0;
 		XYZ pk2 = p3 - (1 / 3) * alpha * t3;
 
@@ -1503,7 +1500,7 @@ void LNLib::NurbsCurve::LocalCubicCurveInterpolation(const std::vector<XYZ>& thr
 		tempControlPoints.emplace_back(XYZW(pk2, 1));
 	}
 
-	int kvSize = 2 * (degree + 1) + 2 * (n - 1);
+	int kvSize = 2 * (degree + 1) + 2 * (size - 1);
 	knotVector.resize(kvSize);
 	for (int i = 0; i <= degree; i++)
 	{
@@ -1511,12 +1508,12 @@ void LNLib::NurbsCurve::LocalCubicCurveInterpolation(const std::vector<XYZ>& thr
 		knotVector[kvSize - 1 - i] = 1;
 	}
 
-	for (int i = 1; i < n; i = i + 2)
+	for (int i = 1; i <= n - 1; i = i + 2)
 	{
 		knotVector[degree + i] = knotVector[degree + (i + 1)] = uk[i] / uk[n];
 	}
 
-	int tSize = static_cast<int>(tempControlPoints.size());
+	int tSize = tempControlPoints.size();
 	controlPoints.resize(tSize + 2);
 	controlPoints[0] = XYZW(throughPoints[0], 1);
 	controlPoints[tSize + 2 - 1] = XYZW(throughPoints[n], 1);
@@ -1524,6 +1521,8 @@ void LNLib::NurbsCurve::LocalCubicCurveInterpolation(const std::vector<XYZ>& thr
 	{
 		controlPoints[i + 1] = tempControlPoints[i];
 	}
+
+	return true;
 }
 
 bool LNLib::NurbsCurve::LeastSquaresApproximation(unsigned int degree, const std::vector<XYZ>& throughPoints, int controlPointsCount, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)

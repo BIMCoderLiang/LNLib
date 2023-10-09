@@ -146,7 +146,7 @@ namespace LNLib
 		/// Algorithm A9.5
 		/// Local surface interpolation through (n+1)*(m+1) points.
 		/// </summary>
-		static void CreateBicubicSurface(const std::vector<std::vector<XYZ>>& throughPoints, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints);
+		static bool BicubicLocalInterpolation(const std::vector<std::vector<XYZ>>& throughPoints, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page422
