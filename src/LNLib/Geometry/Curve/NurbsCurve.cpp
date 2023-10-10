@@ -1477,7 +1477,7 @@ bool LNLib::NurbsCurve::CubicLocalInterpolation(const std::vector<XYZ>& throughP
 	uk[0] = 0;
 
 	std::vector<XYZW> tempControlPoints;
-	for (int k = 0; k <= n; k++)
+	for (int k = 0; k < n; k++)
 	{
 		XYZ t0 = tangents[k];
 		XYZ t3 = tangents[k + 1];

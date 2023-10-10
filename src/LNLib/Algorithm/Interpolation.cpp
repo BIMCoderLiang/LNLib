@@ -264,11 +264,11 @@ bool LNLib::Interpolation::GetSurfaceMeshParameterization(const std::vector<std:
 
 bool LNLib::Interpolation::ComputeTangent(const std::vector<XYZ>& throughPoints, std::vector<XYZ>& tangents)
 {
-	int n = throughPoints.size();
-	if (n < 5) return false;
+	int size = throughPoints.size();
+	if (size < 5) return false;
 
-	tangents.resize(n);
-	for (int k = 2; k <= n - 2 ; k++)
+	tangents.resize(size);
+	for (int k = 2; k < size - 2 ; k++)
 	{
 		LNLib::XYZ qk_1 = Getqk(throughPoints, k - 1);
 		LNLib::XYZ qk = Getqk(throughPoints, k);
@@ -278,10 +278,11 @@ bool LNLib::Interpolation::ComputeTangent(const std::vector<XYZ>& throughPoints,
 		tangents[k] = GetTk(qk_1, qk, qk1, qk2);
 	}
 
+	int n = size - 1;
 	LNLib::XYZ q0 = 2* Getqk(throughPoints, 1) - Getqk(throughPoints, 2);
-	LNLib::XYZ q_1 = 2 * Getqk(throughPoints, 0) - Getqk(throughPoints, 1);
+	LNLib::XYZ q_1 = 2 * q0 - Getqk(throughPoints, 1);
 	LNLib::XYZ qn1 = 2 * Getqk(throughPoints, n) - Getqk(throughPoints, n-1);
-	LNLib::XYZ qn2 = 2 * Getqk(throughPoints, n+1) - Getqk(throughPoints, n);
+	LNLib::XYZ qn2 = 2 * qn1 - Getqk(throughPoints, n);
 
 	tangents[0] = GetTk(q_1, q0, Getqk(throughPoints, 1), Getqk(throughPoints, 2));
 	tangents[1] = GetTk(q0, Getqk(throughPoints, 1), Getqk(throughPoints, 2), Getqk(throughPoints, 3));

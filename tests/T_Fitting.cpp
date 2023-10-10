@@ -119,6 +119,16 @@ TEST(Test_Fitting, Interpolation)
 		XYZ C3 = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(kvU[kvU.size() - 1], kvV[kvV.size() - 1]), cps);
 		EXPECT_TRUE(C3.IsAlmostEqualTo(P74));
 	}
+
+	{
+		std::vector<XYZ> Q = { XYZ(0,0,0),XYZ(3,4,0),XYZ(-1,4,0),XYZ(-4,0,0),XYZ(-4,-3,0) };
+		std::vector<double> kv;
+		std::vector<XYZW> cps;
+		bool result = NurbsCurve::CubicLocalInterpolation(Q, kv, cps);
+		EXPECT_TRUE(result);
+		EXPECT_TRUE(cps[0].ToXYZ(true).IsAlmostEqualTo(Q[0]));
+		EXPECT_TRUE(cps[cps.size()-1].ToXYZ(true).IsAlmostEqualTo(Q[4]));
+	}
 }
 
 TEST(Test_Fitting, Approximation)
