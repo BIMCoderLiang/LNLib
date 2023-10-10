@@ -27,8 +27,8 @@ namespace LNLib
 {
 	std::vector<std::vector<XYZ>> ToXYZ(const std::vector<std::vector<XYZW>>& surfacePoints)
 	{
-		int row = static_cast<int>(surfacePoints.size());
-		int column = static_cast<int>(surfacePoints[0].size());
+		int row = surfacePoints.size();
+		int column = surfacePoints[0].size();
 
 		std::vector<std::vector<XYZ>> result;
 		result.resize(row);
@@ -45,8 +45,8 @@ namespace LNLib
 
 	std::vector<std::vector<XYZW>> ToXYZW(const std::vector<std::vector<XYZ>>& surfacePoints)
 	{
-		int row = static_cast<int>(surfacePoints.size());
-		int column = static_cast<int>(surfacePoints[0].size());
+		int row = surfacePoints.size();
+		int column = surfacePoints[0].size();
 
 		std::vector<std::vector<XYZW>> result;
 		result.resize(row);

@@ -226,6 +226,24 @@ namespace LNLib
 		static bool LocalNonRationalCubicCurveApproximation(int startPointIndex, int endPointIndex, const std::vector<XYZ>& throughPoints, const XYZ& startTangent, const XYZ& endTangent, double maxError, std::vector<XYZW>& middleControlPoints);
 
 		/// <summary>
+		/// The NURBS Book 2nd Edition Page511
+		/// Reposition an arbitrary control point.
+		/// </summary>
+		static void ControlPointReposition(int degree, const std::vector<double>& knotVector, const std::vector<XYZW> controlPoints, int moveIndex, XYZW newControlPoint, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page520
+		/// Modify one curve weight.
+		/// </summary>
+		static void WeightModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW> controlPoints, int moveIndex, double newWeight, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page526
+		/// Modify two neighboring curve weights. (moveIndex and moveIndex + 1)
+		/// </summary>
+		static void NeighborWeightsModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW> controlPoints, int moveIndex, double newWeight, double newNeighborWeight, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
+
+		/// <summary>
 		/// The NURBS Book 2nd Edition Page572
 		/// Clamp a unclamped curve.
 		/// </summary>
