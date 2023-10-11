@@ -229,13 +229,13 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page511
 		/// Reposition an arbitrary control point.
 		/// </summary>
-		static void ControlPointReposition(int degree, const std::vector<double>& knotVector, const std::vector<XYZW> controlPoints, int moveIndex, XYZW newControlPoint, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
+		static void ControlPointReposition(int degree, const std::vector<double>& knotVector, const std::vector<XYZW> controlPoints, XYZW newControlPoint, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page520
 		/// Modify one curve weight.
 		/// </summary>
-		static void WeightModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW> controlPoints, int moveIndex, double newWeight, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
+		static double WeightModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW> controlPoints, XYZ newControlPoint, double distance);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page526

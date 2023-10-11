@@ -24,6 +24,24 @@
 #include <vector>
 #include <algorithm>
 
+namespace LNLib
+{
+	double GetNode(int degree, const std::vector<double>& knotVector, int lastIndex)
+	{
+		double t = 0.0;
+		for (int i = 0; i <= lastIndex; i++)
+		{
+			double sum = 0.0;
+			for (int j = 1; j <= degree; j++)
+			{
+				sum += knotVector[i + j];
+			}
+			t = sum * (1.0 / degree);
+		}
+		return t;
+	}
+}
+
 LNLib::XYZ LNLib::NurbsCurve::GetPointOnCurve(int degree, const std::vector<double>& knotVector, double paramT, const std::vector<XYZW>& controlPoints)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
@@ -2323,6 +2341,66 @@ bool LNLib::NurbsCurve::LocalNonRationalCubicCurveApproximation(int startPointIn
 		}
 	}
 	return true;
+}
+
+void LNLib::NurbsCurve::ControlPointReposition(int degree, const std::vector<double>& knotVector, const std::vector<XYZW> controlPoints, XYZW newControlPoint, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints)
+{
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+	int size = controlPoints.size();
+	int n = size - 1;
+
+	double ti = GetNode(degree, knotVector, n);
+
+	int k = 0;
+	int kvSize = knotVector.size();
+	double diff = Constants::MaxDistance;
+	for (int i = 0; i < kvSize; i++)
+	{
+		int endIndex = i + degree + 1;
+		if (endIndex > kvSize)
+		{
+			break;
+		}
+		else
+		{
+			for (int j = 1; j <= j + degree + 1; j++)
+			{
+				double d = abs(knotVector[j] - ti);
+				if (d < diff)
+				{
+					diff = d;
+					k = j;
+				}
+			}
+		}
+	}
+	
+	double u = knotVector[k];
+	double tk = GetNode(degree, knotVector, k);
+	double tk1 = GetNode(degree, knotVector, k+1);
+
+	if (MathUtils::IsGreaterThanOrEqual(abs(u - tk), abs(tk1 - u)))
+	{
+		double sum = 0.0;
+		for (int j = 2; j <= degree; j++)
+		{
+			sum += knotVector[k + j];
+		}
+		double insertKnot = degree * u - sum;
+		InsertKnot(degree, knotVector, controlPoints, insertKnot, 1, updatedKnotVector, updatedControlPoints);
+		updatedControlPoints[k + 1] = newControlPoint;
+	}
+	else
+	{
+		updatedKnotVector = knotVector;
+		updatedControlPoints = controlPoints;
+		updatedControlPoints[k] = newControlPoint;
+	}
 }
 
 void LNLib::NurbsCurve::ToClampCurve(int degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
