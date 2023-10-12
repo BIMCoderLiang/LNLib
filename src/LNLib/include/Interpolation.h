@@ -47,7 +47,7 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page365
 		/// Technique of averaging.
 		/// </summary>
-		static std::vector<double> ComputeKnotVector(int degree, const std::vector<double> params);
+		static std::vector<double> AverageKnotVector(int degree, const std::vector<double> params);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page377

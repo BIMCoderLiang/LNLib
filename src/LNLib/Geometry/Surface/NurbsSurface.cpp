@@ -1222,8 +1222,8 @@ void LNLib::NurbsSurface::GlobalInterpolation(const std::vector<std::vector<XYZ>
 	int cols = throughPoints[0].size();
 
 	controlPoints.resize(rows, std::vector<XYZW>(cols));
-	knotVectorU = Interpolation::ComputeKnotVector(degreeU, uk);
-	knotVectorV = Interpolation::ComputeKnotVector(degreeV, vl);
+	knotVectorU = Interpolation::AverageKnotVector(degreeU, uk);
+	knotVectorV = Interpolation::AverageKnotVector(degreeV, vl);
 
 	for (int j = 0; j < cols; j++)
 	{

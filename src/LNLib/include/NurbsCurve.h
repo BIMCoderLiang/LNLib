@@ -181,7 +181,7 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page410
 		/// Least square curve approximation.
 		/// </summary>
-		static bool LeastSquaresApproximation(unsigned int degree, const std::vector<XYZ>& throughPoints, int controlPointsCount, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+		static void LeastSquaresApproximation(int degree, const std::vector<XYZ>& throughPoints, int controlPointsCount, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page413
@@ -235,7 +235,7 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page520
 		/// Modify one curve weight.
 		/// </summary>
-		static double WeightModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW> controlPoints, XYZ newControlPoint, double distance);
+		static double WeightModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW> controlPoints, XYZ pointOnCurve, XYZ selectedControlPoint, XYZ newControlPoint, bool isPull);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page526

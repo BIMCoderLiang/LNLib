@@ -108,7 +108,7 @@ std::vector<double> LNLib::Interpolation::GetChordParameterization(const std::ve
 	return uk;
 }
 
-std::vector<double> LNLib::Interpolation::ComputeKnotVector(int degree, const std::vector<double> params)
+std::vector<double> LNLib::Interpolation::AverageKnotVector(int degree, const std::vector<double> params)
 {
 	std::vector<double> knotVector;
 	std::vector<double> uk = params;

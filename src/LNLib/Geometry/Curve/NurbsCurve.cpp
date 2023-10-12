@@ -1318,7 +1318,7 @@ void LNLib::NurbsCurve::GlobalInterpolation(int degree, const std::vector<XYZ>& 
 	int n = size - 1;
 
 	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
-	knotVector = Interpolation::ComputeKnotVector(degree, uk);
+	knotVector = Interpolation::AverageKnotVector(degree, uk);
 
 	std::vector<std::vector<double>> A(size, std::vector<double>(size));
 	for (int i = 1; i < n; i++)
@@ -1423,7 +1423,7 @@ void LNLib::NurbsCurve::GlobalInterpolation(int degree, const std::vector<XYZ>& 
 			uk2[2 * i + 1] = (uk[i] + uk[i + 1]) / 2.0;
 		}
 		uk2[uk2.size() - 2] = (uk2[uk2.size() - 1] + uk2[uk2.size() - 3]) / 2.0;
-		knotVector = Interpolation::ComputeKnotVector(degree, uk2);
+		knotVector = Interpolation::AverageKnotVector(degree, uk2);
 	}
 	}
 
@@ -1543,13 +1543,15 @@ bool LNLib::NurbsCurve::CubicLocalInterpolation(const std::vector<XYZ>& throughP
 	return true;
 }
 
-bool LNLib::NurbsCurve::LeastSquaresApproximation(unsigned int degree, const std::vector<XYZ>& throughPoints, int controlPointsCount, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+void LNLib::NurbsCurve::LeastSquaresApproximation(int degree, const std::vector<XYZ>& throughPoints, int controlPointsCount, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
 {
-	int size = static_cast<int>(throughPoints.size());
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(controlPointsCount > 0, "controlPointsCount", "controlPointsCount must greater than zero.");
+	int size = throughPoints.size();
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, size, controlPointsCount), "controlPointsCount", "Arguments must fit: m = n + p + 1");
+
 	int m = size - 1;
 	int n = controlPointsCount - 1;
-	if (n < degree || n > m - 1) return false;
-
 	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
 	knotVector = Interpolation::ComputeKnotVector(degree, size, controlPointsCount, uk);
 
@@ -1562,11 +1564,9 @@ bool LNLib::NurbsCurve::LeastSquaresApproximation(unsigned int degree, const std
 		Rk[k] = throughPoints[k] - N0p * throughPoints[0] - Nnp * throughPoints[m];
 	}
 
-	std::vector<std::vector<double>> N;
-	N.resize(m - 1);
+	std::vector<std::vector<double>> N(m - 1, std::vector<double>(n - 1));
 	for (int i = 0; i <= m - 2; i++)
 	{
-		N[i].resize(n - 1);
 		for (int j = 0; j <= n - 2; j++)
 		{
 			N[i][j] = Polynomials::OneBasisFunction(j + 1, degree, knotVector, uk[i + 1]);
@@ -1576,8 +1576,7 @@ bool LNLib::NurbsCurve::LeastSquaresApproximation(unsigned int degree, const std
 	MathUtils::Transpose(N, Nt);
 	std::vector<std::vector<double>> A = MathUtils::MatrixMultiply(Nt, N);
 
-	std::vector<XYZ> R;
-	R.resize(n - 1);
+	std::vector<XYZ> R(n - 1);
 	for (int i = 0; i <= n - 2; i++)
 	{
 		XYZ temp = XYZ(0, 0, 0);
@@ -1593,7 +1592,6 @@ bool LNLib::NurbsCurve::LeastSquaresApproximation(unsigned int degree, const std
 	{
 		controlPoints[i] = XYZW(tempControlPoints[i], 1);
 	}*/
-	return true;
 }
 
 bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(unsigned int degree, const std::vector<XYZ>& throughPoints, const std::vector<double>& weights, const std::vector<XYZ>& tangents, const std::vector<int>& tangentIndices, const std::vector<double>& weightedTangents, int controlPointsCount, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
@@ -2015,19 +2013,16 @@ void LNLib::NurbsCurve::GlobalCurveApproximationByErrorBound(unsigned int degree
 		P = tP;
 		n = static_cast<int>(P.size() - 1);
 
-		bool result = LeastSquaresApproximation(deg + 1, throughPoints, P.size(), tU, tP);
-		if (result)
-		{
-			U = tU;
-			P = tP;
+		LeastSquaresApproximation(deg + 1, throughPoints, P.size(), tU, tP);
+		U = tU;
+		P = tP;
 
-			for (int i = 0; i < size; i++)
-			{
-				double param = GetParamOnCurve(deg + 1, U, P, throughPoints[i]);
-				uk[i] = param;
-				XYZ p = GetPointOnCurve(deg + 1, U, param, P);
-				error[i] = p.Distance(throughPoints[i]);
-			}
+		for (int i = 0; i < size; i++)
+		{
+			double param = GetParamOnCurve(deg + 1, U, P, throughPoints[i]);
+			uk[i] = param;
+			XYZ p = GetPointOnCurve(deg + 1, U, param, P);
+			error[i] = p.Distance(throughPoints[i]);
 		}
 	}
 
@@ -2040,29 +2035,19 @@ void LNLib::NurbsCurve::GlobalCurveApproximationByErrorBound(unsigned int degree
 	else
 	{
 		std::vector<double> tU;
-		std::vector<XYZW> tP;
-		bool result = LeastSquaresApproximation(degree, throughPoints, P.size(), tU, tP);
-		if (result)
+		std::vector<XYZW> tP; 
+		LeastSquaresApproximation(degree, throughPoints, P.size(), tU, tP);
+		for (int i = 0; i < size; i++)
 		{
-			for (int i = 0; i < size; i++)
-			{
-				double param = GetParamOnCurve(degree, U, P, throughPoints[i]);
-				uk[i] = param;
-				XYZ p = GetPointOnCurve(degree, U, param, P);
-				error[i] = p.Distance(throughPoints[i]);
-			}
+			double param = GetParamOnCurve(degree, U, P, throughPoints[i]);
+			uk[i] = param;
+			XYZ p = GetPointOnCurve(degree, U, param, P);
+			error[i] = p.Distance(throughPoints[i]);
+		}
 
-			RemoveKnotsByGivenBound(degree, tU, tP, uk, error, maxError, Uh, Ph);
-			knotVector = Uh;
-			controlPoints = Ph;
-			return;
-		}
-		else
-		{
-			knotVector = U;
-			controlPoints = P;
-			return;
-		}
+		RemoveKnotsByGivenBound(degree, tU, tP, uk, error, maxError, Uh, Ph);
+		knotVector = Uh;
+		controlPoints = Ph;
 	}
 }
 
@@ -2401,6 +2386,34 @@ void LNLib::NurbsCurve::ControlPointReposition(int degree, const std::vector<dou
 		updatedControlPoints = controlPoints;
 		updatedControlPoints[k] = newControlPoint;
 	}
+}
+
+double LNLib::NurbsCurve::WeightModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW> controlPoints, XYZ pointOnCurve, XYZ selectedControlPoint, XYZ newControlPoint, bool isPull)
+{
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+	XYZ dir1 = (selectedControlPoint - newControlPoint).Normalize();
+	XYZ dir2 = (newControlPoint - pointOnCurve).Normalize();
+	VALIDATE_ARGUMENT(dir1.IsAlmostEqualTo(dir2) || dir1.IsAlmostEqualTo(dir2.Negative()), "newControlPoint", "NewControlPoint must on the line created by pointOnCurve and selectedControlPoint");
+
+	double u = GetParamOnCurve(degree, knotVector, controlPoints, pointOnCurve);
+	double distance = pointOnCurve.Distance(newControlPoint);
+	double pkp = selectedControlPoint.Distance(pointOnCurve);
+	int k = Polynomials::GetKnotSpanIndex(degree, knotVector, u);
+	double wk = controlPoints[k].GetW();
+
+	double nip = Polynomials::OneBasisFunction(k, degree, knotVector, u) * wk;
+	double sum = 0.0;
+	for (int r = 0; r < controlPoints.size(); r++)
+	{
+		sum += Polynomials::OneBasisFunction(r, degree, knotVector, u) * controlPoints[r].GetW();
+	}
+	double rkp = nip / sum;
+	return isPull ? wk * (1 + (abs(distance) / (rkp) * (pkp - distance))) : wk * (1 - (abs(distance) / (rkp) * (pkp + distance)));
 }
 
 void LNLib::NurbsCurve::ToClampCurve(int degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)

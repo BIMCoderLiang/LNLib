@@ -15,7 +15,7 @@ TEST(Test_Fitting, Interpolation)
 		int degree = 3;
 		std::vector<XYZ> Q = { XYZ(0,0,0),XYZ(3,4,0),XYZ(-1,4,0),XYZ(-4,0,0),XYZ(-4,-3,0) };
 		auto params = Interpolation::GetChordParameterization(Q);
-		auto result = Interpolation::ComputeKnotVector(degree, params);
+		auto result = Interpolation::AverageKnotVector(degree, params);
 		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(result[4], 28.0/51));
 	}
 

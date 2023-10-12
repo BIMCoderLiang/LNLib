@@ -75,7 +75,7 @@ namespace LNLib
 
 			for (int k = 0; k <= du; k++)
 			{
-				for (unsigned int j = 0; j <= degree; j++)
+				for (int j = 0; j <= degree; j++)
 				{
 					derivatives[k] += nders[k][j] * controlPoints[spanIndex - degree + j];
 				}
