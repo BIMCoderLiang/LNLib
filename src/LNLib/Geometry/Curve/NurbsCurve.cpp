@@ -2328,7 +2328,7 @@ bool LNLib::NurbsCurve::LocalNonRationalCubicCurveApproximation(int startPointIn
 	return true;
 }
 
-void LNLib::NurbsCurve::ControlPointReposition(int degree, const std::vector<double>& knotVector, const std::vector<XYZW> controlPoints, XYZW newControlPoint, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints)
+void LNLib::NurbsCurve::ControlPointReposition(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, XYZW newControlPoint, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
@@ -2388,7 +2388,7 @@ void LNLib::NurbsCurve::ControlPointReposition(int degree, const std::vector<dou
 	}
 }
 
-double LNLib::NurbsCurve::WeightModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW> controlPoints, XYZ pointOnCurve, XYZ selectedControlPoint, XYZ newControlPoint, bool isPull)
+double LNLib::NurbsCurve::WeightModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, XYZ pointOnCurve, XYZ selectedControlPoint, XYZ newControlPoint, bool isPull)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
@@ -2398,7 +2398,10 @@ double LNLib::NurbsCurve::WeightModification(int degree, const std::vector<doubl
 
 	XYZ dir1 = (selectedControlPoint - newControlPoint).Normalize();
 	XYZ dir2 = (newControlPoint - pointOnCurve).Normalize();
-	VALIDATE_ARGUMENT(dir1.IsAlmostEqualTo(dir2) || dir1.IsAlmostEqualTo(dir2.Negative()), "newControlPoint", "NewControlPoint must on the line created by pointOnCurve and selectedControlPoint");
+	if (!dir1.IsZero() && !dir2.IsZero())
+	{
+		VALIDATE_ARGUMENT(dir1.IsAlmostEqualTo(dir2) || dir1.IsAlmostEqualTo(dir2.Negative()), "newControlPoint", "NewControlPoint must on the line created by pointOnCurve and selectedControlPoint");
+	}
 
 	double u = GetParamOnCurve(degree, knotVector, controlPoints, pointOnCurve);
 	double distance = pointOnCurve.Distance(newControlPoint);
@@ -2414,6 +2417,110 @@ double LNLib::NurbsCurve::WeightModification(int degree, const std::vector<doubl
 	}
 	double rkp = nip / sum;
 	return isPull ? wk * (1 + (abs(distance) / (rkp) * (pkp - distance))) : wk * (1 - (abs(distance) / (rkp) * (pkp + distance)));
+}
+
+void LNLib::NurbsCurve::ConstraintBasedModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const std::vector<double>& constraintParams, const std::vector<XYZ>& derivativeConstraints, const std::vector<int>& appliedIndices, const std::vector<int>& appliedDegree, const std::vector<int>& fixedControlPointIndices, std::vector<XYZW>& updatedControlPoints)
+{
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	
+	VALIDATE_ARGUMENT(constraintParams.size() > 0, "constraintParams", "ConstraintParams size must greater than zero.");
+	VALIDATE_ARGUMENT(derivativeConstraints.size() > 0, "derivativeConstraints", "DerivativeConstraints size must greater than zero.");
+	VALIDATE_ARGUMENT(appliedIndices.size() == derivativeConstraints.size(), "appliedIndices", "AppliedIndices size must equals to derivativeConstraints size.");
+	VALIDATE_ARGUMENT(appliedDegree.size() == appliedIndices.size(), "appliedDegree", "AppliedDegree size must equals to appliedIndices size.");
+
+	std::vector<double> ur = constraintParams;
+	std::vector<XYZ> D = derivativeConstraints;
+	std::vector<int> Dr = appliedIndices;
+	std::vector<int> Dk = appliedDegree;
+
+	int size = controlPoints.size();
+	std::vector<std::vector<double>> B(D.size(), std::vector<double>(size));
+	for (int i = 0; i < D.size(); i++)
+	{
+		int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, ur[Dr[i]]);
+		std::vector<std::vector<double>> ders = Polynomials::BasisFunctionsDerivatives(spanIndex, degree, Dk[i], knotVector, ur[Dr[i]]);
+		for (int j = 0; j <= degree; j++)
+		{
+			B[i][spanIndex - degree + j] = ders[Dk[i]][j];
+		}
+	}
+
+	std::vector<int> remove(size,1.0);
+	std::vector<int> map(size);
+
+	for (int j = 0; j < size; j++)
+	{
+		for (int i = 0; i < D.size(); i++)
+		{
+			if (MathUtils::IsGreaterThan(B[i][j] * B[i][j], 0.0))
+			{
+				remove[i] = 0;
+				break;
+			}
+		}
+	}
+
+	for (int i = 0; i < fixedControlPointIndices.size(); i++)
+	{
+		remove[fixedControlPointIndices[i]] = 1;
+	}
+
+	int n = 0;
+	for (int i = 0; i < size; i++)
+	{
+		if (!remove[i])
+		{
+			map[n] = i;
+			n++;
+		}
+	}
+
+	map.resize(n);
+
+	std::vector<std::vector<double>> Bopt(D.size(), std::vector<double>(n));
+	for (int j = 0; j < n; j++)
+	{
+		for (int i = 0; i < D.size(); i++)
+		{
+			Bopt[i][j] = B[i][map[j]];
+		}
+	}
+
+	std::vector<std::vector<double>> Bt;
+	MathUtils::Transpose(Bopt, Bt);
+	std::vector<std::vector<double>> BBt;
+	MathUtils::MakeInverse(MathUtils::MatrixMultiply(Bopt, Bt), BBt);
+
+	auto A = MathUtils::MatrixMultiply(Bt, BBt);
+	std::vector<std::vector<double>> dD(D.size(), std::vector<double>(3));
+	for (int i = 0; i < D.size(); i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			dD[i][j] = D[i][j];
+		}
+	}
+
+	auto dP = MathUtils::MatrixMultiply(A, dD);
+	updatedControlPoints = controlPoints;
+	for (int i = 0; i < map.size(); i++)
+	{
+		double weight = updatedControlPoints[map[i]].GetW();
+
+		double x = dP[i][0];
+		double y = dP[i][1];
+		double z = dP[i][2];
+		
+		double wx = updatedControlPoints[map[i]].GetWX();
+		double wy = updatedControlPoints[map[i]].GetWY();
+		double wz = updatedControlPoints[map[i]].GetWZ();
+		
+		updatedControlPoints[map[i]] = XYZW(wx + weight * x, wy + weight * y, wz + weight * z, weight);
+	}
 }
 
 void LNLib::NurbsCurve::ToClampCurve(int degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
