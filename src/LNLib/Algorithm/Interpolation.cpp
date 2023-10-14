@@ -159,9 +159,9 @@ std::vector<double> LNLib::Interpolation::ComputeKnotVector(unsigned int degree,
 
 std::vector<LNLib::XYZ> LNLib::Interpolation::ComputerMatrixMultiplyPoints(std::vector<std::vector<double>> matrix, std::vector<XYZ> points)
 {
-	int row = static_cast<int>(matrix.size());
-	int column = static_cast<int>(matrix[0].size());
-	int size = static_cast<int>(points.size());
+	int row = matrix.size();
+	int column = matrix[0].size();
+	int size = points.size();
 	std::vector<XYZ> result(row);
 	if (!(column == size))
 	{

@@ -11,7 +11,7 @@
 #include "Projection.h"
 #include "XYZ.h"
 
-LNLib::XYZ LNLib::Projection::PointToLine(const XYZ& origin, const XYZ& vector, const XYZ& Point)
+LNLib::XYZ LNLib::Projection::PointToRay(const XYZ& origin, const XYZ& vector, const XYZ& Point)
 {
     XYZ pt = Point - origin;
     double param = pt.DotProduct(vector);

@@ -1108,7 +1108,7 @@ bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& ax
 		XYZW gp = generatrixControlPoints[j];
 		XYZ p = gp.ToXYZ(true);
 
-		XYZ O = Projection::PointToLine(origin, axis, p);
+		XYZ O = Projection::PointToRay(origin, axis, p);
 		X = p - O;
 
 		r = X.Normalize().Length();

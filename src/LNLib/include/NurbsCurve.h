@@ -241,7 +241,7 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page526
 		/// Modify two neighboring curve weights. (moveIndex and moveIndex + 1)
 		/// </summary>
-		static void NeighborWeightsModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW> controlPoints, int moveIndex, double newWeight, double newNeighborWeight, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
+		static void NeighborWeightsModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, int moveIndex, double newWeight, double newNeighborWeight, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page533
@@ -251,7 +251,7 @@ namespace LNLib
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page542
 		/// </summary>
-		static void Flattening();
+		static void Flattening(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, XYZ lineStartPoint, XYZ lineEndPoint, double flattenStartParam, double flattenEndParam, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page547
@@ -262,15 +262,7 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page555
 		/// Constraint-based curve modification.
 		/// </summary>
-		static void ConstraintBasedModification(int degree, 
-												const std::vector<double>& knotVector, 
-												const std::vector<XYZW>& controlPoints, 
-												const std::vector<double>& constraintParams, 
-												const std::vector<XYZ>& derivativeConstraints, 
-												const std::vector<int>& appliedIndices, 
-												const std::vector<int>& appliedDegree, 
-												const std::vector<int>& fixedControlPointIndices,
-												std::vector<XYZW>& updatedControlPoints);
+		static std::vector<XYZW> ConstraintBasedModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const std::vector<double>& constraintParams, const std::vector<XYZ>& derivativeConstraints, const std::vector<int>& appliedIndices, const std::vector<int>& appliedDegree, const std::vector<int>& fixedControlPointIndices);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page572
