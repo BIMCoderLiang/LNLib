@@ -24,6 +24,7 @@ NURBS Algorithms:
 - Create Arc/Conic Curve
 - Create Bilinear/Cylindrical/Ruled/Revolved Surface
 - Global/Local Curve/Surface Interpolation and Approximation
+- Curve Modification in Control Point Locations or Weight Values
 - Clamp/UnClamp Nurbs Curve
 
 This library is **in progress.**
