@@ -256,7 +256,7 @@ namespace LNLib
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page547
 		/// </summary>
-		static void Bending();
+		static std::vector<XYZW> Bending(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double bendStartParam, double bendEndParam, int bendCurveDegree, const std::vector<double>& bendCurveKnotVector, const std::vector<XYZW>& bendCurveControlPoints, const XYZ& bendCenter, double crossRatio);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page555

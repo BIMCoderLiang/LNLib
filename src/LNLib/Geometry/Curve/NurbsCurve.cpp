@@ -2433,8 +2433,6 @@ void LNLib::NurbsCurve::Flattening(int degree, const std::vector<double>& knotVe
 	VALIDATE_ARGUMENT_RANGE(flattenEndParam, knotVector[0], knotVector[knotVector.size() - 1]);
 	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(flattenEndParam, flattenStartParam), "flattenEndParam", "flattenEndParam must be greater than flattenStartParam.");
 
-	int kvSize = knotVector.size();
-
 	int spanMinIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, flattenStartParam);
 	int spanMaxIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, flattenEndParam);
 	
@@ -2468,6 +2466,7 @@ void LNLib::NurbsCurve::Flattening(int degree, const std::vector<double>& knotVe
 	else
 	{
 		double ui = knotVector[0];
+		int kvSize = knotVector.size();
 		for (int i = 0; i < kvSize; i++)
 		{
 			double current = knotVector[i];
@@ -2519,9 +2518,55 @@ void LNLib::NurbsCurve::Flattening(int degree, const std::vector<double>& knotVe
 				refinedControlPoints[index] = XYZW(project, refinedControlPoints[index].GetW());
 			}
 		}
-
 		updatedControlPoints = refinedControlPoints;
 	}
+}
+
+std::vector<LNLib::XYZW> LNLib::NurbsCurve::Bending(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double bendStartParam, double bendEndParam, int bendCurveDegree, const std::vector<double>& bendCurveKnotVector, const std::vector<XYZW>& bendCurveControlPoints, const XYZ& bendCenter, double crossRatio)
+{
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+	VALIDATE_ARGUMENT_RANGE(bendStartParam, knotVector[0], knotVector[knotVector.size() - 1]);
+	VALIDATE_ARGUMENT_RANGE(bendEndParam, knotVector[0], knotVector[knotVector.size() - 1]);
+	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(bendEndParam, bendStartParam), "bendEndParam", "bendEndParam must be greater than bendStartParam.");
+	
+	VALIDATE_ARGUMENT(bendCurveDegree > 0, "bendCurveDegree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(bendCurveKnotVector.size() > 0, "bendCurveKnotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(bendCurveKnotVector), "bendCurveKnotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(bendCurveControlPoints.size() > 0, "bendCurveControlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(bendCurveDegree, bendCurveKnotVector.size(), bendCurveControlPoints.size()), "bendCurveControlPoints", "Arguments must fit: m = n + p + 1");
+
+	int spanMinIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, bendStartParam);
+	int spanMaxIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, bendEndParam);
+
+	std::unordered_map<int, XYZ> selectedControlPoints;
+	for (int i = spanMinIndex - degree; i <= spanMaxIndex - degree - 1; i++)
+	{
+		XYZ p = const_cast<XYZW&>(controlPoints[i]).ToXYZ(true);
+		selectedControlPoints.insert({ i, p });
+	}
+
+	std::vector<XYZW> updatedControlPoints = controlPoints;
+	for (auto it = selectedControlPoints.begin(); it != selectedControlPoints.end(); ++it)
+	{
+		int index = it->first;
+		XYZ current = it->second;
+		double bendParam = GetParamOnCurve(bendCurveDegree, bendCurveKnotVector, bendCurveControlPoints, current);
+		if (MathUtils::IsAlmostEqualTo(bendParam, Constants::DoubleEpsilon))
+		{
+			continue;
+		}
+		XYZ pointOnBendCurve = GetPointOnCurve(bendCurveDegree, bendCurveKnotVector, bendParam, bendCurveControlPoints);
+		double si = bendCenter.Distance(pointOnBendCurve) / bendCenter.Distance(current);
+		double ti = (crossRatio * si) / (1 + (crossRatio - 1) * si);
+		XYZ project = bendCenter + (current - bendCenter) * ti;
+		updatedControlPoints[index] = XYZW(project, updatedControlPoints[index].GetW());
+	}
+	return updatedControlPoints;
 }
 
 std::vector<LNLib::XYZW> LNLib::NurbsCurve::ConstraintBasedModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const std::vector<double>& constraintParams, const std::vector<XYZ>& derivativeConstraints, const std::vector<int>& appliedIndices, const std::vector<int>& appliedDegree, const std::vector<int>& fixedControlPointIndices)
