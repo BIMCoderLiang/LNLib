@@ -27,12 +27,6 @@ NURBS Algorithms:
 - Curve Modification in Control Point Locations or Weight Values
 - Clamp/UnClamp Nurbs Curve
 
-This library is **in progress.**
-
-## Roadmap
-- Algorithms of Chapter 10 & 11 in The NURBS Book 2nd Edition
-- Test cases for all algorithms
-
 ## Contributing
 Welcome join this project including discussions in **Issues** and make **Pull requests**.
 
