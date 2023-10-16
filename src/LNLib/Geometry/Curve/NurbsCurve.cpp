@@ -2420,6 +2420,18 @@ double LNLib::NurbsCurve::WeightModification(int degree, const std::vector<doubl
 	return isPull ? wk * (1 + (abs(distance) / (rkp) * (pkp - distance))) : wk * (1 - (abs(distance) / (rkp) * (pkp + distance)));
 }
 
+std::vector<LNLib::XYZW> LNLib::NurbsCurve::Warping(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double warpDistance, const XYZ& planeNormal)
+{
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+	// to be continue...
+	return std::vector<XYZW>();
+}
+
 void LNLib::NurbsCurve::Flattening(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, XYZ lineStartPoint, XYZ lineEndPoint, double flattenStartParam, double flattenEndParam, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
@@ -2496,11 +2508,13 @@ void LNLib::NurbsCurve::Flattening(int degree, const std::vector<double>& knotVe
 			}
 		}
 
-		std::vector<double> insertElement = { ui, uj };
+		std::vector<double> insertElement = Polynomials::GetInsertedKnotElement(degree, knotVector, ui, uj);
 		std::vector<XYZW> refinedControlPoints;
 		RefineKnotVector(degree, knotVector, controlPoints, insertElement, updatedKnotVector, refinedControlPoints);
 
 		selectedControlPoints.clear();
+		spanMinIndex = Polynomials::GetKnotSpanIndex(degree, updatedKnotVector, flattenStartParam);
+		spanMaxIndex = Polynomials::GetKnotSpanIndex(degree, updatedKnotVector, flattenEndParam);
 		for (int i = spanMinIndex - degree; i <= spanMaxIndex - degree - 1; i++)
 		{
 			XYZ p = const_cast<XYZW&>(refinedControlPoints[i]).ToXYZ(true);
@@ -2543,14 +2557,27 @@ std::vector<LNLib::XYZW> LNLib::NurbsCurve::Bending(int degree, const std::vecto
 	int spanMinIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, bendStartParam);
 	int spanMaxIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, bendEndParam);
 
+	std::vector<XYZW> updatedControlPoints = controlPoints;
+	std::vector<double> insertElement = Polynomials::GetInsertedKnotElement(degree, knotVector, knotVector[spanMinIndex], knotVector[spanMaxIndex]);
+	if (insertElement.size() > 0)
+	{
+		std::vector<double> updatedKnotVector;
+		std::vector<XYZW> refinedControlPoints;
+		RefineKnotVector(degree, knotVector, controlPoints, insertElement, updatedKnotVector, refinedControlPoints);
+
+		spanMinIndex = Polynomials::GetKnotSpanIndex(degree, updatedKnotVector, bendStartParam);
+		spanMaxIndex = Polynomials::GetKnotSpanIndex(degree, updatedKnotVector, bendEndParam);
+
+		updatedControlPoints = refinedControlPoints;
+	}
+	
 	std::unordered_map<int, XYZ> selectedControlPoints;
 	for (int i = spanMinIndex - degree; i <= spanMaxIndex - degree - 1; i++)
 	{
-		XYZ p = const_cast<XYZW&>(controlPoints[i]).ToXYZ(true);
+		XYZ p = const_cast<XYZW&>(updatedControlPoints[i]).ToXYZ(true);
 		selectedControlPoints.insert({ i, p });
 	}
 
-	std::vector<XYZW> updatedControlPoints = controlPoints;
 	for (auto it = selectedControlPoints.begin(); it != selectedControlPoints.end(); ++it)
 	{
 		int index = it->first;

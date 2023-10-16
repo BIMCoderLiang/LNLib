@@ -113,6 +113,12 @@ namespace LNLib
 		static std::vector<std::vector<double>> AllBasisFunctions(int spanIndex, int degree, const std::vector<double>& knotVector, double knot);
 
 		/// <summary>
+		/// The NURBS Book 2nd Edition Page172
+		/// Get insert elements from [Us, Ue] for refine knot vector.
+		/// </summary>
+		static std::vector<double> GetInsertedKnotElement(int degree, const std::vector<double>& knotVector, double startParam, double endParam);
+
+		/// <summary>
 		/// The NURBS Book 2nd Edition Page269
 		/// Algorithm A6.1
 		/// Compute pth degree Bezier matrix.

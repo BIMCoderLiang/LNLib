@@ -493,6 +493,34 @@ std::vector<std::vector<double>> LNLib::Polynomials::AllBasisFunctions(int spanI
 	return result;
 }
 
+std::vector<double> LNLib::Polynomials::GetInsertedKnotElement(int degree, const std::vector<double>& knotVector, double startParam, double endParam)
+{
+	VALIDATE_ARGUMENT(degree >= 0, "degree", "Degree must greater than or equals zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+
+	std::vector<double> result;
+	int startMulti = GetKnotMultiplicity(knotVector, startParam);
+	if (startMulti < degree)
+	{
+		for (int i = 0; i < degree - startMulti; i++)
+		{
+			result.emplace_back(startParam);
+		}
+	}
+
+	int endMulti = GetKnotMultiplicity(knotVector, endParam);
+	if (endMulti < degree)
+	{
+		for (int i = 0; i < degree - endMulti; i++)
+		{
+			result.emplace_back(endParam);
+		}
+	}
+
+	return result;
+}
+
 void LNLib::Polynomials::BezierToPowerMatrix(int degree, std::vector<std::vector<double>>& matrix)
 {
 	matrix.resize(degree+1, std::vector<double>(degree + 1));
