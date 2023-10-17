@@ -71,7 +71,7 @@ namespace LNLib
 		/// Algorithm A5.8
 		/// Curve knot removal.
 		/// </summary>
-		static void RemoveKnot(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double removeKnot, int times, std::vector<double>& restKnotVector, std::vector<XYZW>& updatedControlPoints);
+		static bool RemoveKnot(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double removeKnot, int times, std::vector<double>& restKnotVector, std::vector<XYZW>& updatedControlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page206

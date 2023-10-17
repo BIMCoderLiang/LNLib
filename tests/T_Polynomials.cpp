@@ -1,6 +1,7 @@
 ﻿#include "gtest/gtest.h"
 #include "Polynomials.h"
 #include "MathUtils.h"
+#include "KnotVectorUtils.h"
 
 using namespace LNLib;
 
@@ -60,7 +61,7 @@ TEST(Test_Polynomials, All)
 	std::vector<double> u2 = { 0,0,0,1,2,3,4,4,4 };
 	std::vector<double> insert1;
 	std::vector<double> insert2;
-	Polynomials::GetInsertedKnotElement(u1, u2, insert1, insert2);
+	KnotVectorUtils::GetInsertedKnotElement(u1, u2, insert1, insert2);
 	EXPECT_TRUE(insert1.size() == 1);
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(insert1[0],3));
 	EXPECT_TRUE(insert2.size() == 1);
@@ -70,7 +71,7 @@ TEST(Test_Polynomials, All)
 	u2 = { 0,0,0,0,3.0 / 10,7.0 / 10,1,1,1,1 };
 	std::vector<double> i1;
 	std::vector<double> i2;
-	Polynomials::GetInsertedKnotElement(u1, u2, i1, i2);
+	KnotVectorUtils::GetInsertedKnotElement(u1, u2, i1, i2);
 	EXPECT_TRUE(i1.size() == 4);
 	EXPECT_TRUE(i2.size() == 3);
 }

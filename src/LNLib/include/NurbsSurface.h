@@ -72,9 +72,7 @@ namespace LNLib
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page227
-		/// Degree reduce U or V Direction curve from degree to degree - 1.
-		/// 
-		/// This algorithm has more restricts: it is usually return false since maxError greater than tolerance.
+		/// Degree reduce U or V Direction Bezier-shape nurbs curve from degree to degree - 1.
 		/// </summary>
 		static bool ReduceDegree(int degreeU, int degreeV, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, const std::vector<std::vector<XYZW>>& controlPoints, bool isUDirection, std::vector<double>& updatedKnotVectorU, std::vector<double>& updatedKnotVectorV, std::vector<std::vector<XYZW>>& updatedControlPoints);
 

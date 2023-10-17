@@ -20,6 +20,7 @@
 #include "Intersection.h"
 #include "Projection.h"
 #include "ValidationUtils.h"
+#include "KnotVectorUtils.h"
 #include "Interpolation.h"
 #include "LNLibExceptions.h"
 #include <vector>
@@ -337,7 +338,7 @@ std::vector<std::vector<LNLib::XYZW>> LNLib::NurbsCurve::DecomposeToBeziers(int 
 	return decomposedControlPoints;
 }
 
-void LNLib::NurbsCurve::RemoveKnot(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double removeKnot, int times, std::vector<double>& restKnotVector, std::vector<XYZW>& updatedControlPoints)
+bool LNLib::NurbsCurve::RemoveKnot(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double removeKnot, int times, std::vector<double>& restKnotVector, std::vector<XYZW>& updatedControlPoints)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
@@ -348,7 +349,7 @@ void LNLib::NurbsCurve::RemoveKnot(int degree, const std::vector<double>& knotVe
 	VALIDATE_ARGUMENT(times > 0, "times", "Times must greater than zero.");
 
 	double tol = ValidationUtils::ComputeCurveModifyTolerance(controlPoints);
-	int n = static_cast<int>(controlPoints.size() - 1);
+	int n = controlPoints.size() - 1;
 
 	int order = degree + 1;
 	int s = Polynomials::GetKnotMultiplicity(knotVector, removeKnot);
@@ -433,7 +434,7 @@ void LNLib::NurbsCurve::RemoveKnot(int degree, const std::vector<double>& knotVe
 
 	if (t == 0)
 	{
-		return;
+		return false;
 	}
 
 	int j = (2 * r - s - degree) / 2;
@@ -460,7 +461,7 @@ void LNLib::NurbsCurve::RemoveKnot(int degree, const std::vector<double>& knotVe
 	{
 		updatedControlPoints.pop_back();
 	}
-	return;
+	return true;
 }
 
 void LNLib::NurbsCurve::ElevateDegree(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, int times, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints)
@@ -725,7 +726,7 @@ bool LNLib::NurbsCurve::ReduceDegree(int degree, const std::vector<double>& knot
 	}
 	if (error > tol) return false;
 
-	auto map = Polynomials::GetKnotMultiplicityMap(knotVector);
+	auto map = KnotVectorUtils::GetKnotMultiplicityMap(knotVector);
 	for (auto it = map.begin(); it != map.end(); ++it)
 	{
 		double u = it->first;
@@ -2401,7 +2402,7 @@ void LNLib::NurbsCurve::Flattening(int degree, const std::vector<double>& knotVe
 			}
 		}
 
-		std::vector<double> insertElement = Polynomials::GetInsertedKnotElement(degree, knotVector, ui, uj);
+		std::vector<double> insertElement = KnotVectorUtils::GetInsertedKnotElement(degree, knotVector, ui, uj);
 		std::vector<XYZW> refinedControlPoints;
 		RefineKnotVector(degree, knotVector, controlPoints, insertElement, updatedKnotVector, refinedControlPoints);
 
@@ -2451,7 +2452,7 @@ std::vector<LNLib::XYZW> LNLib::NurbsCurve::Bending(int degree, const std::vecto
 	int spanMaxIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, bendEndParam);
 
 	std::vector<XYZW> updatedControlPoints = controlPoints;
-	std::vector<double> insertElement = Polynomials::GetInsertedKnotElement(degree, knotVector, knotVector[spanMinIndex], knotVector[spanMaxIndex]);
+	std::vector<double> insertElement = KnotVectorUtils::GetInsertedKnotElement(degree, knotVector, knotVector[spanMinIndex], knotVector[spanMaxIndex]);
 	if (insertElement.size() > 0)
 	{
 		std::vector<double> updatedKnotVector;

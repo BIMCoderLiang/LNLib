@@ -20,6 +20,7 @@
 #include "Intersection.h"
 #include "Interpolation.h"
 #include "ValidationUtils.h"
+#include "KnotVectorUtils.h"
 #include "LNLibExceptions.h"
 #include <algorithm>
 
@@ -1010,7 +1011,7 @@ void LNLib::NurbsSurface::CreateRuledSurface(int degree0, const std::vector<doub
 	{
 		std::vector<double> insertedKnotElement0;
 		std::vector<double> insertedKnotElement1;
-		Polynomials::GetInsertedKnotElement(kv0, kv1, insertedKnotElement0, insertedKnotElement1);
+		KnotVectorUtils::GetInsertedKnotElement(kv0, kv1, insertedKnotElement0, insertedKnotElement1);
 
 		if (insertedKnotElement0.size() > 0)
 		{
