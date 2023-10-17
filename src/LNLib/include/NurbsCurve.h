@@ -83,9 +83,7 @@ namespace LNLib
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page223
 		/// Algorithm A5.11
-		/// Degree reduce a curve from degree to degree - 1.
-		/// 
-		/// This algorithm has more restricts: it is usually return false since maxError greater than tolerance.
+		/// Degree reduce a bezier-shape nurbs curve from degree to degree - 1.
 		/// </summary>
 		static bool ReduceDegree(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
 

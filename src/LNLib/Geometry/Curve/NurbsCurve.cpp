@@ -677,169 +677,62 @@ bool LNLib::NurbsCurve::ReduceDegree(int degree, const std::vector<double>& knot
 
 	double tol = ValidationUtils::ComputeCurveModifyTolerance(controlPoints);
 
-	int ph = degree - 1;
-	int mh = ph;
+	int size = controlPoints.size();
+	bool isBezier = ValidationUtils::IsValidBezier(degree, size);
+	if (!isBezier) return false;
 
-	int kind = ph + 1;
-	int r = -1;
-	int a = degree;
-
-	int b = degree + 1;
-	int cind = 1;
-	int multi = degree;
-
-	int n = static_cast<int>(controlPoints.size() - 1);
-	int m = n + degree + 1;
-
-	std::vector<XYZW> bpts(degree + 1);
-	std::vector<XYZW> nextbpts(degree - 1);
-	std::vector<XYZW> rbpts(degree);
-	std::vector<double> alphas(degree - 1);
-	std::vector<double> errors(m, 0.0);
-
-	updatedControlPoints.resize(controlPoints.size() - 1);
+	int r = floor((degree - 1) / 2);
+	updatedControlPoints.resize(degree);
 	updatedControlPoints[0] = controlPoints[0];
+	updatedControlPoints[degree - 1] = controlPoints[degree];
 
-	updatedKnotVector.resize(knotVector.size() - 2);
-	for (int i = 0; i <= ph; i++)
+	std::vector<double> alpha(degree);
+	for (int i = 0; i < degree; i++)
 	{
-		updatedKnotVector[i] = knotVector[0];
+		alpha[i] = double(i) / double(degree);
 	}
-
-	for (int i = 0; i <= degree; i++)
+	double error = 0.0;
+	if (degree % 2 == 0)
 	{
-		bpts[i] = controlPoints[i];
+		for (int i = 1; i < r + 1; i++)
+		{
+			updatedControlPoints[i] = (controlPoints[i] - alpha[i] * updatedControlPoints[i - 1]) / (1 - alpha[i]);
+		}
+		for (int i = degree - 2; i > r; i--)
+		{
+			updatedControlPoints[i] = (controlPoints[i + 1] - (1 - alpha[i+1]) * updatedControlPoints[i + 1]) / alpha[i + 1];
+		}
+		error = (controlPoints[r + 1].Distance(0.5 * (updatedControlPoints[r] + updatedControlPoints[r + 1])));
+		double c = MathUtils::Binomial(degree, r + 1);
+		error = error * (c * pow(0.5, r + 1) * pow(1 - 0.5, degree - r - 1));
 	}
-
-	while (b < m)
+	else
 	{
-		int i = b;
-
-		while (b < m && MathUtils::IsAlmostEqualTo(knotVector[b], knotVector[b + 1]))
+		for (int i = 1; i < r; i++)
 		{
-			b = b + 1;
+			updatedControlPoints[i] = (controlPoints[i] - alpha[i] * updatedControlPoints[i - 1]) / (1 - alpha[i]);
 		}
-		multi = b - i + 1;
-		mh += multi - 1;
-		int oldr = r;
-		r = degree - multi;
-
-		int lbz = oldr > 0 ? (oldr + 2) / 2 : 1;
-
-		if (r > 0)
+		for (int i = degree - 2; i > r; i--)
 		{
-			double numer = knotVector[b] - knotVector[a];
-			for (int k = degree; k > multi; k--)
-			{
-				alphas[k - multi - 1] = numer / (knotVector[a + k] - knotVector[a]);
-			}
-
-			for (int j = 1; j <= r; j++)
-			{
-				int save = r - j;
-				int s = multi + j;
-				for (int k = degree; k >= s; k--)
-				{
-					bpts[k] = alphas[k - s] * bpts[k] + (1.0 - alphas[k - s]) * bpts[k - 1];
-				}
-				nextbpts[save] = bpts[degree];
-			}
+			updatedControlPoints[i] = (controlPoints[i + 1] - (1 - alpha[i + 1]) * updatedControlPoints[i + 1]) / alpha[i + 1];
 		}
-		if (!ValidationUtils::IsValidBezier(degree, bpts.size()))
+		XYZW PLr = (controlPoints[r] - alpha[r] * updatedControlPoints[r - 1]) / (1 - alpha[r]);
+		XYZW PRr = (controlPoints[r + 1] - (1 - alpha[r + 1]) * updatedControlPoints[r + 1]) / alpha[r + 1];
+		updatedControlPoints[r] = 0.5 * (PLr + PRr);
+		error = PLr.Distance(PRr);
+		double maxU = (degree - sqrt(degree)) / (2 * degree);
+		error = error * 0.5 * (1 - alpha[r]) * (MathUtils::Binomial(degree, r) * pow(maxU, r) * pow(1 - maxU, r + 1) * (1 - 2 * maxU));
+	}
+	if (error > tol) return false;
+
+	auto map = Polynomials::GetKnotMultiplicityMap(knotVector);
+	for (auto it = map.begin(); it != map.end(); ++it)
+	{
+		double u = it->first;
+		int count = it->second - 1;
+		for (int i = 0; i < count; i++)
 		{
-			return false;
-		}
-		double maxError = ValidationUtils::ComputeMaxErrorOfBezierReduction(degree, bpts, rbpts);
-		errors[a] += maxError;
-		if (MathUtils::IsGreaterThan(errors[a], tol))
-		{
-			return false;
-		}
-		if (oldr > 0)
-		{
-			int first = kind;
-			int last = kind;
-
-			for (int k = 0; k < oldr; k++)
-			{
-				int i = first;
-				int j = last;
-				int kj = j - kind;
-
-				while (j - i > k)
-				{
-					double alpha = (knotVector[a] - updatedKnotVector[i - 1]) / (knotVector[b] - updatedKnotVector[i - 1]);
-					double beta = (knotVector[a] - updatedKnotVector[j - k - 1]) / (knotVector[b] - updatedKnotVector[j - k - 1]);
-					updatedControlPoints[i - 1] = (updatedControlPoints[i - 1] - (1.0 - alpha) * updatedControlPoints[i - 2]) / alpha;
-					rbpts[k] = (rbpts[kj] - beta * rbpts[kj + 1]) / (1.0 - beta);
-
-					i = i + 1;
-					j = j - 1;
-					kj = kj - 1;
-				}
-
-				double Br;
-				if (j - i < k)
-				{
-					Br = updatedControlPoints[i - 2].Distance(rbpts[kj + 1]);
-				}
-				else
-				{
-					double delta = (knotVector[a] - updatedKnotVector[i - 1]) / (knotVector[b] - updatedKnotVector[i - 1]);
-					XYZW A = delta * rbpts[kj + 1] + (1.0 - delta) * updatedControlPoints[i - 2];
-					Br = updatedControlPoints[i - 1].Distance(A);
-				}
-
-				int K = a + oldr - k;
-				int q = (2 * degree - k + 1) / 2;
-				int L = K - q;
-				for (int ii = L; ii <= a; ii++)
-				{
-					errors[ii] += Br;
-					if (MathUtils::IsGreaterThan(errors[ii], tol))
-					{
-						return false;
-					}
-				}
-				first = first - 1;
-				last = last - 1;
-			}
-			cind = i - 1;
-		}
-
-		if (a != degree)
-		{
-			for (int i = 0; i < ph - oldr; i++)
-			{
-				updatedKnotVector[kind++] = knotVector[a];
-			}
-		}
-
-		for (int i = lbz; i <= ph; i++)
-		{
-			updatedControlPoints[cind++] = rbpts[i];
-		}
-
-		if (b < m)
-		{
-			for (int i = 0; i < r; i++)
-			{
-				bpts[i] = nextbpts[i];
-			}
-			for (int i = r; i <= degree; i++)
-			{
-				bpts[i] = controlPoints[b - degree + i];
-			}
-
-			a = b;
-			b = b + 1;
-		}
-		else
-		{
-			for (int i = 0; i <= ph; i++)
-			{
-				updatedKnotVector[kind + i] = knotVector[b];
-			}
+			updatedKnotVector.emplace_back(u);
 		}
 	}
 	return true;

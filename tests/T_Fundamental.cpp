@@ -250,4 +250,23 @@ TEST(Test_Fundamental, All)
 		EXPECT_TRUE(cps[0].IsAlmostEqualTo(updatedCps[0]));
 		EXPECT_TRUE(cps[7].IsAlmostEqualTo(updatedCps[updatedCps.size()-1]));
 	}
+
+	{
+		int degree = 3;
+		std::vector<double> kv = { 0,0,0,0,1,1,1,1 };
+
+		XYZW P0 = XYZW(XYZ(-3, 0, 0), 1);
+		XYZW P1 = XYZW(XYZ(-1, 2, 0), 1);
+		XYZW P2 = XYZW(XYZ(1, 2, 0), 1);
+		XYZW P3 = XYZW(XYZ(3, 0, 0), 1);
+
+		std::vector<XYZW> cps = { P0,P1,P2,P3};
+		std::vector<double> updatedKv;
+		std::vector<XYZW> updatedCps;
+		bool canReduce = NurbsCurve::ReduceDegree(degree, kv, cps, updatedKv, updatedCps);
+		EXPECT_TRUE(updatedCps[0].ToXYZ(true).IsAlmostEqualTo(XYZ(-3, 0, 0)));
+		EXPECT_TRUE(updatedCps[1].ToXYZ(true).IsAlmostEqualTo(XYZ(0, 3, 0)));
+		EXPECT_TRUE(updatedCps[2].ToXYZ(true).IsAlmostEqualTo(XYZ(3, 0, 0)));
+		ValidationUtils::IsValidNurbs(degree - 1, updatedKv.size(), updatedCps.size());
+	}
 }

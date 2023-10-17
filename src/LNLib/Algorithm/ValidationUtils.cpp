@@ -56,49 +56,5 @@ double LNLib::ValidationUtils::ComputeCurveModifyTolerance(const std::vector<XYZ
 	return Constants::DistanceEpsilon * minWeight / (1 + std::abs(maxDistance));
 }
 
-double LNLib::ValidationUtils::ComputeMaxErrorOfBezierReduction(int degree, const std::vector<XYZW>& currentControlPoints, std::vector<XYZW>& reductedControlPoints)
-{
-	int r = floor((degree - 1)/2);
-	
-	reductedControlPoints[0] = currentControlPoints[0];
-	if (degree % 2 == 0)
-	{
-		for (int i = 1; i <= r; i++)
-		{
-			double alpha = (double)i / (double)degree;
-			reductedControlPoints[i] = (currentControlPoints[i] - alpha * reductedControlPoints[i - 1]) / (1 - alpha);
-		}
-		for (int i = degree - 2; i <= r + 1; i++)
-		{
-			double alpha = (double)(i + 1) / (double)degree;
-			reductedControlPoints[i] = (currentControlPoints[i + 1] - (1 - alpha) * reductedControlPoints[i + 1]) / alpha;
-		}
-
-		reductedControlPoints[degree - 1] = currentControlPoints[degree];
-		return currentControlPoints[r + 1].Distance(0.5 * (reductedControlPoints[r] + reductedControlPoints[r + 1]));
-	}
-	else
-	{
-		for (int i = 1; i <= r - 1; i++)
-		{
-			double alpha = (double)i / (double)degree;
-			reductedControlPoints[i] = (currentControlPoints[i] - alpha * reductedControlPoints[i - 1]) / (1 - alpha);
-		}
-		for (int i = degree - 2; i <= r; i++)
-		{
-			double alpha = (double)(i + 1) / (double)degree;
-			reductedControlPoints[i] = (currentControlPoints[i + 1] - (1 - alpha) * reductedControlPoints[i + 1]) / alpha;
-		}
-
-		double alpha = (double)r / (double)degree;
-		XYZW PLr = (currentControlPoints[r] - alpha * reductedControlPoints[r - 1]) / (1 - alpha);
-		alpha = (double)(r + 1) / (double)degree;
-		XYZW PRr = (currentControlPoints[r + 1] - (1 - alpha) * reductedControlPoints[r + 1]) / alpha;
-		reductedControlPoints[r] = 0.5 * (PLr + PRr);
-		reductedControlPoints[degree - 1] = currentControlPoints[degree];
-		return std::abs((PLr.ToXYZ(true) + PRr.ToXYZ(true)).Length());
-	}
-}
-
 
 

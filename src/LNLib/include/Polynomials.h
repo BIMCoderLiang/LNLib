@@ -11,15 +11,25 @@
 #pragma once
 
 #include "LNLibDefinitions.h"
+#include "MathUtils.h"
 #include <vector>
 #include <unordered_map>
 
 namespace LNLib
 {
 	class UV;
+
+	struct CustomDoubleEqual
+	{
+		bool operator()(const double& d1, const double& d2) const
+		{
+			return MathUtils::IsAlmostEqualTo(d1, d2);
+		}
+	};
+
+
 	class LNLIB_EXPORT Polynomials
 	{
-
 	public:
 		
 		/// <summary>
@@ -131,6 +141,12 @@ namespace LNLib
 		/// Compute inverse of pth-degree Bezier matrix.
 		/// </summary>
 		static void PowerToBezierMatrix(int degree, const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& inverseMatrix);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page338
+		/// Get knot multiplcity map.
+		/// </summary>
+		static std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> GetKnotMultiplicityMap(const std::vector<double>& knotVector);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page338

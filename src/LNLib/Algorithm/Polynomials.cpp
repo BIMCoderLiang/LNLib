@@ -17,32 +17,6 @@
 
 using namespace LNLib;
 
-namespace LNLib
-{
-	struct CustomDoubleEqual
-	{
-		bool operator()(const double& d1, const double& d2) const
-		{
-			return MathUtils::IsAlmostEqualTo(d1, d2);
-		}
-	};
-	std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> GetKnotMultiplicityMap(const std::vector<double>& knotVector)
-	{
-		std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> result;
-
-		for (int i = 0; i < knotVector.size(); i++)
-		{
-			auto got = result.find(knotVector[i]);
-			if (got == result.end())
-			{
-				int multi = LNLib::Polynomials::GetKnotMultiplicity(knotVector, knotVector[i]);
-				result.insert({ knotVector[i], multi });
-			}
-		}
-		return result;
-	}
-}
-
 double Polynomials::Horner(int degree, const std::vector<double>& coefficients, double paramT)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
@@ -593,7 +567,21 @@ void LNLib::Polynomials::PowerToBezierMatrix(int degree, const std::vector<std::
 	}
 }
 
+std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> LNLib::Polynomials::GetKnotMultiplicityMap(const std::vector<double>& knotVector)
+{
+	std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> result;
 
+	for (int i = 0; i < knotVector.size(); i++)
+	{
+		auto got = result.find(knotVector[i]);
+		if (got == result.end())
+		{
+			int multi = LNLib::Polynomials::GetKnotMultiplicity(knotVector, knotVector[i]);
+			result.insert({ knotVector[i], multi });
+		}
+	}
+	return result;
+}
 
 void LNLib::Polynomials::GetInsertedKnotElement(const std::vector<double> knotVector0, const std::vector<double> knotVector1, std::vector<double>& insertElements0, std::vector<double>& insertElements1)
 {
