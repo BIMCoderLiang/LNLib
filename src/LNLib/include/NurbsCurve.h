@@ -186,28 +186,28 @@ namespace LNLib
 		/// Algorithm A9.6
 		/// Weighted and contrained least squares approximation.
 		/// </summary>
-		static bool WeightedAndContrainedLeastSquaresApproximation(unsigned int degree, const std::vector<XYZ>& throughPoints, const std::vector<double>& weights, const std::vector<XYZ>& tangents, const std::vector<int>& tangentIndices, const std::vector<double>& weightedTangents, int controlPointsCount, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+		static bool WeightedAndContrainedLeastSquaresApproximation(int degree, const std::vector<XYZ>& throughPoints, const std::vector<double>& weights, const std::vector<XYZ>& tangents, const std::vector<int>& tangentIndices, const std::vector<double>& weightedTangents, int controlPointsCount, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page428
 		/// Algorithm A9.8
 		/// Get knot removal error bound (nonrational).
 		/// </summary>
-		static double ComputerRemoveKnotErrorBound(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, int removalIndex);
+		static double ComputerRemoveKnotErrorBound(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, int removalIndex);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page429
 		/// Algorithm A9.9
 		/// Remove knots from curve by given bound.
 		/// </summary>
-		static void RemoveKnotsByGivenBound(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const std::vector<double> params, std::vector<double>& error, double maxError, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
+		static void RemoveKnotsByGivenBound(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const std::vector<double> params, std::vector<double>& error, double maxError, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page431
 		/// Algorithm A9.10
 		/// Global curve approximation to within bound maxError.
 		/// </summary>
-		static void GlobalCurveApproximationByErrorBound(unsigned int degree, const std::vector<XYZ>& throughPoints, double maxError, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+		static void GlobalCurveApproximationByErrorBound(int degree, const std::vector<XYZ>& throughPoints, double maxError, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page440

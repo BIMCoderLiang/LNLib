@@ -38,7 +38,7 @@ namespace LNLib
 		static int GetContinuity(int degree, const std::vector<double>& knotVector, double knot);
 
 		/// <summary>
-		/// The NURBS Book 2nd Edition Page172
+		/// The NURBS Book 2nd Edition Page533
 		/// Get insert elements from [Us, Ue] for refine knot vector.
 		/// </summary>
 		static std::vector<double> GetInsertedKnotElement(int degree, const std::vector<double>& knotVector, double startParam, double endParam);

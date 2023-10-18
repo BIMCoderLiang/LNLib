@@ -1489,7 +1489,7 @@ void LNLib::NurbsCurve::LeastSquaresApproximation(int degree, const std::vector<
 	}*/
 }
 
-bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(unsigned int degree, const std::vector<XYZ>& throughPoints, const std::vector<double>& weights, const std::vector<XYZ>& tangents, const std::vector<int>& tangentIndices, const std::vector<double>& weightedTangents, int controlPointsCount, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(int degree, const std::vector<XYZ>& throughPoints, const std::vector<double>& weights, const std::vector<XYZ>& tangents, const std::vector<int>& tangentIndices, const std::vector<double>& weightedTangents, int controlPointsCount, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
 {
 	int n = controlPointsCount - 1;
 	int ru = -1;
@@ -1643,18 +1643,23 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(unsigned 
 	return true;
 }
 
-double LNLib::NurbsCurve::ComputerRemoveKnotErrorBound(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, int removalIndex)
+double LNLib::NurbsCurve::ComputerRemoveKnotErrorBound(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, int removalIndex)
 {
-	int ord = static_cast<int>(degree + 1);
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+	int ord = degree + 1;
 	int r = removalIndex;
 	double u = knotVector[r];
 	int s = Polynomials::GetKnotMultiplicity(knotVector, u);
 	int last = r - s;
-	int first = static_cast<int>(r - degree);
+	int first = r - degree;
 	int off = first - 1;
 
-	std::vector<XYZW> temp;
-	temp.resize(last + 1 - off + 1);
+	std::vector<XYZW> temp(knotVector.size());
 	temp[0] = controlPoints[off];
 	temp[last + 1 - off] = controlPoints[last + 1];
 
@@ -1686,16 +1691,22 @@ double LNLib::NurbsCurve::ComputerRemoveKnotErrorBound(unsigned int degree, cons
 	}
 }
 
-void LNLib::NurbsCurve::RemoveKnotsByGivenBound(unsigned int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const std::vector<double> params, std::vector<double>& error, double maxError, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints)
+void LNLib::NurbsCurve::RemoveKnotsByGivenBound(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const std::vector<double> params, std::vector<double>& error, double maxError, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints)
 {
-	int knotSize = static_cast<int>(knotVector.size());
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+	int knotSize = knotVector.size();
 	std::vector<double> Br(knotSize, Constants::MaxDistance);
 	std::vector<int> S(knotSize, 0);
 	std::vector<int> Nl(knotSize);
 	std::vector<int> Nr(knotSize, params.size() - 1);
 
 	std::vector<double> uk = params;
-	int ukSize = static_cast<int>(uk.size());
+	int ukSize = uk.size();
 	std::vector<double> NewError(ukSize);
 	std::vector<double> temp(ukSize);
 
@@ -1703,12 +1714,12 @@ void LNLib::NurbsCurve::RemoveKnotsByGivenBound(unsigned int degree, const std::
 	int r, s, Rstart, Rend, k;
 	double BrMin, u;
 
-	int controlPointsSize = static_cast<int>(controlPoints.size());
+	int controlPointsSize = controlPoints.size();
 	int n = controlPointsSize - 1;
 	s = 1;
 	for (int i = degree + 1; i < controlPointsSize; i++)
 	{
-		if (knotVector[i] < knotVector[i + 1])
+		if (MathUtils::IsLessThan(knotVector[i],knotVector[i + 1]))
 		{
 			Br[i] = ComputerRemoveKnotErrorBound(degree, knotVector, controlPoints, i);
 			S[i] = Polynomials::GetKnotMultiplicity(knotVector, knotVector[i]);
@@ -1724,7 +1735,6 @@ void LNLib::NurbsCurve::RemoveKnotsByGivenBound(unsigned int degree, const std::
 	Nl[0] = 0;
 	for (int i = 0; i < ukSize; i++)
 	{
-		int np = static_cast<int>(knotVector.size() - degree) - 2;
 		int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, uk[i]);
 		if (!Nl[spanIndex])
 		{
@@ -1744,7 +1754,7 @@ void LNLib::NurbsCurve::RemoveKnotsByGivenBound(unsigned int degree, const std::
 		double minStandard = Constants::MaxDistance;
 		for (int i = 0; i < Br.size(); i++)
 		{
-			if (Br[i] < minStandard)
+			if (MathUtils::IsLessThan(Br[i],minStandard))
 			{
 				BrMinIndex = i;
 				minStandard = Br[i];
@@ -1752,12 +1762,17 @@ void LNLib::NurbsCurve::RemoveKnotsByGivenBound(unsigned int degree, const std::
 		}
 		BrMin = Br[BrMinIndex];
 
-		if (BrMin == Constants::MaxDistance)break;
+		if (BrMin == Constants::MaxDistance)
+		{
+			updatedKnotVector = tempU;
+			updatedControlPoints = tempCP;
+			break;
+		}
 		r = BrMinIndex;
 		s = S[BrMinIndex];
 
 		Rstart = std::max(r - degree, degree + 1);
-		Rend = std::min(r + static_cast<int>(degree) - S[r + degree] + 1, n);
+		Rend = std::min(r + degree - S[r + degree] + 1, n);
 		Rstart = Nl[Rstart];
 		Rend = Nr[Rend];
 
@@ -1781,7 +1796,7 @@ void LNLib::NurbsCurve::RemoveKnotsByGivenBound(unsigned int degree, const std::
 				NewError[i] = Br[r] * Polynomials::OneBasisFunction(r - k, degree, tempU, u);
 			}
 			temp[i] = NewError[i] + error[i];
-			if (temp[i] > maxError)
+			if (MathUtils::IsGreaterThan(temp[i],maxError))
 			{
 				removable = false;
 				Br[r] = Constants::MaxDistance;
@@ -1794,6 +1809,7 @@ void LNLib::NurbsCurve::RemoveKnotsByGivenBound(unsigned int degree, const std::
 			std::vector<double> tempNewU;
 			std::vector<XYZW> tempNewCP;
 			RemoveKnot(degree, tempU, tempCP, r, 1, tempNewU, tempNewCP);
+
 			controlPointsSize = tempNewCP.size();
 			for (int i = Rstart; i <= Rend; i++)
 			{
@@ -1802,6 +1818,8 @@ void LNLib::NurbsCurve::RemoveKnotsByGivenBound(unsigned int degree, const std::
 
 			if (controlPointsSize <= degree + 1)
 			{
+				updatedKnotVector = tempU;
+				updatedControlPoints = tempCP;
 				break;
 			}
 
@@ -1811,7 +1829,6 @@ void LNLib::NurbsCurve::RemoveKnotsByGivenBound(unsigned int degree, const std::
 			int oldspanIndex = -1;
 			for (int k = Rstart; k <= Rend; k++)
 			{
-				int np = static_cast<int>(tempNewU.size() - degree) - 2;
 				spanIndex = Polynomials::GetKnotSpanIndex(degree, tempNewU, uk[i]);
 				if (spanIndex != oldspanIndex)
 				{
@@ -1831,11 +1848,11 @@ void LNLib::NurbsCurve::RemoveKnotsByGivenBound(unsigned int degree, const std::
 			Nr.resize(Nr.size() - 1);
 
 			Rstart = std::max(r - degree, degree + 1);
-			Rend = std::min(r + static_cast<int>(degree) - S[r] + 1, controlPointsSize);
+			Rend = std::min(r + degree - S[r] + 1, controlPointsSize);
 			s = S[Rstart];
 			for (i = Rstart; i <= Rend; i++)
 			{
-				if (tempNewU[i] < tempNewU[i + 1])
+				if (MathUtils::IsLessThan(tempNewU[i],tempNewU[i + 1]))
 				{
 					Br[i] = ComputerRemoveKnotErrorBound(degree, tempNewU, tempNewCP, i);
 					S[i] = s;
@@ -1847,7 +1864,7 @@ void LNLib::NurbsCurve::RemoveKnotsByGivenBound(unsigned int degree, const std::
 					s++;
 				}
 			}
-			for (int i = Rend + 1; i < static_cast<int>(Br.size() - 1); i++)
+			for (int i = Rend + 1; i < Br.size() - 1; i++)
 			{
 				Br[i] = Br[i + 1];
 				S[i] = S[i + 1];
@@ -1864,7 +1881,7 @@ void LNLib::NurbsCurve::RemoveKnotsByGivenBound(unsigned int degree, const std::
 	}
 }
 
-void LNLib::NurbsCurve::GlobalCurveApproximationByErrorBound(unsigned int degree, const std::vector<XYZ>& throughPoints, double maxError, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+void LNLib::NurbsCurve::GlobalCurveApproximationByErrorBound(int degree, const std::vector<XYZ>& throughPoints, double maxError, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
 {
 	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
 	int size = static_cast<int>(throughPoints.size());
