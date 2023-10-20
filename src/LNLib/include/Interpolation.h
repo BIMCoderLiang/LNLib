@@ -73,7 +73,5 @@ namespace LNLib
 		/// The chord length parameterization.
 		/// </summary>
 		static std::vector<double> GetChordParameterization(const std::vector<XYZ>& throughPoints, int startIndex, int endIndex);	
-
-		static std::vector<XYZ> ComputerMatrixMultiplyPoints(std::vector<std::vector<double>> matrix, std::vector<XYZ> points);
 	};
 }

@@ -157,28 +157,6 @@ std::vector<double> LNLib::Interpolation::ComputeKnotVector(unsigned int degree,
 	return knotVector;
 }
 
-std::vector<LNLib::XYZ> LNLib::Interpolation::ComputerMatrixMultiplyPoints(std::vector<std::vector<double>> matrix, std::vector<XYZ> points)
-{
-	int row = matrix.size();
-	int column = matrix[0].size();
-	int size = points.size();
-	std::vector<XYZ> result(row);
-	if (!(column == size))
-	{
-		return result;
-	}
-	for (int i = 0; i <= row; i++)
-	{
-		XYZ temp = XYZ(0, 0, 0);
-		for (int j = 0; j <= column; j++)
-		{
-			temp += matrix[i][j] * points[j];
-		}
-		result.emplace_back(temp);
-	}
-	return result;
-}
-
 bool LNLib::Interpolation::GetSurfaceMeshParameterization(const std::vector<std::vector<XYZ>>& throughPoints, std::vector<double>& paramsU, std::vector<double>& paramsV)
 {
 	int n = throughPoints.size();
