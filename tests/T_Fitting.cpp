@@ -5,6 +5,7 @@
 #include "XYZ.h"
 #include "XYZW.h"
 #include "MathUtils.h"
+#include "ValidationUtils.h"
 #include "Interpolation.h"
 
 using namespace LNLib;
@@ -133,5 +134,37 @@ TEST(Test_Fitting, Interpolation)
 
 TEST(Test_Fitting, Approximation)
 {
-	
+	{
+		XYZ P0 = XYZ(20, 20, 0);
+		XYZ P1 = XYZ(20, 80, 0);
+		XYZ P2 = XYZ(20, 120, 0);
+		XYZ P3 = XYZ(20, 160, 0);
+		XYZ P4 = XYZ(80, 200, 0);
+		XYZ P5 = XYZ(120, 200, 0);
+		XYZ P6 = XYZ(160, 160, 0);
+		XYZ P7 = XYZ(160, 120, 0);
+		XYZ P8 = XYZ(120, 80, 0);
+		XYZ P9 = XYZ(80, 80, 0);
+
+		std::vector<XYZ> points = { P0,P1,P2,P3,P4,P5,P6,P7,P8,P9 };
+		std::vector<double> kv;
+		std::vector<XYZW> cps;
+		bool result = NurbsCurve::LeastSquaresApproximation(3, points, 5, kv, cps);
+		EXPECT_TRUE(result);
+		EXPECT_TRUE(ValidationUtils::IsValidNurbs(3,kv.size(),cps.size()));
+		kv.clear();
+		cps.clear();
+		result = NurbsCurve::LeastSquaresApproximation(3, points, 8, kv, cps);
+		EXPECT_TRUE(result);
+		EXPECT_TRUE(ValidationUtils::IsValidNurbs(3, kv.size(), cps.size()));
+		
+	}
+	{
+		int degree = 3;
+		std::vector<XYZ> Q = { XYZ(0,0,0),XYZ(3,4,0),XYZ(-1,4,0),XYZ(-4,0,0),XYZ(-4,-3,0) };
+		std::vector<double> kv;
+		std::vector<XYZW> cps;
+		NurbsCurve::GlobalCurveApproximationByErrorBound(degree, Q, 1.5, kv, cps);
+		EXPECT_TRUE(ValidationUtils::IsValidNurbs(degree, kv.size(), cps.size()));
+	}
 }

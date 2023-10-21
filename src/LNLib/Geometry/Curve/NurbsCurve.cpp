@@ -509,10 +509,11 @@ void LNLib::NurbsCurve::ElevateDegree(int degree, const std::vector<double>& kno
 	int cind = 1;
 	double ua = knotVector[0];
 
-	updatedControlPoints.resize(n + n * times);
+	int moresize = n * times * 2;
+	updatedControlPoints.resize(moresize,XYZW(Constants::MaxDistance, Constants::MaxDistance, Constants::MaxDistance,1));
 	updatedControlPoints[0] = controlPoints[0];
 
-	updatedKnotVector.resize(n + n * times + ph + 1);
+	updatedKnotVector.resize(moresize + ph + 1,Constants::MaxDistance);
 	for (int i = 0; i <= ph; i++)
 	{
 		updatedKnotVector[i] = ua;
@@ -623,13 +624,15 @@ void LNLib::NurbsCurve::ElevateDegree(int degree, const std::vector<double>& kno
 		{
 			for (int i = 0; i < ph - oldr; i++)
 			{
-				updatedKnotVector[kind++] = ua;
+				updatedKnotVector[kind] = ua;
+				kind++;
 			}
 		}
 
 		for (int j = lbz; j <= rbz; j++)
 		{
-			updatedControlPoints[cind++] = ebpts[j];
+			updatedControlPoints[cind] = ebpts[j];
+			cind++;
 		}
 
 		if (b < m)
@@ -656,15 +659,25 @@ void LNLib::NurbsCurve::ElevateDegree(int degree, const std::vector<double>& kno
 		}
 	}
 
-	int diffcp = n + n * times - (mh - ph);
-	int diffkv = n + n * times + ph + 1 - (mh + 1);
-	for (int i = 0; i < diffcp; i++)
+	for (int i = updatedControlPoints.size() - 1; i > 0; i--)
 	{
-		updatedControlPoints.pop_back();
+		if (MathUtils::IsAlmostEqualTo(updatedControlPoints[i][0], Constants::MaxDistance) &&
+			MathUtils::IsAlmostEqualTo(updatedControlPoints[i][1], Constants::MaxDistance) &&
+			MathUtils::IsAlmostEqualTo(updatedControlPoints[i][2], Constants::MaxDistance))
+		{
+			updatedControlPoints.pop_back();
+			continue;
+		}
+		break;
 	}
-	for (int i = 0; i < diffkv; i++)
+	for (int i = updatedKnotVector.size() -1 ; i >0; i--)
 	{
-		updatedKnotVector.pop_back();
+		if (MathUtils::IsAlmostEqualTo(updatedKnotVector[i], Constants::MaxDistance))
+		{
+			updatedKnotVector.pop_back();
+			continue;
+		}
+		break;
 	}
 }
 
@@ -1451,12 +1464,13 @@ bool LNLib::NurbsCurve::LeastSquaresApproximation(int degree, const std::vector<
 	knotVector.resize(n + degree + 1, 1.0);
 	
 	double d = (double)m / (double)n;
-	for (int j = 0; j < degree; j++)
+	for (int j = 0; j <= degree; j++)
 	{
 		knotVector[j] = 0.0;
 	}
 	for (int j = 1; j < n - degree; j++)
 	{
+		knotVector[degree + j] = 0.0;
 		for (int k = j; k < j + degree; k++)
 		{
 			int i1 = k * d;
@@ -1886,6 +1900,8 @@ void LNLib::NurbsCurve::RemoveKnotsByGivenBound(int degree, const std::vector<do
 			{
 				removable = false;
 				Br[r] = Constants::MaxDistance;
+				updatedKnotVector = tempU;
+				updatedControlPoints = tempCP;
 				break;
 			}
 		}
@@ -1894,7 +1910,7 @@ void LNLib::NurbsCurve::RemoveKnotsByGivenBound(int degree, const std::vector<do
 		{
 			std::vector<double> tempNewU;
 			std::vector<XYZW> tempNewCP;
-			RemoveKnot(degree, tempU, tempCP, r, 1, tempNewU, tempNewCP);
+			RemoveKnot(degree, tempU, tempCP, tempU[r], 1, tempNewU, tempNewCP);
 
 			controlPointsSize = tempNewCP.size();
 			for (int i = Rstart; i <= Rend; i++)
@@ -1915,7 +1931,7 @@ void LNLib::NurbsCurve::RemoveKnotsByGivenBound(int degree, const std::vector<do
 			int oldspanIndex = -1;
 			for (int k = Rstart; k <= Rend; k++)
 			{
-				spanIndex = Polynomials::GetKnotSpanIndex(degree, tempNewU, uk[i]);
+				spanIndex = Polynomials::GetKnotSpanIndex(degree, tempNewU, uk[k]);
 				if (spanIndex != oldspanIndex)
 				{
 					Nl[spanIndex] = k;
@@ -1975,13 +1991,13 @@ void LNLib::NurbsCurve::GlobalCurveApproximationByErrorBound(int degree, const s
 
 	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
 	int size = throughPoints.size();
-	std::vector<double> errors(size);
-	std::vector<double> uh(size);
+	std::vector<double> errors(size, 0.0);
 
 	controlPoints.resize(size);
-	knotVector.resize(size + 1 + 1);
+	int m = (size-1) + 1 + 1;
+	knotVector.resize(m + 1);
 
-	for (int i = 0; i < uk.size(); i++)
+	for (int i = 0; i < size; i++) 
 	{
 		knotVector[i + 1] = uk[i];
 	}
@@ -1993,69 +2009,17 @@ void LNLib::NurbsCurve::GlobalCurveApproximationByErrorBound(int degree, const s
 		controlPoints[i] = XYZW(throughPoints[i],1);
 	}
 
-	int j = 0;
-	for (int d = 1; d < degree; d++)
-	{
-		std::vector<double> tKv;
-		std::vector<XYZW> tCps;
-		RemoveKnotsByGivenBound(degree, knotVector, controlPoints, uk, errors, maxError, tKv, tCps);
-		
-		if (d == degree)
-		{
-			break;
-		}
-		if (d < degree)
-		{
-			uh.resize(tKv.size() * 2);
-			uh[0] = tKv.size() * 2;
-			j = 1;
-			for (int i = 1; i < tKv.size(); i++)
-			{
-				if (MathUtils::IsGreaterThan(tKv[i], tKv[i - 1]))
-				{
-					uh[j++] = tKv[i - 1];
-				}
-				uh[j++] = tKv[i];
-			}
-			uh[j++] = tKv[tKv.size() - 1];
-			uh.resize(j);
-			std::vector<double> t1Kv;
-			std::vector<XYZW> t1Cps;
-			bool result = LeastSquaresApproximation(degree + 1, throughPoints, uh.size() - degree - 1 - 1, t1Kv, t1Cps);
-			if (!result)
-			{
-				ElevateDegree(degree, tKv, tCps, 1, t1Kv, t1Cps);
-				knotVector = tKv;
-				controlPoints = tCps;
-			}
-			else
-			{
-				result = LeastSquaresApproximation(degree, throughPoints, tCps.size(), t1Kv, t1Cps);
-				if (!result)
-				{
-					knotVector = tKv;
-					controlPoints = tCps;
-				}
-				else
-				{
-					knotVector = t1Kv;
-					controlPoints = t1Cps;
-				}
-			}
-		}
-
-		for (int i = 0; i < size; i++)
-		{
-			double paramT = GetParamOnCurve(degree, knotVector, controlPoints, throughPoints[i]);
-			uk[i] = paramT;
-			errors[i] = GetPointOnCurve(degree,knotVector, paramT,controlPoints).Distance(throughPoints[i]);
-		}
-	}
+	std::vector<double> tKv;
+	std::vector<XYZW> tCps;
+	ElevateDegree(1, knotVector, controlPoints, degree - 1, tKv, tCps);
+	RemoveKnotsByGivenBound(degree, tKv, tCps, uk, errors, maxError, knotVector, controlPoints);
 }
 
-bool LNLib::NurbsCurve::LocalRationalQuadraticCurveApproximation(int startPointIndex, int endPointIndex, const std::vector<XYZ>& throughPoints, const XYZ& startTangent, const XYZ& endTangent, double maxError, std::vector<XYZW>& middleControlPoints)
+bool LNLib::NurbsCurve::LocalRationalQuadraticCurveApproximation(const std::vector<XYZ>& throughPoints, int startPointIndex, int endPointIndex, const XYZ& startTangent, const XYZ& endTangent, double maxError, std::vector<XYZW>& middleControlPoints)
 {
 	VALIDATE_ARGUMENT(throughPoints.size() > 0, "throughPoints", "ThroughPoints size must greater than zero.");
+	VALIDATE_ARGUMENT_RANGE(startPointIndex, 0, throughPoints.size() - 1);
+	VALIDATE_ARGUMENT_RANGE(endPointIndex, startPointIndex + 1, throughPoints.size() - 1);
 	VALIDATE_ARGUMENT(!startTangent.IsZero(), "startTangent", "StartTangent must not be zero vector.");
 	VALIDATE_ARGUMENT(!endTangent.IsZero(), "endTangent", "EndTangent must not be zero vector.");
 
@@ -2160,11 +2124,11 @@ bool LNLib::NurbsCurve::LocalRationalQuadraticCurveApproximation(int startPointI
 	return false;
 }
 
-bool LNLib::NurbsCurve::LocalNonRationalCubicCurveApproximation(int startPointIndex, int endPointIndex, const std::vector<XYZ>& throughPoints, const XYZ& startTangent, const XYZ& endTangent, double maxError, std::vector<XYZW>& middleControlPoints)
+bool LNLib::NurbsCurve::LocalNonRationalCubicCurveApproximation(const std::vector<XYZ>& throughPoints, int startPointIndex, int endPointIndex, const XYZ& startTangent, const XYZ& endTangent, double maxError, std::vector<XYZW>& middleControlPoints)
 {
+	VALIDATE_ARGUMENT(throughPoints.size() > 0, "throughPoints", "ThroughPoints size must greater than degree.");
 	VALIDATE_ARGUMENT_RANGE(startPointIndex, 0, throughPoints.size() - 1);
 	VALIDATE_ARGUMENT_RANGE(endPointIndex, startPointIndex + 1, throughPoints.size() - 1);
-	VALIDATE_ARGUMENT(throughPoints.size() > 0, "throughPoints", "ThroughPoints size must greater than degree.");
 	VALIDATE_ARGUMENT(!startTangent.IsZero(), "startTangent", "StartTangent must not be zero vector.");
 	VALIDATE_ARGUMENT(!endTangent.IsZero(), "endTangent", "EndTangent must not be zero vector.");
 
