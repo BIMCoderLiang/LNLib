@@ -1214,6 +1214,11 @@ std::vector<std::vector<LNLib::XYZW>> LNLib::NurbsSurface::NonuniformScaling(con
 
 void LNLib::NurbsSurface::GlobalInterpolation(const std::vector<std::vector<XYZ>>& throughPoints, int degreeU, int degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
 {
+	VALIDATE_ARGUMENT(throughPoints.size() > 0, "throughPoints", "ThroughPoints row size must greater than zero.");
+	VALIDATE_ARGUMENT(throughPoints[0].size() > 0, "throughPoints", "ThroughPoints column size must greater than zero.");
+	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "DegreeU must greater than zero.");
+	VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "DegreeV must greater than zero.");
+
 	std::vector<double> uk;
 	std::vector<double> vl;
 
@@ -1417,8 +1422,13 @@ bool LNLib::NurbsSurface::BicubicLocalInterpolation(const std::vector<std::vecto
 	return true;
 }
 
-void LNLib::NurbsSurface::GlobalSurfaceApproximation(const std::vector<std::vector<XYZ>>& throughPoints, unsigned int degreeU, unsigned int degreeV, int controlPointsRows, int controlPointsColumns, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
+void LNLib::NurbsSurface::GlobalSurfaceApproximation(const std::vector<std::vector<XYZ>>& throughPoints, int degreeU, int degreeV, int controlPointsRows, int controlPointsColumns, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
 {
+	VALIDATE_ARGUMENT(throughPoints.size() > 0, "throughPoints", "ThroughPoints row size must greater than zero.");
+	VALIDATE_ARGUMENT(throughPoints[0].size() > 0, "throughPoints", "ThroughPoints column size must greater than zero.");
+	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "DegreeU must greater than zero.");
+	VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "DegreeV must greater than zero.");
+
 	int rows = controlPointsRows;
 	int n = rows - 1;
 	int columns = controlPointsColumns;
@@ -1429,9 +1439,9 @@ void LNLib::NurbsSurface::GlobalSurfaceApproximation(const std::vector<std::vect
 
 	Interpolation::GetSurfaceMeshParameterization(throughPoints, uk, vl);
 
-	int sizeU = static_cast<int>(throughPoints.size());
+	int sizeU = throughPoints.size();
 	int r = sizeU - 1;
-	int sizeV = static_cast<int>(throughPoints[0].size());
+	int sizeV = throughPoints[0].size();
 	int s = sizeV - 1;
 
 	knotVectorU = Interpolation::ComputeKnotVector(degreeU, sizeU, rows, uk);
@@ -1443,136 +1453,124 @@ void LNLib::NurbsSurface::GlobalSurfaceApproximation(const std::vector<std::vect
 		std::vector<double> temp;
 		for (int j = 1; j < n; j++)
 		{
-			temp.emplace_back(Polynomials::OneBasisFunction(j, degreeU, knotVectorU, uk[i]));
+			double oneBasis = Polynomials::OneBasisFunction(j, degreeU, knotVectorU, uk[i]);
+			temp.emplace_back(oneBasis);
 		}
 		Nu.emplace_back(temp);
 	}
+
 	std::vector<std::vector<double>> NTu;
 	MathUtils::Transpose(Nu, NTu);
 	std::vector<std::vector<double>> NTNu = MathUtils::MatrixMultiply(NTu, Nu);
-	std::vector<std::vector<double>> NTNul;
-	std::vector<std::vector<double>> NTNuu;
-	MathUtils::LUDecomposition(NTNu, NTNul, NTNuu);
 
-	/*std::vector<std::vector<XYZ>> tempControlPoints;
-	tempControlPoints.resize(rows);
-	for (int j = 0; j < sizeV; j++)
-	{
-		tempControlPoints[0][j] = throughPoints[0][j];
-		tempControlPoints[n][j] = throughPoints[r][j];
-
-		XYZ Q0 = tempControlPoints[0][j];
-		XYZ Qm = tempControlPoints[n][j];
-
-		std::vector<XYZ> Rku;
-		for (int i = 1; i < r; i++)
-		{
-			double N0p = Polynomials::OneBasisFunction(0, degreeU, knotVectorU, uk[i]);
-			double Nnp = Polynomials::OneBasisFunction(n, degreeU, knotVectorU, uk[i]);
-
-			Rku[i] = throughPoints[i][j] - N0p * Q0 - Nnp * Qm;
-		}
-
-		std::vector<XYZ> R;
-		for (int i = 1; i < n; i++)
-		{
-			XYZ Rk_temp;
-			for (int k = 1; k < r; k++)
-			{
-				double Np = Polynomials::OneBasisFunction(i, degreeU, knotVectorU, uk[k]);
-				Rk_temp += Np* Rku[k];
-			}
-			R[i] = Rk_temp;
-		}
-
-		for (int i = 0; i < 3; i++)
-		{
-			std::vector<double> rhs;
-			for (int k = 0; k < n; k++)
-			{
-				rhs[k] = R[k][i];
-			}
-			std::vector<double> column = MathUtils::ForwardSubstitution(NTNul, rhs);
-			std::vector<double> sol = MathUtils::BackwardSubstitution(NTNuu, column);
-
-			for (int k = 1; k < n; k++)
-			{
-				tempControlPoints[k][j][i] = sol[k - 1];
-			}
-		}
-	}
-	
 	std::vector<std::vector<double>> Nv;
 	for (int i = 1; i < s; i++)
 	{
 		std::vector<double> temp;
 		for (int j = 1; j < m; j++)
 		{
-			temp.emplace_back(Polynomials::OneBasisFunction(j, degreeV, knotVectorV, vl[i]));
+			double oneBasis = Polynomials::OneBasisFunction(j, degreeV, knotVectorV, vl[i]);
+			temp.emplace_back(oneBasis);
 		}
 		Nv.emplace_back(temp);
 	}
 	std::vector<std::vector<double>> NTv;
 	MathUtils::Transpose(Nv, NTv);
 	std::vector<std::vector<double>> NTNv = MathUtils::MatrixMultiply(NTv, Nv);
-	std::vector<std::vector<double>> NTNvl;
-	std::vector<std::vector<double>> NTNvu;
-	MathUtils::LUDecomposition(NTNv, NTNvl, NTNvu);
 
-	std::vector<std::vector<XYZ>> P;
-	P.resize(rows);
-	for (int i = 0; i < rows; i++)
+	std::vector<std::vector<XYZ>> tempCps(rows, std::vector<XYZ>(sizeV));
+	for (int j = 0; j <= s; j++)
 	{
-		P[i].resize(columns);
+		tempCps[0][j] = throughPoints[0][j];
+		tempCps[n][j] = throughPoints[r][j];
+
+		XYZ pt0 = throughPoints[0][j];
+		XYZ ptm = throughPoints[r][j];
+
+		std::vector<XYZ> rku;
+		for (int i = 1; i < r; i++)
+		{
+			XYZ ptk = throughPoints[i][j];
+			double n0p = Polynomials::OneBasisFunction(0, degreeU, knotVectorU, uk[i]);
+			double nnp = Polynomials::OneBasisFunction(n, degreeU, knotVectorU, uk[i]);
+			rku.emplace_back(ptk - pt0 * n0p - ptm * nnp);
+		}
+		std::vector<XYZ> ru;
+		for (int i = 1; i <= n - 1; i++)
+		{
+			XYZ temp;
+			for (int k = 0; k < rku.size(); k++)
+			{
+				temp += rku[k] * Polynomials::OneBasisFunction(i, degreeU, knotVectorU, uk[k + 1]);
+			}
+			ru.emplace_back(temp);
+		}
+		std::vector<std::vector<double>> R(ru.size(),std::vector<double>(3));
+		for (int s = 0; s < ru.size(); s++)
+		{
+			for (int l = 0; l < 3; l++)
+			{
+				R[s][l] = ru[s][l];
+			}
+		}
+		auto uCps = MathUtils::SolveLinearSystem(NTNu, R);
+		for (int i = 0; i < uCps.size(); i++)
+		{
+			double x = uCps[i][0];
+			double y = uCps[i][1];
+			double z = uCps[i][2];
+
+			tempCps[i][j] = XYZ(x, y, z);
+		}
 	}
 
-	for (int i = 0; i < rows; i++)
+	std::vector<std::vector<XYZ>> preCps(rows, std::vector<XYZ>(columns));
+	for (int i = 0; i <= n; i++)
 	{
-		P[i][0] = tempControlPoints[i][0];
-		P[i][m] = tempControlPoints[i][s];
+		preCps[i][0] = tempCps[i][0];
+		preCps[i][m] = tempCps[i][s];
 
-		XYZ Q0 = P[i][0];
-		XYZ Qm = P[i][m];
+		XYZ pt0 = tempCps[i][0];
+		XYZ ptm = tempCps[i][s];
 
-		std::vector<XYZ> Rkv;
+		std::vector<XYZ> rkv;
 		for (int j = 1; j < s; j++)
 		{
-			double N0p = Polynomials::OneBasisFunction(0, degreeV, knotVectorV, vl[j]);
-			double Nnp = Polynomials::OneBasisFunction(m, degreeV, knotVectorV, vl[j]);
-
-			Rkv[i] = tempControlPoints[i][j] - N0p * Q0 - Nnp * Qm;
+			XYZ ptk = tempCps[i][j];
+			double n0p = Polynomials::OneBasisFunction(0, degreeV, knotVectorV, vl[j]);
+			double nnp = Polynomials::OneBasisFunction(m, degreeV, knotVectorV, vl[j]);
+			rkv.emplace_back(ptk - pt0 * n0p - ptm * nnp);
 		}
-
-		std::vector<XYZ> R;
-		for (int j = 1; j < m; j++)
+		std::vector<XYZ> rv;
+		for (int j = 1; j <= m - 1; j++)
 		{
-			XYZ Rk_temp;
-			for (int k = 1; k < r; k++)
+			XYZ temp;
+			for (int k = 0; k < rkv.size(); k++)
 			{
-				double Np = Polynomials::OneBasisFunction(i, degreeV, knotVectorV, vl[k]);
-				Rk_temp += Np * Rkv[k];
+				temp += rkv[k] * Polynomials::OneBasisFunction(j, degreeV, knotVectorV, vl[k + 1]);
 			}
-			R[j] = Rk_temp;
+			rv.emplace_back(temp);
 		}
-
-		for (int j = 0; j < 3; j++)
+		std::vector<std::vector<double>> R(rv.size(), std::vector<double>(3));
+		for (int s = 0; s < rv.size(); s++)
 		{
-			std::vector<double> rhs;
-			for (int k = 0; k < m; k++)
+			for (int l = 0; l < 3; l++)
 			{
-				rhs[k] = R[i][k];
+				R[s][l] = rv[s][l];
 			}
-			std::vector<double> column = MathUtils::ForwardSubstitution(NTNul, rhs);
-			std::vector<double> sol = MathUtils::BackwardSubstitution(NTNuu, column);
+		}
+		auto uCps = MathUtils::SolveLinearSystem(NTNv, R);
+		for (int j = 0; j < uCps.size(); j++)
+		{
+			double x = uCps[i][0];
+			double y = uCps[i][1];
+			double z = uCps[i][2];
 
-			for (int k = 1; k < m; k++)
-			{
-				P[i][k][j] = sol[k - 1];
-			}
+			preCps[i][j] = XYZ(x, y, z);
 		}
 	}
 
-	controlPoints = ToXYZW(P);*/
+	controlPoints = ToXYZW(preCps);
 }
 
 
