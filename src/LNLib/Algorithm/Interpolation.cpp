@@ -135,17 +135,17 @@ std::vector<double> LNLib::Interpolation::AverageKnotVector(int degree, const st
 	return knotVector;
 }
 
-std::vector<double> LNLib::Interpolation::ComputeKnotVector(unsigned int degree, int pointsCount, int controlPointsCount, const std::vector<double> params)
+std::vector<double> LNLib::Interpolation::ComputeKnotVector(int degree, int pointsCount, int controlPointsCount, const std::vector<double> params)
 {
 	std::vector<double>  knotVector;
 	for (int i = 0; i <= degree; i++)
 	{
-		knotVector[i] = 0;
+		knotVector.emplace_back(0.0);
 	}
-	double d = pointsCount / (controlPointsCount - degree);
+	double d = (double)(pointsCount) / (double)(controlPointsCount - degree);
 	for (int j = 1; j < controlPointsCount - degree; j++)
 	{
-		int i = static_cast<int>(j * d);
+		int i = floor(j * d);
 		double alpha = (j * d) - i;
 		double temp = (1.0 - alpha) * params[i - 1] + (alpha * params[i]);
 		knotVector.emplace_back(temp);

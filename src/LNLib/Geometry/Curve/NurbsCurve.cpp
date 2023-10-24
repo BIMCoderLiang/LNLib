@@ -1556,12 +1556,16 @@ bool LNLib::NurbsCurve::LeastSquaresApproximation(int degree, const std::vector<
 bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(int degree, const std::vector<XYZ>& throughPoints, const std::vector<double>& weights, const std::vector<XYZ>& tangents, const std::vector<int>& tangentIndices, const std::vector<double>& weightedTangents, int controlPointsCount, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
-	VALIDATE_ARGUMENT(throughPoints.size() > degree, "throughPoints", "ThroughPoints size must greater than degree.");
+	int size = throughPoints.size();
+	VALIDATE_ARGUMENT(size > degree, "throughPoints", "ThroughPoints size must greater than degree.");
+	VALIDATE_ARGUMENT(weights.size() == size, "weights", "Weights size must be equal to throughPoints size.");
+	VALIDATE_ARGUMENT_RANGE((int)(tangents.size()), -1, size);
+	VALIDATE_ARGUMENT(tangentIndices.size() == tangents.size(), "tangentIndices", "TangentIndices size must be equal to tangents size.");
+	VALIDATE_ARGUMENT(weightedTangents.size() == tangents.size(), "weightedTangents", "WeightedTangents size must be equal to tangents size.");
 
 	int n = controlPointsCount - 1;
 	int ru = -1;
 	int rc = -1;
-	int size = throughPoints.size();
 	int r = size - 1;
 	for (int i = 0; i <= r; i++)
 	{
@@ -1604,7 +1608,7 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(int degre
 	int mu2 = 0;
 	int mc2 = 0;
 
-	std::vector<std::vector<double>> N(mu + 1, std::vector<double>(n+1));
+	std::vector<std::vector<double>> N(mu + 1, std::vector<double>(n + 1));
 	std::vector<XYZ> S(mu + 1);
 	std::vector<double> W(mu + 1);
 	std::vector<std::vector<double>> M(mc + 1, std::vector<double>(n + 1));
@@ -1613,19 +1617,12 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(int degre
 	for (int i = 0; i <= r; i++)
 	{
 		int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, uk[i]);
+		std::vector<std::vector<double>> basis = Polynomials::BasisFunctionsDerivatives(spanIndex, degree, 1, knotVector, uk[i]);
+
 		int dflag = 0;
 		if (j <= s && i == tangentIndices[j])
 		{
 			dflag = 1;
-		}
-		std::vector<std::vector<double>> basis;
-		if (dflag == 0)
-		{
-			basis[i] = Polynomials::BasisFunctions(spanIndex, degree, knotVector, uk[i]);
-		}
-		else
-		{
-			basis = Polynomials::BasisFunctionsDerivatives(spanIndex, degree, 1, knotVector, uk[i]);
 		}
 		if (MathUtils::IsGreaterThan(weights[i], 0.0))
 		{
@@ -1636,7 +1633,7 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(int degre
 		}
 		else
 		{
-			basis[0] = M[mc2];
+			M[mc2] = basis[0];
 			T[mc2] = throughPoints[i];
 			mc2 = mc2 + 1;
 		}
@@ -1644,6 +1641,7 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(int degre
 		{
 			if (MathUtils::IsGreaterThan(weightedTangents[j], 0.0))
 			{
+				W[mu2] = weights[i];
 				N[mu2] = basis[1];
 				S[mu2] = W[mu2] * tangents[j];
 				mu2 = mu2 + 1;

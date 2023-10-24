@@ -1422,10 +1422,10 @@ bool LNLib::NurbsSurface::BicubicLocalInterpolation(const std::vector<std::vecto
 	return true;
 }
 
-void LNLib::NurbsSurface::GlobalSurfaceApproximation(const std::vector<std::vector<XYZ>>& throughPoints, int degreeU, int degreeV, int controlPointsRows, int controlPointsColumns, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
+void LNLib::NurbsSurface::GlobalApproximation(const std::vector<std::vector<XYZ>>& throughPoints, int degreeU, int degreeV, int controlPointsRows, int controlPointsColumns, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
 {
-	VALIDATE_ARGUMENT(throughPoints.size() > 0, "throughPoints", "ThroughPoints row size must greater than zero.");
-	VALIDATE_ARGUMENT(throughPoints[0].size() > 0, "throughPoints", "ThroughPoints column size must greater than zero.");
+	VALIDATE_ARGUMENT_RANGE(throughPoints.size(), 0, controlPointsRows - 1);
+	VALIDATE_ARGUMENT_RANGE(throughPoints[0].size(), 0, controlPointsColumns - 1);
 	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "DegreeU must greater than zero.");
 	VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "DegreeV must greater than zero.");
 
@@ -1562,9 +1562,9 @@ void LNLib::NurbsSurface::GlobalSurfaceApproximation(const std::vector<std::vect
 		auto uCps = MathUtils::SolveLinearSystem(NTNv, R);
 		for (int j = 0; j < uCps.size(); j++)
 		{
-			double x = uCps[i][0];
-			double y = uCps[i][1];
-			double z = uCps[i][2];
+			double x = uCps[j][0];
+			double y = uCps[j][1];
+			double z = uCps[j][2];
 
 			preCps[i][j] = XYZ(x, y, z);
 		}
