@@ -1585,13 +1585,13 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(int degre
 	int s = dsize - 1;
 	for (int j = 0; j <= s; j++)
 	{
-		if (MathUtils::IsGreaterThan(weights[j], 0.0))
+		if (MathUtils::IsGreaterThan(weightedTangents[j], 0.0))
 		{
-			su = su + 1;
+			su++;
 		}
 		else
 		{
-			sc = sc + 1;
+			sc++;
 		}
 	}
 	int mu = ru + su + 1;
@@ -1603,6 +1603,7 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(int degre
 
 	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
 	knotVector = Interpolation::ComputeKnotVector(degree, size, controlPointsCount, uk);
+	controlPoints.resize(controlPointsCount);
 
 	int j = 0;
 	int mu2 = 0;
@@ -1619,57 +1620,58 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(int degre
 		int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, uk[i]);
 		std::vector<std::vector<double>> basis = Polynomials::BasisFunctionsDerivatives(spanIndex, degree, 1, knotVector, uk[i]);
 
-		int dflag = 0;
+		bool dflag = false;
 		if (j <= s && i == tangentIndices[j])
 		{
-			dflag = 1;
+			dflag = true;
 		}
 		if (MathUtils::IsGreaterThan(weights[i], 0.0))
 		{
 			W[mu2] = weights[i];
 			N[mu2] = basis[0];
 			S[mu2] = W[mu2] * throughPoints[i];
-			mu2 = mu2 + 1;
+			mu2++;
 		}
 		else
 		{
 			M[mc2] = basis[0];
 			T[mc2] = throughPoints[i];
-			mc2 = mc2 + 1;
+			mc2++;
 		}
-		if (dflag == 1)
+		if (dflag)
 		{
 			if (MathUtils::IsGreaterThan(weightedTangents[j], 0.0))
 			{
-				W[mu2] = weights[i];
+				W[mu2] = weightedTangents[j];
 				N[mu2] = basis[1];
 				S[mu2] = W[mu2] * tangents[j];
-				mu2 = mu2 + 1;
+				mu2++;
 			}
 			else
 			{
 				M[mc2] = basis[1];
 				T[mc2] = tangents[j];
-				mc2 = mc2 + 1;
+				mc2++;
 			}
-			j = j + 1;
+			j++;
 		}
 	}
 	std::vector<std::vector<double>> NT;
 	MathUtils::Transpose(N, NT);
 
-	std::vector<std::vector<double>> NTW = MathUtils::MatrixMultiply(NT, MathUtils::MakeDiagonal(W.size()));
+	std::vector<std::vector<double>> W_ = MathUtils::MakeDiagonal(W.size());
+	std::vector<std::vector<double>> NTW = MathUtils::MatrixMultiply(NT, W_);
 	std::vector<std::vector<double>> NTWN = MathUtils::MatrixMultiply(NTW, N);
 
-	std::vector<std::vector<double>> S1(S.size(), std::vector<double>(3));
+	std::vector<std::vector<double>> S_(S.size(), std::vector<double>(3));
 	for (int i = 0; i < S.size(); i++)
 	{
 		for (int j = 0; j < 3; j++)
 		{
-			S1[i][j] = S[i][j];
+			S_[i][j] = S[i][j];
 		}
 	}
-	std::vector<std::vector<double>> NTWS = MathUtils::MatrixMultiply(NTW, S1);
+	std::vector<std::vector<double>> NTWS = MathUtils::MatrixMultiply(NTW, S_);
 	if (mc < 0)
 	{
 		std::vector<std::vector<double>> result = MathUtils::SolveLinearSystem(NTWN, NTWS);
@@ -1686,7 +1688,8 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(int degre
 	}
 
 	std::vector<std::vector<double>> INTWN;
-	MathUtils::MakeInverse(NTWN, INTWN);
+	bool canInverse = MathUtils::MakeInverse(NTWN, INTWN);
+	if (!canInverse) return false;
 
 	std::vector<std::vector<double>> MT;
 	MathUtils::Transpose(M,MT);
@@ -1695,12 +1698,12 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(int degre
 	std::vector<std::vector<double>> MINTWNMT = MathUtils::MatrixMultiply(MINTWN, MT);
 
 	std::vector<std::vector<double>> MINTWNNTWS = MathUtils::MatrixMultiply(MINTWN, NTWS);
-	std::vector<std::vector<double>> T1(T.size(), std::vector<double>(3));
+	std::vector<std::vector<double>> T_(T.size(), std::vector<double>(3));
 	for (int i = 0; i < T.size(); i++)
 	{
 		for (int j = 0; j < 3; j++)
 		{
-			T1[i][j] = T[i][j];
+			T_[i][j] = T[i][j];
 		}
 	}
 	std::vector<std::vector<double>> MINTWNNTWST(T.size(),std::vector<double>(3));
@@ -1708,23 +1711,21 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(int degre
 	{
 		for (int j = 0; j < 3; j++)
 		{
-			MINTWNNTWST[i][j] = MINTWNNTWS[i][j] - T1[i][j];
+			MINTWNNTWST[i][j] = MINTWNNTWS[i][j] - T_[i][j];
 		}
 	}
 
-	std::vector<std::vector<double>> A = MathUtils::MatrixMultiply(MINTWNMT, MINTWNNTWS);
-	std::vector<std::vector<double>> INTWNNTWS = MathUtils::MatrixMultiply(INTWN,NTWS);
-	std::vector<std::vector<double>> INTWNMT = MathUtils::MatrixMultiply(INTWN, MT);
-	std::vector<std::vector<double>> INTWNMTA = MathUtils::MatrixMultiply(INTWNMT, A);
-
-	std::vector<std::vector<double>> result(INTWNNTWS.size(),std::vector<double>(3));
-	for (int i = 0; i < INTWNNTWS.size(); i++)
+	std::vector<std::vector<double>> A = MathUtils::SolveLinearSystem(MINTWNMT, MINTWNNTWST);
+	std::vector<std::vector<double>> MTA = MathUtils::MatrixMultiply(MT, A);
+	std::vector<std::vector<double>> NTWS_MTA(NTWS.size(), std::vector<double>(3));
+	for (int i = 0; i < NTWS.size(); i++)
 	{
 		for (int j = 0; j < 3; j++)
 		{
-			result[i][j] = INTWNNTWS[i][j] - INTWNMTA[i][j];
+			NTWS_MTA[i][j] = NTWS[i][j] - MTA[i][j];
 		}
 	}
+	std::vector<std::vector<double>> result = MathUtils::MatrixMultiply(INTWN, NTWS_MTA);
 	for (int i = 0; i < result.size(); i++)
 	{
 		XYZ temp = XYZ(0, 0, 0);

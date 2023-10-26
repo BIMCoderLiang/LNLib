@@ -160,6 +160,52 @@ TEST(Test_Fitting, Approximation)
 		
 	}
 	{
+		XYZ P0 = XYZ(20, 20, 0);
+		XYZ P1 = XYZ(20, 80, 0);
+		XYZ P2 = XYZ(20, 120, 0);
+		XYZ P3 = XYZ(20, 160, 0);
+		XYZ P4 = XYZ(80, 200, 0);
+		XYZ P5 = XYZ(120, 200, 0);
+		XYZ P6 = XYZ(160, 160, 0);
+		XYZ P7 = XYZ(160, 120, 0);
+		XYZ P8 = XYZ(120, 80, 0);
+		XYZ P9 = XYZ(80, 80, 0);
+		XYZ P10 = XYZ(60, 60, 0);
+
+		std::vector<XYZ> points = { P0,P1,P2,P3,P4,P5,P6,P7,P8,P9,P10 };
+		int m = points.size();
+		int mm = m - 1;
+		std::vector<int> Indices(2);
+		std::vector<XYZ> D(2);
+		std::vector<double> wd(2), wp(m);
+		wp[0] = wp[mm] = -1.0;
+		for (int i = 1; i < mm; i++)
+		{
+			wp[i] = 1.0;
+		}
+			
+		wd[0] = wd[1] = -1.0;
+		Indices[0] = 0;
+		Indices[1] = mm;
+		D[0] = XYZ(1,0,0);
+		D[1] = XYZ(0,1,0);
+
+		double length = 0;
+		for (int i = 1; i < m; i++)
+		{
+			length += points[i - 1].Distance(points[i]);
+		}
+
+		D[0] = D[0].Normalize();
+		D[1] = D[1].Normalize();
+
+		std::vector<double> kv;
+		std::vector<XYZW> cps;
+		bool result = NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(3, points, wp, D, Indices, wd, 5, kv, cps);
+		EXPECT_TRUE(result);
+		EXPECT_TRUE(ValidationUtils::IsValidNurbs(3, kv.size(), cps.size()));
+	}
+	{
 		int degree = 3;
 		std::vector<XYZ> Q = { XYZ(0,0,0),XYZ(3,4,0),XYZ(-1,4,0),XYZ(-4,0,0),XYZ(-4,-3,0) };
 		std::vector<double> kv;
