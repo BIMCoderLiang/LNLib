@@ -213,4 +213,80 @@ TEST(Test_Fitting, Approximation)
 		NurbsCurve::GlobalCurveApproximationByErrorBound(degree, Q, 1.5, kv, cps);
 		EXPECT_TRUE(ValidationUtils::IsValidNurbs(degree, kv.size(), cps.size()));
 	}
+	{
+		XYZ P00 = XYZ(0,  0, 0);
+		XYZ P01 = XYZ(10, 0, 0);
+		XYZ P02 = XYZ(20, 0, 0);
+		XYZ P03 = XYZ(30, 0, 0);
+		XYZ P04 = XYZ(40, 0, 0);
+		XYZ P05 = XYZ(40, 0, 0);
+		XYZ P06 = XYZ(40, 0, 0);
+
+		XYZ P10 = XYZ(0,  10, 10);
+		XYZ P11 = XYZ(10, 10, 20);
+		XYZ P12 = XYZ(20, 10, 20);
+		XYZ P13 = XYZ(30, 10, 10);
+		XYZ P14 = XYZ(40, 10, 30);
+		XYZ P15 = XYZ(40, 10, 20);
+		XYZ P16 = XYZ(40, 10, 40);
+
+		XYZ P20 = XYZ(0,  20, 20);
+		XYZ P21 = XYZ(10, 20, 10);
+		XYZ P22 = XYZ(20, 20, 30);
+		XYZ P23 = XYZ(30, 20, 20);
+		XYZ P24 = XYZ(40, 20, 40);
+		XYZ P25 = XYZ(40, 20, 10);
+		XYZ P26 = XYZ(40, 20, 20);
+
+		XYZ P30 = XYZ(0,  30, 10);
+		XYZ P31 = XYZ(10, 30, 20);
+		XYZ P32 = XYZ(20, 30, 40);
+		XYZ P33 = XYZ(30, 30, 10);
+		XYZ P34 = XYZ(40, 30, 20);
+		XYZ P35 = XYZ(40, 30, 30);
+		XYZ P36 = XYZ(40, 30, 50);
+
+		XYZ P40 = XYZ(0,  40, 20);
+		XYZ P41 = XYZ(10, 40, 30);
+		XYZ P42 = XYZ(20, 40, 20);
+		XYZ P43 = XYZ(30, 40, 50);
+		XYZ P44 = XYZ(40, 40, 20);
+		XYZ P45 = XYZ(40, 40, 10);
+		XYZ P46 = XYZ(40, 40, 40);
+
+		XYZ P50 = XYZ(0,  50, 40);
+		XYZ P51 = XYZ(10, 50, 20);
+		XYZ P52 = XYZ(20, 50, 30);
+		XYZ P53 = XYZ(30, 50, 10);
+		XYZ P54 = XYZ(40, 50, 40);
+		XYZ P55 = XYZ(40, 50, 20);
+		XYZ P56 = XYZ(40, 50, 30);
+
+		XYZ P60 = XYZ(0,  60, 10);
+		XYZ P61 = XYZ(10, 60, 30);
+		XYZ P62 = XYZ(20, 60, 20);
+		XYZ P63 = XYZ(30, 60, 30);
+		XYZ P64 = XYZ(40, 60, 20);
+		XYZ P65 = XYZ(40, 60, 10);
+		XYZ P66 = XYZ(40, 60, 30);
+
+		int degreeU = 3;
+		int degreeV = 3;
+		std::vector<std::vector<XYZ>> Q = {
+		
+			{P00, P01, P02, P03, P04, P05, P06},
+			{P10, P11, P12, P13, P14, P15, P16},
+			{P20, P21, P22, P23, P24, P25, P26},
+			{P30, P31, P32, P33, P34, P35, P36},
+			{P40, P41, P42, P43, P44, P45, P46},
+			{P50, P51, P52, P53, P54, P55, P56},
+		    {P60, P61, P62, P63, P64, P65, P66},
+		};
+		std::vector<double> kvU;
+		std::vector<double> kvV;
+		std::vector<std::vector<XYZW>> cps;
+		NurbsSurface::GlobalApproximation(Q, degreeU, degreeV, 4, 4, kvU, kvV, cps);
+		EXPECT_TRUE(ValidationUtils::IsValidNurbs(degreeU, kvU.size(), cps.size()));
+		EXPECT_TRUE(ValidationUtils::IsValidNurbs(degreeV, kvV.size(), cps[0].size()));
+	}
 }

@@ -66,14 +66,15 @@ namespace LNLib
 		}
 
 		template<typename T>
-		static void GetColumn(const std::vector<std::vector<T>>& matrix, unsigned int columnIndex, std::vector<T> columnData)
+		static std::vector<T> GetColumn(const std::vector<std::vector<T>>& matrix, int columnIndex)
 		{
-			int size = static_cast<int>(matrix.size());
-			columnData.resize(size);
+			int size = matrix.size();
+			std::vector<T> result(size);
 			for (int i = 0; i < size; i++)
 			{
-				columnData.emplace_back(matrix[i][columnIndex]);
+				result[i] = matrix[i][columnIndex];
 			}
+			return result;
 		}
 
 		static std::vector<std::vector<double>> MatrixMultiply(const std::vector<std::vector<double>>& left, const std::vector<std::vector<double>>& right);

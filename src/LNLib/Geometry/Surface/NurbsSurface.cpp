@@ -26,6 +26,16 @@
 
 namespace LNLib
 {
+	std::vector<XYZ> ToXYZ(const std::vector<XYZW>& weightedControlPoints)
+	{
+		std::vector<XYZ> result;
+		for (int i = 0; i < weightedControlPoints.size(); i++)
+		{
+			result.emplace_back(const_cast<XYZW&>(weightedControlPoints[i]).ToXYZ(true));
+		}
+		return result;
+	}
+
 	std::vector<std::vector<XYZ>> ToXYZ(const std::vector<std::vector<XYZW>>& surfacePoints)
 	{
 		int row = surfacePoints.size();
@@ -1284,7 +1294,7 @@ bool LNLib::NurbsSurface::BicubicLocalInterpolation(const std::vector<std::vecto
 	for (int l = 0; l <= m; l++)
 	{
 		std::vector<XYZ> columnData;
-		MathUtils::GetColumn(throughPoints, l, columnData);
+		//MathUtils::GetColumn(throughPoints, l, columnData);
 
 		std::vector<XYZ> tvkl;
 		bool hasTangents = Interpolation::ComputeTangent(columnData, tvkl);
@@ -1371,7 +1381,7 @@ bool LNLib::NurbsSurface::BicubicLocalInterpolation(const std::vector<std::vecto
 	for (int j = 0; j < tcp[0].size(); j++)
 	{
 		std::vector<XYZ> columnData;
-		MathUtils::GetColumn(ToXYZ(tcp), j, columnData);
+		//MathUtils::GetColumn(ToXYZ(tcp), j, columnData);
 		std::vector<double> temp;
 		NurbsCurve::CubicLocalInterpolation(columnData, temp, transpose[j]);
 	}
@@ -1422,10 +1432,10 @@ bool LNLib::NurbsSurface::BicubicLocalInterpolation(const std::vector<std::vecto
 	return true;
 }
 
-void LNLib::NurbsSurface::GlobalApproximation(const std::vector<std::vector<XYZ>>& throughPoints, int degreeU, int degreeV, int controlPointsRows, int controlPointsColumns, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
+bool LNLib::NurbsSurface::GlobalApproximation(const std::vector<std::vector<XYZ>>& throughPoints, int degreeU, int degreeV, int controlPointsRows, int controlPointsColumns, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
 {
-	VALIDATE_ARGUMENT_RANGE(throughPoints.size(), 0, controlPointsRows - 1);
-	VALIDATE_ARGUMENT_RANGE(throughPoints[0].size(), 0, controlPointsColumns - 1);
+	VALIDATE_ARGUMENT(throughPoints.size() > 0, "throughPoints", "ThroughPoints row size must greater than zero.");
+	VALIDATE_ARGUMENT(throughPoints[0].size() > 0, "throughPoints", "ThroughPoints column size must greater than zero.");
 	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "DegreeU must greater than zero.");
 	VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "DegreeV must greater than zero.");
 
@@ -1434,143 +1444,31 @@ void LNLib::NurbsSurface::GlobalApproximation(const std::vector<std::vector<XYZ>
 	int columns = controlPointsColumns;
 	int m = columns - 1;
 
-	std::vector<double> uk;
-	std::vector<double> vl;
-
-	Interpolation::GetSurfaceMeshParameterization(throughPoints, uk, vl);
-
-	int sizeU = throughPoints.size();
-	int r = sizeU - 1;
-	int sizeV = throughPoints[0].size();
-	int s = sizeV - 1;
-
-	knotVectorU = Interpolation::ComputeKnotVector(degreeU, sizeU, rows, uk);
-	knotVectorV = Interpolation::ComputeKnotVector(degreeV, sizeV, columns, vl);
-
-	std::vector<std::vector<double>> Nu;
-	for (int i = 1; i < r; i++)
+	std::vector<std::vector<XYZ>> tempControlPoints;
+	for (int i = 0; i < rows; i++)
 	{
-		std::vector<double> temp;
-		for (int j = 1; j < n; j++)
-		{
-			double oneBasis = Polynomials::OneBasisFunction(j, degreeU, knotVectorU, uk[i]);
-			temp.emplace_back(oneBasis);
-		}
-		Nu.emplace_back(temp);
+		std::vector<double> tempKv;
+		std::vector<XYZW> tempCps;
+		bool result = NurbsCurve::LeastSquaresApproximation(degreeU, throughPoints[i], rows, knotVectorU, tempCps);
+		if (!result) return false;
+		std::vector<XYZ> points = ToXYZ(tempCps);
+		tempControlPoints.emplace_back(points);
 	}
 
-	std::vector<std::vector<double>> NTu;
-	MathUtils::Transpose(Nu, NTu);
-	std::vector<std::vector<double>> NTNu = MathUtils::MatrixMultiply(NTu, Nu);
-
-	std::vector<std::vector<double>> Nv;
-	for (int i = 1; i < s; i++)
+	std::vector<std::vector<XYZ>> preControlPoints;
+	std::vector<std::vector<XYZ>> tPoints;
+ 	for (int i = 0; i < columns; i++)
 	{
-		std::vector<double> temp;
-		for (int j = 1; j < m; j++)
-		{
-			double oneBasis = Polynomials::OneBasisFunction(j, degreeV, knotVectorV, vl[i]);
-			temp.emplace_back(oneBasis);
-		}
-		Nv.emplace_back(temp);
+		std::vector<double> tempKv;
+		std::vector<XYZW> tempCps;
+		std::vector<XYZ> c = MathUtils::GetColumn(tempControlPoints, i);
+		bool result = NurbsCurve::LeastSquaresApproximation(degreeV, c, columns, knotVectorV, tempCps);
+		if (!result) return false;
+		std::vector<XYZ> points = ToXYZ(tempCps);
+		tPoints.emplace_back(points);
 	}
-	std::vector<std::vector<double>> NTv;
-	MathUtils::Transpose(Nv, NTv);
-	std::vector<std::vector<double>> NTNv = MathUtils::MatrixMultiply(NTv, Nv);
-
-	std::vector<std::vector<XYZ>> tempCps(rows, std::vector<XYZ>(sizeV));
-	for (int j = 0; j <= s; j++)
-	{
-		tempCps[0][j] = throughPoints[0][j];
-		tempCps[n][j] = throughPoints[r][j];
-
-		XYZ pt0 = throughPoints[0][j];
-		XYZ ptm = throughPoints[r][j];
-
-		std::vector<XYZ> rku;
-		for (int i = 1; i < r; i++)
-		{
-			XYZ ptk = throughPoints[i][j];
-			double n0p = Polynomials::OneBasisFunction(0, degreeU, knotVectorU, uk[i]);
-			double nnp = Polynomials::OneBasisFunction(n, degreeU, knotVectorU, uk[i]);
-			rku.emplace_back(ptk - pt0 * n0p - ptm * nnp);
-		}
-		std::vector<XYZ> ru;
-		for (int i = 1; i <= n - 1; i++)
-		{
-			XYZ temp;
-			for (int k = 0; k < rku.size(); k++)
-			{
-				temp += rku[k] * Polynomials::OneBasisFunction(i, degreeU, knotVectorU, uk[k + 1]);
-			}
-			ru.emplace_back(temp);
-		}
-		std::vector<std::vector<double>> R(ru.size(),std::vector<double>(3));
-		for (int s = 0; s < ru.size(); s++)
-		{
-			for (int l = 0; l < 3; l++)
-			{
-				R[s][l] = ru[s][l];
-			}
-		}
-		auto uCps = MathUtils::SolveLinearSystem(NTNu, R);
-		for (int i = 0; i < uCps.size(); i++)
-		{
-			double x = uCps[i][0];
-			double y = uCps[i][1];
-			double z = uCps[i][2];
-
-			tempCps[i][j] = XYZ(x, y, z);
-		}
-	}
-
-	std::vector<std::vector<XYZ>> preCps(rows, std::vector<XYZ>(columns));
-	for (int i = 0; i <= n; i++)
-	{
-		preCps[i][0] = tempCps[i][0];
-		preCps[i][m] = tempCps[i][s];
-
-		XYZ pt0 = tempCps[i][0];
-		XYZ ptm = tempCps[i][s];
-
-		std::vector<XYZ> rkv;
-		for (int j = 1; j < s; j++)
-		{
-			XYZ ptk = tempCps[i][j];
-			double n0p = Polynomials::OneBasisFunction(0, degreeV, knotVectorV, vl[j]);
-			double nnp = Polynomials::OneBasisFunction(m, degreeV, knotVectorV, vl[j]);
-			rkv.emplace_back(ptk - pt0 * n0p - ptm * nnp);
-		}
-		std::vector<XYZ> rv;
-		for (int j = 1; j <= m - 1; j++)
-		{
-			XYZ temp;
-			for (int k = 0; k < rkv.size(); k++)
-			{
-				temp += rkv[k] * Polynomials::OneBasisFunction(j, degreeV, knotVectorV, vl[k + 1]);
-			}
-			rv.emplace_back(temp);
-		}
-		std::vector<std::vector<double>> R(rv.size(), std::vector<double>(3));
-		for (int s = 0; s < rv.size(); s++)
-		{
-			for (int l = 0; l < 3; l++)
-			{
-				R[s][l] = rv[s][l];
-			}
-		}
-		auto uCps = MathUtils::SolveLinearSystem(NTNv, R);
-		for (int j = 0; j < uCps.size(); j++)
-		{
-			double x = uCps[j][0];
-			double y = uCps[j][1];
-			double z = uCps[j][2];
-
-			preCps[i][j] = XYZ(x, y, z);
-		}
-	}
-
-	controlPoints = ToXYZW(preCps);
+	MathUtils::Transpose(tPoints, preControlPoints);
+	controlPoints = ToXYZW(preControlPoints);
 }
 
 

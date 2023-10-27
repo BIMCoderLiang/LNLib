@@ -515,3 +515,4 @@ std::vector<std::vector<double>> LNLib::MathUtils::SolveLinearSystem(const std::
     return result;
 }
 
+
