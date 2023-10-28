@@ -21,19 +21,27 @@
 #include "Interpolation.h"
 #include "ValidationUtils.h"
 #include "KnotVectorUtils.h"
+#include "ControlPointsUtils.h"
 #include "LNLibExceptions.h"
 #include <algorithm>
 
 namespace LNLib
 {
-	std::vector<XYZ> ToXYZ(const std::vector<XYZW>& weightedControlPoints)
+	std::vector<int> GetIndex(int size)
 	{
-		std::vector<XYZ> result;
-		for (int i = 0; i < weightedControlPoints.size(); i++)
+		std::vector<int> ind(2 * (size - 1) + 2);
+		ind[0] = 0;
+		ind[ind.size() - 1] = 3 * size - 3;
+		int ii = 1;
+		int jj = 1;
+		for (int i = 0; i < size - 1; i++)
 		{
-			result.emplace_back(const_cast<XYZW&>(weightedControlPoints[i]).ToXYZ(true));
+			ind[ii] = jj;
+			ind[ii + 1] = jj + 1;
+			ii = ii + 2;
+			jj = jj + 3;
 		}
-		return result;
+		return ind;
 	}
 
 	std::vector<std::vector<XYZ>> ToXYZ(const std::vector<std::vector<XYZW>>& surfacePoints)
@@ -1282,7 +1290,7 @@ bool LNLib::NurbsSurface::BicubicLocalInterpolation(const std::vector<std::vecto
 	int column = throughPoints[0].size();
 	int m = column - 1;
 
-	std::vector<std::vector<std::vector<XYZ>>> td(n + 1, std::vector<std::vector<XYZ>>(m+1, std::vector<XYZ>(3)));
+	std::vector<std::vector<std::vector<XYZ>>> td(n + 1, std::vector<std::vector<XYZ>>(m+1, std::vector<XYZ>(3,XYZ())));
 
 	std::vector<double> ub(n + 1, 0.0);
 	std::vector<double> vb(m + 1, 0.0);
@@ -1293,9 +1301,7 @@ bool LNLib::NurbsSurface::BicubicLocalInterpolation(const std::vector<std::vecto
 	double total = 0.0;
 	for (int l = 0; l <= m; l++)
 	{
-		std::vector<XYZ> columnData;
-		//MathUtils::GetColumn(throughPoints, l, columnData);
-
+		std::vector<XYZ> columnData = MathUtils::GetColumn(throughPoints, l);
 		std::vector<XYZ> tvkl;
 		bool hasTangents = Interpolation::ComputeTangent(columnData, tvkl);
 		if (!hasTangents) return false;
@@ -1346,68 +1352,96 @@ bool LNLib::NurbsSurface::BicubicLocalInterpolation(const std::vector<std::vecto
 		vb[l] = vb[l - 1] + vb[l] / total;
 	}
 	vb[m] = 1.0;
+	total = 0.0;
 
-	knotVectorU.resize(2 * (degreeU + 1) + 2 * (n - 1));
-	for (int i = 0; i <= degreeU; i++)
+	int kuSize = 2 * ub.size() + 2 + 2;
+	knotVectorU.resize(kuSize);
+	for (int i= 0; i < 4; i++)
 	{
-		knotVectorU[i] = 0;
-		knotVectorU[ub.size() - 1 - i] = 1;
+		knotVectorU[i] = knotVectorU[i + 1] = knotVectorU[i + 2] = knotVectorU[i + 3] = 0.0;
+		knotVectorU[kuSize -1] = knotVectorU[kuSize - 2] = knotVectorU[kuSize - 3] = knotVectorU[kuSize - 4] = 1.0;
 	}
-	for (int i = 1; i < n; i = i + 2)
+	int ii = 4;
+	for (int i = 1; i < ub.size() - 1; i++)
 	{
-		knotVectorU[degreeU + i] = knotVectorU[degreeU + (i + 1)] = ub[i] ;
-	}
-
-	knotVectorV.resize(2 * (degreeV + 1) + 2 * (m - 1));
-	for (int i = 0; i <= degreeV; i++)
-	{
-		knotVectorV[i] = 0;
-		knotVectorV[vb.size() - 1 - i] = 1;
-	}
-	for (int i = 1; i < m; i = i + 2)
-	{
-		knotVectorV[degreeV + i] = knotVectorV[degreeV + (i + 1)] = vb[i];
+		knotVectorU[ii] = ub[i];
+		knotVectorU[ii + 1] = ub[i];
+		ii += 2;
 	}
 
-	std::vector<std::vector<XYZW>> bcp;
-	std::vector<std::vector<XYZW>> tcp;
+	int kvSize = 2 * vb.size() + 2 + 2;
+	knotVectorV.resize(kvSize);
+	for (int i = 0; i < 4; i++)
+	{
+		knotVectorV[i] = knotVectorV[i + 1] = knotVectorV[i + 2] = knotVectorV[i + 3] = 0.0;
+		knotVectorV[kvSize - 1] = knotVectorV[kvSize - 2] = knotVectorV[kvSize - 3] = knotVectorV[kvSize - 4] = 1.0;
+	}
+	
+	ii = 4;
+	for (int i = 1; i < vb.size() - 1; i++)
+	{
+		knotVectorV[ii] = vb[i];
+		knotVectorV[ii + 1] = vb[i];
+		ii += 2;
+	}
+	
+	std::vector<std::vector<XYZ>> bezierControlPoints(3* row - 2, std::vector<XYZ>(3 * column - 2,XYZ(0,0,0)));
 	for (int i = 0; i < row; i++)
 	{
-		std::vector<double> temp;
-		NurbsCurve::CubicLocalInterpolation(throughPoints[i], temp, tcp[i]);
-	}	
+		int n = throughPoints[i].size();
+		std::vector<XYZ> T;
+		for (int c = 0; c < td[0].size(); c++)
+		{
+			T.emplace_back(td[i][c][1]);
+		}
 
-	std::vector<std::vector<XYZW>> transpose;
-	for (int j = 0; j < tcp[0].size(); j++)
+		std::vector<XYZ> temp(3 * n - 2, XYZ(0,0,0));
+		for (int j = 0; j < n; j++)
+		{
+			temp[3 * i] = throughPoints[i][j];
+		}
+		for (int j = 0; j < n - 1; j++)
+		{
+			double a =  (ub[j + 1] - ub[j]) * Interpolation::GetTotalChordLength(throughPoints[i]);
+			temp[3 * j + 1] = throughPoints[i][j] + a / 3.0 * T[j];
+			temp[3 * j + 2] = throughPoints[i][j+1] - a / 3.0 * T[j];
+		}
+		bezierControlPoints[3 * i] = temp;
+	}
+	for (int i = 0; i < column; i++)
 	{
-		std::vector<XYZ> columnData;
-		//MathUtils::GetColumn(ToXYZ(tcp), j, columnData);
-		std::vector<double> temp;
-		NurbsCurve::CubicLocalInterpolation(columnData, temp, transpose[j]);
+		auto columnData = MathUtils::GetColumn(throughPoints, i);
+		int n = columnData.size();
+		std::vector<XYZ> T;
+		for (int r = 0; r < td.size(); r++)
+		{
+			T.emplace_back(td[r][i][0]);
+		}
+
+		std::vector<XYZ> temp(3 * n - 2, XYZ(0,0,0));
+		for (int j = 0; j < n; j++)
+		{
+			temp[3 * i] = columnData[j];
+		}
+		for (int j = 0; j < n - 1; j++)
+		{
+			double a = (vb[j + 1] - vb[j]) * Interpolation::GetTotalChordLength(columnData);
+			temp[3 * j + 1] = columnData[j] + a / 3.0 * T[j];
+			temp[3 * j + 2] = columnData[j + 1] - a / 3.0 * T[j];
+		}
+		for (int r = 0; r < bezierControlPoints.size(); r++)
+		{
+			bezierControlPoints[r][3 * i] = temp[r];
+		}
 	}
 
-	MathUtils::Transpose(transpose, bcp);
-	std::vector<std::vector<XYZ>> bezierControlPoints = ToXYZ(bcp);
 
-	for (int k = 0; k <= n; k++)
+	for (int k = 1; k < n; k++)
 	{
-		double ak = 0.0;
-		if (k > 0)
+		double ak = (ub[k] - ub[k - 1]) / ((ub[k] - ub[k - 1]) + (ub[k + 1] - ub[k]));
+		for (int l = 1; l < m; l++)
 		{
-			ak = (ub[k] - ub[k - 1]) / ((ub[k] - ub[k - 1]) + (ub[k + 1] - ub[k]));
-		}
-		for (int l = 0; l <= m; l++)
-		{
-			double bl = 0.0;
-			if (k == l == 0)
-			{
-				td[0][0][2] = XYZ(0,0,0);
-				continue;
-			}
-			if (l > 0)
-			{
-				bl = (vb[l] - vb[l - 1]) / ((vb[l] - vb[l - 1]) + (vb[l + 1] - vb[l]));
-			}
+			double bl = bl = (vb[l] - vb[l - 1]) / ((vb[l] - vb[l - 1]) + (vb[l + 1] - vb[l]));
 			
 			XYZ dvukl = (1 - ak) * (td[k][l][1] - td[k - 1][l][1]) / (ub[k] - ub[k - 1]) + ak * (td[k + 1][l][1] - td[k][l][1]) / (ub[k + 1] - ub[k]);
 			XYZ duvkl = (1 - bl) * (td[k][l][0] - td[k][l - 1][0]) / (vb[l] - vb[l - 1]) + bl * (td[k][l + 1][0] - td[k][l][0]) / (vb[l + 1] - vb[l]);
@@ -1420,15 +1454,32 @@ bool LNLib::NurbsSurface::BicubicLocalInterpolation(const std::vector<std::vecto
 	{
 		for (int l = 0; l < m; l++)
 		{
-			double gamma = (ub[k + 1] - ub[k]) * (vb[l + 1] - vb[l]) / 9;
-			bezierControlPoints[3 * k + 1][3 * l + 1] =  gamma * td[k][l][2]         + bezierControlPoints[3 * k][3 * l + 1]     + bezierControlPoints[3 * k + 1][3 * l]     - bezierControlPoints[3 * k][3 * l];
-			bezierControlPoints[3 * k + 2][3 * l + 1] = -gamma * td[k + 1][l][2]     + bezierControlPoints[3 * k + 3][3 * l + 1] + bezierControlPoints[3 * k + 3][3 * l]     - bezierControlPoints[3 * k + 2][3 * l];
-			bezierControlPoints[3 * k + 1][3 * l + 2] = -gamma * td[k][l + 1][2]     + bezierControlPoints[3 * k + 1][3 * l + 3] + bezierControlPoints[3 * k][3 * l + 3]     - bezierControlPoints[3 * k][3 * l + 2];
-			bezierControlPoints[3 * k + 2][3 * l + 2] =  gamma * td[k + 1][l + 1][2] + bezierControlPoints[3 * k + 2][3 * l + 3] + bezierControlPoints[3 * k + 3][3 * l + 2] - bezierControlPoints[3 * k + 3][3 * l + 3];
+			double gamma = (ub[k + 1] - ub[k]) * (vb[l + 1] - vb[l]) / 9.0;
+			int ii = 3 * k;
+			int jj = 3 * l;
+			bezierControlPoints[ii + 1][jj + 1] =  gamma * td[k][l][2]         + bezierControlPoints[ii][jj + 1]     + bezierControlPoints[ii + 1][jj]     - bezierControlPoints[ii][jj];
+			bezierControlPoints[ii + 2][jj + 1] = -gamma * td[k + 1][l][2]     + bezierControlPoints[ii + 3][jj + 1] - bezierControlPoints[ii + 3][jj]     + bezierControlPoints[ii + 2][jj];
+			bezierControlPoints[ii + 1][jj + 2] = -gamma * td[k][l + 1][2]     + bezierControlPoints[ii + 1][jj + 3] - bezierControlPoints[ii][jj + 3]     + bezierControlPoints[ii][jj + 2];
+			bezierControlPoints[ii + 2][jj + 2] =  gamma * td[k + 1][l + 1][2] + bezierControlPoints[ii + 2][jj + 3] + bezierControlPoints[ii + 3][jj + 2] - bezierControlPoints[ii + 3][jj + 3];
 		} 
 	}
 
-	controlPoints = ToXYZW(bezierControlPoints);
+	std::vector<std::vector<XYZ>> columnFilter;
+	auto ind = GetIndex(column);
+	for (int c = 0; c < ind.size(); c++)
+	{
+		auto columnData = MathUtils::GetColumn(bezierControlPoints, ind[c]);
+		columnFilter.emplace_back(columnData);
+	}
+	std::vector<std::vector<XYZ>> Tcf;
+	MathUtils::Transpose(columnFilter, Tcf);
+	ind = GetIndex(row);
+	std::vector<std::vector<XYZ>> rowFilter;
+	for (int r = 0; r < ind.size(); r++)
+	{
+		rowFilter.emplace_back(Tcf[ind[r]]);
+	}
+	controlPoints = ToXYZW(rowFilter);
 	return true;
 }
 
@@ -1451,7 +1502,7 @@ bool LNLib::NurbsSurface::GlobalApproximation(const std::vector<std::vector<XYZ>
 		std::vector<XYZW> tempCps;
 		bool result = NurbsCurve::LeastSquaresApproximation(degreeU, throughPoints[i], rows, knotVectorU, tempCps);
 		if (!result) return false;
-		std::vector<XYZ> points = ToXYZ(tempCps);
+		std::vector<XYZ> points = ControlPointsUtils::ToXYZ(tempCps);
 		tempControlPoints.emplace_back(points);
 	}
 
@@ -1464,7 +1515,7 @@ bool LNLib::NurbsSurface::GlobalApproximation(const std::vector<std::vector<XYZ>
 		std::vector<XYZ> c = MathUtils::GetColumn(tempControlPoints, i);
 		bool result = NurbsCurve::LeastSquaresApproximation(degreeV, c, columns, knotVectorV, tempCps);
 		if (!result) return false;
-		std::vector<XYZ> points = ToXYZ(tempCps);
+		std::vector<XYZ> points = ControlPointsUtils::ToXYZ(tempCps);
 		tPoints.emplace_back(points);
 	}
 	MathUtils::Transpose(tPoints, preControlPoints);
