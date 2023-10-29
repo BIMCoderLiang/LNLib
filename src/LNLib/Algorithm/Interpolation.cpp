@@ -269,3 +269,26 @@ bool LNLib::Interpolation::ComputeTangent(const std::vector<XYZ>& throughPoints,
 
 	return true;
 }
+
+std::vector<LNLib::XYZ> LNLib::Interpolation::ComputeTangent(const std::vector<XYZ>& throughPoints)
+{
+	auto params = GetChordParameterization(throughPoints);
+	int size = throughPoints.size();
+	std::vector<XYZ> tangents(size, XYZ(0, 0, 0));
+	std::vector<XYZ> qq(size, XYZ(0, 0, 0));
+	std::vector<double> delta(size, 0.0);
+	for (int i = 1; i < size; i++)
+	{
+		delta[i] = params[i] - params[i - 1];
+		qq[i] = throughPoints[i] - throughPoints[i - 1];
+	}
+	for (int i = 1; i < size - 1; i++)
+	{
+		double a = delta[i] / (delta[i] + delta[i + 1]);
+		tangents[i] = ((1 - a) * qq[i] + a * qq[i + 1]).Normalize();
+	}
+
+	tangents[0] = (2 * qq[1] / delta[1] - tangents[1]).Normalize();
+	tangents[tangents.size() - 1] = (2 * qq[qq.size() - 1] / delta[delta.size() - 1] - tangents[tangents.size() - 2]).Normalize();
+	return tangents;
+}

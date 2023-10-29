@@ -1282,6 +1282,9 @@ void LNLib::NurbsSurface::GlobalInterpolation(const std::vector<std::vector<XYZ>
 
 bool LNLib::NurbsSurface::BicubicLocalInterpolation(const std::vector<std::vector<XYZ>>& throughPoints, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints)
 {
+	VALIDATE_ARGUMENT(throughPoints.size() > 0, "throughPoints", "ThroughPoints row size must greater than zero.");
+	VALIDATE_ARGUMENT(throughPoints[0].size() > 0, "throughPoints", "ThroughPoints column size must greater than zero.");
+
 	int degreeU = 3;
 	int degreeV = 3;
 
@@ -1302,9 +1305,7 @@ bool LNLib::NurbsSurface::BicubicLocalInterpolation(const std::vector<std::vecto
 	for (int l = 0; l <= m; l++)
 	{
 		std::vector<XYZ> columnData = MathUtils::GetColumn(throughPoints, l);
-		std::vector<XYZ> tvkl;
-		bool hasTangents = Interpolation::ComputeTangent(columnData, tvkl);
-		if (!hasTangents) return false;
+		std::vector<XYZ> tvkl = Interpolation::ComputeTangent(columnData);
 
 		r[l] = 0.0;
 		for (int k = 0; k <= n; k++)
@@ -1329,10 +1330,7 @@ bool LNLib::NurbsSurface::BicubicLocalInterpolation(const std::vector<std::vecto
 
 	for (int k = 0; k <= n; k++)
 	{
-		std::vector<XYZ> tukl;
-		bool hasTangents = Interpolation::ComputeTangent(throughPoints[k], tukl);
-		if (!hasTangents) return false;
-
+		std::vector<XYZ> tukl = Interpolation::ComputeTangent(throughPoints[k]);
 		s[k] = 0.0;
 		for (int l = 0; l <= m; l++)
 		{
