@@ -207,21 +207,21 @@ namespace LNLib
 		/// Algorithm A9.10
 		/// Global curve approximation to within bound maxError.
 		/// </summary>
-		static void GlobalCurveApproximationByErrorBound(int degree, const std::vector<XYZ>& throughPoints, double maxError, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+		static void GlobalApproximationByErrorBound(int degree, const std::vector<XYZ>& throughPoints, double maxError, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page440
 		/// Algorithm A9.11
 		/// Fit to tolerance with conic segment.
 		/// </summary>
-		static bool LocalRationalQuadraticCurveApproximation(const std::vector<XYZ>& throughPoints, int startPointIndex, int endPointIndex, const XYZ& startTangent, const XYZ& endTangent, double maxError, std::vector<XYZW>& middleControlPoints);
+		static bool FitWithConic(const std::vector<XYZ>& throughPoints, int startPointIndex, int endPointIndex, const XYZ& startTangent, const XYZ& endTangent, double maxError, std::vector<XYZW>& middleControlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page448
 		/// Algorithm A9.12
 		/// Fit to tolerance with cubic segment.
 		/// </summary>
-		static bool LocalNonRationalCubicCurveApproximation(const std::vector<XYZ>& throughPoints, int startPointIndex, int endPointIndex, const XYZ& startTangent, const XYZ& endTangent, double maxError, std::vector<XYZW>& middleControlPoints);
+		static bool FitWithCubic(const std::vector<XYZ>& throughPoints, int startPointIndex, int endPointIndex, const XYZ& startTangent, const XYZ& endTangent, double maxError, std::vector<XYZW>& middleControlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page511

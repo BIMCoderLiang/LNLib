@@ -1982,7 +1982,7 @@ void LNLib::NurbsCurve::RemoveKnotsByGivenBound(int degree, const std::vector<do
 	}
 }
 
-void LNLib::NurbsCurve::GlobalCurveApproximationByErrorBound(int degree, const std::vector<XYZ>& throughPoints, double maxError, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+void LNLib::NurbsCurve::GlobalApproximationByErrorBound(int degree, const std::vector<XYZ>& throughPoints, double maxError, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(throughPoints.size() > degree, "throughPoints", "ThroughPoints size must greater than degree.");
@@ -2014,7 +2014,7 @@ void LNLib::NurbsCurve::GlobalCurveApproximationByErrorBound(int degree, const s
 	RemoveKnotsByGivenBound(degree, tKv, tCps, uk, errors, maxError, knotVector, controlPoints);
 }
 
-bool LNLib::NurbsCurve::LocalRationalQuadraticCurveApproximation(const std::vector<XYZ>& throughPoints, int startPointIndex, int endPointIndex, const XYZ& startTangent, const XYZ& endTangent, double maxError, std::vector<XYZW>& middleControlPoints)
+bool LNLib::NurbsCurve::FitWithConic(const std::vector<XYZ>& throughPoints, int startPointIndex, int endPointIndex, const XYZ& startTangent, const XYZ& endTangent, double maxError, std::vector<XYZW>& middleControlPoints)
 {
 	VALIDATE_ARGUMENT(throughPoints.size() > 0, "throughPoints", "ThroughPoints size must greater than zero.");
 	VALIDATE_ARGUMENT_RANGE(startPointIndex, 0, throughPoints.size() - 1);
@@ -2071,59 +2071,59 @@ bool LNLib::NurbsCurve::LocalRationalQuadraticCurveApproximation(const std::vect
 				return false;
 			}
 		}
-		s = s / (endPointIndex - startPointIndex - 1);
-		double w = s / (1.0 - s);
-
-		std::vector<XYZW> controlPoints = { XYZW(startPoint,1), XYZW(R,w), XYZW(endPoint,1) };
-		for (int i = startPointIndex + 1; i < endPointIndex - 1; i++)
+	}
+	
+	s = s / (endPointIndex - startPointIndex - 1);
+	double w = s / (1.0 - s);
+	std::vector<XYZW> controlPoints = { XYZW(startPoint,1), XYZW(R,w), XYZW(endPoint,1) };
+	for (int i = startPointIndex + 1; i < endPointIndex - 1; i++)
+	{
+		XYZ tp = throughPoints[i];
+		double minValue = Constants::MaxDistance;
+		int total = 100;
+		for (int k = 0; k < total; k++)
 		{
-			XYZ tp = throughPoints[i];
-			double minValue = Constants::MaxDistance;
-			for (int i = 0; i < 99; i++)
+			double currentU = 0.01 * k;
+			XYZ currentPoint;
+			currentPoint = BezierCurve::GetPointOnQuadraticArc(controlPoints[0], controlPoints[1], controlPoints[2], currentU);
+
+			double nextU = 0.01 * (k + 1);
+			XYZ nextPoint;
+			nextPoint = BezierCurve::GetPointOnQuadraticArc(controlPoints[0], controlPoints[1], controlPoints[2], nextU);
+
+			XYZ vector1 = currentPoint - tp;
+			XYZ vector2 = nextPoint - currentPoint;
+			double dot = vector1.DotProduct(vector2);
+
+			XYZ projectPoint;
+			if (dot < 0)
 			{
-				double currentU = 0.01 * i;
-				XYZ currentPoint;
-				currentPoint = BezierCurve::GetPointOnQuadraticArc(controlPoints[0], controlPoints[1], controlPoints[2], currentU);
-
-				double nextU = 0.01 * (i + 1);
-				XYZ nextPoint;
-				nextPoint = BezierCurve::GetPointOnQuadraticArc(controlPoints[0], controlPoints[1], controlPoints[2], nextU);
-
-				XYZ vector1 = currentPoint - tp;
-				XYZ vector2 = nextPoint - currentPoint;
-				double dot = vector1.DotProduct(vector2);
-
-				XYZ projectPoint;
-				if (dot < 0)
-				{
-					projectPoint = currentPoint;
-				}
-				else if (dot > 1)
-				{
-					projectPoint = nextPoint;
-				}
-				else
-				{
-					projectPoint = currentPoint + dot * vector1.Normalize();
-				}
-				double distance = (tp - projectPoint).Length();
-				if (distance < minValue)
-				{
-					minValue = distance;
-				}
+				projectPoint = currentPoint;
 			}
-			if (MathUtils::IsGreaterThan(minValue, maxError))
+			else if (dot > 1)
 			{
-				return false;
+				projectPoint = nextPoint;
+			}
+			else
+			{
+				projectPoint = currentPoint + dot * vector1.Normalize();
+			}
+			double distance = (tp - projectPoint).Length();
+			if (distance < minValue)
+			{
+				minValue = distance;
 			}
 		}
-		middleControlPoints.emplace_back(XYZW(R, w));
-		return true;
+		if (MathUtils::IsGreaterThan(minValue, maxError))
+		{
+			return false;
+		}
 	}
-	return false;
+	middleControlPoints.emplace_back(XYZW(R, w));
+	return true;
 }
 
-bool LNLib::NurbsCurve::LocalNonRationalCubicCurveApproximation(const std::vector<XYZ>& throughPoints, int startPointIndex, int endPointIndex, const XYZ& startTangent, const XYZ& endTangent, double maxError, std::vector<XYZW>& middleControlPoints)
+bool LNLib::NurbsCurve::FitWithCubic(const std::vector<XYZ>& throughPoints, int startPointIndex, int endPointIndex, const XYZ& startTangent, const XYZ& endTangent, double maxError, std::vector<XYZW>& middleControlPoints)
 {
 	VALIDATE_ARGUMENT(throughPoints.size() > 0, "throughPoints", "ThroughPoints size must greater than degree.");
 	VALIDATE_ARGUMENT_RANGE(startPointIndex, 0, throughPoints.size() - 1);
@@ -2191,8 +2191,8 @@ bool LNLib::NurbsCurve::LocalNonRationalCubicCurveApproximation(const std::vecto
 		return true;
 	}
 	std::vector<double> uh;
-	std::vector<double> alfak;
-	std::vector<double> betak;
+	std::vector<double> alfak(dk);
+	std::vector<double> betak(dk);
 	for (int k = 1; k < dk; k++)
 	{
 		XYZ normalPi = (endPoint - startPoint).Normalize().CrossProduct(startTangent);

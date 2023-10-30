@@ -7,6 +7,7 @@
 #include "MathUtils.h"
 #include "ValidationUtils.h"
 #include "Interpolation.h"
+#include "Intersection.h"
 
 using namespace LNLib;
 
@@ -210,7 +211,7 @@ TEST(Test_Fitting, Approximation)
 		std::vector<XYZ> Q = { XYZ(0,0,0),XYZ(3,4,0),XYZ(-1,4,0),XYZ(-4,0,0),XYZ(-4,-3,0) };
 		std::vector<double> kv;
 		std::vector<XYZW> cps;
-		NurbsCurve::GlobalCurveApproximationByErrorBound(degree, Q, 1.5, kv, cps);
+		NurbsCurve::GlobalApproximationByErrorBound(degree, Q, 1.5, kv, cps);
 		EXPECT_TRUE(ValidationUtils::IsValidNurbs(degree, kv.size(), cps.size()));
 	}
 	{
@@ -420,5 +421,10 @@ TEST(Test_Fitting, Approximation)
 		EXPECT_TRUE(result);
 		EXPECT_TRUE(ValidationUtils::IsValidNurbs(3, kvU.size(), cps.size()));
 		EXPECT_TRUE(ValidationUtils::IsValidNurbs(3, kvV.size(), cps[0].size()));
+	}
+	{
+		XYZ P;
+		Intersection::ComputeLineAndPlane(XYZ(0, 0, 1), XYZ(0, 0, 0), XYZ(0, 0, 10), XYZ(0, 0, 1), P);
+		EXPECT_TRUE(P.IsAlmostEqualTo(XYZ(0, 0, 0)));
 	}
 }

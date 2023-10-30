@@ -63,17 +63,21 @@ CurveCurveIntersectionType Intersection::ComputeRays(const XYZ& point0, const XY
 
 LinePlaneIntersectionType LNLib::Intersection::ComputeLineAndPlane(const XYZ& normal, const XYZ& pointOnPlane, const XYZ& pointOnLine, const XYZ& lineDirection, XYZ& intersectPoint)
 {
-	double d = (pointOnLine - pointOnPlane).DotProduct(normal);
-	double angle = normal.AngleTo(lineDirection);
-	if (MathUtils::IsAlmostEqualTo(d, 0.0))
+	XYZ planeNormal = const_cast<XYZ&>(normal).Normalize();
+	XYZ lineDirectionNormal = const_cast<XYZ&>(lineDirection).Normalize();
+	XYZ P2L = pointOnLine - pointOnPlane;
+	XYZ P2LNormal = P2L.Normalize();
+	double dot = P2LNormal.DotProduct(planeNormal);
+	if (MathUtils::IsAlmostEqualTo(dot, 0.0))
 	{
 		return LinePlaneIntersectionType::On;
 	}
+	double angle = planeNormal.AngleTo(lineDirectionNormal);
 	if (MathUtils::IsAlmostEqualTo(angle, Constants::Pi / 2))
 	{
 		return LinePlaneIntersectionType::Parallel;
 	}
-	d = d / lineDirection.DotProduct(normal);
-	intersectPoint = d * const_cast<XYZ&>(normal).Normalize() + pointOnLine;
+	double d = -P2L.DotProduct(planeNormal) / lineDirection.DotProduct(planeNormal);
+	intersectPoint = d * lineDirectionNormal + pointOnLine;
 	return LinePlaneIntersectionType::Intersecting;
 }
