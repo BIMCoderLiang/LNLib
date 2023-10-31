@@ -427,4 +427,22 @@ TEST(Test_Fitting, Approximation)
 		Intersection::ComputeLineAndPlane(XYZ(0, 0, 1), XYZ(0, 0, 0), XYZ(0, 0, 10), XYZ(0, 0, 1), P);
 		EXPECT_TRUE(P.IsAlmostEqualTo(XYZ(0, 0, 0)));
 	}
+	{
+		XYZ P0 = XYZ(0, 0, 0);
+		XYZ P1 = XYZ(2, 0, 0);
+		std::vector<XYZ> Q = { P0, P1};
+		std::vector<XYZW> middlePoints;
+		bool result = NurbsCurve::FitWithConic(Q, 0, 1, XYZ(1, 1, 0), XYZ(1, -1, 0), 0.1, middlePoints);
+		EXPECT_TRUE(result);
+	}
+	/*{
+		XYZ P0 = XYZ(10, 0, 0);
+		XYZ P1 = XYZ(10, 10, 0);
+		XYZ P2 = XYZ(0, 10, 0);
+		XYZ P3 = XYZ(0, 0, 10);
+		std::vector<XYZ> Q = { P0, P1, P2, P3 };
+		std::vector<XYZW> middlePoints;
+		bool result = NurbsCurve::FitWithCubic(Q, 0, 3, XYZ(0, 1, 0), XYZ(0, 1, 1), 0.1, middlePoints);
+		EXPECT_TRUE(result);
+	}*/
 }

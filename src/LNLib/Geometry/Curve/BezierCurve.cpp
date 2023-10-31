@@ -15,52 +15,12 @@
 #include "Matrix4d.h"
 #include "Polynomials.h"
 #include "Intersection.h"
+#include "Interpolation.h"
 #include "ValidationUtils.h"
 #include "LNLibExceptions.h"
 #include <vector>
 
 using namespace LNLib;
-
-namespace LNLib
-{
-	bool ComputerWeightForRationalQuadraticInterpolation(const XYZ& startPoint, const XYZ& endPoint, const XYZ& middleControlPoint, double weight)
-	{
-		XYZ R = middleControlPoint;
-		XYZ normal = (R - startPoint).Normalize().CrossProduct((R - endPoint).Normalize());
-		XYZ M = (startPoint + endPoint) / 2;
-
-		double angle1 = (M - startPoint).Normalize().AngleTo((R - startPoint).Normalize());
-		double halfangle1 = angle1 / 2;
-		Matrix4d matrix = Matrix4d::CreateRotation(normal, halfangle1);
-		XYZ t1 = matrix.OfVector((M - startPoint).Normalize());
-
-		double a1 = 0.0, a2 = 0.0;
-		XYZ S1(0, 0, 0);
-		CurveCurveIntersectionType type1 = Intersection::ComputeRays(startPoint, t1, M, (R - M).Normalize(), a1, a2, S1);
-
-		double angle2 = (M - endPoint).Normalize().AngleTo((R - endPoint).Normalize());
-		double halfangle2 = angle2 / 2;
-		matrix = Matrix4d::CreateRotation(normal, halfangle2);
-		XYZ t2 = matrix.OfVector((M - endPoint).Normalize());
-
-		XYZ S2(0, 0, 0);
-		CurveCurveIntersectionType type2 = Intersection::ComputeRays(endPoint, t2, M, (R - M).Normalize(), a1, a2, S2);
-
-		if (type1 == CurveCurveIntersectionType::Intersecting &&
-			type2 == CurveCurveIntersectionType::Intersecting)
-		{
-			XYZ S = (S1 + S2) / 2;
-			double s = (S - M).Length() / (R - M).Length();
-			if ((S - M).Normalize().IsAlmostEqualTo((R - M).Normalize().Negative()))
-			{
-				s = -s;
-			}
-			weight = s / (1 - s);
-			return true;
-		}
-		return false;
-	}
-}
 
 XYZ LNLib::BezierCurve::GetPointOnQuadraticArc(const XYZW& startPoint, const XYZW& middlePoint, const XYZW& endPoint, double paramT)
 {
@@ -93,75 +53,78 @@ bool LNLib::BezierCurve::ComputerMiddleControlPointsOnQuadraticCurve(const XYZ& 
 		}
 	}
 
-	double a1 = 0.0, a2 = 0.0;
+	double alf1 = 0.0;
+	double alf2 = 0.0;
+
 	XYZ R(0, 0, 0);
-	CurveCurveIntersectionType type = Intersection::ComputeRays(startPoint, nST, endPoint, nET, a1, a2, R);
+	double weight = 0.0;
+	auto type = Intersection::ComputeRays(startPoint, nST, endPoint, nET, alf1, alf2, R);
 	if (type == CurveCurveIntersectionType::Intersecting)
 	{
-		double d1 = startPoint.Distance(R);
-		double d2 = endPoint.Distance(R);
-		if (MathUtils::IsAlmostEqualTo(d1, d2))
+		if (startPoint.IsAlmostEqualTo(R) || endPoint.IsAlmostEqualTo(R))
 		{
-			double w = ((startPoint + endPoint) / 2).Distance(endPoint) / (R.Distance(endPoint));
-			controlPoints.emplace_back(R, w);
+			R = 0.5 * (startPoint + endPoint);
+			bool result = Interpolation::ComputerWeightForRationalQuadraticInterpolation(startPoint, R, endPoint, weight);
+			if (!result) return false;
+			controlPoints.emplace_back(XYZW(R, weight));
 			return true;
 		}
-		else
+
+		if (MathUtils::IsGreaterThan(alf1, 0.0) && MathUtils::IsLessThan(alf2, 0.0))
 		{
-			double gamma1 = (R - startPoint)[0] / startTangent[0];
-			double gamma2 = (R - endPoint)[0] / endTangent[0];
-			if (MathUtils::IsGreaterThan(gamma1, 0.0) && MathUtils::IsLessThan(gamma2, 0.0))
-			{
-				double w = 0.0;
-				if (ComputerWeightForRationalQuadraticInterpolation(startPoint, R, endPoint, w))
-				{
-					controlPoints.emplace_back(R, w);
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-			}
-			else
-			{
-				if (nST.IsAlmostEqualTo(nET) ||
-					nST.IsAlmostEqualTo(nET.Negative()))
-				{
-					gamma1 = gamma2 = 0.5 * startPoint.Distance(endPoint);
-				}
-				else
-				{
-					double thetak1 = (endPoint - startPoint).Normalize().AngleTo(nST);
-					if (MathUtils::IsGreaterThan(thetak1, Constants::Pi / 2))
-					{
-						thetak1 = Constants::Pi - thetak1;
-					}
-					double thetak = (endPoint - startPoint).Normalize().AngleTo(nET);
-					if (MathUtils::IsGreaterThan(thetak, Constants::Pi / 2))
-					{
-						thetak = Constants::Pi - thetak;
-					}
-					gamma1 = 0.5 * (endPoint.Distance(startPoint)) / (1 + (2 / 3) * cos(thetak) + (1 - (2 / 3)) * cos(thetak1));
-					gamma2 = 0.5 * (endPoint.Distance(startPoint)) / (1 + (2 / 3) * cos(thetak1) + (1 - (2 / 3)) * cos(thetak));
-				}
-
-				XYZ Rkt = startPoint + gamma1 * startTangent;
-				XYZ Rkt1 = endPoint - gamma2 * endTangent;
-				XYZ Qkt = (gamma1 * Rkt1 + gamma2 * Rkt) / (gamma1 + gamma2);
-
-				double w1 = 0.0;
-				bool b1 = ComputerWeightForRationalQuadraticInterpolation(startPoint, Rkt, Qkt, w1);
-				double w2 = 0.0;
-				bool b2 = ComputerWeightForRationalQuadraticInterpolation(Qkt, Rkt1, endPoint, w2);
-				if (b1 && b2)
-				{
-					controlPoints.emplace_back(Rkt, w1);
-					controlPoints.emplace_back(Rkt1, w2);
-					return true;
-				}
-			}
+			bool result = Interpolation::ComputerWeightForRationalQuadraticInterpolation(startPoint, R, endPoint, weight);
+			if (!result) return false;
+			controlPoints.emplace_back(XYZW(R, weight));
+			return true;
 		}
 	}
-	return false;
+	
+	XYZ SE = endPoint - startPoint;
+	if (SE.Normalize().IsAlmostEqualTo(startTangent) && SE.Normalize().IsAlmostEqualTo(endTangent))
+	{
+		R = 0.5 * (startPoint + endPoint);
+		bool result = Interpolation::ComputerWeightForRationalQuadraticInterpolation(startPoint, R, endPoint, weight);
+		if (!result) return false;
+		controlPoints.emplace_back(XYZW(R, weight));
+		return true;
+	}
+
+	double gamma1 = 0.0;
+	double gamma2 = 0.0;
+
+	if (type != CurveCurveIntersectionType::Intersecting)
+	{
+		gamma1 = 0.5 * SE.Length();
+		gamma2 = gamma1;
+	}
+	else
+	{
+		XYZ SR = R - startPoint;
+		XYZ ER = R - endPoint;
+
+		double theta0 = SR.DotProduct(SE) / (SR.Length() * SE.Length());
+		double theta1 = ER.DotProduct(SE) / (ER.Length() * SE.Length());
+
+		double alpha = 2.0 / 3.0;
+		gamma1 = 0.5 * SE.Length() / (1.0 + alpha * theta1 + (1 - alpha) * theta0);
+		gamma2 = 0.5 * SE.Length() / (1.0 + alpha * theta0 + (1 - alpha) * theta1);
+	}
+
+	XYZ R1 = startPoint + gamma1 * startTangent;
+	XYZ R2 = endPoint - gamma2 * endTangent;
+	XYZ Qk = (gamma1 * R2 + gamma2 * R1) / (gamma1 + gamma2);
+
+	double weight1 = 0.0;
+	bool result = Interpolation::ComputerWeightForRationalQuadraticInterpolation(startPoint, R1, Qk, weight1);
+	if (!result) return false;
+
+	double weight2 = 0.0;
+	result = Interpolation::ComputerWeightForRationalQuadraticInterpolation(Qk, R2, endPoint, weight2);
+	if (!result) return false;
+
+	controlPoints.emplace_back(XYZW(R1, weight1));
+	controlPoints.emplace_back(XYZW(Qk, 1.0));
+	controlPoints.emplace_back(XYZW(R2, weight2));
+
+	return true;
 }

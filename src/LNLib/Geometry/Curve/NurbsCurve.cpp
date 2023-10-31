@@ -1069,7 +1069,7 @@ bool LNLib::NurbsCurve::CreateOneConicArc(const XYZ& start, const XYZ& startTang
 	VALIDATE_ARGUMENT(!startTangent.IsZero(), "startTangent", "StartTangent must not be zero vector.");
 	VALIDATE_ARGUMENT(!endTangent.IsZero(), "endTangent", "EndTangent must not be zero vector.")
 
-		double param0, param1 = 0.0;
+	double param0, param1 = 0.0;
 	XYZ point = XYZ(0, 0, 0);
 	CurveCurveIntersectionType type = Intersection::ComputeRays(start, startTangent, end, endTangent, param0, param1, point);
 
@@ -2028,6 +2028,7 @@ bool LNLib::NurbsCurve::FitWithConic(const std::vector<XYZ>& throughPoints, int 
 	{
 		return BezierCurve::ComputerMiddleControlPointsOnQuadraticCurve(startPoint, startTangent, endPoint, endTangent, middleControlPoints);
 	}
+
 	double alf1, alf2 = 0.0;
 	XYZ R(0, 0, 0);
 	CurveCurveIntersectionType type = Intersection::ComputeRays(startPoint, startTangent, endPoint, endTangent, alf1, alf2, R);
@@ -2036,8 +2037,7 @@ bool LNLib::NurbsCurve::FitWithConic(const std::vector<XYZ>& throughPoints, int 
 		middleControlPoints.emplace_back(XYZW((startPoint + endPoint) / 2, 1));
 		return true;
 	}
-	else if (type == CurveCurveIntersectionType::Skew ||
-			type == CurveCurveIntersectionType::Parallel)
+	else if (type == CurveCurveIntersectionType::Skew || type == CurveCurveIntersectionType::Parallel)
 	{
 		return false;
 	}
@@ -2048,73 +2048,37 @@ bool LNLib::NurbsCurve::FitWithConic(const std::vector<XYZ>& throughPoints, int 
 	}
 	double s = 0.0;
 	XYZ V = endPoint - startPoint;
+	XYZ dummy;
 	for (int i = startPointIndex + 1; i <= endPointIndex - 1; i++)
 	{
 		XYZ V1 = throughPoints[i] - R;
-		type = Intersection::ComputeRays(startPoint, V, R, V1, alf1, alf2, R);
-		if (type == CurveCurveIntersectionType::Intersecting)
+		type = Intersection::ComputeRays(startPoint, V, R, V1, alf1, alf2, dummy);
+		if (type != CurveCurveIntersectionType::Intersecting || 
+			MathUtils::IsLessThanOrEqual(alf1, 0.0) ||
+			MathUtils::IsGreaterThanOrEqual(alf1, 1.0) ||
+			MathUtils::IsLessThanOrEqual(alf2, 0.0))
 		{
-			if (MathUtils::IsLessThanOrEqual(alf1, 0.0) ||
-				MathUtils::IsGreaterThanOrEqual(alf1, 1.0) ||
-				MathUtils::IsLessThanOrEqual(alf2, 0.0))
-			{
-				return false;
-			}
-			XYZ S = (1 - s) * (startPoint + endPoint) / 2 + s * R;
-			double wi = 0.0;
-			if (CreateOneConicArc(startPoint, V, R, V1, S, R, wi))
-			{
-				s = s + wi / (1 + wi);
-			}
-			else
-			{
-				return false;
-			}
+			return false;	
+		}
+		double wi = 0.0;
+		if (CreateOneConicArc(startPoint, V, R, V1, throughPoints[i], dummy, wi))
+		{
+			s = s + wi / (1 + wi);
 		}
 	}
 	
 	s = s / (endPointIndex - startPointIndex - 1);
 	double w = s / (1.0 - s);
+
 	std::vector<XYZW> controlPoints = { XYZW(startPoint,1), XYZW(R,w), XYZW(endPoint,1) };
-	for (int i = startPointIndex + 1; i < endPointIndex - 1; i++)
+	std::vector<double> knotVectors = { 0,0,0,1.0,1.0,1.0 };
+	int degree = 2;
+	for (int k = startPointIndex + 1; k <= endPointIndex - 1; k++)
 	{
-		XYZ tp = throughPoints[i];
-		double minValue = Constants::MaxDistance;
-		int total = 100;
-		for (int k = 0; k < total; k++)
-		{
-			double currentU = 0.01 * k;
-			XYZ currentPoint;
-			currentPoint = BezierCurve::GetPointOnQuadraticArc(controlPoints[0], controlPoints[1], controlPoints[2], currentU);
-
-			double nextU = 0.01 * (k + 1);
-			XYZ nextPoint;
-			nextPoint = BezierCurve::GetPointOnQuadraticArc(controlPoints[0], controlPoints[1], controlPoints[2], nextU);
-
-			XYZ vector1 = currentPoint - tp;
-			XYZ vector2 = nextPoint - currentPoint;
-			double dot = vector1.DotProduct(vector2);
-
-			XYZ projectPoint;
-			if (dot < 0)
-			{
-				projectPoint = currentPoint;
-			}
-			else if (dot > 1)
-			{
-				projectPoint = nextPoint;
-			}
-			else
-			{
-				projectPoint = currentPoint + dot * vector1.Normalize();
-			}
-			double distance = (tp - projectPoint).Length();
-			if (distance < minValue)
-			{
-				minValue = distance;
-			}
-		}
-		if (MathUtils::IsGreaterThan(minValue, maxError))
+		XYZ tp = throughPoints[k];
+		double param = GetParamOnCurve(degree, knotVectors, controlPoints, tp);
+		XYZ point = GetPointOnCurve(degree, knotVectors, param, controlPoints);
+		if (MathUtils::IsGreaterThan(tp.Distance(point), maxError))
 		{
 			return false;
 		}
@@ -2196,10 +2160,9 @@ bool LNLib::NurbsCurve::FitWithCubic(const std::vector<XYZ>& throughPoints, int 
 	for (int k = 1; k < dk; k++)
 	{
 		XYZ normalPi = (endPoint - startPoint).Normalize().CrossProduct(startTangent);
-		XYZ t = throughPoints[k + startPointIndex];
-		XYZ tt = (t - startPoint).Normalize().CrossProduct(endTangent);
-		if (normalPi.Normalize().IsAlmostEqualTo(tt.Normalize()) ||
-			normalPi.Normalize().IsAlmostEqualTo(tt.Normalize().Negative()))
+		XYZ intersectPoint;
+		auto type = Intersection::ComputeLineAndPlane(normalPi, startPoint, throughPoints[k + startPointIndex], endTangent, intersectPoint);
+		if (type == LinePlaneIntersectionType::On)
 		{
 			uh = Interpolation::GetChordParameterization(throughPoints, startPointIndex, endPointIndex);
 			double ak = 0.0;
@@ -2238,11 +2201,11 @@ bool LNLib::NurbsCurve::FitWithCubic(const std::vector<XYZ>& throughPoints, int 
 		{
 			XYZ Pd(0, 0, 0);
 			LinePlaneIntersectionType type0 = Intersection::ComputeLineAndPlane(normalPi, startPoint, throughPoints[k + startPointIndex], startTangent, Pd);
-			if (!(type0 == LinePlaneIntersectionType::Intersecting)) return false;
+			if (!(type0 == LinePlaneIntersectionType::Intersecting)) continue;
 			double param0 = 0.0; double param1 = 0.0;
 			XYZ Pc(0, 0, 0);
 			CurveCurveIntersectionType type1 = Intersection::ComputeRays(startPoint, endPoint - startPoint, Pd, startTangent, param0, param1, Pc);
-			if (!(type1 == CurveCurveIntersectionType::Intersecting)) return false;
+			if (!(type1 == CurveCurveIntersectionType::Intersecting)) continue;
 			double gamma = Pc.Distance(endPoint) / startPoint.Distance(endPoint);
 			if (MathUtils::IsLessThan(gamma, 0.0) ||
 				MathUtils::IsGreaterThan(gamma, 1.0))

@@ -11,6 +11,7 @@
 #include "Interpolation.h"
 #include "XYZ.h"
 #include "MathUtils.h"
+#include "Intersection.h"
 #include "Polynomials.h"
 #include <algorithm>
 
@@ -96,12 +97,12 @@ std::vector<double> LNLib::Interpolation::GetChordParameterization(const std::ve
 	uk.resize(size, 0.0);
 
 	double length = 0.0;
-	for (int i = startIndex; i <= endIndex; i++)
+	for (int i = startIndex + 1; i <= endIndex; i++)
 	{
 		length += throughPoints[i].Distance(throughPoints[i - 1]);
 	}
 
-	for (int i = startIndex; i <= endIndex; i++)
+	for (int i = startIndex + 1; i <= endIndex; i++)
 	{
 		uk[i] = uk[i - 1] + (throughPoints[i].Distance(throughPoints[i - 1])) / length;
 	}
@@ -155,6 +156,60 @@ std::vector<double> LNLib::Interpolation::ComputeKnotVector(int degree, int poin
 		knotVector.emplace_back(1.0);
 	}
 	return knotVector;
+}
+
+bool LNLib::Interpolation::ComputerWeightForRationalQuadraticInterpolation(const XYZ& startPoint, const XYZ& middleControlPoint, const XYZ& endPoint, double& weight)
+{
+	XYZ SM = middleControlPoint - startPoint;
+	XYZ EM = middleControlPoint - endPoint;
+	XYZ SE = endPoint - startPoint;
+
+	if (SM.Normalize().IsAlmostEqualTo(EM.Normalize()) ||
+		SM.Normalize().IsAlmostEqualTo(EM.Normalize().Negative()))
+	{
+		weight = 1.0;
+		return true;
+	}
+
+	if (MathUtils::IsAlmostEqualTo(SM.Length(), EM.Length()))
+	{
+		weight = SM.DotProduct(SE) / (SM.Length() * SE.Length());
+		return true;
+	}
+
+	XYZ M = 0.5 * (startPoint + endPoint);
+	XYZ MR = middleControlPoint - M;
+	double ratio = SM.Length() / SE.Length();
+	double frac = 1.0 / (ratio + 1.0);
+	XYZ D = endPoint + frac * EM;
+	XYZ SD = D - startPoint;
+	XYZ S1;
+
+	double alf1 = 0.0;
+	double alf2 = 0.0;
+
+	auto type = Intersection::ComputeRays(startPoint, SD.Normalize(), M, MR.Normalize(), alf1, alf2, S1);
+	if (type != CurveCurveIntersectionType::Intersecting)
+	{
+		return false;
+	}
+
+	ratio = EM.Length() / SE.Length();
+	frac = 1.0 / (ratio + 1.0);
+	D = startPoint + frac * SM;
+	XYZ ED = D - endPoint;
+	XYZ S2;
+	type = Intersection::ComputeRays(endPoint, ED.Normalize(), M, MR.Normalize(), alf1, alf2, S2);
+	if (type != CurveCurveIntersectionType::Intersecting)
+	{
+		return false;
+	}
+
+	XYZ S = 0.5 * (S1 + S2);
+	XYZ MS = S - M;
+	double s = MS.Length() / MR.Length();
+	weight = s / (1.0 - s);
+	return true;
 }
 
 bool LNLib::Interpolation::GetSurfaceMeshParameterization(const std::vector<std::vector<XYZ>>& throughPoints, std::vector<double>& paramsU, std::vector<double>& paramsV)

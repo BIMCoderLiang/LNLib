@@ -69,6 +69,12 @@ namespace LNLib
 		static bool ComputeTangent(const std::vector<XYZ>& throughPoints, std::vector<XYZ>& tangents);
 
 		/// <summary>
+		/// The NURBS Book 2nd Edition Page394
+		/// Compute weight for local rational quadratic curve interpolation.
+		/// </summary>
+		static bool ComputerWeightForRationalQuadraticInterpolation(const XYZ& startPoint, const XYZ& middleControlPoint, const XYZ& endPoint, double& weight);
+
+		/// <summary>
 		/// The NURBS Book 2nd Edition Page412
 		/// Computes a knot vector ensuring that every knot span has at least one.
 		/// </summary>
