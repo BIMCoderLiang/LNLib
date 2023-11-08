@@ -227,11 +227,19 @@ bool LNLib::MathUtils::MakeInverse(const std::vector<std::vector<double>>& matri
         return false;
     }
 
-    int n = static_cast<int>(matrix.size());
+    int n = matrix.size();
     double det = GetDeterminant(matrix, n);
     if (IsAlmostEqualTo(det, 0.0))
     {
-        return false;
+        if (n == 1 && !IsAlmostEqualTo(matrix[0][0],0.0))
+        {
+            inverse = { { 1.0/(double)matrix[0][0]} };
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     std::vector<std::vector<double>> lower;

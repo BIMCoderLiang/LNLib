@@ -2112,14 +2112,13 @@ bool LNLib::NurbsCurve::FitWithCubic(const std::vector<XYZ>& throughPoints, int 
 		{
 			Dke = endTangent;
 		}
-		if (startPointIndex != 0 &&
-			endPointIndex != size - 1)
+		if (startPointIndex != 0 && endPointIndex != size - 1)
 		{
-			Dks = endPoint.Distance(startPoint) / startPoint.Distance(throughPoints[startPointIndex - 1]) * startTangent;
-			Dks = throughPoints[endPointIndex + 1].Distance(endPoint) / endPoint.Distance(startPoint) * endTangent;
+			Dks = (endPoint.Distance(startPoint) / startPoint.Distance(throughPoints[startPointIndex - 1])) * startTangent;
+			Dke = (throughPoints[endPointIndex + 1].Distance(endPoint) / endPoint.Distance(startPoint)) * endTangent;
 		}
-		alpha = Dks.Length() / 3;
-		beta = -Dke.Length() / 3;
+		alpha = Dks.Length() / 3.0;
+		beta = -Dke.Length() / 3.0;
 		XYZW P1((startPoint + alpha * startTangent), 1);
 		XYZW P2((endPoint + beta * endTangent), 1);
 		middleControlPoints.emplace_back(P1);
@@ -2148,13 +2147,13 @@ bool LNLib::NurbsCurve::FitWithCubic(const std::vector<XYZ>& throughPoints, int 
 	}
 	if (isLine)
 	{
-		XYZW P1((2 * startPoint + endPoint) / 3, 1);
-		XYZW P2((startPoint + 2 * endPoint) / 3, 1);
+		XYZW P1((2 * startPoint + endPoint) / 3.0, 1);
+		XYZW P2((startPoint + 2 * endPoint) / 3.0, 1);
 		middleControlPoints.emplace_back(P1);
 		middleControlPoints.emplace_back(P2);
 		return true;
 	}
-	std::vector<double> uh;
+	std::vector<double> uh = Interpolation::GetChordParameterization(throughPoints, startPointIndex, endPointIndex);;
 	std::vector<double> alfak(dk);
 	std::vector<double> betak(dk);
 	for (int k = 1; k < dk; k++)
@@ -2164,7 +2163,6 @@ bool LNLib::NurbsCurve::FitWithCubic(const std::vector<XYZ>& throughPoints, int 
 		auto type = Intersection::ComputeLineAndPlane(normalPi, startPoint, throughPoints[k + startPointIndex], endTangent, intersectPoint);
 		if (type == LinePlaneIntersectionType::On)
 		{
-			uh = Interpolation::GetChordParameterization(throughPoints, startPointIndex, endPointIndex);
 			double ak = 0.0;
 			double bk = 0.0;
 			double s = 1 - uh[k];
@@ -2207,14 +2205,12 @@ bool LNLib::NurbsCurve::FitWithCubic(const std::vector<XYZ>& throughPoints, int 
 			CurveCurveIntersectionType type1 = Intersection::ComputeRays(startPoint, endPoint - startPoint, Pd, startTangent, param0, param1, Pc);
 			if (!(type1 == CurveCurveIntersectionType::Intersecting)) continue;
 			double gamma = Pc.Distance(endPoint) / startPoint.Distance(endPoint);
-			if (MathUtils::IsLessThan(gamma, 0.0) ||
-				MathUtils::IsGreaterThan(gamma, 1.0))
+			if (MathUtils::IsLessThan(gamma, 0.0) || MathUtils::IsGreaterThan(gamma, 1.0))
 			{
 				return false;
 			}
 			uh[k] = MathUtils::ComputerCubicEquationsWithOneVariable(2, -3, 0, 1 - gamma);
-			if (MathUtils::IsLessThan(uh[k], 0.0) ||
-				MathUtils::IsGreaterThan(uh[k], 1.0))
+			if (MathUtils::IsLessThan(uh[k], 0.0) || MathUtils::IsGreaterThan(uh[k], 1.0))
 			{
 				return false;
 			}
@@ -2563,7 +2559,7 @@ std::vector<LNLib::XYZW> LNLib::NurbsCurve::ConstraintBasedModification(int degr
 		}
 	}
 
-	std::vector<int> remove(size, 1.0);
+	std::vector<int> remove(size, 1);
 	std::vector<int> map(size);
 
 	for (int j = 0; j < size; j++)
@@ -2572,7 +2568,7 @@ std::vector<LNLib::XYZW> LNLib::NurbsCurve::ConstraintBasedModification(int degr
 		{
 			if (MathUtils::IsGreaterThan(B[i][j] * B[i][j], 0.0))
 			{
-				remove[i] = 0;
+				remove[j] = 0;
 				break;
 			}
 		}
@@ -2598,7 +2594,7 @@ std::vector<LNLib::XYZW> LNLib::NurbsCurve::ConstraintBasedModification(int degr
 	std::vector<std::vector<double>> Bopt(D.size(), std::vector<double>(n));
 	for (int j = 0; j < n; j++)
 	{
-		for (int i = 0; i < D.size(); i++)
+		for (int i = 0; i < B.size(); i++)
 		{
 			Bopt[i][j] = B[i][map[j]];
 		}
@@ -2606,8 +2602,9 @@ std::vector<LNLib::XYZW> LNLib::NurbsCurve::ConstraintBasedModification(int degr
 
 	std::vector<std::vector<double>> Bt;
 	MathUtils::Transpose(Bopt, Bt);
+	std::vector<std::vector<double>> BoptBt = MathUtils::MatrixMultiply(Bopt, Bt);
 	std::vector<std::vector<double>> BBt;
-	MathUtils::MakeInverse(MathUtils::MatrixMultiply(Bopt, Bt), BBt);
+	MathUtils::MakeInverse(BoptBt, BBt);
 
 	auto A = MathUtils::MatrixMultiply(Bt, BBt);
 	std::vector<std::vector<double>> dD(D.size(), std::vector<double>(3));
