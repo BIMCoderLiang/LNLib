@@ -2262,64 +2262,30 @@ bool LNLib::NurbsCurve::FitWithCubic(const std::vector<XYZ>& throughPoints, int 
 	return true;
 }
 
-void LNLib::NurbsCurve::ControlPointReposition(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, XYZW newControlPoint, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints)
+bool LNLib::NurbsCurve::ControlPointReposition(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double parameter, int moveIndex, XYZ moveDirection, double moveDistance, std::vector<XYZW>& updatedControlPoints)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
 	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	VALIDATE_ARGUMENT_RANGE(parameter, knotVector[0], knotVector[knotVector.size() - 1]);
+	VALIDATE_ARGUMENT_RANGE(moveIndex, 0, controlPoints.size() - 1);
+	VALIDATE_ARGUMENT(!moveDirection.IsZero(), "moveDirection", "MoveDirection must not be zero vector.");
+	VALIDATE_ARGUMENT(!MathUtils::IsAlmostEqualTo(moveDistance,0.0), "moveDistance", "MoveDistance must not be zero.")
 
-	int size = controlPoints.size();
-	int n = size - 1;
-
-	double ti = GetNode(degree, knotVector, n);
-
-	int k = 0;
-	int kvSize = knotVector.size();
-	double diff = Constants::MaxDistance;
-	for (int i = 0; i < kvSize; i++)
+	int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, parameter);
+	double Rkp = Polynomials::BasisFunctions(spanIndex, degree, knotVector, parameter)[0];
+	if (MathUtils::IsLessThan(Rkp, Constants::DoubleEpsilon))
 	{
-		int endIndex = i + degree + 1;
-		if (endIndex > kvSize)
-		{
-			break;
-		}
-		else
-		{
-			for (int j = 1; j <= j + degree + 1; j++)
-			{
-				double d = abs(knotVector[j] - ti);
-				if (d < diff)
-				{
-					diff = d;
-					k = j;
-				}
-			}
-		}
+		return false;
 	}
-
-	double u = knotVector[k];
-	double tk = GetNode(degree, knotVector, k);
-	double tk1 = GetNode(degree, knotVector, k + 1);
-
-	if (MathUtils::IsGreaterThanOrEqual(abs(u - tk), abs(tk1 - u)))
-	{
-		double sum = 0.0;
-		for (int j = 2; j <= degree; j++)
-		{
-			sum += knotVector[k + j];
-		}
-		double insertKnot = degree * u - sum;
-		InsertKnot(degree, knotVector, controlPoints, insertKnot, 1, updatedKnotVector, updatedControlPoints);
-		updatedControlPoints[k + 1] = newControlPoint;
-	}
-	else
-	{
-		updatedKnotVector = knotVector;
-		updatedControlPoints = controlPoints;
-		updatedControlPoints[k] = newControlPoint;
-	}
+	updatedControlPoints = controlPoints;
+	XYZ movePoint = updatedControlPoints[moveIndex].ToXYZ(true);
+	double alpha = moveDistance / (moveDirection.Length() * Rkp);
+	XYZ newPoint = movePoint + alpha * moveDirection;
+	updatedControlPoints[moveIndex] = XYZW(newPoint, controlPoints[moveIndex].GetW());
+	return true;
 }
 
 double LNLib::NurbsCurve::WeightModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, XYZ pointOnCurve, XYZ selectedControlPoint, XYZ newControlPoint, bool isPull)

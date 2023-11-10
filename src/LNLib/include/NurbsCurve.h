@@ -227,7 +227,7 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page511
 		/// Reposition an arbitrary control point.
 		/// </summary>
-		static void ControlPointReposition(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, XYZW newControlPoint, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
+		static bool ControlPointReposition(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double parameter, int moveIndex, XYZ moveDirection, double moveDistance, std::vector<XYZW>& updatedControlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page520
