@@ -2380,16 +2380,33 @@ bool LNLib::NurbsCurve::NeighborWeightsModification(int degree, const std::vecto
 	return true;
 }
 
-std::vector<LNLib::XYZW> LNLib::NurbsCurve::Warping(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double warpDistance, const XYZ& planeNormal)
+std::vector<LNLib::XYZW> LNLib::NurbsCurve::Warping(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const std::vector<double>& warpShape, double warpDistance, const XYZ& planeNormal, double startParameter, double endParameter)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
 	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	VALIDATE_ARGUMENT(controlPoints.size() == warpShape.size(), "warpShape", "WarpShape size must equals to control points size.");
+	VALIDATE_ARGUMENT(!MathUtils::IsAlmostEqualTo(warpDistance, 0.0), "warpDistance", "WarpDistance must not be zero.");
+	VALIDATE_ARGUMENT(!planeNormal.IsZero(), "planeNormal", "PlaneNormal must not be zero vector.");
+	VALIDATE_ARGUMENT_RANGE(startParameter, knotVector[0], knotVector[knotVector.size() - 1]);
+	VALIDATE_ARGUMENT_RANGE(endParameter, startParameter, knotVector[knotVector.size() - 1]);
 
-	// to be continue...
-	return std::vector<XYZW>();
+	double halfParameter = 0.5 * (startParameter + endParameter);
+	XYZ tangent = ComputeRationalCurveDerivatives(degree, 1, knotVector, halfParameter, controlPoints)[0];
+	XYZ normal = tangent.CrossProduct(planeNormal);
+	XYZ W = MathUtils::IsGreaterThan(warpDistance,0.0)? normal : -normal;
+	std::vector<XYZW> temp = controlPoints;
+	std::vector<XYZW> result;
+	for (int i = 0; i < temp.size(); i++)
+	{
+		double weight = temp[i].GetW();
+		XYZ currentPoint = temp[i].ToXYZ(true);
+		XYZ newPoint = currentPoint + warpShape[i] * abs(warpDistance) * W.Normalize();
+		result.emplace_back(XYZW(newPoint, weight));
+	}
+	return result;
 }
 
 void LNLib::NurbsCurve::Flattening(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, XYZ lineStartPoint, XYZ lineEndPoint, double flattenStartParam, double flattenEndParam, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints)

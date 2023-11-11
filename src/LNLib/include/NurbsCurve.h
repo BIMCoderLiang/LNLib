@@ -244,7 +244,7 @@ namespace LNLib
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page533
 		/// </summary>
-		static std::vector<XYZW> Warping(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double warpDistance, const XYZ& planeNormal);
+		static std::vector<XYZW> Warping(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const std::vector<double>& warpShape, double warpDistance, const XYZ& planeNormal, double startParameter, double endParameter);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page542
