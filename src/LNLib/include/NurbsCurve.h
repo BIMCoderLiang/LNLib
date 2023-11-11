@@ -233,13 +233,13 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page520
 		/// Modify one curve weight.
 		/// </summary>
-		static double WeightModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, XYZ pointOnCurve, XYZ selectedControlPoint, XYZ newControlPoint, bool isPull);
+		static void WeightModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double parameter, int moveIndex, double moveDistance, std::vector<XYZW>& updatedControlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page526
 		/// Modify two neighboring curve weights. (moveIndex and moveIndex + 1)
 		/// </summary>
-		static void NeighborWeightsModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, int moveIndex, double newWeight, double newNeighborWeight, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
+		static bool NeighborWeightsModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double parameter, int moveIndex, double moveDistance, double scale, std::vector<XYZW>& updatedControlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page533

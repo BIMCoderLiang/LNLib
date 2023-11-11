@@ -2276,7 +2276,7 @@ bool LNLib::NurbsCurve::ControlPointReposition(int degree, const std::vector<dou
 
 	int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, parameter);
 	double Rkp = Polynomials::BasisFunctions(spanIndex, degree, knotVector, parameter)[0];
-	if (MathUtils::IsLessThan(Rkp, Constants::DoubleEpsilon))
+	if (MathUtils::IsLessThan(Rkp, 0.0))
 	{
 		return false;
 	}
@@ -2288,35 +2288,96 @@ bool LNLib::NurbsCurve::ControlPointReposition(int degree, const std::vector<dou
 	return true;
 }
 
-double LNLib::NurbsCurve::WeightModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, XYZ pointOnCurve, XYZ selectedControlPoint, XYZ newControlPoint, bool isPull)
+void LNLib::NurbsCurve::WeightModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double parameter, int moveIndex, double moveDistance, std::vector<XYZW>& updatedControlPoints)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
 	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	VALIDATE_ARGUMENT_RANGE(parameter, knotVector[0], knotVector[knotVector.size() - 1]);
+	VALIDATE_ARGUMENT_RANGE(moveIndex, 0, controlPoints.size() - 1);
+	VALIDATE_ARGUMENT(!MathUtils::IsAlmostEqualTo(moveDistance, 0.0), "moveDistance", "MoveDistance must not be zero.");
 
-	XYZ dir1 = (selectedControlPoint - newControlPoint).Normalize();
-	XYZ dir2 = (newControlPoint - pointOnCurve).Normalize();
-	if (!dir1.IsZero() && !dir2.IsZero())
+	XYZ point = GetPointOnCurve(degree, knotVector, parameter, controlPoints);
+	XYZ movePoint = const_cast<XYZW&>(controlPoints[moveIndex]).ToXYZ(true);
+	double distance =  point.Distance(movePoint);
+	int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, parameter);
+	double Rkp = Polynomials::BasisFunctions(spanIndex, degree, knotVector, parameter)[0];
+	double coefficient = 1 + moveDistance / (Rkp * (distance - moveDistance));
+	updatedControlPoints = controlPoints;
+	updatedControlPoints[moveIndex] = XYZW(movePoint, updatedControlPoints[moveIndex].GetW() * coefficient);
+}
+
+bool LNLib::NurbsCurve::NeighborWeightsModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double parameter, int moveIndex, double moveDistance, double scale, std::vector<XYZW>& updatedControlPoints)
+{
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	VALIDATE_ARGUMENT_RANGE(parameter, knotVector[0], knotVector[knotVector.size() - 1]);
+	VALIDATE_ARGUMENT_RANGE(moveIndex, 0, controlPoints.size() - 1);
+	VALIDATE_ARGUMENT(!MathUtils::IsAlmostEqualTo(moveDistance, 0.0), "moveDistance", "MoveDistance must not be zero.");
+	VALIDATE_ARGUMENT(!MathUtils::IsAlmostEqualTo(scale, 0.0), "scale", "Scale must not be zero.");
+
+	std::vector<XYZW> tempControlPoints = controlPoints;
+	XYZ movePoint1 = const_cast<XYZW&>(tempControlPoints[moveIndex]).ToXYZ(true);
+	tempControlPoints[moveIndex] = XYZW(movePoint1, 0.0);
+	XYZ movePoint2 = const_cast<XYZW&>(tempControlPoints[moveIndex+1]).ToXYZ(true);
+	tempControlPoints[moveIndex+1] = XYZW(movePoint2, 0.0);
+
+	XYZ R = GetPointOnCurve(degree, knotVector, parameter, tempControlPoints);
+	XYZ controlLeg = movePoint1 - movePoint2;
+	double controlLegLength = movePoint2.Distance(movePoint1);
+
+	XYZ P = GetPointOnCurve(degree, knotVector, parameter, controlPoints);
+	XYZ direction = R - P;
+	double param0,param1;
+	XYZ Q;
+	auto type = Intersection::ComputeRays(movePoint1, controlLeg, R, direction, param0, param1, Q);
+	if (type != CurveCurveIntersectionType::Intersecting)
 	{
-		VALIDATE_ARGUMENT(dir1.IsAlmostEqualTo(dir2) || dir1.IsAlmostEqualTo(dir2.Negative()), "newControlPoint", "NewControlPoint must on the line created by pointOnCurve and selectedControlPoint");
+		return false;
+	}
+	XYZ pkq = Q - movePoint1;
+	XYZ pk1q = Q - movePoint2;
+
+	double RQ = Q.Distance(R);
+	double RP = P.Distance(R);
+	direction = (P - R) / RP;
+	
+	XYZ target = P + moveDistance * direction;
+	double Rtarget = RP + moveDistance;
+	double qRP = RP / RQ;
+	double qRtarget = Rtarget / RQ;
+
+	XYZ A = movePoint1 + qRP * pkq;
+	XYZ B = movePoint2 + qRP * pk1q;
+	XYZ C = movePoint1 + qRtarget * pkq;
+	XYZ D = movePoint2 + qRtarget * pk1q;
+
+	double ak = B.Distance(movePoint2) / controlLegLength;
+	double ak1 = A.Distance(movePoint1) / controlLegLength;
+	double abk = D.Distance(movePoint2) / controlLegLength;
+	double abk1 = C.Distance(movePoint1) / controlLegLength;
+
+	if (MathUtils::IsLessThan(abs(ak), 0.0) || MathUtils::IsLessThan(abs(ak1), 0.0) ||
+		MathUtils::IsLessThan(abs(abk), 0.0) || MathUtils::IsLessThan(abs(abk1), 0.0))
+	{
+		return false;
 	}
 
-	double u = GetParamOnCurve(degree, knotVector, controlPoints, pointOnCurve);
-	double distance = pointOnCurve.Distance(newControlPoint);
-	double pkp = selectedControlPoint.Distance(pointOnCurve);
-	int k = Polynomials::GetKnotSpanIndex(degree, knotVector, u);
-	double wk = controlPoints[k].GetW();
+	double alpha = 1.0 - ak - ak1;
+	double beta = 1.0 - abk - abk1;
 
-	double nip = Polynomials::OneBasisFunction(k, degree, knotVector, u) * wk;
-	double sum = 0.0;
-	for (int r = 0; r < controlPoints.size(); r++)
-	{
-		sum += Polynomials::OneBasisFunction(r, degree, knotVector, u) * controlPoints[r].GetW();
-	}
-	double rkp = nip / sum;
-	return isPull ? wk * (1 + (abs(distance) / (rkp) * (pkp - distance))) : wk * (1 - (abs(distance) / (rkp) * (pkp + distance)));
+	double betak = (alpha / ak) / (beta / abk);
+	double betak1 = (alpha / ak1) / (beta / abk1);
+
+	updatedControlPoints = controlPoints;
+	updatedControlPoints[moveIndex] = XYZW(movePoint1, updatedControlPoints[moveIndex].GetW() * betak);
+	updatedControlPoints[moveIndex + 1] = XYZW(movePoint2, updatedControlPoints[moveIndex + 1].GetW() * betak1);
+	return true;
 }
 
 std::vector<LNLib::XYZW> LNLib::NurbsCurve::Warping(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double warpDistance, const XYZ& planeNormal)
