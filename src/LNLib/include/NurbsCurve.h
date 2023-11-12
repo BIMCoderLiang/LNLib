@@ -249,12 +249,12 @@ namespace LNLib
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page542
 		/// </summary>
-		static void Flattening(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, XYZ lineStartPoint, XYZ lineEndPoint, double flattenStartParam, double flattenEndParam, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
+		static bool Flattening(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, XYZ lineStartPoint, XYZ lineEndPoint, double startParameter, double endParameter, std::vector<XYZW>& updatedControlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page547
 		/// </summary>
-		static std::vector<XYZW> Bending(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double bendStartParam, double bendEndParam, int bendCurveDegree, const std::vector<double>& bendCurveKnotVector, const std::vector<XYZW>& bendCurveControlPoints, const XYZ& bendCenter, double crossRatio);
+		static std::vector<XYZW> Bending(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double startParameter, double endParameter, XYZ bendCenter, double radius, double crossRatio);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page555

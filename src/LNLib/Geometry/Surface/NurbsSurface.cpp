@@ -1518,6 +1518,7 @@ bool LNLib::NurbsSurface::GlobalApproximation(const std::vector<std::vector<XYZ>
 	}
 	MathUtils::Transpose(tPoints, preControlPoints);
 	controlPoints = ToXYZW(preControlPoints);
+	return true;
 }
 
 

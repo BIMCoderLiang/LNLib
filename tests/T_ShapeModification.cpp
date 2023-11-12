@@ -6,6 +6,7 @@
 #include "XYZW.h"
 #include "MathUtils.h"
 #include "ValidationUtils.h"
+#include "Projection.h"
 
 using namespace LNLib;
 
@@ -57,4 +58,13 @@ TEST(Test_Advanced, All)
 		std::vector<XYZW> result = NurbsCurve::ConstraintBasedModification(3, kv, cps, constraintParams, derivativeConstraint, dr, dk, fixed);
 		EXPECT_TRUE(ValidationUtils::IsValidNurbs(3, kv.size(), result.size()));
 	}
+	{
+		XYZ origin = XYZ(0, 0, 0);
+		XYZ dir = XYZ(1, 0, 0);
+		XYZ result = Projection::PointToRay(origin, dir, XYZ(0, 10, 0));
+		EXPECT_TRUE(result.IsAlmostEqualTo(origin));
+		result = Projection::PointToRay(origin, dir, XYZ(10, 10, 0));
+		EXPECT_TRUE(result.IsAlmostEqualTo(XYZ(10,0,0)));
+	}
+
 }
