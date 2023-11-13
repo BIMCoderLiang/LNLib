@@ -19,6 +19,7 @@ namespace LNLib
 	{
 	public:
 		static XYZ PointToRay(const XYZ& origin, const XYZ& vector, const XYZ& Point);
+		static bool PointToLine(const XYZ& start, const XYZ& end, const XYZ& point, XYZ& projectPoint);
 	};
 }
 

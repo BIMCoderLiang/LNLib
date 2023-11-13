@@ -66,5 +66,31 @@ TEST(Test_Advanced, All)
 		result = Projection::PointToRay(origin, dir, XYZ(10, 10, 0));
 		EXPECT_TRUE(result.IsAlmostEqualTo(XYZ(10,0,0)));
 	}
-
+	{
+		XYZ center = XYZ(0, 0, 0);
+		XYZ xAxis = XYZ(1, 0, 0);
+		XYZ yAxis = XYZ(0, 1, 0);
+		int degree;
+		std::vector<double> kv;
+		std::vector<XYZW> cps;
+		NurbsCurve::CreateArc(center, xAxis, yAxis, 0, Constants::Pi, 10, 10, degree, kv, cps);
+		std::vector<double> shape = { 0,1,1.5,1,0 };
+		auto newCps = NurbsCurve::Warping(degree, kv, cps, shape, 2, XYZ(0, 0, 1), kv[2], kv[5]);
+		EXPECT_TRUE(cps.size() == newCps.size());
+	}
+	{
+		int degree = 3;
+		std::vector<double> kv = { 0,0,0,0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1,1,1 };
+		std::vector<XYZW> cps = { XYZW(XYZ(-10,2,0),1), XYZW(XYZ(-8,1,0),1), XYZW(XYZ(-6,0,0),1), XYZW(XYZ(-4,-1,0),1),XYZW(XYZ(-2,-2,0),1),XYZW(XYZ(-1,-1,0),1), XYZW(XYZ(0,0,0),1),XYZW(XYZ(1,2,0),1),XYZW(XYZ(2,3,0),1),XYZW(XYZ(4,4,0),1),XYZW(XYZ(6,8,0),1),XYZW(XYZ(7,9,0),1),XYZW(XYZ(8,10,0),1) };
+		std::vector<XYZW> newCps;
+		auto result = NurbsCurve::Flattening(degree, kv, cps, XYZ(-10, 20, 0), XYZ(10, 20, 0), kv[0], kv[kv.size()-1], newCps);
+		EXPECT_TRUE(result);
+	}
+	{
+		int degree = 3;
+		std::vector<double> kv = { 0,0,0,0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1,1,1 };
+		std::vector<XYZW> cps = { XYZW(XYZ(-10,2,0),1), XYZW(XYZ(-8,1,0),1), XYZW(XYZ(-6,0,0),1), XYZW(XYZ(-4,-1,0),1),XYZW(XYZ(-2,-2,0),1),XYZW(XYZ(-1,-1,0),1), XYZW(XYZ(0,0,0),1),XYZW(XYZ(1,2,0),1),XYZW(XYZ(2,3,0),1),XYZW(XYZ(4,4,0),1),XYZW(XYZ(6,8,0),1),XYZW(XYZ(7,9,0),1),XYZW(XYZ(8,10,0),1) };
+		auto result = NurbsCurve::Bending(degree, kv, cps, kv[0], kv[kv.size() - 1], XYZ(0,50,0),10,1.5);
+		EXPECT_TRUE(cps.size() == result.size());
+	}
 }

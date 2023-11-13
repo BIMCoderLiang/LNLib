@@ -2426,7 +2426,7 @@ bool LNLib::NurbsCurve::Flattening(int degree, const std::vector<double>& knotVe
 	int spanMaxIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, endParameter);
 	
 	std::unordered_map<int, XYZ> selectedControlPoints;
-	for (int i = spanMinIndex - degree; i <= spanMaxIndex - degree - 1; i++)
+	for (int i = spanMinIndex; i <= spanMaxIndex - degree - 1; i++)
 	{
 		XYZ p = const_cast<XYZW&>(controlPoints[i]).ToXYZ(true);
 		selectedControlPoints.insert({ i, p });
@@ -2435,17 +2435,17 @@ bool LNLib::NurbsCurve::Flattening(int degree, const std::vector<double>& knotVe
 	int projectCount = 0;
 	updatedControlPoints = controlPoints;
 	XYZ lineVector = (lineEndPoint - lineStartPoint).Normalize();
-	double lineDistance = lineStartPoint.Distance(lineEndPoint);
+	double lineLength = lineEndPoint.Distance(lineStartPoint);
 	for (auto it = selectedControlPoints.begin(); it != selectedControlPoints.end(); ++it)
 	{
 		int index = it->first;
 		XYZ current = it->second;
-		XYZ project = Projection::PointToRay(lineStartPoint, lineVector, current);
-		double dis = current.Distance(project);
-		if (MathUtils::IsLessThanOrEqual(dis, lineDistance))
+		XYZ project;
+		bool result = Projection::PointToLine(lineStartPoint, lineEndPoint, current, project);
+		if (result)
 		{
 			projectCount++;
-			updatedControlPoints[index] = XYZW(project,updatedControlPoints[index].GetW());
+			updatedControlPoints[index] = XYZW(project, updatedControlPoints[index].GetW());
 		}
 	}
 	return projectCount >= degree + 1;
@@ -2468,7 +2468,7 @@ std::vector<LNLib::XYZW> LNLib::NurbsCurve::Bending(int degree, const std::vecto
 
 	std::vector<XYZW> updatedControlPoints = controlPoints;
 	std::unordered_map<int, XYZ> selectedControlPoints;
-	for (int i = spanMinIndex - degree; i <= spanMaxIndex - degree - 1; i++)
+	for (int i = spanMinIndex; i <= spanMaxIndex - degree - 1; i++)
 	{
 		XYZ p = const_cast<XYZW&>(updatedControlPoints[i]).ToXYZ(true);
 		selectedControlPoints.insert({ i, p });
