@@ -69,7 +69,7 @@ std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> LNLib::Kno
 	return result;
 }
 
-void LNLib::KnotVectorUtils::GetInsertedKnotElement(const std::vector<double> knotVector0, const std::vector<double> knotVector1, std::vector<double>& insertElements0, std::vector<double>& insertElements1)
+void LNLib::KnotVectorUtils::GetInsertedKnotElement(const std::vector<double>& knotVector0, const std::vector<double>& knotVector1, std::vector<double>& insertElements0, std::vector<double>& insertElements1)
 {
 	std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> map0 = GetKnotMultiplicityMap(knotVector0);
 	std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> map1 = GetKnotMultiplicityMap(knotVector1);
@@ -127,5 +127,6 @@ void LNLib::KnotVectorUtils::GetInsertedKnotElement(const std::vector<double> kn
 	std::sort(insertElements0.begin(), insertElements0.end());
 	std::sort(insertElements1.begin(), insertElements1.end());
 }
+
 
 
