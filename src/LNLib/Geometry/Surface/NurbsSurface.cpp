@@ -1521,4 +1521,25 @@ bool LNLib::NurbsSurface::GlobalApproximation(const std::vector<std::vector<XYZ>
 	return true;
 }
 
+void LNLib::NurbsSurface::CreateCoonsSurface(const LN_Curve& curve0, const LN_Curve& curve1, const LN_Curve& curve2, const LN_Curve& curve3, LN_Surface& surface)
+{
+	std::vector<LN_Curve> nurbs(4);
+	nurbs.emplace_back(curve0);
+	nurbs.emplace_back(curve1);
+	nurbs.emplace_back(curve2);
+	nurbs.emplace_back(curve3);
+
+	for (int i = 0; i < nurbs.size(); i++)
+	{
+		LN_Curve current = nurbs[i];
+		VALIDATE_ARGUMENT(current.Degree > 0, "degree", "Degree must greater than zero.");
+		VALIDATE_ARGUMENT(current.KnotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+		VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(current.KnotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+		VALIDATE_ARGUMENT(current.ControlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+		VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(current.Degree, current.KnotVector.size(), current.ControlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	}
+
+	// to be continued...
+}
+
 

@@ -10,6 +10,7 @@
 
 #pragma once
 #include "LNLibDefinitions.h"
+#include "LNObject.h"
 #include <vector>
 
 namespace LNLib
@@ -17,12 +18,6 @@ namespace LNLib
 	class UV;
 	class XYZ;
 	class XYZW;
-	struct LN_Curve
-	{
-		int Degree;
-		std::vector<double> KnotVectors;
-		std::vector<XYZW> ControlPoints;
-	};
 	class LNLIB_EXPORT NurbsSurface
 	{
 	public:
@@ -163,20 +158,20 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page456
 		/// Create Swung Surface.
 		/// </summary>
-		static bool CreateSwungSurface(const LN_Curve& profile, const LN_Curve& trajectory, int& degreeU, int& degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints);
+		static bool CreateSwungSurface(const LN_Curve& profile, const LN_Curve& trajectory, LN_Surface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page457
 		/// Create Loft Surface (called Skinned Surfaces in The NURBS Book).
 		/// </summary>
-		static bool CreateLoftSurface(const std::vector<LN_Curve>& sections, int& degreeU, int& degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints);
+		static bool CreateLoftSurface(const std::vector<LN_Curve>& sections, LN_Surface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page472
 		/// Create Sweep Surface.
 		/// Algorithm A10.1 & A10.2
 		/// </summary>
-		static bool CreateSweepSurface(const LN_Curve& path, const std::vector<LN_Curve>& profiles, const std::vector<double>& profilesAlongPathParameters, int& degreeU, int& degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints);
+		static bool CreateSweepSurface(const LN_Curve& path, const std::vector<LN_Curve>& profiles, const std::vector<double>& profilesAlongPathParameters, LN_Surface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page494
@@ -189,7 +184,7 @@ namespace LNLib
 		/// 4. Intersection points must be located evenly in parameter spaces of curves. 
 		/// 5. U-curves must be ordered along direction of V-curves, and vice versa. 
 		/// </summary>
-		static bool CreateGordonSurface(const std::vector<LN_Curve>& uCurves, const std::vector<LN_Curve>& vCurves, const std::vector<std::vector<XYZ>>& intersectionPoints, int& degreeU, int& degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints);
+		static bool CreateGordonSurface(const std::vector<LN_Curve>& uCurves, const std::vector<LN_Curve>& vCurves, const std::vector<std::vector<XYZ>>& intersectionPoints, LN_Surface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page502
@@ -197,14 +192,15 @@ namespace LNLib
 		/// Create Coons Surface.
 		/// The difference between Coons and Gordon is that Coons Surface is created by 4 curves.
 		/// The coons surface is the special case of Gordon Surface.
-		///            curve0
-		///           ---------  
-		///           |		  |
-		///   curve3  |	      | curve1
-		///           |       |
-		///           ---------  
-		///            curve2
+		/// 
+		///             curve0
+		///           ----------- 
+		///           |			|
+		///   curve3  |			| curve1
+		///           |			|
+		///           -----------  
+		///             curve2
 		/// </summary>
-		static bool CreateCoonsSurface(const LN_Curve& curve0, const LN_Curve& curve1, const LN_Curve& curve2, const LN_Curve& curve3, int& degreeU, int& degreeV, std::vector<double>& knotVectorU, std::vector<double>& knotVectorV, std::vector<std::vector<XYZW>>& controlPoints);
+		static void CreateCoonsSurface(const LN_Curve& curve0, const LN_Curve& curve1, const LN_Curve& curve2, const LN_Curve& curve3, LN_Surface& surface);
 	};
 }

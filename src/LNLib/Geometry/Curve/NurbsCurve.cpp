@@ -2089,7 +2089,7 @@ bool LNLib::NurbsCurve::FitWithConic(const std::vector<XYZ>& throughPoints, int 
 
 bool LNLib::NurbsCurve::FitWithCubic(const std::vector<XYZ>& throughPoints, int startPointIndex, int endPointIndex, const XYZ& startTangent, const XYZ& endTangent, double maxError, std::vector<XYZW>& middleControlPoints)
 {
-	VALIDATE_ARGUMENT(throughPoints.size() > 0, "throughPoints", "ThroughPoints size must greater than degree.");
+	VALIDATE_ARGUMENT(throughPoints.size() >= 3, "throughPoints", "ThroughPoints size must greater than 2.");
 	VALIDATE_ARGUMENT_RANGE(startPointIndex, 0, throughPoints.size() - 1);
 	VALIDATE_ARGUMENT_RANGE(endPointIndex, startPointIndex + 1, throughPoints.size() - 1);
 	VALIDATE_ARGUMENT(!startTangent.IsZero(), "startTangent", "StartTangent must not be zero vector.");
@@ -2104,13 +2104,14 @@ bool LNLib::NurbsCurve::FitWithCubic(const std::vector<XYZ>& throughPoints, int 
 	{
 		XYZ Dks(0, 0, 0);
 		XYZ Dke(0, 0, 0);
+		std::vector<XYZ> tangents = Interpolation::ComputeTangent(throughPoints);
 		if (startPointIndex == 0)
 		{
-			Dks = startTangent;
+			Dks = tangents[startPointIndex];
 		}
 		if (endPointIndex == size - 1)
 		{
-			Dke = endTangent;
+			Dke = tangents[endPointIndex];
 		}
 		if (startPointIndex != 0 && endPointIndex != size - 1)
 		{
