@@ -14,30 +14,30 @@ Basic Elements:
 
 NURBS Algorithms:
 - ***Chapter 1***:
-    Basis Function Computation
+    - Basis Function Computation
 - ***Chapter 1,2,3,4***:
-    Bezier/B-Spline/NURBS Curve and Surface
+    - Bezier/B-Spline/NURBS Curve and Surface
 - ***Chapter 5***:
-    Curve and Surface Decomposition
-    Knot Insertion/Refinement/Removal
-    Degree Elevation and Reduction
+    - Curve and Surface Decomposition
+    - Knot Insertion/Refinement/Removal
+    - Degree Elevation and Reduction
 - ***Chapter 6***:
-    Curve/Surface Point Inversion
-    Surface Tangent Vector Inversion
-    Curve Reparameterization
-    Curve Transform and Reverse
+    - Curve/Surface Point Inversion
+    - Surface Tangent Vector Inversion
+    - Curve Reparameterization
+    - Curve Transform and Reverse
 - ***Chapter 7***:
-    Create Arc/Conic Curve
+    - Create Arc/Conic Curve
 - ***Chapter 8***:
-    Create Bilinear/Cylindrical/Ruled/Revolved Surface
+    - Create Bilinear/Cylindrical/Ruled/Revolved Surface
 - ***Chapter 9***:
-    Global/Local Curve/Surface Interpolation and Approximation
+    - Global/Local Curve/Surface Interpolation and Approximation
 - ***Chapter 10***:
-    In working progress
+    - In working progress
 - ***Chapter 11***:
-    Curve Modification in Control Point Locations or Weight Values
+    - Curve Modification in Control Point Locations or Weight Values
 - ***Chapter 12***:
-    Clamp/UnClamp Nurbs Curve
+    - Clamp/UnClamp Nurbs Curve
 
 ## Contributing
 Welcome join this project including discussions in **Issues** and make **Pull requests**.
