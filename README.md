@@ -2,7 +2,7 @@
 **LNLib is a C++ NURBS Algorithms Library.** <br/>These algorithms are primary referenced from [The NURBS Book 2nd Edition](https://link.springer.com/book/10.1007/978-3-642-97385-7). <br/>The APIs are re-designed to make it more friendly to users.
 
 ## Run LNLib
-Please run build.bat first and it will construct solution by Cmake.
+Please run build.bat first and it will construct solution by CMake.
 
 ## Features
 Basic Elements:
@@ -10,22 +10,34 @@ Basic Elements:
 - XYZ
 - XYZW
 - Matrix4d
+- LNObject (only for advanced surface construction)
 
 NURBS Algorithms:
-- Basis Function Computation
-- Bezier/B-Spline/NURBS Curve and Surface
-- Curve and Surface Decomposition
-- Knot Insertion/Refinement/Removal
-- Degree Elevation and Reduction
-- Curve/Surface Point Inversion
-- Surface Tangent Vector Inversion
-- Curve Reparameterization
-- Curve Transform and Reverse
-- Create Arc/Conic Curve
-- Create Bilinear/Cylindrical/Ruled/Revolved Surface
-- Global/Local Curve/Surface Interpolation and Approximation
-- Curve Modification in Control Point Locations or Weight Values
-- Clamp/UnClamp Nurbs Curve
+- ***Chapter 1***:
+    Basis Function Computation
+- ***Chapter 1,2,3,4***:
+    Bezier/B-Spline/NURBS Curve and Surface
+- ***Chapter 5***:
+    Curve and Surface Decomposition
+    Knot Insertion/Refinement/Removal
+    Degree Elevation and Reduction
+- ***Chapter 6***:
+    Curve/Surface Point Inversion
+    Surface Tangent Vector Inversion
+    Curve Reparameterization
+    Curve Transform and Reverse
+- ***Chapter 7***:
+    Create Arc/Conic Curve
+- ***Chapter 8***:
+    Create Bilinear/Cylindrical/Ruled/Revolved Surface
+- ***Chapter 9***:
+    Global/Local Curve/Surface Interpolation and Approximation
+- ***Chapter 10***:
+    In working progress
+- ***Chapter 11***:
+    Curve Modification in Control Point Locations or Weight Values
+- ***Chapter 12***:
+    Clamp/UnClamp Nurbs Curve
 
 ## Contributing
 Welcome join this project including discussions in **Issues** and make **Pull requests**.
