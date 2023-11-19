@@ -2109,13 +2109,16 @@ bool LNLib::NurbsCurve::FitWithCubic(const std::vector<XYZ>& throughPoints, int 
 		{
 			Dks = tangents[startPointIndex];
 		}
+		else
+		{
+			Dks = (endPoint.Distance(startPoint) / startPoint.Distance(throughPoints[startPointIndex - 1])) * startTangent;
+		}
 		if (endPointIndex == size - 1)
 		{
 			Dke = tangents[endPointIndex];
 		}
-		if (startPointIndex != 0 && endPointIndex != size - 1)
+		else
 		{
-			Dks = (endPoint.Distance(startPoint) / startPoint.Distance(throughPoints[startPointIndex - 1])) * startTangent;
 			Dke = (throughPoints[endPointIndex + 1].Distance(endPoint) / endPoint.Distance(startPoint)) * endTangent;
 		}
 		alpha = Dks.Length() / 3.0;
@@ -2154,7 +2157,12 @@ bool LNLib::NurbsCurve::FitWithCubic(const std::vector<XYZ>& throughPoints, int 
 		middleControlPoints.emplace_back(P2);
 		return true;
 	}
-	std::vector<double> uh = Interpolation::GetChordParameterization(throughPoints, startPointIndex, endPointIndex);;
+	std::vector<XYZ> newThroughPoints(endPointIndex - startPointIndex + 1);
+	for (int i = startPointIndex; i <= endPointIndex; i++)
+	{
+		newThroughPoints.emplace_back(throughPoints[i]);
+	}
+	std::vector<double> uh = Interpolation::GetChordParameterization(newThroughPoints);
 	std::vector<double> alfak(dk);
 	std::vector<double> betak(dk);
 	for (int k = 1; k < dk; k++)
@@ -2248,12 +2256,9 @@ bool LNLib::NurbsCurve::FitWithCubic(const std::vector<XYZ>& throughPoints, int 
 		if (MathUtils::IsLessThanOrEqual(e, maxError)) continue;
 		else
 		{
-			std::vector<XYZW> cps = { XYZW(startPoint,1), XYZW(P1,1), XYZW(P2,1),  XYZW(endPoint,1) };
-			double tempParam = GetParamOnCurve(3, uh, cps, throughPoints[startPointIndex + k]);
-			std::vector<XYZ> cpts = { startPoint, P1, P2, endPoint };
-			XYZ t = BezierCurve::GetPointOnCurveByBernstein(3, cpts, tempParam);
-			XYZ p = BezierCurve::GetPointOnCurveByBernstein(3, cpts, u);
-			double ek = p.Distance(t);
+			std::vector<XYZ> cps = { XYZ(startPoint), XYZ(P1), XYZ(P2),  XYZ(endPoint) };
+			XYZ p = BezierCurve::GetPointOnCurveByBernstein(3, cps, u);
+			double ek = throughPoints[startPointIndex + k].Distance(p);
 			if (MathUtils::IsGreaterThan(ek, maxError))
 			{
 				return false;

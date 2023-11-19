@@ -436,11 +436,12 @@ TEST(Test_Fitting, Approximation)
 		EXPECT_TRUE(result);
 	}
 	{
-		/*XYZ P0 = XYZ(10, 0, 0);
+		XYZ Px = XYZ(5, -5, 0);
+		XYZ P0 = XYZ(10, 0, 0);
 		XYZ P3 = XYZ(0, 0, 10);
-		std::vector<XYZ> Q = { P0, P3 };
+		std::vector<XYZ> Q = { Px, P0, P3 };
 		std::vector<XYZW> middlePoints;
-		bool result = NurbsCurve::FitWithCubic(Q, 0, 1, XYZ(0, 1, 0), XYZ(0, -1, 1), 0.1, middlePoints);
-		EXPECT_TRUE(result);*/
+		bool result = NurbsCurve::FitWithCubic(Q, 1, 2, XYZ(0, 1, 0), XYZ(0, -1, 1), 0.1, middlePoints);
+		EXPECT_TRUE(result);
 	}
 }

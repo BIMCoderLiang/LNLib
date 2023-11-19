@@ -90,25 +90,6 @@ std::vector<double> LNLib::Interpolation::GetCentripetalParameterization(const s
 	return uk;
 }
 
-std::vector<double> LNLib::Interpolation::GetChordParameterization(const std::vector<XYZ>& throughPoints, int startIndex, int endIndex)
-{
-	int size = endIndex - startIndex + 1;
-	std::vector<double> uk;
-	uk.resize(size, 0.0);
-
-	double length = 0.0;
-	for (int i = startIndex + 1; i <= endIndex; i++)
-	{
-		length += throughPoints[i].Distance(throughPoints[i - 1]);
-	}
-
-	for (int i = startIndex + 1; i <= endIndex; i++)
-	{
-		uk[i] = uk[i - 1] + (throughPoints[i].Distance(throughPoints[i - 1])) / length;
-	}
-	return uk;
-}
-
 std::vector<double> LNLib::Interpolation::AverageKnotVector(int degree, const std::vector<double> params)
 {
 	std::vector<double> knotVector;

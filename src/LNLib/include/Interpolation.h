@@ -78,12 +78,6 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page412
 		/// Computes a knot vector ensuring that every knot span has at least one.
 		/// </summary>
-		static std::vector<double> ComputeKnotVector(int degree, int pointsCount, int controlPointsCount, const std::vector<double> params);
-
-		/// <summary>
-		/// The NURBS Book 2nd Edition Page446
-		/// The chord length parameterization.
-		/// </summary>
-		static std::vector<double> GetChordParameterization(const std::vector<XYZ>& throughPoints, int startIndex, int endIndex);	
+		static std::vector<double> ComputeKnotVector(int degree, int pointsCount, int controlPointsCount, const std::vector<double> params);	
 	};
 }
