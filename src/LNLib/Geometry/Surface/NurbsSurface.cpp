@@ -1539,6 +1539,141 @@ void LNLib::NurbsSurface::CreateCoonsSurface(const LN_Curve& curve0, const LN_Cu
 		VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(current.Degree, current.KnotVector.size(), current.ControlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
 	}
 
+	auto n0 = nurbs[0]; auto n2 = nurbs[2];
+	int degree_n0 = n0.Degree;
+	int degree_n2 = n2.Degree;
+	if (degree_n0 > degree_n2)
+	{
+		int times = degree_n0 - degree_n2;
+		std::vector<double> newKv;
+		std::vector<XYZW> newCps;
+		NurbsCurve::ElevateDegree(n2.Degree, n2.KnotVector, n2.ControlPoints, times, newKv, newCps);
+		n2.KnotVector = newKv; n2.ControlPoints = newCps;
+	}
+	if (degree_n2 > degree_n0)
+	{
+		int times = degree_n2 - degree_n0;
+		std::vector<double> newKv;
+		std::vector<XYZW> newCps;
+		NurbsCurve::ElevateDegree(n0.Degree, n0.KnotVector, n0.ControlPoints, times, newKv, newCps);
+		n0.KnotVector = newKv; n0.ControlPoints = newCps;
+	}
+	if (n0.KnotVector != n2.KnotVector)
+	{
+		std::vector<double> insertedKnotElement0;
+		std::vector<double> insertedKnotElement2;
+		KnotVectorUtils::GetInsertedKnotElement(n0.KnotVector, n2.KnotVector, insertedKnotElement0, insertedKnotElement2);
+
+		if (insertedKnotElement0.size() > 0)
+		{
+			std::vector<double> updatedKnotVector0;
+			std::vector<XYZW> updatedControlPoints0;
+			NurbsCurve::RefineKnotVector(n0.Degree, n0.KnotVector, n0.ControlPoints, insertedKnotElement0, updatedKnotVector0, updatedControlPoints0);
+			n0.KnotVector = updatedKnotVector0;
+			n0.ControlPoints = updatedControlPoints0;
+		}
+		if (insertedKnotElement2.size() > 0)
+		{
+			std::vector<double> updatedKnotVector2;
+			std::vector<XYZW> updatedControlPoints2;
+			NurbsCurve::RefineKnotVector(n2.Degree, n2.KnotVector, n2.ControlPoints, insertedKnotElement2, updatedKnotVector2, updatedControlPoints2);
+			n2.KnotVector = updatedKnotVector2;
+			n2.ControlPoints = updatedControlPoints2;
+		}
+	}
+
+	auto n1 = nurbs[1]; auto n3 = nurbs[3];
+	int degree_n1 = n1.Degree;
+	int degree_n3 = n3.Degree;
+	if (degree_n1 > degree_n3)
+	{
+		int times = degree_n1 - degree_n3;
+		std::vector<double> newKv;
+		std::vector<XYZW> newCps;
+		NurbsCurve::ElevateDegree(n3.Degree, n3.KnotVector, n3.ControlPoints, times, newKv, newCps);
+		n3.KnotVector = newKv; n3.ControlPoints = newCps;
+	}
+	if (degree_n3 > degree_n1)
+	{
+		int times = degree_n3 - degree_n1;
+		std::vector<double> newKv;
+		std::vector<XYZW> newCps;
+		NurbsCurve::ElevateDegree(n1.Degree, n1.KnotVector, n1.ControlPoints, times, newKv, newCps);
+		n1.KnotVector = newKv; n1.ControlPoints = newCps;
+	}
+	if (n1.KnotVector != n3.KnotVector)
+	{
+		std::vector<double> insertedKnotElement1;
+		std::vector<double> insertedKnotElement3;
+		KnotVectorUtils::GetInsertedKnotElement(n1.KnotVector, n3.KnotVector, insertedKnotElement1, insertedKnotElement3);
+
+		if (insertedKnotElement1.size() > 0)
+		{
+			std::vector<double> updatedKnotVector1;
+			std::vector<XYZW> updatedControlPoints1;
+			NurbsCurve::RefineKnotVector(n1.Degree, n1.KnotVector, n1.ControlPoints, insertedKnotElement1, updatedKnotVector1, updatedControlPoints1);
+			n1.KnotVector = updatedKnotVector1;
+			n1.ControlPoints = updatedControlPoints1;
+		}
+		if (insertedKnotElement3.size() > 0)
+		{
+			std::vector<double> updatedKnotVector3;
+			std::vector<XYZW> updatedControlPoints3;
+			NurbsCurve::RefineKnotVector(n3.Degree, n3.KnotVector, n3.ControlPoints, insertedKnotElement3, updatedKnotVector3, updatedControlPoints3);
+			n3.KnotVector = updatedKnotVector3;
+			n3.ControlPoints = updatedControlPoints3;
+		}
+	}
+
+	int degreeU = nurbs[0].Degree;
+	int degreeV = nurbs[1].Degree;
+	
+	{
+		std::vector<double> updatedKnotVector0;
+		std::vector<XYZW> updatedControlPoints0;
+		NurbsCurve::Reverse(n0.KnotVector, n0.ControlPoints, updatedKnotVector0, updatedControlPoints0);
+		n0.KnotVector = updatedKnotVector0; n0.ControlPoints = updatedControlPoints0;
+	}
+
+	{
+		std::vector<double> updatedKnotVector3;
+		std::vector<XYZW> updatedControlPoints3;
+		NurbsCurve::Reverse(n3.KnotVector, n3.ControlPoints, updatedKnotVector3, updatedControlPoints3);
+		n3.KnotVector = updatedKnotVector3; n3.ControlPoints = updatedControlPoints3;
+	}
+
+	LN_Surface ruledSurface0;
+	{
+		int degree_u;
+		int degree_v;
+		std::vector<double> kv_u;
+		std::vector<double> kv_v;
+		std::vector<std::vector<XYZW>> cps;
+		CreateRuledSurface(n0.Degree, n0.KnotVector, n0.ControlPoints, n2.Degree, n2.KnotVector, n2.ControlPoints, degree_u, degree_v, kv_u, kv_v, cps);
+		ruledSurface0.DegreeU = degree_u;
+		ruledSurface0.DegreeV = degree_v;
+		ruledSurface0.KnotVectorU = kv_u;
+		ruledSurface0.KnotVectorV = kv_v;
+		ruledSurface0.ControlPoints = cps;
+	}
+	
+	LN_Surface ruledSurface1;
+	{
+		int degree_u;
+		int degree_v;
+		std::vector<double> kv_u;
+		std::vector<double> kv_v;
+		std::vector<std::vector<XYZW>> cps;
+		CreateRuledSurface(n1.Degree, n1.KnotVector, n1.ControlPoints, n3.Degree, n3.KnotVector, n3.ControlPoints, degree_u, degree_v, kv_u, kv_v, cps);
+		ruledSurface0.DegreeU = degree_v;
+		ruledSurface0.DegreeV = degree_u;
+		ruledSurface0.KnotVectorU = kv_v;
+		ruledSurface0.KnotVectorV = kv_u;
+		std::vector<std::vector<XYZW>> transposedControlPoints;
+		MathUtils::Transpose(cps, transposedControlPoints);
+		ruledSurface0.ControlPoints = transposedControlPoints;
+	}
+
 	// to be continued...
 }
 

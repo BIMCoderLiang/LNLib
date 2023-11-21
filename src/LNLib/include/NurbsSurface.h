@@ -193,13 +193,9 @@ namespace LNLib
 		/// The difference between Coons and Gordon is that Coons Surface is created by 4 curves.
 		/// The coons surface is the special case of Gordon Surface.
 		/// 
-		///             curve0
-		///           ----------- 
-		///           |			|
-		///   curve3  |			| curve1
-		///           |			|
-		///           -----------  
-		///             curve2
+		/// curve0 & curve2 are one side and curve1 & curve3 are another side.
+		/// curve0,curve1,curve2,curve3 are anti-clock connected.
+		/// 
 		/// </summary>
 		static void CreateCoonsSurface(const LN_Curve& curve0, const LN_Curve& curve1, const LN_Curve& curve2, const LN_Curve& curve3, LN_Surface& surface);
 	};
