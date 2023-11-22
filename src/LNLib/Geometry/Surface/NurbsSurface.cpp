@@ -1612,22 +1612,17 @@ void LNLib::NurbsSurface::CreateCoonsSurface(const LN_Curve& curve0, const LN_Cu
 			std::vector<double> updatedKnotVector1;
 			std::vector<XYZW> updatedControlPoints1;
 			NurbsCurve::RefineKnotVector(n1.Degree, n1.KnotVector, n1.ControlPoints, insertedKnotElement1, updatedKnotVector1, updatedControlPoints1);
-			n1.KnotVector = updatedKnotVector1;
-			n1.ControlPoints = updatedControlPoints1;
+			n1.KnotVector = updatedKnotVector1; n1.ControlPoints = updatedControlPoints1;
 		}
 		if (insertedKnotElement3.size() > 0)
 		{
 			std::vector<double> updatedKnotVector3;
 			std::vector<XYZW> updatedControlPoints3;
 			NurbsCurve::RefineKnotVector(n3.Degree, n3.KnotVector, n3.ControlPoints, insertedKnotElement3, updatedKnotVector3, updatedControlPoints3);
-			n3.KnotVector = updatedKnotVector3;
-			n3.ControlPoints = updatedControlPoints3;
+			n3.KnotVector = updatedKnotVector3; n3.ControlPoints = updatedControlPoints3;
 		}
 	}
 
-	int degreeU = nurbs[0].Degree;
-	int degreeV = nurbs[1].Degree;
-	
 	{
 		std::vector<double> updatedKnotVector0;
 		std::vector<XYZW> updatedControlPoints0;
@@ -1650,10 +1645,8 @@ void LNLib::NurbsSurface::CreateCoonsSurface(const LN_Curve& curve0, const LN_Cu
 		std::vector<double> kv_v;
 		std::vector<std::vector<XYZW>> cps;
 		CreateRuledSurface(n0.Degree, n0.KnotVector, n0.ControlPoints, n2.Degree, n2.KnotVector, n2.ControlPoints, degree_u, degree_v, kv_u, kv_v, cps);
-		ruledSurface0.DegreeU = degree_u;
-		ruledSurface0.DegreeV = degree_v;
-		ruledSurface0.KnotVectorU = kv_u;
-		ruledSurface0.KnotVectorV = kv_v;
+		ruledSurface0.DegreeU = degree_u; ruledSurface0.DegreeV = degree_v;
+		ruledSurface0.KnotVectorU = kv_u; ruledSurface0.KnotVectorV = kv_v;
 		ruledSurface0.ControlPoints = cps;
 	}
 	
@@ -1665,16 +1658,251 @@ void LNLib::NurbsSurface::CreateCoonsSurface(const LN_Curve& curve0, const LN_Cu
 		std::vector<double> kv_v;
 		std::vector<std::vector<XYZW>> cps;
 		CreateRuledSurface(n1.Degree, n1.KnotVector, n1.ControlPoints, n3.Degree, n3.KnotVector, n3.ControlPoints, degree_u, degree_v, kv_u, kv_v, cps);
-		ruledSurface0.DegreeU = degree_v;
-		ruledSurface0.DegreeV = degree_u;
-		ruledSurface0.KnotVectorU = kv_v;
-		ruledSurface0.KnotVectorV = kv_u;
+		ruledSurface1.DegreeU = degree_v; ruledSurface1.DegreeV = degree_u;
+		ruledSurface1.KnotVectorU = kv_v; ruledSurface1.KnotVectorV = kv_u;
 		std::vector<std::vector<XYZW>> transposedControlPoints;
 		MathUtils::Transpose(cps, transposedControlPoints);
-		ruledSurface0.ControlPoints = transposedControlPoints;
+		ruledSurface1.ControlPoints = transposedControlPoints;
 	}
 
-	// to be continued...
+	LN_Surface bilinearSurface;
+	{
+		XYZ point1 = NurbsCurve::GetPointOnCurve(n0.Degree, n0.KnotVector, n0.KnotVector[0], n0.ControlPoints);
+		XYZ point2 = NurbsCurve::GetPointOnCurve(n2.Degree, n2.KnotVector, n2.KnotVector[0], n2.ControlPoints);
+		XYZ point3 = NurbsCurve::GetPointOnCurve(n0.Degree, n0.KnotVector, n0.KnotVector[n0.KnotVector.size() - 1], n0.ControlPoints);
+		XYZ point4 = NurbsCurve::GetPointOnCurve(n2.Degree, n2.KnotVector, n2.KnotVector[n2.KnotVector.size() - 1], n2.ControlPoints);
+		int degree_u;
+		int degree_v;
+		std::vector<double> kv_u;
+		std::vector<double> kv_v;
+		std::vector<std::vector<XYZW>> cps;
+		CreateBilinearSurface(point1, point2, point3, point4, degree_u, degree_v, kv_u, kv_v, cps);
+		bilinearSurface.DegreeU = degree_u; bilinearSurface.DegreeV = degree_v;
+		bilinearSurface.KnotVectorU = kv_u; bilinearSurface.KnotVectorV = kv_v;
+		bilinearSurface.ControlPoints = cps;
+	}
+
+	{
+		int rs0_degreeU = ruledSurface0.DegreeU;
+		int rs1_degreeU = ruledSurface1.DegreeU;
+		int bs_degreeU = bilinearSurface.DegreeU;
+
+		int degreeU = std::max(rs0_degreeU, std::max(rs1_degreeU, bs_degreeU));
+		if (degreeU > rs0_degreeU)
+		{
+			int times = degreeU - rs0_degreeU;
+			std::vector<double> kv_u;
+			std::vector<double> kv_v;
+			std::vector<std::vector<XYZW>> cps;
+			ElevateDegree(ruledSurface0.DegreeU, ruledSurface0.DegreeV, ruledSurface0.KnotVectorU, ruledSurface0.KnotVectorV, ruledSurface0.ControlPoints, times, true, kv_u, kv_v, cps);
+			ruledSurface0.DegreeU = degreeU;
+			ruledSurface0.KnotVectorU = kv_u;
+			ruledSurface0.ControlPoints = cps;
+		}
+
+		if (degreeU > rs1_degreeU)
+		{
+			int times = degreeU - rs1_degreeU;
+			std::vector<double> kv_u;
+			std::vector<double> kv_v;
+			std::vector<std::vector<XYZW>> cps;
+			ElevateDegree(ruledSurface1.DegreeU, ruledSurface1.DegreeV, ruledSurface1.KnotVectorU, ruledSurface1.KnotVectorV, ruledSurface1.ControlPoints, times, true, kv_u, kv_v, cps);
+			ruledSurface1.DegreeU = degreeU;
+			ruledSurface1.KnotVectorU = kv_u;
+			ruledSurface1.ControlPoints = cps;
+		}
+
+		if (degreeU > bs_degreeU)
+		{
+			int times = degreeU - bs_degreeU;
+			std::vector<double> kv_u;
+			std::vector<double> kv_v;
+			std::vector<std::vector<XYZW>> cps;
+			ElevateDegree(bilinearSurface.DegreeU, bilinearSurface.DegreeV, bilinearSurface.KnotVectorU, bilinearSurface.KnotVectorV, bilinearSurface.ControlPoints, times, true, kv_u, kv_v, cps);
+			bilinearSurface.DegreeU = degreeU;
+			bilinearSurface.KnotVectorU = kv_u;
+			bilinearSurface.ControlPoints = cps;
+		}
+
+		int rs0_degreeV = ruledSurface0.DegreeV;
+		int rs1_degreeV = ruledSurface1.DegreeV;
+		int bs_degreeV = bilinearSurface.DegreeV;
+
+		int degreeV = std::max(rs0_degreeV, std::max(rs1_degreeV, bs_degreeV));
+		if (degreeV > rs0_degreeV)
+		{
+			int times = degreeV - rs0_degreeV;
+			std::vector<double> kv_u;
+			std::vector<double> kv_v;
+			std::vector<std::vector<XYZW>> cps;
+			ElevateDegree(ruledSurface0.DegreeU, ruledSurface0.DegreeV, ruledSurface0.KnotVectorU, ruledSurface0.KnotVectorV, ruledSurface0.ControlPoints, times, false, kv_u, kv_v, cps);
+			ruledSurface0.DegreeV = degreeV;
+			ruledSurface0.KnotVectorV = kv_v;
+			ruledSurface0.ControlPoints = cps;
+		}
+
+		if (degreeV > rs1_degreeV)
+		{
+			int times = degreeV - rs1_degreeV;
+			std::vector<double> kv_u;
+			std::vector<double> kv_v;
+			std::vector<std::vector<XYZW>> cps;
+			ElevateDegree(ruledSurface1.DegreeU, ruledSurface1.DegreeV, ruledSurface1.KnotVectorU, ruledSurface1.KnotVectorV, ruledSurface1.ControlPoints, times, false, kv_u, kv_v, cps);
+			ruledSurface1.DegreeV = degreeV;
+			ruledSurface1.KnotVectorV = kv_v;
+			ruledSurface1.ControlPoints = cps;
+		}
+
+		if (degreeV > bs_degreeV)
+		{
+			int times = degreeV - bs_degreeV;
+			std::vector<double> kv_u;
+			std::vector<double> kv_v;
+			std::vector<std::vector<XYZW>> cps;
+			ElevateDegree(bilinearSurface.DegreeU, bilinearSurface.DegreeV, bilinearSurface.KnotVectorU, bilinearSurface.KnotVectorV, bilinearSurface.ControlPoints, times, false, kv_u, kv_v, cps);
+			bilinearSurface.DegreeV = degreeV;
+			bilinearSurface.KnotVectorV = kv_v;
+			bilinearSurface.ControlPoints = cps;
+		}
+	}
+	
+	{
+		if (ruledSurface0.KnotVectorU != ruledSurface1.KnotVectorU)
+		{
+			std::vector<double> insert1;
+			std::vector<double> insert2;
+			KnotVectorUtils::GetInsertedKnotElement(ruledSurface0.KnotVectorU, ruledSurface1.KnotVectorU, insert1, insert2);
+
+			if (insert1.size() > 0)
+			{
+				std::vector<double> kv_u;
+				std::vector<double> kv_v;
+				std::vector<std::vector<XYZW>> cps;
+				RefineKnotVector(ruledSurface0.DegreeU, ruledSurface0.DegreeV, ruledSurface0.KnotVectorU, ruledSurface0.KnotVectorV, ruledSurface0.ControlPoints, insert1, true, kv_u, kv_v, cps);
+				ruledSurface0.KnotVectorU = kv_u;
+				ruledSurface0.ControlPoints = cps;
+			}
+			if (insert2.size() > 0)
+			{
+				std::vector<double> kv_u;
+				std::vector<double> kv_v;
+				std::vector<std::vector<XYZW>> cps;
+				RefineKnotVector(ruledSurface1.DegreeU, ruledSurface1.DegreeV, ruledSurface1.KnotVectorU, ruledSurface1.KnotVectorV, ruledSurface1.ControlPoints, insert2, true, kv_u, kv_v, cps);
+				ruledSurface1.KnotVectorU = kv_u;
+				ruledSurface1.ControlPoints = cps;
+			}
+		}
+
+		if (ruledSurface1.KnotVectorU != bilinearSurface.KnotVectorU)
+		{
+			std::vector<double> insert1;
+			std::vector<double> insert2;
+			KnotVectorUtils::GetInsertedKnotElement(ruledSurface1.KnotVectorU, bilinearSurface.KnotVectorU, insert1, insert2);
+
+			if (insert1.size() > 0)
+			{
+				std::vector<double> kv_u1;
+				std::vector<double> kv_v1;
+				std::vector<std::vector<XYZW>> cps1;
+				RefineKnotVector(ruledSurface1.DegreeU, ruledSurface1.DegreeV, ruledSurface1.KnotVectorU, ruledSurface1.KnotVectorV, ruledSurface1.ControlPoints, insert1, true, kv_u1, kv_v1, cps1);
+				ruledSurface1.KnotVectorU = kv_u1;
+				ruledSurface1.ControlPoints = cps1;
+
+				std::vector<double> kv_u0;
+				std::vector<double> kv_v0;
+				std::vector<std::vector<XYZW>> cps0;
+				RefineKnotVector(ruledSurface0.DegreeU, ruledSurface0.DegreeV, ruledSurface0.KnotVectorU, ruledSurface0.KnotVectorV, ruledSurface0.ControlPoints, insert1, true, kv_u0, kv_v0, cps0);
+				ruledSurface0.KnotVectorU = kv_u0;
+				ruledSurface0.ControlPoints = cps0;
+			}
+			if (insert2.size() > 0)
+			{
+				std::vector<double> kv_u;
+				std::vector<double> kv_v;
+				std::vector<std::vector<XYZW>> cps;
+				RefineKnotVector(bilinearSurface.DegreeU, bilinearSurface.DegreeV, bilinearSurface.KnotVectorU, bilinearSurface.KnotVectorV, bilinearSurface.ControlPoints, insert2, true, kv_u, kv_v, cps);
+				bilinearSurface.KnotVectorU = kv_u;
+				bilinearSurface.ControlPoints = cps;
+			}
+		}
+
+		if (ruledSurface0.KnotVectorV != ruledSurface1.KnotVectorV)
+		{
+			std::vector<double> insert1;
+			std::vector<double> insert2;
+			KnotVectorUtils::GetInsertedKnotElement(ruledSurface0.KnotVectorV, ruledSurface1.KnotVectorV, insert1, insert2);
+
+			if (insert1.size() > 0)
+			{
+				std::vector<double> kv_u;
+				std::vector<double> kv_v;
+				std::vector<std::vector<XYZW>> cps;
+				RefineKnotVector(ruledSurface0.DegreeU, ruledSurface0.DegreeV, ruledSurface0.KnotVectorU, ruledSurface0.KnotVectorV, ruledSurface0.ControlPoints, insert1, false, kv_u, kv_v, cps);
+				ruledSurface0.KnotVectorV = kv_v;
+				ruledSurface0.ControlPoints = cps;
+			}
+			if (insert2.size() > 0)
+			{
+				std::vector<double> kv_u;
+				std::vector<double> kv_v;
+				std::vector<std::vector<XYZW>> cps;
+				RefineKnotVector(ruledSurface1.DegreeU, ruledSurface1.DegreeV, ruledSurface1.KnotVectorU, ruledSurface1.KnotVectorV, ruledSurface1.ControlPoints, insert2, false, kv_u, kv_v, cps);
+				ruledSurface1.KnotVectorV = kv_v;
+				ruledSurface1.ControlPoints = cps;
+			}
+		}
+
+		if (ruledSurface1.KnotVectorV != bilinearSurface.KnotVectorV)
+		{
+			std::vector<double> insert1;
+			std::vector<double> insert2;
+			KnotVectorUtils::GetInsertedKnotElement(ruledSurface1.KnotVectorV, bilinearSurface.KnotVectorV, insert1, insert2);
+
+			if (insert1.size() > 0)
+			{
+				std::vector<double> kv_u1;
+				std::vector<double> kv_v1;
+				std::vector<std::vector<XYZW>> cps1;
+				RefineKnotVector(ruledSurface1.DegreeU, ruledSurface1.DegreeV, ruledSurface1.KnotVectorU, ruledSurface1.KnotVectorV, ruledSurface1.ControlPoints, insert1, false, kv_u1, kv_v1, cps1);
+				ruledSurface1.KnotVectorV = kv_v1;
+				ruledSurface1.ControlPoints = cps1;
+
+				std::vector<double> kv_u0;
+				std::vector<double> kv_v0;
+				std::vector<std::vector<XYZW>> cps0;
+				RefineKnotVector(ruledSurface0.DegreeU, ruledSurface0.DegreeV, ruledSurface0.KnotVectorU, ruledSurface0.KnotVectorV, ruledSurface0.ControlPoints, insert1, false, kv_u0, kv_v0, cps0);
+				ruledSurface0.KnotVectorV = kv_v0;
+				ruledSurface0.ControlPoints = cps0;
+			}
+			if (insert2.size() > 0)
+			{
+				std::vector<double> kv_u;
+				std::vector<double> kv_v;
+				std::vector<std::vector<XYZW>> cps;
+				RefineKnotVector(bilinearSurface.DegreeU, bilinearSurface.DegreeV, bilinearSurface.KnotVectorU, bilinearSurface.KnotVectorV, bilinearSurface.ControlPoints, insert2, false, kv_u, kv_v, cps);
+				bilinearSurface.KnotVectorV = kv_v;
+				bilinearSurface.ControlPoints = cps;
+			}
+		}
+	}
+
+	surface.DegreeU = ruledSurface0.DegreeU;
+	surface.DegreeV = ruledSurface0.DegreeV;
+	surface.KnotVectorU = ruledSurface0.KnotVectorU;
+	surface.KnotVectorV = ruledSurface0.KnotVectorV;
+
+	int row = ruledSurface0.ControlPoints.size();
+	int column = ruledSurface0.ControlPoints[0].size();
+
+	std::vector<std::vector<XYZW>> controlPoints(row, std::vector<XYZW>(column));
+	for (int i = 0; i < row; i++)
+	{
+		for (int j = 0; j < column; j++)
+		{
+			controlPoints[i][j] = ruledSurface0.ControlPoints[i][j] + ruledSurface1.ControlPoints[i][j] - bilinearSurface.ControlPoints[i][j];
+		}
+	}
+	surface.ControlPoints = controlPoints;
 }
 
 
