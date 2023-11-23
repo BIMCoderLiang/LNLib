@@ -1521,6 +1521,75 @@ bool LNLib::NurbsSurface::GlobalApproximation(const std::vector<std::vector<XYZ>
 	return true;
 }
 
+bool LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_Curve>& sections, LN_Surface& surface)
+{
+	int degree_max = 0;
+	for (int i = 0; i < sections.size(); i++)
+	{
+		LN_Curve current = sections[i];
+		VALIDATE_ARGUMENT(current.Degree > 0, "degree", "Degree must greater than zero.");
+		VALIDATE_ARGUMENT(current.KnotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+		VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(current.KnotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+		VALIDATE_ARGUMENT(current.ControlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+		VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(current.Degree, current.KnotVector.size(), current.ControlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+		if (degree_max < current.Degree)
+		{
+			degree_max = current.Degree;
+		}
+	}
+
+	for (int i = 0; i < sections.size(); i++)
+	{
+		LN_Curve current = sections[i];
+		if (degree_max > current.Degree)
+		{
+			int times = degree_max - current.Degree;
+			std::vector<double> newKv;
+			std::vector<XYZW> newCps;
+			NurbsCurve::ElevateDegree(current.Degree, current.KnotVector, current.ControlPoints, times, newKv, newCps);
+			current.Degree = degree_max;
+			current.KnotVector = newKv; 
+			current.ControlPoints = newCps;
+		}
+	}
+
+	// to be continued....
+	return true;
+}
+
+bool LNLib::NurbsSurface::CreateSweepSurface(const LN_Curve& path, const std::vector<LN_Curve>& profiles, LN_Surface& surface)
+{
+	VALIDATE_ARGUMENT(path.Degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(path.KnotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(path.KnotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(path.ControlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(path.Degree, path.KnotVector.size(), path.ControlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+	for (int i = 0; i < profiles.size(); i++)
+	{
+		LN_Curve current = profiles[i];
+		VALIDATE_ARGUMENT(current.Degree > 0, "degree", "Degree must greater than zero.");
+		VALIDATE_ARGUMENT(current.KnotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+		VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(current.KnotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+		VALIDATE_ARGUMENT(current.ControlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+		VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(current.Degree, current.KnotVector.size(), current.ControlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	}
+
+	int profilesSize = profiles.size();
+	double path_min = path.KnotVector[0];
+	double path_max = path.KnotVector[path.KnotVector.size() - 1];
+	std::vector<double> parametersAlongPath(profilesSize);
+	double delta = (path_max - path_min) / profilesSize;
+	for (int i = 0; i < profilesSize; i++)
+	{
+		parametersAlongPath[i] = path_min + i * delta;
+	}
+
+	// to be continued....
+	return true;
+}
+
 void LNLib::NurbsSurface::CreateCoonsSurface(const LN_Curve& curve0, const LN_Curve& curve1, const LN_Curve& curve2, const LN_Curve& curve3, LN_Surface& surface)
 {
 	std::vector<LN_Curve> nurbs(4);
@@ -1548,7 +1617,9 @@ void LNLib::NurbsSurface::CreateCoonsSurface(const LN_Curve& curve0, const LN_Cu
 		std::vector<double> newKv;
 		std::vector<XYZW> newCps;
 		NurbsCurve::ElevateDegree(n2.Degree, n2.KnotVector, n2.ControlPoints, times, newKv, newCps);
-		n2.KnotVector = newKv; n2.ControlPoints = newCps;
+		n2.Degree = degree_n0;
+		n2.KnotVector = newKv; 
+		n2.ControlPoints = newCps;
 	}
 	if (degree_n2 > degree_n0)
 	{
@@ -1556,7 +1627,9 @@ void LNLib::NurbsSurface::CreateCoonsSurface(const LN_Curve& curve0, const LN_Cu
 		std::vector<double> newKv;
 		std::vector<XYZW> newCps;
 		NurbsCurve::ElevateDegree(n0.Degree, n0.KnotVector, n0.ControlPoints, times, newKv, newCps);
-		n0.KnotVector = newKv; n0.ControlPoints = newCps;
+		n0.Degree = degree_n2;
+		n0.KnotVector = newKv; 
+		n0.ControlPoints = newCps;
 	}
 	if (n0.KnotVector != n2.KnotVector)
 	{
@@ -1591,7 +1664,9 @@ void LNLib::NurbsSurface::CreateCoonsSurface(const LN_Curve& curve0, const LN_Cu
 		std::vector<double> newKv;
 		std::vector<XYZW> newCps;
 		NurbsCurve::ElevateDegree(n3.Degree, n3.KnotVector, n3.ControlPoints, times, newKv, newCps);
-		n3.KnotVector = newKv; n3.ControlPoints = newCps;
+		n3.Degree = degree_n1;
+		n3.KnotVector = newKv; 
+		n3.ControlPoints = newCps;
 	}
 	if (degree_n3 > degree_n1)
 	{
@@ -1599,7 +1674,9 @@ void LNLib::NurbsSurface::CreateCoonsSurface(const LN_Curve& curve0, const LN_Cu
 		std::vector<double> newKv;
 		std::vector<XYZW> newCps;
 		NurbsCurve::ElevateDegree(n1.Degree, n1.KnotVector, n1.ControlPoints, times, newKv, newCps);
-		n1.KnotVector = newKv; n1.ControlPoints = newCps;
+		n1.Degree = degree_n3;
+		n1.KnotVector = newKv; 
+		n1.ControlPoints = newCps;
 	}
 	if (n1.KnotVector != n3.KnotVector)
 	{
