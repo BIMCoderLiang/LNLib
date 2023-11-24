@@ -54,6 +54,12 @@ namespace LNLib
 		/// Get insert elements between two knot vector for create ruled surface.
 		/// </summary>
 		static void GetInsertedKnotElement(const std::vector<double>& knotVector0, const std::vector<double>& knotVector1, std::vector<double>& insertElements0, std::vector<double>& insertElements1);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page472
+		/// Get insert elements between knot vectors for create sweep surface.
+		/// </summary>
+		static std::vector<std::vector<double>> GetInsertedKnotElements(const std::vector<std::vector<double>>& knotVectors);
 	};
 
 }

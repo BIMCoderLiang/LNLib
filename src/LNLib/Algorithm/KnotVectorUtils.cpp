@@ -128,5 +128,67 @@ void LNLib::KnotVectorUtils::GetInsertedKnotElement(const std::vector<double>& k
 	std::sort(insertElements1.begin(), insertElements1.end());
 }
 
+std::vector<std::vector<double>> LNLib::KnotVectorUtils::GetInsertedKnotElements(const std::vector<std::vector<double>>& knotVectors)
+{
+	std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> finalMap;
+	for (int i = 0; i < knotVectors.size(); i++)
+	{
+		auto kv = knotVectors[i];
+		std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> map = GetKnotMultiplicityMap(kv);
+		for (auto it = map.begin(); it != map.end(); ++it)
+		{
+			double key = it->first;
+			int count = it->second;
+			auto got = finalMap.find(key);
+			if (got == finalMap.end())
+			{
+				finalMap.insert({ key, count });
+			}
+			else
+			{
+				int currentCount = got->second;
+				if (currentCount < count)
+				{
+					finalMap[key] = count;
+				}
+			}
+		}
+	}
+
+	std::vector<std::vector<double>> result;
+	for (int i = 0; i < knotVectors.size(); i++)
+	{
+		auto kv = knotVectors[i];
+		std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> map = GetKnotMultiplicityMap(kv);
+
+		std::vector<double> insertElements;
+		for (auto it = finalMap.begin(); it != finalMap.end(); ++it)
+		{
+			double key = it->first;
+			int count = it->second;
+
+			auto got = map.find(key);
+			if (got == map.end())
+			{
+				for (int j = 0; j < count; j++)
+				{
+					insertElements.emplace_back(key);
+				}
+			}
+			else
+			{
+				int currentCount = got->second;
+				int times = count - currentCount;
+				for (int j = 0; j < times; j++)
+				{
+					insertElements.emplace_back(key);
+				}
+			}
+		}
+		result.emplace_back(insertElements);
+	}
+	return result;
+}
+
 
 
