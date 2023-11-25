@@ -1,6 +1,7 @@
 ﻿#include "gtest/gtest.h"
 #include "NurbsCurve.h"
 #include "NurbsSurface.h"
+#include "LNObject.h"
 #include "UV.h"
 #include "XYZ.h"
 #include "XYZW.h"
@@ -86,9 +87,14 @@ TEST(Test_AdvancedGeometric, All)
 			{P70, P71, P72, P73, P74},
 
 		};
-
-		XYZ result = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, uv, cps);
-		UV param = NurbsSurface::GetParamOnSurface(degreeU, degreeV, kvU, kvV, cps, result);
+		LN_Surface surface;
+		surface.DegreeU = degreeU;
+		surface.DegreeV = degreeV;
+		surface.KnotVectorU = kvU;
+		surface.KnotVectorV = kvV;
+		surface.ControlPoints = cps;
+		XYZ result = NurbsSurface::GetPointOnSurface(surface, uv);
+		UV param = NurbsSurface::GetParamOnSurface(surface, result);
 		EXPECT_TRUE(param.IsAlmostEqualTo(uv));
 	}
 

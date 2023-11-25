@@ -5,6 +5,7 @@
 #include "NurbsSurface.h"
 #include "ValidationUtils.h"
 #include "MathUtils.h"
+#include "LNObject.h"
 using namespace LNLib;
 
 TEST(Test_Fundamental, All)
@@ -45,7 +46,8 @@ TEST(Test_Fundamental, All)
 
 	{
 		int degree = 3;
-		std::vector<double> kv = { 0,0,0,0,1,2,3,4,5,5,5,5 };
+		std::vector<double> kvU = { 0,0,0,0,1,2,3,4,5,5,5,5 };
+		std::vector<double> kvV = { 0,0,0,1,1,1 };
 		double insertKnot = 2.0;
 
 		XYZW P00 = XYZW(XYZ(0, 0, 0), 1);
@@ -78,20 +80,27 @@ TEST(Test_Fundamental, All)
 			{P70,P71},
 		
 		};
-		std::vector<double> newKv;
-		std::vector<std::vector<XYZW>> newCp;
-		NurbsSurface::InsertKnot(degree, kv, cp, insertKnot, 1, true, newKv, newCp);
-		EXPECT_TRUE(newKv.size() == kv.size() + 1 &&
-					MathUtils::IsAlmostEqualTo(newKv[5], newKv[6]) &&
-					MathUtils::IsAlmostEqualTo(newKv[5], 2.0));
-		EXPECT_TRUE(newCp[3][0].IsAlmostEqualTo(2.0 / 3 * P30 + 1.0 / 3 * P20));
-		EXPECT_TRUE(newCp[4][0].IsAlmostEqualTo(1.0 / 3 * P40 + 2.0 / 3 * P30));
-		EXPECT_TRUE(newCp[5][0].IsAlmostEqualTo(P40));
+		LN_Surface surface;
+		surface.DegreeU = degree;
+		surface.DegreeV = degree;
+		surface.KnotVectorU = kvU;
+		surface.KnotVectorV = kvV;
+		surface.ControlPoints = cp;
+
+		LN_Surface result;
+		NurbsSurface::InsertKnot(surface, insertKnot, 1, true, result);
+		EXPECT_TRUE(result.KnotVectorU.size() == surface.KnotVectorU.size() + 1 &&
+					MathUtils::IsAlmostEqualTo(result.KnotVectorU[5], result.KnotVectorU[6]) &&
+					MathUtils::IsAlmostEqualTo(result.KnotVectorU[5], 2.0));
+		EXPECT_TRUE(result.ControlPoints[3][0].IsAlmostEqualTo(2.0 / 3 * P30 + 1.0 / 3 * P20));
+		EXPECT_TRUE(result.ControlPoints[4][0].IsAlmostEqualTo(1.0 / 3 * P40 + 2.0 / 3 * P30));
+		EXPECT_TRUE(result.ControlPoints[5][0].IsAlmostEqualTo(P40));
 	}
 
 	{
 		int degree = 3;
-		std::vector<double> kv = { 0,0,0,0,1,2,3,4,5,5,5,5 };
+		std::vector<double> kvU = { 0,0,0,1,1,1 };
+		std::vector<double> kvV = { 0,0,0,0,1,2,3,4,5,5,5,5 };
 		double insertKnot = 2.0;
 
 		XYZW P00 = XYZW(XYZ(0, 0, 0), 1);
@@ -119,15 +128,21 @@ TEST(Test_Fundamental, All)
 
 		};
 
-		std::vector<double> newKv;
-		std::vector<std::vector<XYZW>> newCp;
-		NurbsSurface::InsertKnot(degree, kv, cp, insertKnot, 1, false, newKv, newCp);
-		EXPECT_TRUE(newKv.size() == kv.size() + 1 &&
-					MathUtils::IsAlmostEqualTo(newKv[5], newKv[6]) &&
-					MathUtils::IsAlmostEqualTo(newKv[5], 2.0));
-		EXPECT_TRUE(newCp[0][3].IsAlmostEqualTo(2.0 / 3 * P03 + 1.0 / 3 * P02));
-		EXPECT_TRUE(newCp[0][4].IsAlmostEqualTo(1.0 / 3 * P04 + 2.0 / 3 * P03));
-		EXPECT_TRUE(newCp[0][5].IsAlmostEqualTo(P04));
+		LN_Surface surface;
+		surface.DegreeU = degree;
+		surface.DegreeV = degree;
+		surface.KnotVectorU = kvU;
+		surface.KnotVectorV = kvV;
+		surface.ControlPoints = cp;
+
+		LN_Surface result;
+		NurbsSurface::InsertKnot(surface, insertKnot, 1, false, result);
+		EXPECT_TRUE(result.KnotVectorV.size() == surface.KnotVectorV.size() + 1 &&
+					MathUtils::IsAlmostEqualTo(result.KnotVectorV[5], result.KnotVectorV[6]) &&
+					MathUtils::IsAlmostEqualTo(result.KnotVectorV[5], 2.0));
+		EXPECT_TRUE(result.ControlPoints[0][3].IsAlmostEqualTo(2.0 / 3 * P03 + 1.0 / 3 * P02));
+		EXPECT_TRUE(result.ControlPoints[0][4].IsAlmostEqualTo(1.0 / 3 * P04 + 2.0 / 3 * P03));
+		EXPECT_TRUE(result.ControlPoints[0][5].IsAlmostEqualTo(P04));
 	}
 
 	{
@@ -170,13 +185,18 @@ TEST(Test_Fundamental, All)
 			{XYZW(25,25,0,1),XYZW(15,25,0,1),XYZW(5,25,5,1),XYZW(-5,25,5,1),XYZW(-15,25,0,1),XYZW(-25,25,0,1)},
 			
 		};
-		std::vector<double> newKu;
-		std::vector<double> newKv;
-		std::vector < std::vector<XYZW>> newCps;
+		LN_Surface surface;
+		surface.DegreeU = degreeU;
+		surface.DegreeV = degreeV;
+		surface.KnotVectorU = kvU;
+		surface.KnotVectorV = kvV;
+		surface.ControlPoints = cps;
+
+		LN_Surface result;
 		std::vector<double> ike = { 0.5,0.5,0.5,1.0,1.0,1.5,1.5,1.5,2,2,2.5,2.5,2.5 };
-		NurbsSurface::RefineKnotVector(degreeU, degreeV, kvU, kvV, cps, ike, true, newKu, newKv, newCps);
-		EXPECT_TRUE(newKu.size() == 23 && newKv.size() == kvV.size());
-		EXPECT_TRUE(newCps[4][0].ToXYZ(true).IsAlmostEqualTo(XYZ(25, -10.208333, 2.1875)));
+		NurbsSurface::RefineKnotVector(surface, ike, true, result);
+		EXPECT_TRUE(result.KnotVectorU.size() == 23 && result.KnotVectorV.size() == kvV.size());
+		EXPECT_TRUE(result.ControlPoints[4][0].ToXYZ(true).IsAlmostEqualTo(XYZ(25, -10.208333, 2.1875)));
 	}
 
 	{
@@ -212,19 +232,24 @@ TEST(Test_Fundamental, All)
 			{XYZW(5,45,0,1),XYZW(10,50,0,1),XYZW(20,55,0,1),XYZW(35,55,0,1),XYZW(45,50,0,1),XYZW(50,45,0,1)},
 			{XYZW(5,55,0,1),XYZW(10,60,0,1),XYZW(20,65,0,1),XYZW(35,65,0,1),XYZW(45,60,0,1),XYZW(50,55,0,1)},
 		};
-		std::vector<double> restkvU;
-		std::vector<double> restkvV;
-		std::vector<std::vector<XYZW>> newCps;
-		NurbsSurface::RemoveKnot(degree, degree, kvU, kvV, cps, 0.66, 1, false, restkvU, restkvV, newCps);
-		EXPECT_TRUE(restkvV.size() == kvV.size() - 1);
-		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(restkvV[4], 0.33));
-		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(restkvV[5], 1.0));
-		EXPECT_TRUE(newCps[0].size() == 5);
-		EXPECT_TRUE(newCps[0][0].IsAlmostEqualTo(XYZW(5, 5, 0, 1)));
-		EXPECT_TRUE(newCps[0][1].IsAlmostEqualTo(XYZW(10, 10, 0, 1)));
-		EXPECT_TRUE(newCps[0][2].IsAlmostEqualTo(XYZW(25.15151515, 17.5757575757, 0, 1)));
-		EXPECT_TRUE(newCps[0][3].IsAlmostEqualTo(XYZW(45, 10, 0, 1)));
-		EXPECT_TRUE(newCps[0][4].IsAlmostEqualTo(XYZW(50, 5, 0, 1)));
+
+		LN_Surface surface;
+		surface.DegreeU = surface.DegreeV = degree;
+		surface.KnotVectorU = kvU;
+		surface.KnotVectorV = kvV;
+		surface.ControlPoints = cps;
+
+		LN_Surface result;
+		NurbsSurface::RemoveKnot(surface, 0.66, 1, false, result);
+		EXPECT_TRUE(result.KnotVectorV.size() == surface.KnotVectorV.size() - 1);
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(result.KnotVectorV[4], 0.33));
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(result.KnotVectorV[5], 1.0));
+		EXPECT_TRUE(result.ControlPoints[0].size() == 5);
+		EXPECT_TRUE(result.ControlPoints[0][0].IsAlmostEqualTo(XYZW(5, 5, 0, 1)));
+		EXPECT_TRUE(result.ControlPoints[0][1].IsAlmostEqualTo(XYZW(10, 10, 0, 1)));
+		EXPECT_TRUE(result.ControlPoints[0][2].IsAlmostEqualTo(XYZW(25.15151515, 17.5757575757, 0, 1)));
+		EXPECT_TRUE(result.ControlPoints[0][3].IsAlmostEqualTo(XYZW(45, 10, 0, 1)));
+		EXPECT_TRUE(result.ControlPoints[0][4].IsAlmostEqualTo(XYZW(50, 5, 0, 1)));
 	}
 
 	{

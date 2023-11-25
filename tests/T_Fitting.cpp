@@ -8,6 +8,7 @@
 #include "ValidationUtils.h"
 #include "Interpolation.h"
 #include "Intersection.h"
+#include "LNObject.h"
 
 using namespace LNLib;
 
@@ -109,16 +110,15 @@ TEST(Test_Fitting, Interpolation)
 			{P70, P71, P72, P73, P74},
 
 		};
-		std::vector<double> kvU, kvV;
-		std::vector<std::vector<XYZW>> cps;
-		NurbsSurface::GlobalInterpolation(Q, degreeU, degreeV, kvU, kvV, cps);
-		XYZ C0 = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(kvU[0], kvV[0]), cps);
+		LN_Surface surface;
+		NurbsSurface::GlobalInterpolation(Q, degreeU, degreeV, surface);
+		XYZ C0 = NurbsSurface::GetPointOnSurface(surface, UV(surface.KnotVectorU[0], surface.KnotVectorV[0]));
 		EXPECT_TRUE(C0.IsAlmostEqualTo(P00));
-		XYZ C1 = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(kvU[0], kvV[kvV.size()-1]), cps);
+		XYZ C1 = NurbsSurface::GetPointOnSurface(surface, UV(surface.KnotVectorU[0], surface.KnotVectorV[surface.KnotVectorV.size()-1]));
 		EXPECT_TRUE(C1.IsAlmostEqualTo(P04));
-		XYZ C2 = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(kvU[kvU.size()-1], kvV[0]), cps);
+		XYZ C2 = NurbsSurface::GetPointOnSurface(surface, UV(surface.KnotVectorU[surface.KnotVectorU.size()-1], surface.KnotVectorV[0]));
 		EXPECT_TRUE(C2.IsAlmostEqualTo(P70));
-		XYZ C3 = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(kvU[kvU.size() - 1], kvV[kvV.size() - 1]), cps);
+		XYZ C3 = NurbsSurface::GetPointOnSurface(surface, UV(surface.KnotVectorU[surface.KnotVectorU.size() - 1], surface.KnotVectorV[surface.KnotVectorV.size() - 1]));
 		EXPECT_TRUE(C3.IsAlmostEqualTo(P74));
 	}
 
@@ -283,12 +283,11 @@ TEST(Test_Fitting, Approximation)
 			{P50, P51, P52, P53, P54, P55, P56},
 		    {P60, P61, P62, P63, P64, P65, P66},
 		};
-		std::vector<double> kvU;
-		std::vector<double> kvV;
-		std::vector<std::vector<XYZW>> cps;
-		NurbsSurface::GlobalApproximation(Q, degreeU, degreeV, 4, 4, kvU, kvV, cps);
-		EXPECT_TRUE(ValidationUtils::IsValidNurbs(degreeU, kvU.size(), cps.size()));
-		EXPECT_TRUE(ValidationUtils::IsValidNurbs(degreeV, kvV.size(), cps[0].size()));
+		
+		LN_Surface surface;
+		NurbsSurface::GlobalApproximation(Q, degreeU, degreeV, 4, 4, surface);
+		EXPECT_TRUE(ValidationUtils::IsValidNurbs(degreeU, surface.KnotVectorU.size(), surface.ControlPoints.size()));
+		EXPECT_TRUE(ValidationUtils::IsValidNurbs(degreeV, surface.KnotVectorV.size(), surface.ControlPoints[0].size()));
 	}
 	{
 		XYZ P00 = XYZ(0, 0, 0);
@@ -414,13 +413,11 @@ TEST(Test_Fitting, Approximation)
 			{P80, P81, P82, P83, P84, P85, P86, P87, P88, P89},
 			{P90, P91, P92, P93, P94, P95, P96, P97, P98, P99},
 		};
-		std::vector<double> kvU;
-		std::vector<double> kvV;
-		std::vector<std::vector<XYZW>> cps;
-		bool result = NurbsSurface::BicubicLocalInterpolation(Q, kvU, kvV, cps);
+		LN_Surface surface;
+		bool result = NurbsSurface::BicubicLocalInterpolation(Q, surface);
 		EXPECT_TRUE(result);
-		EXPECT_TRUE(ValidationUtils::IsValidNurbs(3, kvU.size(), cps.size()));
-		EXPECT_TRUE(ValidationUtils::IsValidNurbs(3, kvV.size(), cps[0].size()));
+		EXPECT_TRUE(ValidationUtils::IsValidNurbs(3, surface.KnotVectorU.size(), surface.ControlPoints.size()));
+		EXPECT_TRUE(ValidationUtils::IsValidNurbs(3, surface.KnotVectorV.size(), surface.ControlPoints[0].size()));
 	}
 	{
 		XYZ P;

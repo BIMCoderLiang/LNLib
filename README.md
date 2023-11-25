@@ -10,7 +10,7 @@ Basic Elements:
 - XYZ
 - XYZW
 - Matrix4d
-- LNObject (only for advanced surface construction)
+- LNObject
 
 NURBS Algorithms:
 - ***Chapter 1***:

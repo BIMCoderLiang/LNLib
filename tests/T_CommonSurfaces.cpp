@@ -5,6 +5,7 @@
 #include "XYZ.h"
 #include "XYZW.h"
 #include "MathUtils.h"
+#include "LNObject.h"
 using namespace LNLib;
 
 TEST(Test_CommonSurfaces, All)
@@ -15,11 +16,9 @@ TEST(Test_CommonSurfaces, All)
 		XYZ P11 = XYZ(100, 0, 0);
 		XYZ P10 = XYZ(0, 0, 100);
 
-		int degreeU, degreeV;
-		std::vector<double> kvU, kvV;
-		std::vector<std::vector<XYZW>> cps;
-		NurbsSurface::CreateBilinearSurface(P00, P01, P11, P10, degreeU, degreeV, kvU, kvV, cps);
-		XYZ result = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(0.5, 0.5), cps);
+		LN_Surface surface;
+		NurbsSurface::CreateBilinearSurface(P00, P01, P11, P10, surface);
+		XYZ result = NurbsSurface::GetPointOnSurface(surface, UV(0.5, 0.5));
 		EXPECT_TRUE(result.IsAlmostEqualTo(XYZ(50, 50, 50)));
 	}
 
@@ -31,18 +30,16 @@ TEST(Test_CommonSurfaces, All)
 		double endRad = 2 * Constants::Pi;
 		double radius = 5;
 		double height = 5;
-		int degreeU, degreeV;
-		std::vector<double> kvU, kvV;
-		std::vector<std::vector<XYZW>> cps;
-		bool result = NurbsSurface::CreateCylindricalSurface(origin, xAxis, yAxis, startRad, endRad, radius, height, degreeU, degreeV, kvU, kvV, cps);
+		LN_Surface surface;
+		bool result = NurbsSurface::CreateCylindricalSurface(origin, xAxis, yAxis, startRad, endRad, radius, height, surface);
 		EXPECT_TRUE(result);
-		XYZ C0 = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(0.5, 0.5), cps);
+		XYZ C0 = NurbsSurface::GetPointOnSurface(surface, UV(0.5, 0.5));
 		EXPECT_TRUE(C0.IsAlmostEqualTo(XYZ(-radius,0,radius/2.0)));
-		XYZ C1 = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(0, 0), cps);
+		XYZ C1 = NurbsSurface::GetPointOnSurface(surface, UV(0, 0));
 		EXPECT_TRUE(C1.IsAlmostEqualTo(XYZ(radius, 0, height)));
-		XYZ C2 = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(1, 0), cps);
+		XYZ C2 = NurbsSurface::GetPointOnSurface(surface, UV(1, 0));
 		EXPECT_TRUE(C2.IsAlmostEqualTo(XYZ(radius, 0, 0)));
-		XYZ C3 = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(0, 1), cps);
+		XYZ C3 = NurbsSurface::GetPointOnSurface(surface, UV(0, 1));
 		EXPECT_TRUE(C3.IsAlmostEqualTo(XYZ(radius, 0, height)));
 	}
 
@@ -59,17 +56,25 @@ TEST(Test_CommonSurfaces, All)
 		XYZ C10 = NurbsCurve::GetPointOnCurve(degree1, kv1, 0, cp1);
 		XYZ C11 = NurbsCurve::GetPointOnCurve(degree1, kv1, 1, cp1);
 
-		int degreeU, degreeV;
-		std::vector<double> kvU, kvV;
-		std::vector<std::vector<XYZW>> scps;
-		NurbsSurface::CreateRuledSurface(degree0, kv0, cp0, degree1, kv1, cp1, degreeU, degreeV, kvU, kvV, scps);
-		XYZ S00 = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(0, 0), scps);
+		LN_Curve curve0;
+		curve0.Degree = degree0;
+		curve0.KnotVector = kv0;
+		curve0.ControlPoints = cp0;
+
+		LN_Curve curve1;
+		curve1.Degree = degree1;
+		curve1.KnotVector = kv1;
+		curve1.ControlPoints = cp1;
+
+		LN_Surface surface;
+		NurbsSurface::CreateRuledSurface(curve0, curve1, surface);
+		XYZ S00 = NurbsSurface::GetPointOnSurface(surface, UV(0, 0));
 		EXPECT_TRUE(S00.IsAlmostEqualTo(C00));
-		XYZ S01 = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(1, 0), scps);
+		XYZ S01 = NurbsSurface::GetPointOnSurface(surface, UV(1, 0));
 		EXPECT_TRUE(S01.IsAlmostEqualTo(C01));
-		XYZ S10 = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(0, 1), scps);
+		XYZ S10 = NurbsSurface::GetPointOnSurface(surface, UV(0, 1));
 		EXPECT_TRUE(S10.IsAlmostEqualTo(C10));
-		XYZ S11 = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(1, 1), scps);
+		XYZ S11 = NurbsSurface::GetPointOnSurface(surface, UV(1, 1));
 		EXPECT_TRUE(S11.IsAlmostEqualTo(C11));
 	}
 
@@ -81,12 +86,15 @@ TEST(Test_CommonSurfaces, All)
 		XYZ axis = XYZ(0, 0, 1);
 		double rad = Constants::Pi / 2.0;
 
-		int degreeU;
-		std::vector<double> kvU;
-		std::vector<std::vector<XYZW>> cps;
-		bool result = NurbsSurface::CreateRevolvedSurface(origin, axis, rad, cpsV, degreeU, kvU, cps);
+		LN_Curve profile;
+		profile.Degree = degreeV;
+		profile.KnotVector = kvV;
+		profile.ControlPoints = cpsV;
+
+		LN_Surface surface;
+		bool result = NurbsSurface::CreateRevolvedSurface(origin, axis, rad, profile, surface);
 		EXPECT_TRUE(result);
-		XYZ C0 = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, UV(0.5, 0.5), cps);
+		XYZ C0 = NurbsSurface::GetPointOnSurface(surface, UV(0.5, 0.5));
 		EXPECT_TRUE(C0.IsAlmostEqualTo(XYZ(sqrt(2)/4.0, sqrt(2)/ 4.0, 0.5)));
 	}
 }

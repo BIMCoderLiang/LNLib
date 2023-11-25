@@ -3,6 +3,7 @@
 #include "XYZ.h"
 #include "XYZW.h"
 #include "NurbsSurface.h"
+#include "LNObject.h"
 using namespace LNLib;
 
 TEST(Test_NurbsSurface, All)
@@ -73,10 +74,15 @@ TEST(Test_NurbsSurface, All)
 		{P70, P71, P72, P73, P74},
 		
 	};
-
-	XYZ result = NurbsSurface::GetPointOnSurface(degreeU, degreeV, kvU, kvV, uv, cps);
+	LN_Surface surface;
+	surface.DegreeU = degreeU;
+	surface.DegreeV = degreeV;
+	surface.KnotVectorU = kvU;
+	surface.KnotVectorV = kvV;
+	surface.ControlPoints = cps;
+	XYZ result = NurbsSurface::GetPointOnSurface(surface, uv);
 	EXPECT_TRUE(result.IsAlmostEqualTo(XYZ(2,98.0/27,68.0/27)));
 
-	std::vector<std::vector<XYZ>> ders =  NurbsSurface::ComputeRationalSurfaceDerivatives(degreeU, degreeV, 1, kvU, kvV, uv, cps);
+	std::vector<std::vector<XYZ>> ders =  NurbsSurface::ComputeRationalSurfaceDerivatives(surface,1,uv);
 	EXPECT_TRUE(ders[0][0].IsAlmostEqualTo(XYZ(2, 98.0 / 27, 68.0 / 27)));
 }
