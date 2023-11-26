@@ -26,20 +26,21 @@ TEST(Test_Circles, All)
 		XYZ center = XYZ(0, 0, 0);
 		XYZ xAxis = XYZ(1, 0, 0);
 		XYZ yAxis = XYZ(0, 1, 0);
-		int degree;
-		std::vector<double> kv;
-		std::vector<XYZW> cps;
-		bool result = NurbsCurve::CreateArc(center, xAxis, yAxis, 0, 2 * Constants::Pi, 10, 10, degree, kv, cps);
+		
+		LN_Curve curve;
+		
+		bool result = NurbsCurve::CreateArc(center, xAxis, yAxis, 0, 2 * Constants::Pi, 10, 10, curve);
 		EXPECT_TRUE(result);
-		XYZ C0 = NurbsCurve::GetPointOnCurve(degree, kv, 0, cps);
+
+		XYZ C0 = NurbsCurve::GetPointOnCurve(curve, 0);
 		EXPECT_TRUE(C0.IsAlmostEqualTo(XYZ(10, 0, 0)));
-		XYZ C1 = NurbsCurve::GetPointOnCurve(degree, kv, 0.25, cps);
+		XYZ C1 = NurbsCurve::GetPointOnCurve(curve,0.25);
 		EXPECT_TRUE(C1.IsAlmostEqualTo(XYZ(0, 10, 0)));
-		XYZ C2 = NurbsCurve::GetPointOnCurve(degree, kv, 0.5, cps);
+		XYZ C2 = NurbsCurve::GetPointOnCurve(curve, 0.5);
 		EXPECT_TRUE(C2.IsAlmostEqualTo(XYZ(-10, 0, 0)));
-		XYZ C3 = NurbsCurve::GetPointOnCurve(degree, kv, 0.75, cps);
+		XYZ C3 = NurbsCurve::GetPointOnCurve(curve, 0.75);
 		EXPECT_TRUE(C3.IsAlmostEqualTo(XYZ(0, -10, 0)));
-		XYZ C4 = NurbsCurve::GetPointOnCurve(degree, kv, 1.0, cps);
+		XYZ C4 = NurbsCurve::GetPointOnCurve(curve, 1.0);
 		EXPECT_TRUE(C4.IsAlmostEqualTo(XYZ(10, 0, 0)));
 	}
 
@@ -50,16 +51,15 @@ TEST(Test_Circles, All)
 		XYZ endTangent = XYZ(-1, 0, 0);
 		XYZ pointOnConic = XYZ(10, 0, 0);
 
-		int degree;
-		std::vector<double> kv;
-		std::vector<XYZW> cps;
-		bool result = NurbsCurve::CreateOpenConic(start, startTangent, end, endTangent, pointOnConic, degree, kv, cps);
+		LN_Curve curve;
+
+		bool result = NurbsCurve::CreateOpenConic(start, startTangent, end, endTangent, pointOnConic, curve);
 		EXPECT_TRUE(result);
-		XYZ C0 = NurbsCurve::GetPointOnCurve(degree, kv, 0, cps);
+		XYZ C0 = NurbsCurve::GetPointOnCurve(curve, 0);
 		EXPECT_TRUE(C0.IsAlmostEqualTo(XYZ(0, 10, 0)));
-		XYZ C1 = NurbsCurve::GetPointOnCurve(degree, kv, 0.5, cps);
+		XYZ C1 = NurbsCurve::GetPointOnCurve(curve, 0.5);
 		EXPECT_TRUE(C1.IsAlmostEqualTo(XYZ(10, 0, 0)));
-		XYZ C2 = NurbsCurve::GetPointOnCurve(degree, kv, 1, cps);
+		XYZ C2 = NurbsCurve::GetPointOnCurve(curve, 1);
 		EXPECT_TRUE(C2.IsAlmostEqualTo(XYZ(0, -10, 0)));
 	}
 }

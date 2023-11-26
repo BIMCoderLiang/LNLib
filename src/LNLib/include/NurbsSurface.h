@@ -98,7 +98,7 @@ namespace LNLib
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page334
 		/// construct a NURBS surface by four counter-clockwise points.
-		/// point1 ~ point4 are counter-clock placement.
+		/// point1,point2,point3,point4 are anti-clock placement.
 		/// </summary>
 		static void CreateBilinearSurface(const XYZ& point1, const XYZ& point2, const XYZ& point3, const XYZ& point4, LN_Surface& surface);
 

@@ -19,8 +19,14 @@ TEST(Test_Advanced, All)
 		XYZ direction = XYZ(1, 1, 0);
 		double distance = 5;
 		int moveIndex = 3;
-		std::vector<XYZW> updatedCps;
-		bool result = NurbsCurve::ControlPointReposition(degree, kv, cps, 2, moveIndex, direction, distance, updatedCps);
+
+		LN_Curve curve;
+		curve.Degree = degree;
+		curve.KnotVector = kv;
+		curve.ControlPoints = cps;
+
+		LN_Curve newCurve;
+		bool result = NurbsCurve::ControlPointReposition(curve, 2, moveIndex, direction, distance, newCurve);
 		EXPECT_TRUE(result);
 	}
 	{
@@ -29,9 +35,17 @@ TEST(Test_Advanced, All)
 		std::vector<XYZW> cps = { XYZW(XYZ(0,0,0),1), XYZW(XYZ(1,1,0),4), XYZW(XYZ(3,2,0),1), XYZW(XYZ(4,1,0),1), XYZW(XYZ(5,-1,0),1) };
 		XYZ direction = XYZ(1, 1, 0);
 		double distance = 5;
-		std::vector<XYZW> updatedCps;
 		int moveIndex = 3;
-		NurbsCurve::WeightModification(degree, kv, cps, 2, moveIndex, distance, updatedCps);
+
+		LN_Curve curve;
+		curve.Degree = degree;
+		curve.KnotVector = kv;
+		curve.ControlPoints = cps;
+
+		LN_Curve newCurve;
+		NurbsCurve::WeightModification(curve, 2, moveIndex, distance, newCurve);
+
+		std::vector<XYZW> updatedCps = newCurve.ControlPoints;
 		EXPECT_TRUE(updatedCps[moveIndex].IsAlmostEqualTo(cps[moveIndex]));
 		EXPECT_FALSE(MathUtils::IsAlmostEqualTo(updatedCps[moveIndex].GetW(), cps[moveIndex].GetW()));
 	}
@@ -41,9 +55,17 @@ TEST(Test_Advanced, All)
 		std::vector<XYZW> cps = { XYZW(XYZ(0,0,0),1), XYZW(XYZ(1,1,0),4), XYZW(XYZ(3,2,0),1), XYZW(XYZ(4,1,0),1), XYZW(XYZ(5,-1,0),1) };
 		XYZ direction = XYZ(1, 1, 0);
 		double distance = 5;
-		std::vector<XYZW> updatedCps;
 		int moveIndex = 3;
-		NurbsCurve::NeighborWeightsModification(degree, kv, cps, 2, moveIndex, distance, 2.0, updatedCps);
+
+		LN_Curve curve;
+		curve.Degree = degree;
+		curve.KnotVector = kv;
+		curve.ControlPoints = cps;
+
+		LN_Curve newCurve;
+		NurbsCurve::NeighborWeightsModification(curve, 2, moveIndex, distance, 2.0, newCurve);
+
+		std::vector<XYZW> updatedCps = newCurve.ControlPoints;
 		EXPECT_FALSE(MathUtils::IsAlmostEqualTo(updatedCps[moveIndex].GetW(), cps[moveIndex].GetW()));
 		EXPECT_FALSE(MathUtils::IsAlmostEqualTo(updatedCps[moveIndex + 1].GetW(), cps[moveIndex + 1].GetW()));
 	}
@@ -55,8 +77,15 @@ TEST(Test_Advanced, All)
 		std::vector<int> dr = {0};
 		std::vector<int> dk = {0};
 		std::vector<int> fixed;
-		std::vector<XYZW> result = NurbsCurve::ConstraintBasedModification(3, kv, cps, constraintParams, derivativeConstraint, dr, dk, fixed);
-		EXPECT_TRUE(ValidationUtils::IsValidNurbs(3, kv.size(), result.size()));
+
+		LN_Curve curve;
+		curve.Degree = 3;
+		curve.KnotVector = kv;
+		curve.ControlPoints = cps;
+
+		LN_Curve newCurve;
+		NurbsCurve::ConstraintBasedModification(curve, constraintParams, derivativeConstraint, dr, dk, fixed, newCurve);
+		EXPECT_TRUE(ValidationUtils::IsValidNurbs(newCurve.Degree, newCurve.KnotVector.size(), newCurve.ControlPoints.size()));
 	}
 	{
 		XYZ origin = XYZ(0, 0, 0);
@@ -71,26 +100,41 @@ TEST(Test_Advanced, All)
 		XYZ xAxis = XYZ(1, 0, 0);
 		XYZ yAxis = XYZ(0, 1, 0);
 		int degree;
-		std::vector<double> kv;
-		std::vector<XYZW> cps;
-		NurbsCurve::CreateArc(center, xAxis, yAxis, 0, Constants::Pi, 10, 10, degree, kv, cps);
+
+		LN_Curve curve;
+		NurbsCurve::CreateArc(center, xAxis, yAxis, 0, Constants::Pi, 10, 10, curve);
 		std::vector<double> shape = { 0,1,1.5,1,0 };
-		auto newCps = NurbsCurve::Warping(degree, kv, cps, shape, 2, XYZ(0, 0, 1), kv[2], kv[5]);
-		EXPECT_TRUE(cps.size() == newCps.size());
+
+		LN_Curve newCurve;
+		NurbsCurve::Warping(curve, shape, 2, XYZ(0, 0, 1), curve.KnotVector[2], curve.KnotVector[5], newCurve);
+		EXPECT_TRUE(curve.ControlPoints.size() == newCurve.ControlPoints.size());
 	}
 	{
 		int degree = 3;
 		std::vector<double> kv = { 0,0,0,0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1,1,1 };
 		std::vector<XYZW> cps = { XYZW(XYZ(-10,2,0),1), XYZW(XYZ(-8,1,0),1), XYZW(XYZ(-6,0,0),1), XYZW(XYZ(-4,-1,0),1),XYZW(XYZ(-2,-2,0),1),XYZW(XYZ(-1,-1,0),1), XYZW(XYZ(0,0,0),1),XYZW(XYZ(1,2,0),1),XYZW(XYZ(2,3,0),1),XYZW(XYZ(4,4,0),1),XYZW(XYZ(6,8,0),1),XYZW(XYZ(7,9,0),1),XYZW(XYZ(8,10,0),1) };
-		std::vector<XYZW> newCps;
-		auto result = NurbsCurve::Flattening(degree, kv, cps, XYZ(-10, 20, 0), XYZ(10, 20, 0), kv[0], kv[kv.size()-1], newCps);
+		
+		LN_Curve curve;
+		curve.Degree = degree;
+		curve.KnotVector = kv;
+		curve.ControlPoints = cps;
+
+		LN_Curve newCurve;
+		auto result = NurbsCurve::Flattening(curve, XYZ(-10, 20, 0), XYZ(10, 20, 0), kv[0], kv[kv.size()-1], newCurve);
 		EXPECT_TRUE(result);
 	}
 	{
 		int degree = 3;
 		std::vector<double> kv = { 0,0,0,0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1,1,1,1 };
 		std::vector<XYZW> cps = { XYZW(XYZ(-10,2,0),1), XYZW(XYZ(-8,1,0),1), XYZW(XYZ(-6,0,0),1), XYZW(XYZ(-4,-1,0),1),XYZW(XYZ(-2,-2,0),1),XYZW(XYZ(-1,-1,0),1), XYZW(XYZ(0,0,0),1),XYZW(XYZ(1,2,0),1),XYZW(XYZ(2,3,0),1),XYZW(XYZ(4,4,0),1),XYZW(XYZ(6,8,0),1),XYZW(XYZ(7,9,0),1),XYZW(XYZ(8,10,0),1) };
-		auto result = NurbsCurve::Bending(degree, kv, cps, kv[0], kv[kv.size() - 1], XYZ(0,50,0),10,1.5);
-		EXPECT_TRUE(cps.size() == result.size());
+		
+		LN_Curve curve;
+		curve.Degree = degree;
+		curve.KnotVector = kv;
+		curve.ControlPoints = cps;
+
+		LN_Curve newCurve;
+		NurbsCurve::Bending(curve, kv[0], kv[kv.size() - 1], XYZ(0,50,0),10,1.5,newCurve);
+		EXPECT_TRUE(curve.ControlPoints.size() == newCurve.ControlPoints.size());
 	}
 }

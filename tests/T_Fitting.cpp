@@ -25,9 +25,10 @@ TEST(Test_Fitting, Interpolation)
 	{
 		int degree = 3;
 		std::vector<XYZ> Q = { XYZ(0,0,0),XYZ(3,4,0),XYZ(-1,4,0),XYZ(-4,0,0),XYZ(-4,-3,0) };
-		std::vector<double> kv;
-		std::vector<XYZW> cps;
-		NurbsCurve::GlobalInterpolation(degree, Q, kv, cps);
+
+		LN_Curve curve;
+		NurbsCurve::GlobalInterpolation(degree, Q, curve);
+		auto cps = curve.ControlPoints;
 		EXPECT_TRUE(cps.size() == Q.size());
 		EXPECT_TRUE(cps[0].ToXYZ(true).IsAlmostEqualTo(Q[0]));
 		EXPECT_TRUE(cps[4].ToXYZ(true).IsAlmostEqualTo(Q[4]));
@@ -37,12 +38,12 @@ TEST(Test_Fitting, Interpolation)
 		int degree = 2;
 		std::vector<XYZ> Q = { XYZ(100,0,0),XYZ(0,100,0),XYZ(-100,0,0),XYZ(0,-100,0)};
 		std::vector<XYZ> T = { XYZ(0,1,0),XYZ(-1,0,0),XYZ(0,-1,0),XYZ(1,0,0)};
-		std::vector<double> kv;
-		std::vector<XYZW> cps;
-		NurbsCurve::GlobalInterpolation(degree, Q, T, 1, kv, cps);
-		XYZ C0 = NurbsCurve::GetPointOnCurve(degree, kv, 0.0, cps);
+
+		LN_Curve curve;
+		NurbsCurve::GlobalInterpolation(degree, Q, T, 1, curve);
+		XYZ C0 = NurbsCurve::GetPointOnCurve(curve, 0.0);
 		EXPECT_TRUE(C0.IsAlmostEqualTo(XYZ(100, 0, 0)));
-		XYZ C1 = NurbsCurve::GetPointOnCurve(degree, kv, 1.0, cps);
+		XYZ C1 = NurbsCurve::GetPointOnCurve(curve, 1.0);
 		EXPECT_TRUE(C1.IsAlmostEqualTo(XYZ(0, -100, 0)));
 	}
 
@@ -124,10 +125,12 @@ TEST(Test_Fitting, Interpolation)
 
 	{
 		std::vector<XYZ> Q = { XYZ(0,0,0),XYZ(3,4,0),XYZ(-1,4,0),XYZ(-4,0,0),XYZ(-4,-3,0) };
-		std::vector<double> kv;
-		std::vector<XYZW> cps;
-		bool result = NurbsCurve::CubicLocalInterpolation(Q, kv, cps);
+
+		LN_Curve curve;
+		bool result = NurbsCurve::CubicLocalInterpolation(Q, curve);
 		EXPECT_TRUE(result);
+
+		auto cps = curve.ControlPoints;
 		EXPECT_TRUE(cps[0].ToXYZ(true).IsAlmostEqualTo(Q[0]));
 		EXPECT_TRUE(cps[cps.size()-1].ToXYZ(true).IsAlmostEqualTo(Q[4]));
 	}
@@ -148,15 +151,17 @@ TEST(Test_Fitting, Approximation)
 		XYZ P9 = XYZ(80, 80, 0);
 
 		std::vector<XYZ> points = { P0,P1,P2,P3,P4,P5,P6,P7,P8,P9 };
-		std::vector<double> kv;
-		std::vector<XYZW> cps;
-		bool result = NurbsCurve::LeastSquaresApproximation(3, points, 5, kv, cps);
+		
+		LN_Curve curve;
+		bool result = NurbsCurve::LeastSquaresApproximation(3, points, 5, curve);
 		EXPECT_TRUE(result);
+		auto kv = curve.KnotVector;
+		auto cps = curve.ControlPoints;
 		EXPECT_TRUE(ValidationUtils::IsValidNurbs(3,kv.size(),cps.size()));
-		kv.clear();
-		cps.clear();
-		result = NurbsCurve::LeastSquaresApproximation(3, points, 8, kv, cps);
+		result = NurbsCurve::LeastSquaresApproximation(3, points, 8, curve);
 		EXPECT_TRUE(result);
+		kv = curve.KnotVector;
+		cps = curve.ControlPoints;
 		EXPECT_TRUE(ValidationUtils::IsValidNurbs(3, kv.size(), cps.size()));
 		
 	}
@@ -200,18 +205,20 @@ TEST(Test_Fitting, Approximation)
 		D[0] = D[0].Normalize();
 		D[1] = D[1].Normalize();
 
-		std::vector<double> kv;
-		std::vector<XYZW> cps;
-		bool result = NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(3, points, wp, D, Indices, wd, 5, kv, cps);
+		LN_Curve curve;
+		bool result = NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(3, points, wp, D, Indices, wd, 5, curve);
 		EXPECT_TRUE(result);
+		auto kv = curve.KnotVector;
+		auto cps = curve.ControlPoints;
 		EXPECT_TRUE(ValidationUtils::IsValidNurbs(3, kv.size(), cps.size()));
 	}
 	{
 		int degree = 3;
 		std::vector<XYZ> Q = { XYZ(0,0,0),XYZ(3,4,0),XYZ(-1,4,0),XYZ(-4,0,0),XYZ(-4,-3,0) };
-		std::vector<double> kv;
-		std::vector<XYZW> cps;
-		NurbsCurve::GlobalApproximationByErrorBound(degree, Q, 1.5, kv, cps);
+		LN_Curve curve;
+		NurbsCurve::GlobalApproximationByErrorBound(degree, Q, 1.5, curve);
+		auto kv = curve.KnotVector;
+		auto cps = curve.ControlPoints;
 		EXPECT_TRUE(ValidationUtils::IsValidNurbs(degree, kv.size(), cps.size()));
 	}
 	{

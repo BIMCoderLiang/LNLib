@@ -15,8 +15,14 @@ TEST(Test_AdvancedGeometric, All)
 		int degree = 2;
 		std::vector<double> kv = { 0,0,0,1,2,3,3,3 };
 		std::vector<XYZW> cps = { XYZW(XYZ(0,0,0),1), XYZW(XYZ(1,1,0),4), XYZW(XYZ(3,2,0),1), XYZW(XYZ(4,1,0),1), XYZW(XYZ(5,-1,0),1) };
-		XYZ result = NurbsCurve::GetPointOnCurve(degree, kv, 1.0, cps);
-		double param = NurbsCurve::GetParamOnCurve(degree, kv, cps, result);
+
+		LN_Curve curve;
+		curve.Degree = degree;
+		curve.KnotVector = kv;
+		curve.ControlPoints = cps;
+
+		XYZ result = NurbsCurve::GetPointOnCurve(curve, 1.0);
+		double param = NurbsCurve::GetParamOnCurve(curve, result);
 		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(1.0,param));
 	}
 
@@ -114,9 +120,16 @@ TEST(Test_AdvancedGeometric, All)
 		double gamma = 3;
 		double delta = 2;
 
-		std::vector<double> newKv;
-		std::vector<XYZW> newCps;
-		NurbsCurve::Reparameterization(degree, kv, cps, alpha, beta, gamma, delta, newKv, newCps);
+		LN_Curve curve;
+		curve.Degree = degree;
+		curve.KnotVector = kv;
+		curve.ControlPoints = cps;
+
+		LN_Curve newtc;
+		NurbsCurve::Reparameterization(curve, alpha, beta, gamma, delta, newtc);
+
+		std::vector<double> newKv = newtc.KnotVector;
+		std::vector<XYZW> newCps = newtc.ControlPoints;
 
 		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newKv[0], 0.5));
 		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newKv[1], 0.5));

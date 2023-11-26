@@ -47,24 +47,26 @@ TEST(Test_CommonSurfaces, All)
 		int degree0 = 2;
 		std::vector<double> kv0 = { 0,0,0,1.0 / 4,1.0 / 2,3.0 / 4,1,1,1 };
 		std::vector<XYZW> cp0 = { XYZW(20,0,10,1), XYZW(15,0,5,1), XYZW(10,0,5,1),XYZW(5,0,10,1),XYZW(0,0,10,1),XYZW(-5,0,5,1) };
-		XYZ C00 = NurbsCurve::GetPointOnCurve(degree0, kv0, 0, cp0);
-		XYZ C01 = NurbsCurve::GetPointOnCurve(degree0, kv0, 1, cp0);
-
-		int degree1 = 3;
-		std::vector<double> kv1 = { 0,0,0,0,3.0/10,7.0/10,1,1,1,1 };
-		std::vector<XYZW> cp1 = { XYZW(20,10,5,1), XYZW(15,10,10,1), XYZW(10,10,10,1),XYZW(5,10,5,1),XYZW(0,10,5,1),XYZW(-5,10,10,1) };
-		XYZ C10 = NurbsCurve::GetPointOnCurve(degree1, kv1, 0, cp1);
-		XYZ C11 = NurbsCurve::GetPointOnCurve(degree1, kv1, 1, cp1);
-
+		
 		LN_Curve curve0;
 		curve0.Degree = degree0;
 		curve0.KnotVector = kv0;
 		curve0.ControlPoints = cp0;
+		
+		XYZ C00 = NurbsCurve::GetPointOnCurve(curve0, 0);
+		XYZ C01 = NurbsCurve::GetPointOnCurve(curve0, 1);
 
+		int degree1 = 3;
+		std::vector<double> kv1 = { 0,0,0,0,3.0/10,7.0/10,1,1,1,1 };
+		std::vector<XYZW> cp1 = { XYZW(20,10,5,1), XYZW(15,10,10,1), XYZW(10,10,10,1),XYZW(5,10,5,1),XYZW(0,10,5,1),XYZW(-5,10,10,1) };
+		
 		LN_Curve curve1;
 		curve1.Degree = degree1;
 		curve1.KnotVector = kv1;
 		curve1.ControlPoints = cp1;
+		
+		XYZ C10 = NurbsCurve::GetPointOnCurve(curve1, 0);
+		XYZ C11 = NurbsCurve::GetPointOnCurve(curve1, 1);
 
 		LN_Surface surface;
 		NurbsSurface::CreateRuledSurface(curve0, curve1, surface);

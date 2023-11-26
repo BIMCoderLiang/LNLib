@@ -11,6 +11,7 @@
 #pragma once
 
 #include "LNLibDefinitions.h"
+#include "LNObject.h"
 #include <vector>
 
 namespace LNLib
@@ -27,14 +28,14 @@ namespace LNLib
 		/// Algorithm A4.1
 		/// Compute point on rational B-spline curve.
 		/// </summary>
-		static XYZ GetPointOnCurve(int degree, const std::vector<double>& knotVector, double paramT, const std::vector<XYZW>& controlPoints);
+		static XYZ GetPointOnCurve(const LN_Curve& curve, double paramT);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page127
 		/// Algorithm A4.2
 		/// Compute C(paramT) derivatives from Cw(paramT) deraivatives.
 		/// </summary>
-		static std::vector<XYZ> ComputeRationalCurveDerivatives(int degree, int derivative, const std::vector<double>& knotVector, double paramT, const std::vector<XYZW>& controlPoints);
+		static std::vector<XYZ> ComputeRationalCurveDerivatives(const LN_Curve& curve, int derivative, double paramT);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page151
@@ -42,21 +43,21 @@ namespace LNLib
 		/// Curve knot insertion.
 		/// Note that multiplicity + times <= degree.
 		/// </summary>
-		static void InsertKnot(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double insertKnot, int times, std::vector<double>& insertedKnotVector, std::vector<XYZW>& updatedControlPoints);
+		static void InsertKnot(const LN_Curve& curve, double insertKnot, int times, LN_Curve& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page155
 		/// Algorithm A5.2
 		/// Computes point on rational B-spline curve.
 		/// </summary>
-		static XYZ GetPointOnCurveByCornerCut(int degree, const std::vector<double>& knotVector, double paramT, std::vector<XYZW>& controlPoints);
+		static XYZ GetPointOnCurveByCornerCut(const LN_Curve& curve, double paramT);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page164
 		/// Algorithm A5.4
 		/// Refine curve knot vector.
 		/// </summary>
-		static void RefineKnotVector(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double>& insertKnotElements, std::vector<double>& insertedKnotVector, std::vector<XYZW>& updatedControlPoints);
+		static void RefineKnotVector(const LN_Curve& curve, std::vector<double>& insertKnotElements, LN_Curve& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page173
@@ -64,40 +65,40 @@ namespace LNLib
 		/// Decompose curve into Bezier segements.
 		/// decomposedControlPoints[i][j] means ith segement jth control point.
 		/// </summary>
-		static std::vector<std::vector<XYZW>> DecomposeToBeziers(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints);
+		static std::vector<std::vector<XYZW>> DecomposeToBeziers(const LN_Curve& curve);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page185
 		/// Algorithm A5.8
 		/// Curve knot removal.
 		/// </summary>
-		static bool RemoveKnot(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double removeKnot, int times, std::vector<double>& restKnotVector, std::vector<XYZW>& updatedControlPoints);
+		static bool RemoveKnot(const LN_Curve& curve, double removeKnot, int times, LN_Curve& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page206
 		/// Algorithm A5.9
 		/// Degree elevate a curve t times.
 		/// </summary>
-		static void ElevateDegree(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, int times, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
+		static void ElevateDegree(const LN_Curve& curve, int times, LN_Curve& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page223
 		/// Algorithm A5.11
 		/// Degree reduce a bezier-shape nurbs curve from degree to degree - 1.
 		/// </summary>
-		static bool ReduceDegree(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
+		static bool ReduceDegree(const LN_Curve& curve, LN_Curve& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page230
 		/// Equally spaced parameter values on each candidate span.
 		/// </summary>
-		static void EquallyTessellate(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<XYZ>& tessellatedPoints, std::vector<double>& correspondingKnots);
+		static void EquallyTessellate(const LN_Curve& curve, std::vector<XYZ>& tessellatedPoints, std::vector<double>& correspondingKnots);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page230
 		/// Point inversion:finding the corresponding parameter make C(u) = P.
 		/// </summary>
-		static double GetParamOnCurve(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const XYZ& givenPoint);
+		static double GetParamOnCurve(const LN_Curve& curve, const XYZ& givenPoint);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page236
@@ -109,7 +110,7 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page255
 		/// Reparameterization using a linear rational function : (alpha * u + beta)/(gamma * u + delta)
 		/// </summary>
-		static void Reparameterization(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double alpha, double beta, double gamma, double delta, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
+		static void Reparameterization(const LN_Curve& curve, double alpha, double beta, double gamma, double delta, LN_Curve& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page263
@@ -127,14 +128,14 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page263
 		/// Curve reverse,but not use reparameterization.
 		/// </summary>
-		static void Reverse(const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double>& reversedKnotVector, std::vector<XYZW>& reversedControlPoints);
+		static void Reverse(const LN_Curve& curve, LN_Curve& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page308
 		/// Algorithm A7.1
 		/// Create arbitrary NURBS arc.
 		/// </summary>
-		static bool CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ& yAxis, double startRad, double endRad, double xRadius, double yRadius, int& degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+		static bool CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ& yAxis, double startRad, double endRad, double xRadius, double yRadius, LN_Curve& curve);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page314
@@ -154,60 +155,60 @@ namespace LNLib
 		/// Algorithm A7.3
 		/// Construct open conic arc.
 		/// </summary>
-		static bool CreateOpenConic(const XYZ& start, const XYZ& startTangent, const XYZ& end, const XYZ& endTangent, const XYZ& pointOnConic, int& degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+		static bool CreateOpenConic(const XYZ& start, const XYZ& startTangent, const XYZ& end, const XYZ& endTangent, const XYZ& pointOnConic, LN_Curve& curve);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page369
 		/// Algorithm A9.1
 		/// Global interpolation through n+1 points.
 		/// </summary>
-		static void GlobalInterpolation(int degree, const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+		static void GlobalInterpolation(int degree, const std::vector<XYZ>& throughPoints, LN_Curve& curve);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page369 - 374
 		/// Global interpolation by through points and tangents. (including Algorithm A9.2)
 		/// </summary>
-		static void GlobalInterpolation(int degree, const std::vector<XYZ>& throughPoints, const std::vector<XYZ>& tangents, double tangentFactor, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+		static void GlobalInterpolation(int degree, const std::vector<XYZ>& throughPoints, const std::vector<XYZ>& tangents, double tangentFactor, LN_Curve& curve);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page395
 		/// Local cubic curve interpolation by through points.
 		/// </summary>
-		static bool CubicLocalInterpolation(const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+		static bool CubicLocalInterpolation(const std::vector<XYZ>& throughPoints, LN_Curve& curve);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page410
 		/// Least square curve approximation.
 		/// </summary>
-		static bool LeastSquaresApproximation(int degree, const std::vector<XYZ>& throughPoints, int controlPointsCount, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+		static bool LeastSquaresApproximation(int degree, const std::vector<XYZ>& throughPoints, int controlPointsCount, LN_Curve& curve);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page413
 		/// Algorithm A9.6
 		/// Weighted and contrained least squares approximation.
 		/// </summary>
-		static bool WeightedAndContrainedLeastSquaresApproximation(int degree, const std::vector<XYZ>& throughPoints, const std::vector<double>& weights, const std::vector<XYZ>& tangents, const std::vector<int>& tangentIndices, const std::vector<double>& weightedTangents, int controlPointsCount, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+		static bool WeightedAndContrainedLeastSquaresApproximation(int degree, const std::vector<XYZ>& throughPoints, const std::vector<double>& weights, const std::vector<XYZ>& tangents, const std::vector<int>& tangentIndices, const std::vector<double>& weightedTangents, int controlPointsCount, LN_Curve& curve);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page428
 		/// Algorithm A9.8
 		/// Get knot removal error bound (nonrational).
 		/// </summary>
-		static double ComputerRemoveKnotErrorBound(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, int removalIndex);
+		static double ComputerRemoveKnotErrorBound(const LN_Curve& curve, int removalIndex);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page429
 		/// Algorithm A9.9
 		/// Remove knots from curve by given bound.
 		/// </summary>
-		static void RemoveKnotsByGivenBound(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const std::vector<double> params, std::vector<double>& errors, double maxError, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints);
+		static void RemoveKnotsByGivenBound(const LN_Curve& curve, const std::vector<double> params, std::vector<double>& errors, double maxError, LN_Curve& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page431
 		/// Algorithm A9.10
 		/// Global curve approximation to within bound maxError.
 		/// </summary>
-		static void GlobalApproximationByErrorBound(int degree, const std::vector<XYZ>& throughPoints, double maxError, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+		static void GlobalApproximationByErrorBound(int degree, const std::vector<XYZ>& throughPoints, double maxError, LN_Curve& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page440
@@ -227,53 +228,53 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page511
 		/// Reposition an arbitrary control point.
 		/// </summary>
-		static bool ControlPointReposition(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double parameter, int moveIndex, XYZ moveDirection, double moveDistance, std::vector<XYZW>& updatedControlPoints);
+		static bool ControlPointReposition(const LN_Curve& curve, double parameter, int moveIndex, XYZ moveDirection, double moveDistance, LN_Curve& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page520
 		/// Modify one curve weight.
 		/// </summary>
-		static void WeightModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double parameter, int moveIndex, double moveDistance, std::vector<XYZW>& updatedControlPoints);
+		static void WeightModification(const LN_Curve& curve, double parameter, int moveIndex, double moveDistance, LN_Curve& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page526
 		/// Modify two neighboring curve weights. (moveIndex and moveIndex + 1)
 		/// </summary>
-		static bool NeighborWeightsModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double parameter, int moveIndex, double moveDistance, double scale, std::vector<XYZW>& updatedControlPoints);
+		static bool NeighborWeightsModification(const LN_Curve& curve, double parameter, int moveIndex, double moveDistance, double scale, LN_Curve& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page533
 		/// </summary>
-		static std::vector<XYZW> Warping(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const std::vector<double>& warpShape, double warpDistance, const XYZ& planeNormal, double startParameter, double endParameter);
+		static void Warping(const LN_Curve& curve, const std::vector<double>& warpShape, double warpDistance, const XYZ& planeNormal, double startParameter, double endParameter, LN_Curve& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page542
 		/// </summary>
-		static bool Flattening(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, XYZ lineStartPoint, XYZ lineEndPoint, double startParameter, double endParameter, std::vector<XYZW>& updatedControlPoints);
+		static bool Flattening(const LN_Curve& curve, XYZ lineStartPoint, XYZ lineEndPoint, double startParameter, double endParameter, LN_Curve& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page547
 		/// </summary>
-		static std::vector<XYZW> Bending(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double startParameter, double endParameter, XYZ bendCenter, double radius, double crossRatio);
+		static void Bending(const LN_Curve& curve, double startParameter, double endParameter, XYZ bendCenter, double radius, double crossRatio, LN_Curve& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page555
 		/// Constraint-based curve modification.
 		/// </summary>
-		static std::vector<XYZW> ConstraintBasedModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const std::vector<double>& constraintParams, const std::vector<XYZ>& derivativeConstraints, const std::vector<int>& appliedIndices, const std::vector<int>& appliedDegree, const std::vector<int>& fixedControlPointIndices);
+		static void ConstraintBasedModification(const LN_Curve& curve, const std::vector<double>& constraintParams, const std::vector<XYZ>& derivativeConstraints, const std::vector<int>& appliedIndices, const std::vector<int>& appliedDegree, const std::vector<int>& fixedControlPointIndices, LN_Curve& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page572
 		/// Clamp a unclamped curve.
 		/// </summary>
-		static void ToClampCurve(int degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+		static void ToClampCurve(LN_Curve& curve);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page577
 		/// Algorithm A12.1
 		/// Unclamp a clamped curve.
 		/// </summary>
-		static void ToUnclampCurve(int degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints);
+		static void ToUnclampCurve(LN_Curve& curve);
 	};
 }
 

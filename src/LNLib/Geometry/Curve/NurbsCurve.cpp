@@ -44,8 +44,12 @@ namespace LNLib
 	}
 }
 
-LNLib::XYZ LNLib::NurbsCurve::GetPointOnCurve(int degree, const std::vector<double>& knotVector, double paramT, const std::vector<XYZW>& controlPoints)
+LNLib::XYZ LNLib::NurbsCurve::GetPointOnCurve(const LN_Curve& curve, double paramT)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -57,8 +61,12 @@ LNLib::XYZ LNLib::NurbsCurve::GetPointOnCurve(int degree, const std::vector<doub
 	return weightPoint.ToXYZ(true);
 }
 
-std::vector<LNLib::XYZ> LNLib::NurbsCurve::ComputeRationalCurveDerivatives(int degree, int derivative, const std::vector<double>& knotVector, double paramT, const std::vector<XYZW>& controlPoints)
+std::vector<LNLib::XYZ> LNLib::NurbsCurve::ComputeRationalCurveDerivatives(const LN_Curve& curve, int derivative, double paramT)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(derivative > 0, "derivative", "derivative must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
@@ -93,8 +101,12 @@ std::vector<LNLib::XYZ> LNLib::NurbsCurve::ComputeRationalCurveDerivatives(int d
 	return derivatives;
 }
 
-void LNLib::NurbsCurve::InsertKnot(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double insertKnot, int times, std::vector<double>& insertedKnotVector, std::vector<XYZW>& updatedControlPoints)
+void LNLib::NurbsCurve::InsertKnot(const LN_Curve& curve, double insertKnot, int times, LN_Curve& result)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -109,8 +121,8 @@ void LNLib::NurbsCurve::InsertKnot(int degree, const std::vector<double>& knotVe
 	{
 		times = degree - originMultiplicity;
 	}
-
-	insertedKnotVector.resize(knotVector.size() + times);
+	
+	std::vector<double> insertedKnotVector(knotVector.size() + times);
 	for (int i = 0; i <= knotSpanIndex; i++)
 	{
 		insertedKnotVector[i] = knotVector[i];
@@ -124,7 +136,7 @@ void LNLib::NurbsCurve::InsertKnot(int degree, const std::vector<double>& knotVe
 		insertedKnotVector[i + times] = knotVector[i];
 	}
 
-	updatedControlPoints.resize(controlPoints.size() + times);
+	std::vector<XYZW> updatedControlPoints(controlPoints.size() + times);
 	for (int i = 0; i <= knotSpanIndex - degree; i++)
 	{
 		updatedControlPoints[i] = controlPoints[i];
@@ -157,10 +169,17 @@ void LNLib::NurbsCurve::InsertKnot(int degree, const std::vector<double>& knotVe
 	{
 		updatedControlPoints[i] = temp[i - L];
 	}
+	result.Degree = degree;
+	result.KnotVector = insertedKnotVector;
+	result.ControlPoints = updatedControlPoints;
 }
 
-LNLib::XYZ LNLib::NurbsCurve::GetPointOnCurveByCornerCut(int degree, const std::vector<double>& knotVector, double paramT, std::vector<XYZW>& controlPoints)
+LNLib::XYZ LNLib::NurbsCurve::GetPointOnCurveByCornerCut(const LN_Curve& curve, double paramT)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -198,8 +217,12 @@ LNLib::XYZ LNLib::NurbsCurve::GetPointOnCurveByCornerCut(int degree, const std::
 	return temp[0].ToXYZ(true);
 }
 
-void LNLib::NurbsCurve::RefineKnotVector(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double>& insertKnotElements, std::vector<double>& insertedKnotVector, std::vector<XYZW>& updatedControlPoints)
+void LNLib::NurbsCurve::RefineKnotVector(const LN_Curve& curve, std::vector<double>& insertKnotElements, LN_Curve& result)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -214,7 +237,7 @@ void LNLib::NurbsCurve::RefineKnotVector(int degree, const std::vector<double>& 
 	int a = Polynomials::GetKnotSpanIndex(degree, knotVector, insertKnotElements[0]);
 	int b = Polynomials::GetKnotSpanIndex(degree, knotVector, insertKnotElements[r]) + 1;
 
-	insertedKnotVector.resize(m + r + 2);
+	std::vector<double> insertedKnotVector(m + r + 2);
 	for (int j = 0; j <= a; j++)
 	{
 		insertedKnotVector[j] = knotVector[j];
@@ -224,7 +247,7 @@ void LNLib::NurbsCurve::RefineKnotVector(int degree, const std::vector<double>& 
 		insertedKnotVector[j + r + 1] = knotVector[j];
 	}
 
-	updatedControlPoints.resize(n + r + 2);
+	std::vector<XYZW> updatedControlPoints(n + r + 2);
 	for (int j = 0; j <= a - degree; j++)
 	{
 		updatedControlPoints[j] = controlPoints[j];
@@ -264,10 +287,17 @@ void LNLib::NurbsCurve::RefineKnotVector(int degree, const std::vector<double>& 
 		insertedKnotVector[k] = insertKnotElements[j];
 		k = k - 1;
 	}
+	result.Degree = degree;
+	result.KnotVector = insertedKnotVector;
+	result.ControlPoints = updatedControlPoints;
 }
 
-std::vector<std::vector<LNLib::XYZW>> LNLib::NurbsCurve::DecomposeToBeziers(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints)
+std::vector<std::vector<LNLib::XYZW>> LNLib::NurbsCurve::DecomposeToBeziers(const LN_Curve& curve)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -338,8 +368,12 @@ std::vector<std::vector<LNLib::XYZW>> LNLib::NurbsCurve::DecomposeToBeziers(int 
 	return decomposedControlPoints;
 }
 
-bool LNLib::NurbsCurve::RemoveKnot(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double removeKnot, int times, std::vector<double>& restKnotVector, std::vector<XYZW>& updatedControlPoints)
+bool LNLib::NurbsCurve::RemoveKnot(const LN_Curve& curve, double removeKnot, int times, LN_Curve& result)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -358,7 +392,7 @@ bool LNLib::NurbsCurve::RemoveKnot(int degree, const std::vector<double>& knotVe
 	int first = r - degree;
 	int last = r - s;
 
-	restKnotVector = knotVector;
+	std::vector<double> restKnotVector = knotVector;
 	int m = n + degree + 1;
 	for (int k = r + 1; k <= m; k++)
 	{
@@ -369,7 +403,7 @@ bool LNLib::NurbsCurve::RemoveKnot(int degree, const std::vector<double>& knotVe
 		restKnotVector.pop_back();
 	}
 
-	updatedControlPoints = controlPoints;
+	std::vector<XYZW> updatedControlPoints = controlPoints;
 	std::vector<XYZW> temp(2 * degree + 1);
 
 	int t = 0;
@@ -461,11 +495,18 @@ bool LNLib::NurbsCurve::RemoveKnot(int degree, const std::vector<double>& knotVe
 	{
 		updatedControlPoints.pop_back();
 	}
+	result.Degree = degree;
+	result.KnotVector = restKnotVector;
+	result.ControlPoints = updatedControlPoints;
 	return true;
 }
 
-void LNLib::NurbsCurve::ElevateDegree(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, int times, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints)
+void LNLib::NurbsCurve::ElevateDegree(const LN_Curve& curve, int times, LN_Curve& result)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -510,10 +551,10 @@ void LNLib::NurbsCurve::ElevateDegree(int degree, const std::vector<double>& kno
 	double ua = knotVector[0];
 
 	int moresize = n * times * 2;
-	updatedControlPoints.resize(moresize,XYZW(Constants::MaxDistance, Constants::MaxDistance, Constants::MaxDistance,1));
+	std::vector<XYZW> updatedControlPoints(moresize,XYZW(Constants::MaxDistance, Constants::MaxDistance, Constants::MaxDistance,1));
 	updatedControlPoints[0] = controlPoints[0];
 
-	updatedKnotVector.resize(moresize + ph + 1,Constants::MaxDistance);
+	std::vector<double> updatedKnotVector(moresize + ph + 1,Constants::MaxDistance);
 	for (int i = 0; i <= ph; i++)
 	{
 		updatedKnotVector[i] = ua;
@@ -679,10 +720,17 @@ void LNLib::NurbsCurve::ElevateDegree(int degree, const std::vector<double>& kno
 		}
 		break;
 	}
+	result.Degree = ph;
+	result.KnotVector = updatedKnotVector;
+	result.ControlPoints = updatedControlPoints;
 }
 
-bool LNLib::NurbsCurve::ReduceDegree(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints)
+bool LNLib::NurbsCurve::ReduceDegree(const LN_Curve& curve, LN_Curve& result)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidDegreeReduction(degree), "degree", "Degree must greater than one.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -696,7 +744,7 @@ bool LNLib::NurbsCurve::ReduceDegree(int degree, const std::vector<double>& knot
 	if (!isBezier) return false;
 
 	int r = floor((degree - 1) / 2);
-	updatedControlPoints.resize(degree);
+	std::vector<XYZW> updatedControlPoints(degree);
 	updatedControlPoints[0] = controlPoints[0];
 	updatedControlPoints[degree - 1] = controlPoints[degree];
 
@@ -740,6 +788,7 @@ bool LNLib::NurbsCurve::ReduceDegree(int degree, const std::vector<double>& knot
 	if (error > tol) return false;
 
 	auto map = KnotVectorUtils::GetKnotMultiplicityMap(knotVector);
+	std::vector<double> updatedKnotVector;
 	for (auto it = map.begin(); it != map.end(); ++it)
 	{
 		double u = it->first;
@@ -749,11 +798,18 @@ bool LNLib::NurbsCurve::ReduceDegree(int degree, const std::vector<double>& knot
 			updatedKnotVector.emplace_back(u);
 		}
 	}
+	result.Degree = degree - 1;
+	result.KnotVector = updatedKnotVector;
+	result.ControlPoints = updatedControlPoints;
 	return true;
 }
 
-void LNLib::NurbsCurve::EquallyTessellate(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<XYZ>& tessellatedPoints, std::vector<double>& correspondingKnots)
+void LNLib::NurbsCurve::EquallyTessellate(const LN_Curve& curve, std::vector<XYZ>& tessellatedPoints, std::vector<double>& correspondingKnots)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -773,15 +829,19 @@ void LNLib::NurbsCurve::EquallyTessellate(int degree, const std::vector<double>&
 		{
 			double u = currentU + step * j;
 			correspondingKnots.emplace_back(u);
-			tessellatedPoints.emplace_back(GetPointOnCurve(degree, knotVector, u, controlPoints));
+			tessellatedPoints.emplace_back(GetPointOnCurve(curve, u));
 		}
 	}
 	correspondingKnots.emplace_back(knotVector[knotVector.size() - 1]);
 	tessellatedPoints.emplace_back(const_cast<XYZW&>(controlPoints[controlPoints.size() - 1]).ToXYZ(true));
 }
 
-double LNLib::NurbsCurve::GetParamOnCurve(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const XYZ& givenPoint)
+double LNLib::NurbsCurve::GetParamOnCurve(const LN_Curve& curve, const XYZ& givenPoint)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -797,7 +857,7 @@ double LNLib::NurbsCurve::GetParamOnCurve(int degree, const std::vector<double>&
 
 	std::vector<XYZ> tessellatedPoints;
 	std::vector<double> correspondingKnots;
-	EquallyTessellate(degree, knotVector, controlPoints, tessellatedPoints, correspondingKnots);
+	EquallyTessellate(curve, tessellatedPoints, correspondingKnots);
 	for (int i = 0; i < tessellatedPoints.size() - 1; i++)
 	{
 		double currentU = correspondingKnots[i];
@@ -844,7 +904,7 @@ double LNLib::NurbsCurve::GetParamOnCurve(int degree, const std::vector<double>&
 	int counters = 0;
 	while (counters < maxIterations)
 	{
-		std::vector<XYZ> derivatives = ComputeRationalCurveDerivatives(degree, 2, knotVector, paramT, controlPoints);
+		std::vector<XYZ> derivatives = ComputeRationalCurveDerivatives(curve, 2, paramT);
 		XYZ difference = derivatives[0] - givenPoint;
 		double f = derivatives[1].DotProduct(difference);
 
@@ -909,8 +969,12 @@ void LNLib::NurbsCurve::CreateTransformed(const std::vector<XYZW>& controlPoints
 	}
 }
 
-void LNLib::NurbsCurve::Reparameterization(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double alpha, double beta, double gamma, double delta, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints)
+void LNLib::NurbsCurve::Reparameterization(const LN_Curve& curve, double alpha, double beta, double gamma, double delta, LN_Curve& result)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -918,13 +982,13 @@ void LNLib::NurbsCurve::Reparameterization(int degree, const std::vector<double>
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
 	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(alpha * delta, gamma * beta), "coefficient", "(alpha * delta - gamma * beta) must greater than zero");
 
-	updatedKnotVector.resize(knotVector.size());
+	std::vector<double> updatedKnotVector(knotVector.size());
 	for (int i = 0; i < knotVector.size(); i++)
 	{
 		updatedKnotVector[i] = (alpha * knotVector[i] + beta) / (gamma * knotVector[i] + delta);
 	}
 
-	updatedControlPoints.resize(controlPoints.size());
+	std::vector<XYZW> updatedControlPoints(controlPoints.size());
 	for (int i = 0; i < controlPoints.size(); i++)
 	{
 		double temp = 1.0;
@@ -936,6 +1000,10 @@ void LNLib::NurbsCurve::Reparameterization(int degree, const std::vector<double>
 		double newW = abs(controlPoints[i].GetW() * temp);
 		updatedControlPoints[i] = XYZW(const_cast<XYZW&>(controlPoints[i]).ToXYZ(true), newW);
 	}
+
+	result.Degree = degree;
+	result.KnotVector = updatedKnotVector;
+	result.ControlPoints = updatedControlPoints;
 }
 
 void LNLib::NurbsCurve::ReverseKnotVector(const std::vector<double>& knotVector, std::vector<double> reversedKnotVector)
@@ -964,17 +1032,22 @@ void LNLib::NurbsCurve::ReverseControlPoints(const std::vector<XYZW>& controlPoi
 	std::reverse(reversedControlPoints.begin(), reversedControlPoints.end());
 }
 
-void LNLib::NurbsCurve::Reverse(const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, std::vector<double>& reversedKnotVector, std::vector<XYZW>& reversedControlPoints)
+void LNLib::NurbsCurve::Reverse(const LN_Curve& curve, LN_Curve& result)
 {
-	ReverseKnotVector(knotVector, reversedKnotVector);
-	ReverseControlPoints(controlPoints, reversedControlPoints);
+	std::vector<double> reversedKnotVector;
+	ReverseKnotVector(curve.KnotVector, reversedKnotVector);
+	std::vector<XYZW> reversedControlPoints;
+	ReverseControlPoints(curve.ControlPoints, reversedControlPoints);
+	result.Degree = curve.Degree;
+	result.KnotVector = reversedKnotVector;
+	result.ControlPoints = reversedControlPoints;
 }
 
-bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ& yAxis, double startRad, double endRad, double xRadius, double yRadius, int& degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ& yAxis, double startRad, double endRad, double xRadius, double yRadius, LN_Curve& curve)
 {
 	VALIDATE_ARGUMENT(!xAxis.IsZero(), "xAxis", "xAxis must not be zero vector.");
-	VALIDATE_ARGUMENT(!yAxis.IsZero(), "yAxis", "yAxis must not be zero vector.")
-		VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(endRad, startRad), "endRad", "endRad must greater than startRad.");
+	VALIDATE_ARGUMENT(!yAxis.IsZero(), "yAxis", "yAxis must not be zero vector.");
+	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(endRad, startRad), "endRad", "endRad must greater than startRad.");
 	double theta = endRad - startRad;
 	VALIDATE_ARGUMENT_RANGE(theta, 0, 2 * Constants::Pi);
 	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(xRadius, 0.0), "xRadius", "xRadius must greater than zero.");
@@ -1003,9 +1076,9 @@ bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ
 	double dtheta = theta / (double)narcs;
 	int n = 2 * narcs;
 
-	degree = 2;
-	knotVector.resize(n + degree + 1 + 1);
-	controlPoints.resize(n + 1);
+	int degree = 2;
+	std::vector<double> knotVector(n + degree + 1 + 1);
+	std::vector<XYZW> controlPoints(n + 1);
 
 	double w1 = cos(dtheta / 2.0);
 	XYZ nX = const_cast<XYZ&>(xAxis).Normalize();
@@ -1061,6 +1134,9 @@ bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ
 		knotVector[7] = knotVector[8] = 0.75;
 		break;
 	}
+	curve.Degree = degree;
+	curve.KnotVector = knotVector;
+	curve.ControlPoints = controlPoints;
 	return true;
 }
 
@@ -1116,12 +1192,12 @@ void LNLib::NurbsCurve::SplitArc(const XYZ& start, const XYZ& projectPoint, doub
 	insertWeight = sqrt(1 + projectPointWeight) / 2.0;
 }
 
-bool LNLib::NurbsCurve::CreateOpenConic(const XYZ& start, const XYZ& startTangent, const XYZ& end, const XYZ& endTangent, const XYZ& pointOnConic, int& degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+bool LNLib::NurbsCurve::CreateOpenConic(const XYZ& start, const XYZ& startTangent, const XYZ& end, const XYZ& endTangent, const XYZ& pointOnConic, LN_Curve& curve)
 {
 	VALIDATE_ARGUMENT(!startTangent.IsZero(), "startTangent", "StartTangent must not be zero vector.");
-	VALIDATE_ARGUMENT(!endTangent.IsZero(), "endTangent", "EndTangent must not be zero vector.")
+	VALIDATE_ARGUMENT(!endTangent.IsZero(), "endTangent", "EndTangent must not be zero vector.");
 
-		XYZ P1;
+	XYZ P1;
 	double w1 = 0.0;
 	bool isCreated = CreateOneConicArc(start, startTangent, end, endTangent, pointOnConic, P1, w1);
 	if (!isCreated) return false;
@@ -1157,9 +1233,9 @@ bool LNLib::NurbsCurve::CreateOpenConic(const XYZ& start, const XYZ& startTangen
 	int n = 2 * nsegs;
 	int j = 2 * nsegs + 1;
 
-	degree = 2;
-	knotVector.resize(j + degree + 1);
-	controlPoints.resize(n + 1);
+	int degree = 2;
+	std::vector<double> knotVector(j + degree + 1);
+	std::vector<XYZW> controlPoints(n + 1);
 
 	for (int i = 0; i < 3; i++)
 	{
@@ -1173,6 +1249,9 @@ bool LNLib::NurbsCurve::CreateOpenConic(const XYZ& start, const XYZ& startTangen
 	if (nsegs == 1)
 	{
 		controlPoints[1] = XYZW(P1, w1);
+		curve.Degree = degree;
+		curve.KnotVector = knotVector;
+		curve.ControlPoints = controlPoints;
 		return true;
 	}
 
@@ -1187,6 +1266,9 @@ bool LNLib::NurbsCurve::CreateOpenConic(const XYZ& start, const XYZ& startTangen
 		controlPoints[3] = XYZW(R1, wqr);
 
 		knotVector[3] = knotVector[4] = 0.5;
+		curve.Degree = degree;
+		curve.KnotVector = knotVector;
+		curve.ControlPoints = controlPoints;
 		return true;
 	}
 
@@ -1212,12 +1294,15 @@ bool LNLib::NurbsCurve::CreateOpenConic(const XYZ& start, const XYZ& startTangen
 			knotVector[i + 5] = 0.5;
 			knotVector[i + 7] = 0.75;
 		}
+		curve.Degree = degree;
+		curve.KnotVector = knotVector;
+		curve.ControlPoints = controlPoints;
 		return true;
 	}
 	return false;
 }
 
-void LNLib::NurbsCurve::GlobalInterpolation(int degree, const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+void LNLib::NurbsCurve::GlobalInterpolation(int degree, const std::vector<XYZ>& throughPoints, LN_Curve& curve)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(throughPoints.size() > degree, "throughPoints", "ThroughPoints size must greater than degree.");
@@ -1226,7 +1311,7 @@ void LNLib::NurbsCurve::GlobalInterpolation(int degree, const std::vector<XYZ>& 
 	int n = size - 1;
 
 	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
-	knotVector = Interpolation::AverageKnotVector(degree, uk);
+	std::vector<double> knotVector = Interpolation::AverageKnotVector(degree, uk);
 
 	std::vector<std::vector<double>> A(size, std::vector<double>(size));
 	for (int i = 1; i < n; i++)
@@ -1251,7 +1336,7 @@ void LNLib::NurbsCurve::GlobalInterpolation(int degree, const std::vector<XYZ>& 
 		}
 	}
 
-	controlPoints.resize(size);
+	std::vector<XYZW> controlPoints(size);
 	std::vector<std::vector<double>> result = MathUtils::SolveLinearSystem(A, right);
 	for (int i = 0; i < result.size(); i++)
 	{
@@ -1262,9 +1347,12 @@ void LNLib::NurbsCurve::GlobalInterpolation(int degree, const std::vector<XYZ>& 
 		}
 		controlPoints[i] = XYZW(temp, 1.0);
 	}
+	curve.Degree = degree;
+	curve.KnotVector = knotVector;
+	curve.ControlPoints = controlPoints;
 }
 
-void LNLib::NurbsCurve::GlobalInterpolation(int degree, const std::vector<XYZ>& throughPoints, const std::vector<XYZ>& tangents, double tangentFactor, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+void LNLib::NurbsCurve::GlobalInterpolation(int degree, const std::vector<XYZ>& throughPoints, const std::vector<XYZ>& tangents, double tangentFactor, LN_Curve& curve)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(throughPoints.size() > degree, "throughPoints", "ThroughPoints size must greater than degree.");
@@ -1279,8 +1367,8 @@ void LNLib::NurbsCurve::GlobalInterpolation(int degree, const std::vector<XYZ>& 
 	int size = throughPoints.size();
 	int n = 2 * size;
 
-	controlPoints.resize(n);
-	knotVector.resize(n + degree + 1);
+	std::vector<XYZW> controlPoints(n);
+	std::vector<double> knotVector(n + degree + 1);
 
 	std::vector<double> uk(size);
 	uk[size - 1] = 1.0;
@@ -1387,9 +1475,12 @@ void LNLib::NurbsCurve::GlobalInterpolation(int degree, const std::vector<XYZ>& 
 		}
 		controlPoints[i] = XYZW(temp, 1.0);
 	}
+	curve.Degree = degree;
+	curve.KnotVector = knotVector;
+	curve.ControlPoints = controlPoints;
 }
 
-bool LNLib::NurbsCurve::CubicLocalInterpolation(const std::vector<XYZ>& throughPoints, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+bool LNLib::NurbsCurve::CubicLocalInterpolation(const std::vector<XYZ>& throughPoints, LN_Curve& curve)
 {
 	VALIDATE_ARGUMENT(throughPoints.size() > 0, "throughPoints", "ThroughPoints size must greater than zero.");
 
@@ -1429,7 +1520,7 @@ bool LNLib::NurbsCurve::CubicLocalInterpolation(const std::vector<XYZ>& throughP
 	}
 
 	int kvSize = 2 * (degree + 1) + 2 * (size - 1);
-	knotVector.resize(kvSize);
+	std::vector<double> knotVector(kvSize);
 	for (int i = 0; i <= degree; i++)
 	{
 		knotVector[i] = 0;
@@ -1442,18 +1533,20 @@ bool LNLib::NurbsCurve::CubicLocalInterpolation(const std::vector<XYZ>& throughP
 	}
 
 	int tSize = tempControlPoints.size();
-	controlPoints.resize(tSize + 2);
+	std::vector<XYZW> controlPoints(tSize + 2);
 	controlPoints[0] = XYZW(throughPoints[0], 1);
 	controlPoints[tSize + 2 - 1] = XYZW(throughPoints[n], 1);
 	for (int i = 0; i < tSize; i++)
 	{
 		controlPoints[i + 1] = tempControlPoints[i];
 	}
-
+	curve.Degree = degree;
+	curve.KnotVector = knotVector;
+	curve.ControlPoints = controlPoints;
 	return true;
 }
 
-bool LNLib::NurbsCurve::LeastSquaresApproximation(int degree, const std::vector<XYZ>& throughPoints, int controlPointsCount, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+bool LNLib::NurbsCurve::LeastSquaresApproximation(int degree, const std::vector<XYZ>& throughPoints, int controlPointsCount, LN_Curve& curve)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(controlPointsCount > 0, "controlPointsCount", "controlPointsCount must greater than zero.");
@@ -1461,7 +1554,7 @@ bool LNLib::NurbsCurve::LeastSquaresApproximation(int degree, const std::vector<
 	int n = controlPointsCount;
 	int m = throughPoints.size();
 	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
-	knotVector.resize(n + degree + 1, 1.0);
+	std::vector<double> knotVector(n + degree + 1, 1.0);
 	
 	double d = (double)m / (double)n;
 	for (int j = 0; j <= degree; j++)
@@ -1481,7 +1574,7 @@ bool LNLib::NurbsCurve::LeastSquaresApproximation(int degree, const std::vector<
 		knotVector[degree + j] /= degree;
 	}
 
-	controlPoints.resize(n);
+	std::vector<XYZW> controlPoints(n);
 	std::vector<XYZ> R(n);
 	std::vector<XYZ> rk(m);
 	std::vector<double> funs(degree + 1);
@@ -1550,10 +1643,14 @@ bool LNLib::NurbsCurve::LeastSquaresApproximation(int degree, const std::vector<
 	}
 	controlPoints[0] = XYZW(throughPoints[0],1);
 	controlPoints[n - 1] = XYZW(throughPoints[m - 1],1);
+
+	curve.Degree = degree;
+	curve.KnotVector = knotVector;
+	curve.ControlPoints = controlPoints;
 	return true;
 }
 
-bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(int degree, const std::vector<XYZ>& throughPoints, const std::vector<double>& weights, const std::vector<XYZ>& tangents, const std::vector<int>& tangentIndices, const std::vector<double>& weightedTangents, int controlPointsCount, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(int degree, const std::vector<XYZ>& throughPoints, const std::vector<double>& weights, const std::vector<XYZ>& tangents, const std::vector<int>& tangentIndices, const std::vector<double>& weightedTangents, int controlPointsCount, LN_Curve& curve)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	int size = throughPoints.size();
@@ -1602,8 +1699,8 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(int degre
 	}
 
 	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
-	knotVector = Interpolation::ComputeKnotVector(degree, size, controlPointsCount, uk);
-	controlPoints.resize(controlPointsCount);
+	std::vector<double> knotVector = Interpolation::ComputeKnotVector(degree, size, controlPointsCount, uk);
+	std::vector<XYZW> controlPoints(controlPointsCount);
 
 	int j = 0;
 	int mu2 = 0;
@@ -1735,11 +1832,19 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(int degre
 		}
 		controlPoints[i] = XYZW(temp, 1.0);
 	}
+	curve.Degree = degree;
+	curve.KnotVector = knotVector;
+	curve.ControlPoints = controlPoints;
+
 	return true;
 }
 
-double LNLib::NurbsCurve::ComputerRemoveKnotErrorBound(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, int removalIndex)
+double LNLib::NurbsCurve::ComputerRemoveKnotErrorBound(const LN_Curve& curve, int removalIndex)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -1787,8 +1892,12 @@ double LNLib::NurbsCurve::ComputerRemoveKnotErrorBound(int degree, const std::ve
 	}
 }
 
-void LNLib::NurbsCurve::RemoveKnotsByGivenBound(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const std::vector<double> params, std::vector<double>& errors, double maxError, std::vector<double>& updatedKnotVector, std::vector<XYZW>& updatedControlPoints)
+void LNLib::NurbsCurve::RemoveKnotsByGivenBound(const LN_Curve& curve, const std::vector<double> params, std::vector<double>& errors, double maxError, LN_Curve& result)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -1820,7 +1929,7 @@ void LNLib::NurbsCurve::RemoveKnotsByGivenBound(int degree, const std::vector<do
 	{
 		if (MathUtils::IsLessThan(knotVector[i],knotVector[i + 1]))
 		{
-			Br[i] = ComputerRemoveKnotErrorBound(degree, knotVector, controlPoints, i);
+			Br[i] = ComputerRemoveKnotErrorBound(curve, i);
 			S[i] = Polynomials::GetKnotMultiplicity(knotVector, knotVector[i]);
 			s = 1;
 		}
@@ -1847,6 +1956,9 @@ void LNLib::NurbsCurve::RemoveKnotsByGivenBound(int degree, const std::vector<do
 
 	std::vector<double> tempU = knotVector;
 	std::vector<XYZW> tempCP = controlPoints;
+
+	std::vector<double> updatedKnotVector;
+	std::vector<XYZW> updatedControlPoints;
 
 	while (1)
 	{
@@ -1907,9 +2019,15 @@ void LNLib::NurbsCurve::RemoveKnotsByGivenBound(int degree, const std::vector<do
 
 		if (removable)
 		{
-			std::vector<double> tempNewU;
-			std::vector<XYZW> tempNewCP;
-			RemoveKnot(degree, tempU, tempCP, tempU[r], 1, tempNewU, tempNewCP);
+			LN_Curve tc;
+			tc.Degree = degree;
+			tc.KnotVector = tempU;
+			tc.ControlPoints = tempCP;
+
+			LN_Curve newtc;
+			RemoveKnot(tc, tempU[r], 1, newtc);
+			std::vector<double> tempNewU = newtc.KnotVector;
+			std::vector<XYZW> tempNewCP = newtc.ControlPoints;
 
 			controlPointsSize = tempNewCP.size();
 			for (int i = Rstart; i <= Rend; i++)
@@ -1955,7 +2073,7 @@ void LNLib::NurbsCurve::RemoveKnotsByGivenBound(int degree, const std::vector<do
 			{
 				if (MathUtils::IsLessThan(tempNewU[i],tempNewU[i + 1]))
 				{
-					Br[i] = ComputerRemoveKnotErrorBound(degree, tempNewU, tempNewCP, i);
+					Br[i] = ComputerRemoveKnotErrorBound(newtc, i);
 					S[i] = s;
 					s = 1;
 				}
@@ -1980,9 +2098,13 @@ void LNLib::NurbsCurve::RemoveKnotsByGivenBound(int degree, const std::vector<do
 			Br[r] = Constants::MaxDistance;
 		}
 	}
+
+	result.Degree = degree;
+	result.KnotVector = updatedKnotVector;
+	result.ControlPoints = updatedControlPoints;
 }
 
-void LNLib::NurbsCurve::GlobalApproximationByErrorBound(int degree, const std::vector<XYZ>& throughPoints, double maxError, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+void LNLib::NurbsCurve::GlobalApproximationByErrorBound(int degree, const std::vector<XYZ>& throughPoints, double maxError, LN_Curve& result)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(throughPoints.size() > degree, "throughPoints", "ThroughPoints size must greater than degree.");
@@ -1992,9 +2114,9 @@ void LNLib::NurbsCurve::GlobalApproximationByErrorBound(int degree, const std::v
 	int size = throughPoints.size();
 	std::vector<double> errors(size, 0.0);
 
-	controlPoints.resize(size);
+	std::vector<XYZW> controlPoints(size);
 	int m = (size-1) + 1 + 1;
-	knotVector.resize(m + 1);
+	std::vector<double> knotVector(m + 1);
 
 	for (int i = 0; i < size; i++) 
 	{
@@ -2008,10 +2130,15 @@ void LNLib::NurbsCurve::GlobalApproximationByErrorBound(int degree, const std::v
 		controlPoints[i] = XYZW(throughPoints[i],1);
 	}
 
-	std::vector<double> tKv;
-	std::vector<XYZW> tCps;
-	ElevateDegree(1, knotVector, controlPoints, degree - 1, tKv, tCps);
-	RemoveKnotsByGivenBound(degree, tKv, tCps, uk, errors, maxError, knotVector, controlPoints);
+
+	LN_Curve tc;
+	tc.Degree = 1;
+	tc.KnotVector = knotVector;
+	tc.ControlPoints = controlPoints;
+
+	LN_Curve newtc;
+	ElevateDegree(tc, degree - 1, newtc);
+	RemoveKnotsByGivenBound(newtc, uk, errors, maxError, result);
 }
 
 bool LNLib::NurbsCurve::FitWithConic(const std::vector<XYZ>& throughPoints, int startPointIndex, int endPointIndex, const XYZ& startTangent, const XYZ& endTangent, double maxError, std::vector<XYZW>& middleControlPoints)
@@ -2076,8 +2203,13 @@ bool LNLib::NurbsCurve::FitWithConic(const std::vector<XYZ>& throughPoints, int 
 	for (int k = startPointIndex + 1; k <= endPointIndex - 1; k++)
 	{
 		XYZ tp = throughPoints[k];
-		double param = GetParamOnCurve(degree, knotVectors, controlPoints, tp);
-		XYZ point = GetPointOnCurve(degree, knotVectors, param, controlPoints);
+		LN_Curve tc;
+		tc.Degree = degree;
+		tc.KnotVector = knotVectors;
+		tc.ControlPoints = controlPoints;
+
+		double param = GetParamOnCurve(tc, tp);
+		XYZ point = GetPointOnCurve(tc, param);
 		if (MathUtils::IsGreaterThan(tp.Distance(point), maxError))
 		{
 			return false;
@@ -2268,8 +2400,12 @@ bool LNLib::NurbsCurve::FitWithCubic(const std::vector<XYZ>& throughPoints, int 
 	return true;
 }
 
-bool LNLib::NurbsCurve::ControlPointReposition(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double parameter, int moveIndex, XYZ moveDirection, double moveDistance, std::vector<XYZW>& updatedControlPoints)
+bool LNLib::NurbsCurve::ControlPointReposition(const LN_Curve& curve, double parameter, int moveIndex, XYZ moveDirection, double moveDistance, LN_Curve& result)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -2286,16 +2422,24 @@ bool LNLib::NurbsCurve::ControlPointReposition(int degree, const std::vector<dou
 	{
 		return false;
 	}
-	updatedControlPoints = controlPoints;
+	std::vector<XYZW> updatedControlPoints = controlPoints;
 	XYZ movePoint = updatedControlPoints[moveIndex].ToXYZ(true);
 	double alpha = moveDistance / (moveDirection.Length() * Rkp);
 	XYZ newPoint = movePoint + alpha * moveDirection;
 	updatedControlPoints[moveIndex] = XYZW(newPoint, controlPoints[moveIndex].GetW());
+
+	result.Degree = curve.Degree;
+	result.KnotVector = curve.KnotVector;
+	result.ControlPoints = updatedControlPoints;
 	return true;
 }
 
-void LNLib::NurbsCurve::WeightModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double parameter, int moveIndex, double moveDistance, std::vector<XYZW>& updatedControlPoints)
+void LNLib::NurbsCurve::WeightModification(const LN_Curve& curve, double parameter, int moveIndex, double moveDistance, LN_Curve& result)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -2305,18 +2449,26 @@ void LNLib::NurbsCurve::WeightModification(int degree, const std::vector<double>
 	VALIDATE_ARGUMENT_RANGE(moveIndex, 0, controlPoints.size() - 1);
 	VALIDATE_ARGUMENT(!MathUtils::IsAlmostEqualTo(moveDistance, 0.0), "moveDistance", "MoveDistance must not be zero.");
 
-	XYZ point = GetPointOnCurve(degree, knotVector, parameter, controlPoints);
+	XYZ point = GetPointOnCurve(curve, parameter);
 	XYZ movePoint = const_cast<XYZW&>(controlPoints[moveIndex]).ToXYZ(true);
 	double distance =  point.Distance(movePoint);
 	int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, parameter);
 	double Rkp = Polynomials::BasisFunctions(spanIndex, degree, knotVector, parameter)[0];
 	double coefficient = 1 + moveDistance / (Rkp * (distance - moveDistance));
-	updatedControlPoints = controlPoints;
+	std::vector<XYZW> updatedControlPoints = controlPoints;
 	updatedControlPoints[moveIndex] = XYZW(movePoint, updatedControlPoints[moveIndex].GetW() * coefficient);
+
+	result.Degree = curve.Degree;
+	result.KnotVector = curve.KnotVector;
+	result.ControlPoints = updatedControlPoints;
 }
 
-bool LNLib::NurbsCurve::NeighborWeightsModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double parameter, int moveIndex, double moveDistance, double scale, std::vector<XYZW>& updatedControlPoints)
+bool LNLib::NurbsCurve::NeighborWeightsModification(const LN_Curve& curve, double parameter, int moveIndex, double moveDistance, double scale, LN_Curve& result)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -2333,11 +2485,15 @@ bool LNLib::NurbsCurve::NeighborWeightsModification(int degree, const std::vecto
 	XYZ movePoint2 = const_cast<XYZW&>(tempControlPoints[moveIndex+1]).ToXYZ(true);
 	tempControlPoints[moveIndex+1] = XYZW(movePoint2, 0.0);
 
-	XYZ R = GetPointOnCurve(degree, knotVector, parameter, tempControlPoints);
+	LN_Curve tc;
+	tc.Degree = degree;
+	tc.KnotVector = knotVector;
+	tc.ControlPoints = tempControlPoints;
+	XYZ R = GetPointOnCurve(tc, parameter);
 	XYZ controlLeg = movePoint1 - movePoint2;
 	double controlLegLength = movePoint2.Distance(movePoint1);
 
-	XYZ P = GetPointOnCurve(degree, knotVector, parameter, controlPoints);
+	XYZ P = GetPointOnCurve(curve, parameter);
 	XYZ direction = R - P;
 	double param0,param1;
 	XYZ Q;
@@ -2380,14 +2536,22 @@ bool LNLib::NurbsCurve::NeighborWeightsModification(int degree, const std::vecto
 	double betak = (alpha / ak) / (beta / abk);
 	double betak1 = (alpha / ak1) / (beta / abk1);
 
-	updatedControlPoints = controlPoints;
+	std::vector<XYZW> updatedControlPoints = controlPoints;
 	updatedControlPoints[moveIndex] = XYZW(movePoint1, updatedControlPoints[moveIndex].GetW() * betak);
 	updatedControlPoints[moveIndex + 1] = XYZW(movePoint2, updatedControlPoints[moveIndex + 1].GetW() * betak1);
+
+	result.Degree = curve.Degree;
+	result.KnotVector = curve.KnotVector;
+	result.ControlPoints = updatedControlPoints;
 	return true;
 }
 
-std::vector<LNLib::XYZW> LNLib::NurbsCurve::Warping(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const std::vector<double>& warpShape, double warpDistance, const XYZ& planeNormal, double startParameter, double endParameter)
+void LNLib::NurbsCurve::Warping(const LN_Curve& curve, const std::vector<double>& warpShape, double warpDistance, const XYZ& planeNormal, double startParameter, double endParameter, LN_Curve& result)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -2401,23 +2565,30 @@ std::vector<LNLib::XYZW> LNLib::NurbsCurve::Warping(int degree, const std::vecto
 	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(endParameter, startParameter), "endParameter", "EndParameter must be greater than startParamter.");
 
 	double halfParameter = 0.5 * (startParameter + endParameter);
-	XYZ tangent = ComputeRationalCurveDerivatives(degree, 1, knotVector, halfParameter, controlPoints)[0];
+	XYZ tangent = ComputeRationalCurveDerivatives(curve, 1, halfParameter)[0];
 	XYZ normal = tangent.CrossProduct(planeNormal);
 	XYZ W = MathUtils::IsGreaterThan(warpDistance,0.0)? normal : -normal;
 	std::vector<XYZW> temp = controlPoints;
-	std::vector<XYZW> result;
+	std::vector<XYZW> resultControlPoints;
 	for (int i = 0; i < temp.size(); i++)
 	{
 		double weight = temp[i].GetW();
 		XYZ currentPoint = temp[i].ToXYZ(true);
 		XYZ newPoint = currentPoint + warpShape[i] * abs(warpDistance) * W.Normalize();
-		result.emplace_back(XYZW(newPoint, weight));
+		resultControlPoints.emplace_back(XYZW(newPoint, weight));
 	}
-	return result;
+	
+	result.Degree = curve.Degree;
+	result.KnotVector = curve.KnotVector;
+	result.ControlPoints = resultControlPoints;
 }
 
-bool LNLib::NurbsCurve::Flattening(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, XYZ lineStartPoint, XYZ lineEndPoint, double startParameter, double endParameter, std::vector<XYZW>& updatedControlPoints)
+bool LNLib::NurbsCurve::Flattening(const LN_Curve& curve, XYZ lineStartPoint, XYZ lineEndPoint, double startParameter, double endParameter, LN_Curve& result)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -2439,7 +2610,7 @@ bool LNLib::NurbsCurve::Flattening(int degree, const std::vector<double>& knotVe
 	}
 	
 	int projectCount = 0;
-	updatedControlPoints = controlPoints;
+	std::vector<XYZW> updatedControlPoints = controlPoints;
 	XYZ lineVector = (lineEndPoint - lineStartPoint).Normalize();
 	double lineLength = lineEndPoint.Distance(lineStartPoint);
 	for (auto it = selectedControlPoints.begin(); it != selectedControlPoints.end(); ++it)
@@ -2457,8 +2628,12 @@ bool LNLib::NurbsCurve::Flattening(int degree, const std::vector<double>& knotVe
 	return projectCount >= degree + 1;
 }
 
-std::vector<LNLib::XYZW> LNLib::NurbsCurve::Bending(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, double startParameter, double endParameter, XYZ bendCenter, double radius, double crossRatio)
+void LNLib::NurbsCurve::Bending(const LN_Curve& curve, double startParameter, double endParameter, XYZ bendCenter, double radius, double crossRatio, LN_Curve& result)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -2490,11 +2665,18 @@ std::vector<LNLib::XYZW> LNLib::NurbsCurve::Bending(int degree, const std::vecto
 		XYZ project = bendCenter + (current - bendCenter) * ti;
 		updatedControlPoints[index] = XYZW(project, updatedControlPoints[index].GetW());
 	}
-	return updatedControlPoints;
+
+	result.Degree = curve.Degree;
+	result.KnotVector = curve.KnotVector;
+	result.ControlPoints = updatedControlPoints;
 }
 
-std::vector<LNLib::XYZW> LNLib::NurbsCurve::ConstraintBasedModification(int degree, const std::vector<double>& knotVector, const std::vector<XYZW>& controlPoints, const std::vector<double>& constraintParams, const std::vector<XYZ>& derivativeConstraints, const std::vector<int>& appliedIndices, const std::vector<int>& appliedDegree, const std::vector<int>& fixedControlPointIndices)
+void LNLib::NurbsCurve::ConstraintBasedModification(const LN_Curve& curve, const std::vector<double>& constraintParams, const std::vector<XYZ>& derivativeConstraints, const std::vector<int>& appliedIndices, const std::vector<int>& appliedDegree, const std::vector<int>& fixedControlPointIndices, LN_Curve& result)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -2596,27 +2778,32 @@ std::vector<LNLib::XYZW> LNLib::NurbsCurve::ConstraintBasedModification(int degr
 
 		updatedControlPoints[map[i]] = XYZW(wx + weight * x, wy + weight * y, wz + weight * z, weight);
 	}
-	return updatedControlPoints;
+
+	result.Degree = curve.Degree;
+	result.KnotVector = curve.KnotVector;
+	result.ControlPoints = updatedControlPoints;
 }
 
-void LNLib::NurbsCurve::ToClampCurve(int degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+void LNLib::NurbsCurve::ToClampCurve(LN_Curve& curve)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
 	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
 
-	std::vector<double> insertKnotVector;
-	std::vector<XYZW> updatedControlPoints;
-	InsertKnot(degree, knotVector, controlPoints, knotVector[degree], degree, insertKnotVector, updatedControlPoints);
+	LN_Curve tc;
+	InsertKnot(curve, knotVector[degree], degree, tc);
 
-	knotVector = insertKnotVector;
-	controlPoints = updatedControlPoints;
+	curve = tc;
 
-	std::vector<double> insertKnotVectorNc;
-	std::vector<XYZW> updatedControlPointsNc;
-	InsertKnot(degree, knotVector, controlPoints, knotVector[controlPoints.size()], degree, insertKnotVectorNc, updatedControlPointsNc);
+	InsertKnot(curve, knotVector[controlPoints.size()], degree, tc);
+	std::vector<double> insertKnotVectorNc = tc.KnotVector;
+	std::vector<XYZW> updatedControlPointsNc = tc.ControlPoints;
 
 	knotVector.resize(insertKnotVectorNc.size() - degree - degree, 0.0);
 	controlPoints.resize(knotVector.size() - degree - 1);
@@ -2628,10 +2815,16 @@ void LNLib::NurbsCurve::ToClampCurve(int degree, std::vector<double>& knotVector
 			controlPoints[i] = updatedControlPointsNc[i + degree];
 		}
 	}
+	curve.KnotVector = knotVector;
+	curve.ControlPoints = controlPoints;
 }
 
-void LNLib::NurbsCurve::ToUnclampCurve(int degree, std::vector<double>& knotVector, std::vector<XYZW>& controlPoints)
+void LNLib::NurbsCurve::ToUnclampCurve(LN_Curve& curve)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -2661,4 +2854,7 @@ void LNLib::NurbsCurve::ToUnclampCurve(int degree, std::vector<double>& knotVect
 		}
 	}
 	knotVector[n + degree + 1] = knotVector[n + degree] + (knotVector[2 * degree] - knotVector[2 * degree - 1]);
+
+	curve.KnotVector = knotVector;
+	curve.ControlPoints = controlPoints;
 }

@@ -25,9 +25,18 @@ TEST(Test_Fundamental, All)
 		XYZW P7 = XYZW(XYZ(7, 5, 0), 1);
 
 		std::vector<XYZW> cp = { P0,P1,P2,P3,P4,P5,P6,P7 };
-		std::vector<double> newKv;
-		std::vector<XYZW> newCp;
-		NurbsCurve::InsertKnot(degree, kv, cp, insertKnot, 1, newKv, newCp);
+		
+		LN_Curve curve;
+		curve.Degree = degree;
+		curve.KnotVector = kv;
+		curve.ControlPoints = cp;
+
+		LN_Curve newCurve;
+		NurbsCurve::InsertKnot(curve, insertKnot, 1, newCurve);
+
+		auto newKv = newCurve.KnotVector;
+		auto newCp = newCurve.ControlPoints;
+
 		EXPECT_TRUE(newKv.size() == kv.size() + 1 &&
 					MathUtils::IsAlmostEqualTo(newKv[5], newKv[6]) &&
 					MathUtils::IsAlmostEqualTo(newKv[5], 2.0));
@@ -40,7 +49,12 @@ TEST(Test_Fundamental, All)
 		int degree = 2;
 		std::vector<double> kv = { 0,0,0,1,2,3,3,3 };
 		std::vector<XYZW> cps = { XYZW(XYZ(0,0,0),1), XYZW(XYZ(1,1,0),4), XYZW(XYZ(3,2,0),1), XYZW(XYZ(4,1,0),1), XYZW(XYZ(5,-1,0),1) };
-		XYZ result = NurbsCurve::GetPointOnCurveByCornerCut(degree, kv, 1.0, cps);
+		
+		LN_Curve curve;
+		curve.Degree = degree;
+		curve.KnotVector = kv;
+		curve.ControlPoints = cps;
+		XYZ result = NurbsCurve::GetPointOnCurveByCornerCut(curve, 1.0);
 		EXPECT_TRUE(result.IsAlmostEqualTo(XYZ(7.0 / 5, 6.0 / 5, 0)));
 	}
 
@@ -162,9 +176,16 @@ TEST(Test_Fundamental, All)
 		XYZW P8 = XYZW(XYZ(20, 40, 0), 1);
 
 		std::vector<XYZW> cp = { P0,P1,P2,P3,P4,P5,P6,P7,P8 };
-		std::vector<double> newKv;
-		std::vector<XYZW> newCp;
-		NurbsCurve::RefineKnotVector(degree, kv, cp, ike, newKv, newCp);
+		
+		LN_Curve curve;
+		curve.Degree = degree;
+		curve.KnotVector = kv;
+		curve.ControlPoints = cp;
+
+		LN_Curve newCurve;
+		NurbsCurve::RefineKnotVector(curve, ike, newCurve);
+		auto newKv = newCurve.KnotVector;
+		auto newCp = newCurve.ControlPoints;
 		EXPECT_TRUE(newKv.size() == 46 && newCp.size() == 41);
 		EXPECT_TRUE(newCp[20].ToXYZ(true).IsAlmostEqualTo(XYZ(55.9157986, 12.17447916,0)));
 	}
@@ -205,9 +226,18 @@ TEST(Test_Fundamental, All)
 		std::vector<XYZW> cps = {
 			XYZW(5,5,0,1),XYZW(10,10,0,1),XYZW(20,15,0,1),XYZW(35,15,0,1),XYZW(45,10,0,1),XYZW(50,5,0,1)
 		};
-		std::vector<double> newKv;
-		std::vector<XYZW> newCps;
-		NurbsCurve::RemoveKnot(degree, kv, cps, 0.66, 1, newKv, newCps);
+
+		LN_Curve curve;
+		curve.Degree = degree;
+		curve.KnotVector = kv;
+		curve.ControlPoints = cps;
+
+		LN_Curve newCurve;
+
+		NurbsCurve::RemoveKnot(curve, 0.66, 1, newCurve);
+		std::vector<double> newKv = newCurve.KnotVector;
+		std::vector<XYZW> newCps = newCurve.ControlPoints;
+
 		EXPECT_TRUE(newKv.size() == kv.size()-1);
 		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newKv[4], 0.33));
 		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newKv[5], 1.0));
@@ -266,9 +296,16 @@ TEST(Test_Fundamental, All)
 		XYZW P7 = XYZW(XYZ(7, 5, 0), 1);
 
 		std::vector<XYZW> cps = { P0,P1,P2,P3,P4,P5,P6,P7 };
-		std::vector<double> updatedKv;
-		std::vector<XYZW> updatedCps;
-		NurbsCurve::ElevateDegree(degree, kv, cps, 1, updatedKv, updatedCps);
+		LN_Curve curve;
+		curve.Degree = degree;
+		curve.KnotVector = kv;
+		curve.ControlPoints = cps;
+
+		LN_Curve newCurve;
+		NurbsCurve::ElevateDegree(curve, 1, newCurve);
+
+		std::vector<double> updatedKv = newCurve.KnotVector;
+		std::vector<XYZW> updatedCps = newCurve.ControlPoints;
 		EXPECT_TRUE(ValidationUtils::IsValidNurbs(degree + 1, updatedKv.size(), updatedCps.size()));
 		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(kv[0], updatedKv[0]));
 		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(kv[kv.size()-1], updatedKv[updatedKv.size()-1]));
@@ -286,9 +323,19 @@ TEST(Test_Fundamental, All)
 		XYZW P3 = XYZW(XYZ(3, 0, 0), 1);
 
 		std::vector<XYZW> cps = { P0,P1,P2,P3};
-		std::vector<double> updatedKv;
-		std::vector<XYZW> updatedCps;
-		bool canReduce = NurbsCurve::ReduceDegree(degree, kv, cps, updatedKv, updatedCps);
+
+		LN_Curve curve;
+		curve.Degree = degree;
+		curve.KnotVector = kv;
+		curve.ControlPoints = cps;
+
+		LN_Curve newCurve;
+		
+		bool canReduce = NurbsCurve::ReduceDegree(curve, newCurve);
+
+		std::vector<double> updatedKv = newCurve.KnotVector;
+		std::vector<XYZW> updatedCps = newCurve.ControlPoints;
+
 		EXPECT_TRUE(updatedCps[0].ToXYZ(true).IsAlmostEqualTo(XYZ(-3, 0, 0)));
 		EXPECT_TRUE(updatedCps[1].ToXYZ(true).IsAlmostEqualTo(XYZ(0, 3, 0)));
 		EXPECT_TRUE(updatedCps[2].ToXYZ(true).IsAlmostEqualTo(XYZ(3, 0, 0)));
