@@ -45,7 +45,7 @@ double LNLib::ValidationUtils::ComputeCurveModifyTolerance(const std::vector<XYZ
 	double minWeight = 1.0;
 	double maxDistance = 0.0;
 
-	int size = static_cast<int>(controlPoints.size());
+	int size = controlPoints.size();
 	for (int i = 0; i < size; i++)
 	{
 		XYZW temp = controlPoints[i];

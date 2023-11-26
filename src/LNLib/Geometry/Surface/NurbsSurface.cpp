@@ -43,42 +43,6 @@ namespace LNLib
 		}
 		return ind;
 	}
-
-	std::vector<std::vector<XYZ>> ToXYZ(const std::vector<std::vector<XYZW>>& surfacePoints)
-	{
-		int row = surfacePoints.size();
-		int column = surfacePoints[0].size();
-
-		std::vector<std::vector<XYZ>> result;
-		result.resize(row);
-		for (int i = 0; i < row; i++)
-		{
-			result[i].resize(column);
-			for (int j = 0; j < column; j++)
-			{
-				result[i][j] = const_cast<XYZW&>(surfacePoints[i][j]).ToXYZ(true);
-			}
-		}
-		return result;
-	}
-
-	std::vector<std::vector<XYZW>> ToXYZW(const std::vector<std::vector<XYZ>>& surfacePoints)
-	{
-		int row = surfacePoints.size();
-		int column = surfacePoints[0].size();
-
-		std::vector<std::vector<XYZW>> result;
-		result.resize(row);
-		for (int i = 0; i < row; i++)
-		{
-			result[i].resize(column);
-			for (int j = 0; j < column; j++)
-			{
-				result[i][j] = XYZW(const_cast<XYZ&>(surfacePoints[i][j]),1);
-			}
-		}
-		return result;
-	}
 }
 
 LNLib::XYZ LNLib::NurbsSurface::GetPointOnSurface(const LN_Surface& surface, UV uv)
@@ -239,8 +203,8 @@ void LNLib::NurbsSurface::InsertKnot(const LN_Surface& surface, double insertKno
 
 	std::vector<XYZW> temp(degree + 1);
 
-	int rows = static_cast<int>(controlPoints.size());
-	int columns = static_cast<int>(controlPoints[0].size());
+	int rows = controlPoints.size();
+	int columns = controlPoints[0].size();
 
 	result = surface;
 
@@ -1673,7 +1637,7 @@ bool LNLib::NurbsSurface::BicubicLocalInterpolation(const std::vector<std::vecto
 	{
 		rowFilter.emplace_back(Tcf[ind[r]]);
 	}
-	controlPoints = ToXYZW(rowFilter);
+	controlPoints = ControlPointsUtils::ToXYZW(rowFilter);
 
 	surface.DegreeU = degreeU;
 	surface.DegreeV = degreeV;
@@ -1723,7 +1687,7 @@ bool LNLib::NurbsSurface::GlobalApproximation(const std::vector<std::vector<XYZ>
 		knotVectorV = tc.KnotVector;
 	}
 	MathUtils::Transpose(tPoints, preControlPoints);
-	controlPoints = ToXYZW(preControlPoints);
+	controlPoints = ControlPointsUtils::ToXYZW(preControlPoints);
 
 	surface.DegreeU = degreeU;
 	surface.DegreeV = degreeV;
@@ -1915,12 +1879,9 @@ void LNLib::NurbsSurface::CreateCoonsSurface(const LN_Curve& curve0, const LN_Cu
 	
 	LN_Surface ruledSurface1;
 	{
-		LN_Surface temp;
-		CreateRuledSurface(n1, n3, temp);
-		ruledSurface1.DegreeU = temp.DegreeV; ruledSurface1.DegreeV = temp.DegreeU;
-		ruledSurface1.KnotVectorU = temp.KnotVectorV; ruledSurface1.KnotVectorV = temp.KnotVectorU;
+		CreateRuledSurface(n1, n3, ruledSurface1);
 		std::vector<std::vector<XYZW>> transposedControlPoints;
-		MathUtils::Transpose(temp.ControlPoints, transposedControlPoints);
+		MathUtils::Transpose(ruledSurface1.ControlPoints, transposedControlPoints);
 		ruledSurface1.ControlPoints = transposedControlPoints;
 	}
 

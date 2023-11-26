@@ -958,7 +958,7 @@ void LNLib::NurbsCurve::CreateTransformed(const std::vector<XYZW>& controlPoints
 {
 	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
 
-	int size = static_cast<int>(controlPoints.size());
+	int size = controlPoints.size();
 	transformedControlPoints.resize(size);
 
 	Matrix4d tempMatrix = matrix;
@@ -1011,7 +1011,7 @@ void LNLib::NurbsCurve::ReverseKnotVector(const std::vector<double>& knotVector,
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
 
-	int size = static_cast<int>(knotVector.size());
+	int size = knotVector.size();
 
 	double min = knotVector[0];
 	double max = knotVector[size - 1];
@@ -2130,7 +2130,6 @@ void LNLib::NurbsCurve::GlobalApproximationByErrorBound(int degree, const std::v
 		controlPoints[i] = XYZW(throughPoints[i],1);
 	}
 
-
 	LN_Curve tc;
 	tc.Degree = 1;
 	tc.KnotVector = knotVector;
@@ -2489,6 +2488,7 @@ bool LNLib::NurbsCurve::NeighborWeightsModification(const LN_Curve& curve, doubl
 	tc.Degree = degree;
 	tc.KnotVector = knotVector;
 	tc.ControlPoints = tempControlPoints;
+
 	XYZ R = GetPointOnCurve(tc, parameter);
 	XYZ controlLeg = movePoint1 - movePoint2;
 	double controlLegLength = movePoint2.Distance(movePoint1);

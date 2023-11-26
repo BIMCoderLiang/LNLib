@@ -106,7 +106,7 @@ int LNLib::Polynomials::GetKnotMultiplicity(const std::vector<double>& knotVecto
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
 	VALIDATE_ARGUMENT_RANGE(knot, knotVector[0], knotVector[knotVector.size() - 1]);
 	
-	int size = static_cast<int>(knotVector.size());
+	int size = knotVector.size();
 	int multi = 0;
 
 	for (int index = 0; index < size; index++)
@@ -301,7 +301,7 @@ double LNLib::Polynomials::OneBasisFunction(int spanIndex, int degree, const std
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
 	VALIDATE_ARGUMENT_RANGE(paramT, knotVector[0], knotVector[knotVector.size() - 1]);
 
-	int m = static_cast<int>(knotVector.size()) - 1;
+	int m = knotVector.size() - 1;
 	if ((spanIndex == 0 && MathUtils::IsAlmostEqualTo(paramT, knotVector[0])) ||
 		(spanIndex == m - degree - 1 && MathUtils::IsAlmostEqualTo(paramT, knotVector[m])))
 	{

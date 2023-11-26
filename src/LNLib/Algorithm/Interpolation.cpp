@@ -92,14 +92,13 @@ std::vector<double> LNLib::Interpolation::GetCentripetalParameterization(const s
 
 std::vector<double> LNLib::Interpolation::AverageKnotVector(int degree, const std::vector<double> params)
 {
-	std::vector<double> knotVector;
+	
 	std::vector<double> uk = params;
-
 	int size = params.size();
 	int n = size - 1;
 	int m = n + degree + 1;
 
-	knotVector.resize(m + 1, 0.0);
+	std::vector<double> knotVector(m + 1, 0.0);
 	for (int i = m - degree; i <= m; i++)
 	{
 		knotVector[i] = 1.0;
@@ -308,11 +307,12 @@ bool LNLib::Interpolation::ComputeTangent(const std::vector<XYZ>& throughPoints,
 
 std::vector<LNLib::XYZ> LNLib::Interpolation::ComputeTangent(const std::vector<XYZ>& throughPoints)
 {
-	auto params = GetChordParameterization(throughPoints);
 	int size = throughPoints.size();
 	std::vector<XYZ> tangents(size, XYZ(0, 0, 0));
 	std::vector<XYZ> qq(size, XYZ(0, 0, 0));
 	std::vector<double> delta(size, 0.0);
+
+	auto params = GetChordParameterization(throughPoints);
 	for (int i = 1; i < size; i++)
 	{
 		delta[i] = params[i] - params[i - 1];

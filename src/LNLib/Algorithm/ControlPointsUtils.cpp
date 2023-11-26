@@ -25,3 +25,35 @@ std::vector<XYZ> LNLib::ControlPointsUtils::ToXYZ(const std::vector<XYZW>& weigh
 	}
 	return result;
 }
+
+std::vector<std::vector<XYZ>> LNLib::ControlPointsUtils::ToXYZ(const std::vector<std::vector<XYZW>>& points)
+{
+	int row = points.size();
+	int column = points[0].size();
+
+	std::vector<std::vector<XYZ>> result(row, std::vector<XYZ>(column));
+	for (int i = 0; i < row; i++)
+	{
+		for (int j = 0; j < column; j++)
+		{
+			result[i][j] = const_cast<XYZW&>(points[i][j]).ToXYZ(true);
+		}
+	}
+	return result;
+}
+
+std::vector<std::vector<XYZW>> LNLib::ControlPointsUtils::ToXYZW(const std::vector<std::vector<XYZ>>& points)
+{
+	int row = points.size();
+	int column = points[0].size();
+
+	std::vector<std::vector<XYZW>> result(row, std::vector<XYZW>(column));;
+	for (int i = 0; i < row; i++)
+	{
+		for (int j = 0; j < column; j++)
+		{
+			result[i][j] = XYZW(const_cast<XYZ&>(points[i][j]), 1);
+		}
+	}
+	return result;
+}

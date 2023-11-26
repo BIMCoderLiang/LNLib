@@ -23,6 +23,9 @@ namespace LNLib
 	public:
 		static std::vector<XYZ> ToXYZ(const std::vector<XYZW>& weightedControlPoints);
 		
+		static std::vector<std::vector<XYZ>> ToXYZ(const std::vector<std::vector<XYZW>>& points);
+
+		static std::vector<std::vector<XYZW>> ToXYZW(const std::vector<std::vector<XYZ>>& points);
 	};
 
 }
