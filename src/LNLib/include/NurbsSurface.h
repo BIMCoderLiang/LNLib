@@ -164,7 +164,7 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page457
 		/// Create Loft Surface (called Skinned Surfaces in The NURBS Book).
 		/// </summary>
-		static bool CreateLoftSurface(const std::vector<LN_Curve>& sections, LN_Surface& surface);
+		static bool CreateLoftSurface(const std::vector<LN_Curve>& guideLines, LN_Surface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page472
@@ -184,7 +184,7 @@ namespace LNLib
 		/// 4. Intersection points must be located evenly in parameter spaces of curves. 
 		/// 5. U-curves must be ordered along direction of V-curves, and vice versa. 
 		/// </summary>
-		static bool CreateGordonSurface(const std::vector<LN_Curve>& uCurves, const std::vector<LN_Curve>& vCurves, const std::vector<std::vector<XYZ>>& intersectionPoints, LN_Surface& surface);
+		static void CreateGordonSurface(const std::vector<LN_Curve>& uCurves, const std::vector<LN_Curve>& vCurves, const std::vector<std::vector<XYZ>>& intersectionPoints, LN_Surface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page502

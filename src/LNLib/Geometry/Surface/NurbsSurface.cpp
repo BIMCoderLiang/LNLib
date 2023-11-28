@@ -1697,12 +1697,18 @@ bool LNLib::NurbsSurface::GlobalApproximation(const std::vector<std::vector<XYZ>
 	return true;
 }
 
-bool LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_Curve>& sections, LN_Surface& surface)
+bool LNLib::NurbsSurface::CreateSwungSurface(const LN_Curve& profile, const LN_Curve& trajectory, LN_Surface& surface)
+{
+	// to be continued....
+	return true;
+}
+
+bool LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_Curve>& guideLines, LN_Surface& surface)
 {
 	int degree_max = 0;
-	for (int i = 0; i < sections.size(); i++)
+	for (int i = 0; i < guideLines.size(); i++)
 	{
-		LN_Curve current = sections[i];
+		LN_Curve current = guideLines[i];
 		VALIDATE_ARGUMENT(current.Degree > 0, "degree", "Degree must greater than zero.");
 		VALIDATE_ARGUMENT(current.KnotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 		VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(current.KnotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -1715,10 +1721,10 @@ bool LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_Curve>& section
 		}
 	}
 
-	std::vector<LN_Curve> internals(sections.size());
-	for (int i = 0; i < sections.size(); i++)
+	std::vector<LN_Curve> internals(guideLines.size());
+	for (int i = 0; i < guideLines.size(); i++)
 	{
-		LN_Curve current = sections[i];
+		LN_Curve current = guideLines[i];
 		if (degree_max > current.Degree)
 		{
 			int times = degree_max - current.Degree;
@@ -1730,6 +1736,9 @@ bool LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_Curve>& section
 		}
 		internals.emplace_back(current);
 	}
+
+	int degreeU = degree_max;
+	int degreeV = degree_max;
 
 	// to be continued....
 	return true;
@@ -1765,6 +1774,268 @@ bool LNLib::NurbsSurface::CreateSweepSurface(const LN_Curve& path, const std::ve
 
 	// to be continued....
 	return true;
+}
+
+void LNLib::NurbsSurface::CreateGordonSurface(const std::vector<LN_Curve>& uCurves, const std::vector<LN_Curve>& vCurves, const std::vector<std::vector<XYZ>>& intersectionPoints, LN_Surface& surface)
+{
+	int degree_u_max = 0;
+	for (int i = 0; i < uCurves.size(); i++)
+	{
+		LN_Curve current = uCurves[i];
+		VALIDATE_ARGUMENT(current.Degree > 0, "degree", "Degree must greater than zero.");
+		VALIDATE_ARGUMENT(current.KnotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+		VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(current.KnotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+		VALIDATE_ARGUMENT(current.ControlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+		VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(current.Degree, current.KnotVector.size(), current.ControlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+		if (current.Degree > degree_u_max)
+		{
+			degree_u_max = current.Degree;
+		}
+	}
+
+	std::vector<LN_Curve> uInternals;
+	for (int i = 0; i < uCurves.size(); i++)
+	{
+		LN_Curve current = uCurves[i];
+		if (degree_u_max > current.Degree)
+		{
+			int times = degree_u_max - current.Degree;
+			LN_Curve tc;
+			NurbsCurve::ElevateDegree(current, times, tc);
+			uInternals.emplace_back(tc);
+		}
+		else
+		{
+			uInternals.emplace_back(current);
+		}
+	}
+
+	std::vector<std::vector<double>> knotVectorsU;
+	for (int i = 0; i < uInternals.size(); i++)
+	{
+		knotVectorsU.emplace_back(uInternals[i].KnotVector);
+	}
+	auto insertElements = KnotVectorUtils::GetInsertedKnotElements(knotVectorsU);
+	for (int i = 0; i < uInternals.size(); i++)
+	{
+		auto insertElement = insertElements[i];
+		if (insertElement.size() > 0)
+		{
+			LN_Curve tc;
+			NurbsCurve::RefineKnotVector(uInternals[i], insertElement, tc);
+			uInternals[i] = tc;
+		}
+	}
+
+	int degree_v_max = 0;
+	for (int i = 0; i < vCurves.size(); i++)
+	{
+		LN_Curve current = vCurves[i];
+		VALIDATE_ARGUMENT(current.Degree > 0, "degree", "Degree must greater than zero.");
+		VALIDATE_ARGUMENT(current.KnotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+		VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(current.KnotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+		VALIDATE_ARGUMENT(current.ControlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+		VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(current.Degree, current.KnotVector.size(), current.ControlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	
+		if (current.Degree > degree_v_max)
+		{
+			degree_v_max = current.Degree;
+		}
+	}
+
+	std::vector<LN_Curve> vInternals;
+	for (int i = 0; i < vCurves.size(); i++)
+	{
+		LN_Curve current = vCurves[i];
+		if (degree_v_max > current.Degree)
+		{
+			int times = degree_v_max - current.Degree;
+			LN_Curve tc;
+			NurbsCurve::ElevateDegree(current, times, tc);
+			vInternals.emplace_back(tc);
+		}
+		else
+		{
+			vInternals.emplace_back(current);
+		}
+	}
+
+	std::vector<std::vector<double>> knotVectorsV;
+	for (int i = 0; i < vInternals.size(); i++)
+	{
+		knotVectorsV.emplace_back(vInternals[i].KnotVector);
+	}
+	insertElements = KnotVectorUtils::GetInsertedKnotElements(knotVectorsV);
+	for (int i = 0; i < vInternals.size(); i++)
+	{
+		auto insertElement = insertElements[i];
+		if (insertElement.size() > 0)
+		{
+			LN_Curve tc;
+			NurbsCurve::RefineKnotVector(vInternals[i], insertElement, tc);
+			vInternals[i] = tc;
+		}
+	}
+
+	int rows = intersectionPoints.size();
+	int columns = intersectionPoints[0].size();
+
+	LN_Surface loftSurfaceV;
+	CreateLoftSurface(uInternals, loftSurfaceV);
+	LN_Surface ts;
+	CreateLoftSurface(vInternals, ts);
+	std::vector<std::vector<XYZW>> transposedControlPoints;
+	MathUtils::Transpose(ts.ControlPoints, transposedControlPoints);
+	LN_Surface loftSurfaceU;
+	loftSurfaceU.DegreeU = ts.DegreeV;
+	loftSurfaceU.DegreeV = ts.DegreeU;
+	loftSurfaceU.KnotVectorU = ts.KnotVectorV;
+	loftSurfaceU.KnotVectorV = ts.KnotVectorU;
+	loftSurfaceU.ControlPoints = transposedControlPoints;
+
+	int degreeU = std::min(columns - 1, degree_u_max);
+	int degreeV = std::min(rows - 1, degree_v_max);
+	GlobalInterpolation(intersectionPoints, degreeU, degreeV, ts);
+	MathUtils::Transpose(ts.ControlPoints, transposedControlPoints);
+	LN_Surface interpolatedSurface;
+	interpolatedSurface.DegreeU = ts.DegreeV;
+	interpolatedSurface.DegreeV = ts.DegreeU;
+	interpolatedSurface.KnotVectorU = ts.KnotVectorV;
+	interpolatedSurface.KnotVectorV = ts.KnotVectorU;
+	interpolatedSurface.ControlPoints = transposedControlPoints;
+
+	{
+		int lsu_degreeU = loftSurfaceU.DegreeU;
+		int lsv_degreeU = loftSurfaceV.DegreeU;
+		int inp_degreeU = interpolatedSurface.DegreeU;
+
+		int degreeU = std::max(lsu_degreeU, std::max(lsv_degreeU, inp_degreeU));
+		if (degreeU > lsu_degreeU)
+		{
+			int times = degreeU - lsu_degreeU;
+			LN_Surface temp;
+			ElevateDegree(loftSurfaceU, times, true, temp);
+			loftSurfaceU = temp;
+		}
+
+		if (degreeU > lsv_degreeU)
+		{
+			int times = degreeU - lsv_degreeU;
+			LN_Surface temp;
+			ElevateDegree(loftSurfaceV, times, true, temp);
+			loftSurfaceV = temp;
+		}
+
+		if (degreeU > inp_degreeU)
+		{
+			int times = degreeU - inp_degreeU;
+			LN_Surface temp;
+			ElevateDegree(interpolatedSurface, times, true, temp);
+			interpolatedSurface = temp;
+		}
+
+		int lsu_degreeV = loftSurfaceU.DegreeV;
+		int lsv_degreeV = loftSurfaceV.DegreeV;
+		int inp_degreeV = interpolatedSurface.DegreeV;
+
+		int degreeV = std::max(lsu_degreeV, std::max(lsv_degreeV, inp_degreeV));
+		if (degreeV > lsu_degreeV)
+		{
+			int times = degreeV - lsu_degreeV;
+			LN_Surface temp;
+			ElevateDegree(loftSurfaceU, times, false, temp);
+			loftSurfaceU = temp;
+		}
+
+		if (degreeV > lsv_degreeV)
+		{
+			int times = degreeV - lsv_degreeV;
+			LN_Surface temp;
+			ElevateDegree(loftSurfaceV, times, false, temp);
+			loftSurfaceV = temp;
+		}
+
+		if (degreeV > inp_degreeV)
+		{
+			int times = degreeV - inp_degreeV;
+			LN_Surface temp;
+			ElevateDegree(interpolatedSurface, times, false, temp);
+			interpolatedSurface = temp;
+		}
+	}
+
+	{
+		std::vector<std::vector<double>> knotVectorsU;
+		knotVectorsU.emplace_back(loftSurfaceU.KnotVectorU);
+		knotVectorsU.emplace_back(loftSurfaceV.KnotVectorU);
+		knotVectorsU.emplace_back(interpolatedSurface.KnotVectorU);
+
+		auto insertElements = KnotVectorUtils::GetInsertedKnotElements(knotVectorsU);
+		if (insertElements[0].size() > 0)
+		{
+			LN_Surface temp;
+			RefineKnotVector(loftSurfaceU, insertElements[0], true, temp);
+			loftSurfaceU = temp;
+		}
+		if (insertElements[1].size() > 0)
+		{
+			LN_Surface temp;
+			RefineKnotVector(loftSurfaceV, insertElements[1], true, temp);
+			loftSurfaceV = temp;
+		}
+		if (insertElements[2].size() > 0)
+		{
+			LN_Surface temp;
+			RefineKnotVector(interpolatedSurface, insertElements[2], true, temp);
+			interpolatedSurface = temp;
+		}
+	}
+
+	{
+		std::vector<std::vector<double>> knotVectorsV;
+		knotVectorsV.emplace_back(loftSurfaceU.KnotVectorV);
+		knotVectorsV.emplace_back(loftSurfaceV.KnotVectorV);
+		knotVectorsV.emplace_back(interpolatedSurface.KnotVectorV);
+
+		auto insertElements = KnotVectorUtils::GetInsertedKnotElements(knotVectorsV);
+		if (insertElements[0].size() > 0)
+		{
+			LN_Surface temp;
+			RefineKnotVector(loftSurfaceU, insertElements[0], false, temp);
+			loftSurfaceU = temp;
+		}
+		if (insertElements[1].size() > 0)
+		{
+			LN_Surface temp;
+			RefineKnotVector(loftSurfaceV, insertElements[1], false, temp);
+			loftSurfaceV = temp;
+		}
+		if (insertElements[2].size() > 0)
+		{
+			LN_Surface temp;
+			RefineKnotVector(interpolatedSurface, insertElements[2], false, temp);
+			interpolatedSurface = temp;
+		}
+	}
+
+	surface.DegreeU = interpolatedSurface.DegreeU;
+	surface.DegreeV = interpolatedSurface.DegreeV;
+	surface.KnotVectorU = interpolatedSurface.KnotVectorU;
+	surface.KnotVectorV = interpolatedSurface.KnotVectorV;
+
+	int row = interpolatedSurface.ControlPoints.size();
+	int column = interpolatedSurface.ControlPoints[0].size();
+
+	std::vector<std::vector<XYZW>> controlPoints(row, std::vector<XYZW>(column));
+	for (int i = 0; i < row; i++)
+	{
+		for (int j = 0; j < column; j++)
+		{
+			controlPoints[i][j] = loftSurfaceU.ControlPoints[i][j] + loftSurfaceV.ControlPoints[i][j] - interpolatedSurface.ControlPoints[i][j];
+		}
+	}
+	surface.ControlPoints = controlPoints;
 }
 
 void LNLib::NurbsSurface::CreateCoonsSurface(const LN_Curve& curve0, const LN_Curve& curve1, const LN_Curve& curve2, const LN_Curve& curve3, LN_Surface& surface)
@@ -1879,9 +2150,14 @@ void LNLib::NurbsSurface::CreateCoonsSurface(const LN_Curve& curve0, const LN_Cu
 	
 	LN_Surface ruledSurface1;
 	{
-		CreateRuledSurface(n1, n3, ruledSurface1);
+		LN_Surface ts;
+		CreateRuledSurface(n1, n3, ts);
 		std::vector<std::vector<XYZW>> transposedControlPoints;
-		MathUtils::Transpose(ruledSurface1.ControlPoints, transposedControlPoints);
+		MathUtils::Transpose(ts.ControlPoints, transposedControlPoints);
+		ruledSurface1.DegreeU = ts.DegreeV;
+		ruledSurface1.DegreeV = ts.DegreeU;
+		ruledSurface1.KnotVectorU = ts.KnotVectorV;
+		ruledSurface1.KnotVectorV = ts.KnotVectorU;
 		ruledSurface1.ControlPoints = transposedControlPoints;
 	}
 
