@@ -210,18 +210,6 @@ void LNLib::NurbsSurface::Reverse(const LN_Surface& surface, SurfaceDirection di
 
 	if (direction == SurfaceDirection::UDirection)
 	{
-		int size = controlPoints.size();
-		std::vector<std::vector<XYZW>> newControlPoints(size);
-		for (int i = 0; i < size; i++)
-		{
-			std::reverse(controlPoints[i].begin(), controlPoints[i].end());
-			newControlPoints.emplace_back(controlPoints[i]);
-		}
-		result.ControlPoints = newControlPoints;
-	}
-
-	else if (direction == SurfaceDirection::VDirection)
-	{
 		int row = controlPoints.size();
 		int column = controlPoints[0].size();
 
@@ -235,6 +223,17 @@ void LNLib::NurbsSurface::Reverse(const LN_Surface& surface, SurfaceDirection di
 			}
 		}
 		result.ControlPoints = controlPoints;
+	}
+	else if (direction == SurfaceDirection::VDirection)
+	{
+		int size = controlPoints.size();
+		std::vector<std::vector<XYZW>> newControlPoints(size);
+		for (int i = 0; i < size; i++)
+		{
+			std::reverse(controlPoints[i].begin(), controlPoints[i].end());
+			newControlPoints.emplace_back(controlPoints[i]);
+		}
+		result.ControlPoints = newControlPoints;
 	}
 	else
 	{

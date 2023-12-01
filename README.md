@@ -26,6 +26,7 @@ NURBS Algorithms:
     - Surface Tangent Vector Inversion
     - Curve Reparameterization
     - Curve Transform and Reverse
+    - Surface Swap and Reverse
 - ***Chapter 7***:
     - Create Arc/Conic Curve
 - ***Chapter 8***:
