@@ -114,18 +114,6 @@ namespace LNLib
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page263
-		/// Knot reverse for curve reverse operation.
-		/// </summary>
-		static void ReverseKnotVector(const std::vector<double>& knotVector, std::vector<double> reversedKnotVector);
-
-		/// <summary>
-		/// The NURBS Book 2nd Edition Page263
-		/// ControlPoints reverse for curve reverse operation.
-		/// </summary>
-		static void ReverseControlPoints(const std::vector<XYZW>& controlPoints, std::vector<XYZW> reversedControlPoints);
-
-		/// <summary>
-		/// The NURBS Book 2nd Edition Page263
 		/// Curve reverse,but not use reparameterization.
 		/// </summary>
 		static void Reverse(const LN_Curve& curve, LN_Curve& result);

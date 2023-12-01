@@ -36,6 +36,8 @@ namespace LNLib
 		/// </summary>
 		static std::vector<std::vector<XYZ>> ComputeRationalSurfaceDerivatives(const LN_Surface& surface, int derivative, UV uv);
 
+		static void Swap(const LN_Surface& surface, LN_Surface& result);
+
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page137
 		/// Algorithm A5.3

@@ -1006,38 +1006,33 @@ void LNLib::NurbsCurve::Reparameterization(const LN_Curve& curve, double alpha, 
 	result.ControlPoints = updatedControlPoints;
 }
 
-void LNLib::NurbsCurve::ReverseKnotVector(const std::vector<double>& knotVector, std::vector<double> reversedKnotVector)
+void LNLib::NurbsCurve::Reverse(const LN_Curve& curve, LN_Curve& result)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
 
 	int size = knotVector.size();
-
+	std::vector<double> reversedKnotVector(size);
 	double min = knotVector[0];
 	double max = knotVector[size - 1];
 
-	reversedKnotVector.resize(size);
 	reversedKnotVector[0] = min;
 	for (int i = 1; i < size; i++)
 	{
 		reversedKnotVector[i] = reversedKnotVector[i - 1] + (knotVector[size - i] - knotVector[size - i - 1]);
 	}
-}
 
-void LNLib::NurbsCurve::ReverseControlPoints(const std::vector<XYZW>& controlPoints, std::vector<XYZW> reversedControlPoints)
-{
-	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
-
+	std::vector<XYZW> reversedControlPoints;
 	reversedControlPoints = controlPoints;
 	std::reverse(reversedControlPoints.begin(), reversedControlPoints.end());
-}
 
-void LNLib::NurbsCurve::Reverse(const LN_Curve& curve, LN_Curve& result)
-{
-	std::vector<double> reversedKnotVector;
-	ReverseKnotVector(curve.KnotVector, reversedKnotVector);
-	std::vector<XYZW> reversedControlPoints;
-	ReverseControlPoints(curve.ControlPoints, reversedControlPoints);
 	result.Degree = curve.Degree;
 	result.KnotVector = reversedKnotVector;
 	result.ControlPoints = reversedControlPoints;

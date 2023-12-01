@@ -132,6 +132,33 @@ std::vector<std::vector<LNLib::XYZ>> LNLib::NurbsSurface::ComputeRationalSurface
 	return derivatives;
 }
 
+void LNLib::NurbsSurface::Swap(const LN_Surface& surface, LN_Surface& result)
+{
+	int degreeU = surface.DegreeU;
+	int degreeV = surface.DegreeV;
+	std::vector<double> knotVectorU = surface.KnotVectorU;
+	std::vector<double> knotVectorV = surface.KnotVectorV;
+	std::vector<std::vector<XYZW>> controlPoints = surface.ControlPoints;
+
+	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(degreeV > 0, "degreeU", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVectorU.size() > 0, "knotVectorU", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorU), "knotVectorU", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(knotVectorV.size() > 0, "knotVectorV", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorV), "knotVectorV", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degreeU, knotVectorU.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degreeV, knotVectorV.size(), controlPoints[0].size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+	std::vector<std::vector<XYZW>> transposedControlPoints;
+	MathUtils::Transpose(surface.ControlPoints, transposedControlPoints);
+	result.DegreeU = surface.DegreeV;
+	result.DegreeV = surface.DegreeU;
+	result.KnotVectorU = surface.KnotVectorV;
+	result.KnotVectorV = surface.KnotVectorU;
+	result.ControlPoints = transposedControlPoints;
+}
+
 void LNLib::NurbsSurface::InsertKnot(const LN_Surface& surface, double insertKnot, int times, bool isUDirection, LN_Surface& result)
 {
 	int degreeU = surface.DegreeU;
@@ -1899,11 +1926,7 @@ void LNLib::NurbsSurface::CreateGordonSurface(const std::vector<LN_Curve>& uCurv
 	GlobalInterpolation(intersectionPoints, degreeU, degreeV, ts);
 	MathUtils::Transpose(ts.ControlPoints, transposedControlPoints);
 	LN_Surface interpolatedSurface;
-	interpolatedSurface.DegreeU = ts.DegreeV;
-	interpolatedSurface.DegreeV = ts.DegreeU;
-	interpolatedSurface.KnotVectorU = ts.KnotVectorV;
-	interpolatedSurface.KnotVectorV = ts.KnotVectorU;
-	interpolatedSurface.ControlPoints = transposedControlPoints;
+	Swap(ts, interpolatedSurface);
 
 	{
 		int lsu_degreeU = loftSurfaceU.DegreeU;
@@ -2152,13 +2175,7 @@ void LNLib::NurbsSurface::CreateCoonsSurface(const LN_Curve& curve0, const LN_Cu
 	{
 		LN_Surface ts;
 		CreateRuledSurface(n1, n3, ts);
-		std::vector<std::vector<XYZW>> transposedControlPoints;
-		MathUtils::Transpose(ts.ControlPoints, transposedControlPoints);
-		ruledSurface1.DegreeU = ts.DegreeV;
-		ruledSurface1.DegreeV = ts.DegreeU;
-		ruledSurface1.KnotVectorU = ts.KnotVectorV;
-		ruledSurface1.KnotVectorV = ts.KnotVectorU;
-		ruledSurface1.ControlPoints = transposedControlPoints;
+		Swap(ts, ruledSurface1);
 	}
 
 	LN_Surface bilinearSurface;
