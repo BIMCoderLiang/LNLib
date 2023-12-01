@@ -159,6 +159,91 @@ void LNLib::NurbsSurface::Swap(const LN_Surface& surface, LN_Surface& result)
 	result.ControlPoints = transposedControlPoints;
 }
 
+void LNLib::NurbsSurface::Reverse(const LN_Surface& surface, SurfaceDirection direction, LN_Surface& result)
+{
+	int degreeU = surface.DegreeU;
+	int degreeV = surface.DegreeV;
+	std::vector<double> knotVectorU = surface.KnotVectorU;
+	std::vector<double> knotVectorV = surface.KnotVectorV;
+	std::vector<std::vector<XYZW>> controlPoints = surface.ControlPoints;
+
+	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(degreeV > 0, "degreeU", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVectorU.size() > 0, "knotVectorU", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorU), "knotVectorU", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(knotVectorV.size() > 0, "knotVectorV", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorV), "knotVectorV", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degreeU, knotVectorU.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degreeV, knotVectorV.size(), controlPoints[0].size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+	result.DegreeU = degreeU;
+	result.DegreeV = degreeV;
+
+	if (direction == SurfaceDirection::All || direction == SurfaceDirection::UDirection)
+	{
+		int size = knotVectorU.size();
+		std::vector<double> reversedKnotVectorU(size);
+		double min = knotVectorU[0];
+		double max = knotVectorU[size - 1];
+		reversedKnotVectorU[0] = min;
+		for (int i = 1; i < size; i++)
+		{
+			reversedKnotVectorU[i] = reversedKnotVectorU[i - 1] + (knotVectorU[size - i] - knotVectorU[size - i - 1]);
+		}
+		result.KnotVectorU = reversedKnotVectorU;
+	}
+	
+	if (direction == SurfaceDirection::All || direction == SurfaceDirection::VDirection)
+	{
+		int size = knotVectorV.size();
+		std::vector<double> reversedKnotVectorV(size);
+		double min = knotVectorV[0];
+		double max = knotVectorV[size - 1];
+		reversedKnotVectorV[0] = min;
+		for (int i = 1; i < size; i++)
+		{
+			reversedKnotVectorV[i] = reversedKnotVectorV[i - 1] + (knotVectorV[size - i] - knotVectorV[size - i - 1]);
+		}
+		result.KnotVectorV = reversedKnotVectorV;
+	}
+
+	if (direction == SurfaceDirection::UDirection)
+	{
+		int size = controlPoints.size();
+		std::vector<std::vector<XYZW>> newControlPoints(size);
+		for (int i = 0; i < size; i++)
+		{
+			std::reverse(controlPoints[i].begin(), controlPoints[i].end());
+			newControlPoints.emplace_back(controlPoints[i]);
+		}
+		result.ControlPoints = newControlPoints;
+	}
+
+	else if (direction == SurfaceDirection::VDirection)
+	{
+		int row = controlPoints.size();
+		int column = controlPoints[0].size();
+
+		for (int i = 0; i < column; i++) {
+			int start = 0;
+			int end = row - 1;
+			while (start < end) {
+				std::swap(controlPoints[start][i], controlPoints[end][i]);
+				start++;
+				end--;
+			}
+		}
+		result.ControlPoints = controlPoints;
+	}
+	else
+	{
+		std::reverse(controlPoints.begin(), controlPoints.end());
+		result.ControlPoints = controlPoints;
+	}
+	
+}
+
 void LNLib::NurbsSurface::InsertKnot(const LN_Surface& surface, double insertKnot, int times, bool isUDirection, LN_Surface& result)
 {
 	int degreeU = surface.DegreeU;

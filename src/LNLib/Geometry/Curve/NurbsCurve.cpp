@@ -1028,14 +1028,11 @@ void LNLib::NurbsCurve::Reverse(const LN_Curve& curve, LN_Curve& result)
 	{
 		reversedKnotVector[i] = reversedKnotVector[i - 1] + (knotVector[size - i] - knotVector[size - i - 1]);
 	}
-
-	std::vector<XYZW> reversedControlPoints;
-	reversedControlPoints = controlPoints;
-	std::reverse(reversedControlPoints.begin(), reversedControlPoints.end());
+	std::reverse(controlPoints.begin(), controlPoints.end());
 
 	result.Degree = curve.Degree;
 	result.KnotVector = reversedKnotVector;
-	result.ControlPoints = reversedControlPoints;
+	result.ControlPoints = controlPoints;
 }
 
 bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ& yAxis, double startRad, double endRad, double xRadius, double yRadius, LN_Curve& curve)
