@@ -1908,7 +1908,9 @@ void LNLib::NurbsSurface::CreateGordonSurface(const std::vector<LN_Curve>& uCurv
 	std::vector<LN_Curve> uInternals;
 	for (int i = 0; i < uCurves.size(); i++)
 	{
-		LN_Curve current = uCurves[i];
+		LN_Curve current;
+		NurbsCurve::Reparametrize(uCurves[i], 0, 1, current);
+
 		if (degree_u_max > current.Degree)
 		{
 			int times = degree_u_max - current.Degree;
@@ -1958,7 +1960,8 @@ void LNLib::NurbsSurface::CreateGordonSurface(const std::vector<LN_Curve>& uCurv
 	std::vector<LN_Curve> vInternals;
 	for (int i = 0; i < vCurves.size(); i++)
 	{
-		LN_Curve current = vCurves[i];
+		LN_Curve current;
+		NurbsCurve::Reparametrize(vCurves[i], 0, 1, current);
 		if (degree_v_max > current.Degree)
 		{
 			int times = degree_v_max - current.Degree;
@@ -2161,6 +2164,10 @@ void LNLib::NurbsSurface::CreateCoonsSurface(const LN_Curve& curve0, const LN_Cu
 		VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(current.KnotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
 		VALIDATE_ARGUMENT(current.ControlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
 		VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(current.Degree, current.KnotVector.size(), current.ControlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+		LN_Curve tc;
+		NurbsCurve::Reparametrize(current, 0, 1, tc);
+		nurbs[i] = tc;
 	}
 
 	auto n0 = nurbs[0]; auto n2 = nurbs[2];

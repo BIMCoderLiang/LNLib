@@ -126,7 +126,7 @@ TEST(Test_AdvancedGeometric, All)
 		curve.ControlPoints = cps;
 
 		LN_Curve newtc;
-		NurbsCurve::Reparameterization(curve, alpha, beta, gamma, delta, newtc);
+		NurbsCurve::Reparametrize(curve, alpha, beta, gamma, delta, newtc);
 
 		std::vector<double> newKv = newtc.KnotVector;
 		std::vector<XYZW> newCps = newtc.ControlPoints;

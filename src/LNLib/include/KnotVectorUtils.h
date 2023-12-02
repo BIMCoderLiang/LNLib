@@ -37,6 +37,8 @@ namespace LNLib
 		/// </summary>
 		static int GetContinuity(int degree, const std::vector<double>& knotVector, double knot);
 
+		static std::vector<double> Rescale(const std::vector<double>& knotVector, double min, double max);
+
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page533
 		/// Get insert elements from [Us, Ue] for refine knot vector.

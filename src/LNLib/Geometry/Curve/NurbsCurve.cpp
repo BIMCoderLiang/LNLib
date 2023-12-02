@@ -969,7 +969,7 @@ void LNLib::NurbsCurve::CreateTransformed(const std::vector<XYZW>& controlPoints
 	}
 }
 
-void LNLib::NurbsCurve::Reparameterization(const LN_Curve& curve, double alpha, double beta, double gamma, double delta, LN_Curve& result)
+void LNLib::NurbsCurve::Reparametrize(const LN_Curve& curve, double alpha, double beta, double gamma, double delta, LN_Curve& result)
 {
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
@@ -1004,6 +1004,30 @@ void LNLib::NurbsCurve::Reparameterization(const LN_Curve& curve, double alpha, 
 	result.Degree = degree;
 	result.KnotVector = updatedKnotVector;
 	result.ControlPoints = updatedControlPoints;
+}
+
+void LNLib::NurbsCurve::Reparametrize(const LN_Curve& curve, double min, double max, LN_Curve& result)
+{
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+	if (MathUtils::IsAlmostEqualTo(min, knotVector[0]) && MathUtils::IsAlmostEqualTo(max, knotVector[knotVector.size() - 1]))
+	{
+		result = curve;
+		return;
+	}
+
+	std::vector<double> newKnotVector = KnotVectorUtils::Rescale(knotVector, min, max);
+	result.Degree = degree;
+	result.KnotVector = newKnotVector;
+	result.ControlPoints = controlPoints;
 }
 
 void LNLib::NurbsCurve::Reverse(const LN_Curve& curve, LN_Curve& result)

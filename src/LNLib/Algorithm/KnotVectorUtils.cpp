@@ -25,6 +25,21 @@ int LNLib::KnotVectorUtils::GetContinuity(int degree, const std::vector<double>&
 	return degree - multi;
 }
 
+std::vector<double> LNLib::KnotVectorUtils::Rescale(const std::vector<double>& knotVector, double min, double max)
+{
+	double origintMin = knotVector[0];
+	double origintMax = knotVector[knotVector.size() - 1];
+	double k = (max - min) / (origintMax - origintMin);
+
+	int size = knotVector.size();
+	std::vector<double> result(size);
+	for (int i = 0; i < size; i++)
+	{
+		result[i] = (k * knotVector[i] - origintMin) + min;
+	}
+	return result;
+}
+
 std::vector<double> LNLib::KnotVectorUtils::GetInsertedKnotElement(int degree, const std::vector<double>& knotVector, double startParam, double endParam)
 {
 	VALIDATE_ARGUMENT(degree >= 0, "degree", "Degree must greater than or equals zero.");

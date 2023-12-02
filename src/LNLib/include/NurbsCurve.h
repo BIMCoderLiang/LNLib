@@ -107,11 +107,17 @@ namespace LNLib
 		static void CreateTransformed(const std::vector<XYZW>& controlPoints, const Matrix4d& matrix, std::vector<XYZW>& transformedControlPoints);
 
 		/// <summary>
+		/// The NURBS Book 2nd Edition Page241
+		/// Reparameterization of curve.
+		/// </summary>
+		static void Reparametrize(const LN_Curve& curve, double min, double max, LN_Curve& result);
+
+		/// <summary>
 		/// The NURBS Book 2nd Edition Page255
 		/// Reparameterization using a linear rational function : (alpha * u + beta)/(gamma * u + delta)
 		/// </summary>
-		static void Reparameterization(const LN_Curve& curve, double alpha, double beta, double gamma, double delta, LN_Curve& result);
-
+		static void Reparametrize(const LN_Curve& curve, double alpha, double beta, double gamma, double delta, LN_Curve& result);
+		
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page263
 		/// Curve reverse,but not use reparameterization.
