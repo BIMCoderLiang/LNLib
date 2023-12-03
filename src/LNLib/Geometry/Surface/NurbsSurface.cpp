@@ -132,6 +132,96 @@ std::vector<std::vector<LNLib::XYZ>> LNLib::NurbsSurface::ComputeRationalSurface
 	return derivatives;
 }
 
+double LNLib::NurbsSurface::Curvature(const LN_Surface& surface, SurfaceCurvature curvature, UV uv)
+{
+	int degreeU = surface.DegreeU;
+	int degreeV = surface.DegreeV;
+	std::vector<double> knotVectorU = surface.KnotVectorU;
+	std::vector<double> knotVectorV = surface.KnotVectorV;
+	std::vector<std::vector<XYZW>> controlPoints = surface.ControlPoints;
+
+	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(degreeV > 0, "degreeU", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVectorU.size() > 0, "knotVectorU", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorU), "knotVectorU", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT_RANGE(uv.GetU(), knotVectorU[0], knotVectorU[knotVectorU.size() - 1]);
+	VALIDATE_ARGUMENT(knotVectorV.size() > 0, "knotVectorV", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorV), "knotVectorV", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT_RANGE(uv.GetV(), knotVectorV[0], knotVectorV[knotVectorV.size() - 1]);
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degreeU, knotVectorU.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degreeV, knotVectorV.size(), controlPoints[0].size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+	std::vector<std::vector<XYZ>> ders = ComputeRationalSurfaceDerivatives(surface, 2, uv);
+	XYZ Suu = ders[2][0];
+	XYZ Svv = ders[0][2];
+	XYZ Suv = ders[1][1];
+
+	XYZ Su = ders[1][0];
+	XYZ Sv = ders[0][1];
+	XYZ normal = GetNormalOnSurface(surface, uv);
+	
+	double L = Suu.DotProduct(normal);
+	double M = Suv.DotProduct(normal);
+	double N = Svv.DotProduct(normal);
+
+	double E = Su.DotProduct(Su);
+	double F = Su.DotProduct(Sv);
+	double G = Sv.DotProduct(Sv);
+
+	double K = 0.0;
+	double H = 0.0;
+
+	double denominator = E * G - F * F;
+	if (MathUtils::IsAlmostEqualTo(denominator, 0.0))
+	{
+		return 0.0;
+	}
+	if (curvature == SurfaceCurvature::Gauss)
+	{
+		K = (L * N - M * M) / denominator;
+		return K;
+	}
+	else if (curvature == SurfaceCurvature::Mean)
+	{
+		H = (E * N + G * L - 2 * F * M) / (2 * denominator);
+		return H;
+	}
+	else if (curvature == SurfaceCurvature::Maximum)
+	{
+		return H + pow(H * H - K, 0.5);
+	}
+	else if (curvature == SurfaceCurvature::Minimum)
+	{
+		return H - pow(H * H - K, 0.5);
+	}
+	return 0.0;
+}
+
+LNLib::XYZ LNLib::NurbsSurface::GetNormalOnSurface(const LN_Surface& surface, UV uv)
+{
+	int degreeU = surface.DegreeU;
+	int degreeV = surface.DegreeV;
+	std::vector<double> knotVectorU = surface.KnotVectorU;
+	std::vector<double> knotVectorV = surface.KnotVectorV;
+	std::vector<std::vector<XYZW>> controlPoints = surface.ControlPoints;
+
+	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(degreeV > 0, "degreeU", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVectorU.size() > 0, "knotVectorU", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorU), "knotVectorU", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT_RANGE(uv.GetU(), knotVectorU[0], knotVectorU[knotVectorU.size() - 1]);
+	VALIDATE_ARGUMENT(knotVectorV.size() > 0, "knotVectorV", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorV), "knotVectorV", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT_RANGE(uv.GetV(), knotVectorV[0], knotVectorV[knotVectorV.size() - 1]);
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degreeU, knotVectorU.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degreeV, knotVectorV.size(), controlPoints[0].size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+	std::vector<std::vector<XYZ>> derivatives = ComputeRationalSurfaceDerivatives(surface, 1, uv);
+	return derivatives[1][0].Normalize().CrossProduct(derivatives[0][1]).Normalize();
+}
+
 void LNLib::NurbsSurface::Swap(const LN_Surface& surface, LN_Surface& result)
 {
 	int degreeU = surface.DegreeU;

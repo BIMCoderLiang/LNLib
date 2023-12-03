@@ -27,6 +27,7 @@ NURBS Algorithms:
     - Curve Reparameterization
     - Curve Transform and Reverse
     - Surface Swap and Reverse
+    - Curve/Surface Curvature and Normal 
 - ***Chapter 7***:
     - Create Arc/Conic Curve
 - ***Chapter 8***:

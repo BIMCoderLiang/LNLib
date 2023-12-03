@@ -101,6 +101,53 @@ std::vector<LNLib::XYZ> LNLib::NurbsCurve::ComputeRationalCurveDerivatives(const
 	return derivatives;
 }
 
+double LNLib::NurbsCurve::Curvature(const LN_Curve& curve, double paramT)
+{
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	
+	std::vector<XYZ> derivatives = ComputeRationalCurveDerivatives(curve, 2, paramT);
+	XYZ d1 = derivatives[1];
+	XYZ d2 = derivatives[2];
+
+	double numerator = d1.CrossProduct(d2).Normalize().Length();
+	double denominator = pow(d1.Normalize().Length(), 3);
+	return numerator / denominator;
+}
+
+LNLib::XYZ LNLib::NurbsCurve::GetNormalOnCurve(const LN_Curve& curve, CurveNormal normal, double paramT)
+{
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+	std::vector<XYZ> derivatives = ComputeRationalCurveDerivatives(curve, 1, paramT);
+	XYZ unitTangent = derivatives[1].Normalize();
+	XYZ unitNormal = derivatives[2] / derivatives[2].Length();
+	if (normal == CurveNormal::Normal)
+	{
+		return unitNormal;
+	}
+	else
+	{
+		return unitTangent.CrossProduct(unitNormal);
+	}
+	return XYZ();
+}
+
 void LNLib::NurbsCurve::InsertKnot(const LN_Curve& curve, double insertKnot, int times, LN_Curve& result)
 {
 	int degree = curve.Degree;

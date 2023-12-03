@@ -16,6 +16,12 @@
 
 namespace LNLib
 {
+	enum class CurveNormal:int
+	{
+		Normal = 0,
+		Binormal = 1,
+	};
+
 	class XYZ;
 	class XYZW;
 	class Matrix4d;
@@ -36,6 +42,10 @@ namespace LNLib
 		/// Compute C(paramT) derivatives from Cw(paramT) deraivatives.
 		/// </summary>
 		static std::vector<XYZ> ComputeRationalCurveDerivatives(const LN_Curve& curve, int derivative, double paramT);
+
+		static double Curvature(const LN_Curve& curve, double paramT);
+
+		static XYZ GetNormalOnCurve(const LN_Curve& curve, CurveNormal normal, double paramT);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page151

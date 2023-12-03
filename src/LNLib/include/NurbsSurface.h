@@ -22,6 +22,14 @@ namespace LNLib
 		VDirection = 2,
 	};
 
+	enum class SurfaceCurvature : int
+	{
+		Maximum = 0,
+		Minimum = 1,
+		Gauss = 2,
+		Mean = 3,
+	};
+
 	class UV;
 	class XYZ;
 	class XYZW;
@@ -42,6 +50,10 @@ namespace LNLib
 		/// Compute S(paramU,paramV) derivatives.
 		/// </summary>
 		static std::vector<std::vector<XYZ>> ComputeRationalSurfaceDerivatives(const LN_Surface& surface, int derivative, UV uv);
+
+		static double Curvature(const LN_Surface& surface, SurfaceCurvature curvature, UV uv);
+
+		static XYZ GetNormalOnSurface(const LN_Surface& surface, UV uv);
 
 		static void Swap(const LN_Surface& surface, LN_Surface& result);
 
