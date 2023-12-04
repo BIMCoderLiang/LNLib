@@ -159,7 +159,7 @@ double LNLib::NurbsSurface::Curvature(const LN_Surface& surface, SurfaceCurvatur
 
 	XYZ Su = ders[1][0];
 	XYZ Sv = ders[0][1];
-	XYZ normal = GetNormalOnSurface(surface, uv);
+	XYZ normal = Normal(surface, uv);
 	
 	double L = Suu.DotProduct(normal);
 	double M = Suv.DotProduct(normal);
@@ -207,7 +207,7 @@ double LNLib::NurbsSurface::Curvature(const LN_Surface& surface, SurfaceCurvatur
 	return 0.0;
 }
 
-LNLib::XYZ LNLib::NurbsSurface::GetNormalOnSurface(const LN_Surface& surface, UV uv)
+LNLib::XYZ LNLib::NurbsSurface::Normal(const LN_Surface& surface, UV uv)
 {
 	int degreeU = surface.DegreeU;
 	int degreeV = surface.DegreeV;

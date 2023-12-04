@@ -55,7 +55,7 @@ namespace LNLib
 
 		static double Curvature(const LN_Surface& surface, SurfaceCurvature curvature, UV uv);
 
-		static XYZ GetNormalOnSurface(const LN_Surface& surface, UV uv);
+		static XYZ Normal(const LN_Surface& surface, UV uv);
 
 		static void Swap(const LN_Surface& surface, LN_Surface& result);
 
