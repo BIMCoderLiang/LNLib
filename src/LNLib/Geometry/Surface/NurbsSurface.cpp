@@ -169,31 +169,40 @@ double LNLib::NurbsSurface::Curvature(const LN_Surface& surface, SurfaceCurvatur
 	double F = Su.DotProduct(Sv);
 	double G = Sv.DotProduct(Sv);
 
-	double K = 0.0;
-	double H = 0.0;
-
 	double denominator = E * G - F * F;
 	if (MathUtils::IsAlmostEqualTo(denominator, 0.0))
 	{
 		return 0.0;
 	}
+
+	double K = (L * N - M * M) / denominator;
+	double H = (E * N + G * L - 2 * F * M) / (2 * denominator);
+	double k1 = H + sqrt(H * H - K);
+	double k2 = H - sqrt(H * H - K);
+
 	if (curvature == SurfaceCurvature::Gauss)
 	{
-		K = (L * N - M * M) / denominator;
 		return K;
 	}
 	else if (curvature == SurfaceCurvature::Mean)
 	{
-		H = (E * N + G * L - 2 * F * M) / (2 * denominator);
 		return H;
 	}
 	else if (curvature == SurfaceCurvature::Maximum)
 	{
-		return H + pow(H * H - K, 0.5);
+		return k1;
 	}
 	else if (curvature == SurfaceCurvature::Minimum)
 	{
-		return H - pow(H * H - K, 0.5);
+		return k2;
+	}
+	else if (curvature == SurfaceCurvature::Abs)
+	{
+		return abs(k1) + abs(k2);
+	}
+	else if (curvature == SurfaceCurvature::Rms)
+	{
+		return sqrt(k1* k1 + k2 * k2);
 	}
 	return 0.0;
 }

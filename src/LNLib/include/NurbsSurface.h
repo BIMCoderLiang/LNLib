@@ -28,6 +28,8 @@ namespace LNLib
 		Minimum = 1,
 		Gauss = 2,
 		Mean = 3,
+		Abs = 4,
+		Rms = 5
 	};
 
 	class UV;

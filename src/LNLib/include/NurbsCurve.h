@@ -45,7 +45,9 @@ namespace LNLib
 
 		static double Curvature(const LN_Curve& curve, double paramT);
 
-		static XYZ GetNormalOnCurve(const LN_Curve& curve, CurveNormal normal, double paramT);
+		static XYZ Normal(const LN_Curve& curve, CurveNormal normal, double paramT);
+
+		static double Torsion(const LN_Curve& curve, double paramT);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page151
