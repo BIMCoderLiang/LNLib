@@ -163,7 +163,7 @@ LNLib::XYZ LNLib::NurbsCurve::Normal(const LN_Curve& curve, CurveNormal normal, 
 		}
 		else
 		{
-			return tangent.Normalize().CrossProduct(b.Normalize());
+			return b.Normalize().CrossProduct(tangent.Normalize());
 		}
 	}
 }
