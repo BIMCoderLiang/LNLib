@@ -177,8 +177,8 @@ double LNLib::NurbsSurface::Curvature(const LN_Surface& surface, SurfaceCurvatur
 
 	double K = (L * N - M * M) / denominator;
 	double H = (E * N + G * L - 2 * F * M) / (2 * denominator);
-	double k1 = H + sqrt(H * H - K);
-	double k2 = H - sqrt(H * H - K);
+	double k1 = H + sqrt(abs(H * H - K));
+	double k2 = H - sqrt(abs(H * H - K));
 
 	if (curvature == SurfaceCurvature::Gauss)
 	{
