@@ -1913,12 +1913,12 @@ bool LNLib::NurbsSurface::CreateSwungSurface(const LN_Curve& profile, const LN_C
 	return true;
 }
 
-bool LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_Curve>& guideLines, LN_Surface& surface)
+void LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_Curve>& sections, LN_Surface& surface)
 {
 	int degree_max = 0;
-	for (int i = 0; i < guideLines.size(); i++)
+	for (int i = 0; i < sections.size(); i++)
 	{
-		LN_Curve current = guideLines[i];
+		LN_Curve current = sections[i];
 		VALIDATE_ARGUMENT(current.Degree > 0, "degree", "Degree must greater than zero.");
 		VALIDATE_ARGUMENT(current.KnotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 		VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(current.KnotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -1931,10 +1931,12 @@ bool LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_Curve>& guideLi
 		}
 	}
 
-	std::vector<LN_Curve> internals(guideLines.size());
-	for (int i = 0; i < guideLines.size(); i++)
+	int size = sections.size();
+	std::vector<LN_Curve> internals(size);
+	std::vector<std::vector<XYZW>> controlPointsList(size);
+	for (int i = 0; i < size; i++)
 	{
-		LN_Curve current = guideLines[i];
+		LN_Curve current = sections[i];
 		if (degree_max > current.Degree)
 		{
 			int times = degree_max - current.Degree;
@@ -1944,14 +1946,58 @@ bool LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_Curve>& guideLi
 			current.KnotVector = tc.KnotVector;
 			current.ControlPoints = tc.ControlPoints;
 		}
+		controlPointsList.emplace_back(current.ControlPoints);
 		internals.emplace_back(current);
 	}
 
 	int degreeU = degree_max;
 	int degreeV = degree_max;
+	
+	std::vector<std::vector<double>> ukList;
+	std::vector<std::vector<XYZ>> transposed;
+	{
+		std::vector<XYZ> t;
+		for (int i = 0; i < controlPointsList[0].size(); i++)
+		{
+			for (int j = 0; j < controlPointsList.size(); j++)
+			{
+				XYZW wp = controlPointsList[j][i];
+				t.emplace_back(wp.ToXYZ(true));
+			}
+			transposed.emplace_back(t);
 
-	// to be continued....
-	return true;
+			std::vector<double> uk = Interpolation::GetChordParameterization(t);
+			ukList.emplace_back(uk);
+			t.erase(t.begin(), t.end());
+		}
+	}
+	
+	std::vector<std::vector<XYZW>> controlPoints;
+	for (int i = 0; i < transposed.size(); i++)
+	{
+		std::vector<XYZ> cps = transposed[i];
+		LN_Curve tc;
+		NurbsCurve::GlobalInterpolation(degreeV, cps, tc);
+		controlPoints.emplace_back(tc.ControlPoints);
+	}
+
+	std::vector<double> averageUk;
+	for (int i = 0; i < ukList[0].size(); i++)
+	{
+		double temp = 0.0;
+		for (int j = 0; j < ukList.size(); j++)
+		{
+			temp += ukList[j][i];
+		}
+		averageUk.emplace_back(temp / ukList.size());
+	}
+	std::vector<double> knotVectorV = Interpolation::AverageKnotVector(degreeV, averageUk);
+
+	surface.DegreeU = degreeU;
+	surface.DegreeV = degreeV;
+	surface.KnotVectorU = internals[0].KnotVector;
+	surface.KnotVectorV = knotVectorV;
+	surface.ControlPoints = controlPoints;
 }
 
 bool LNLib::NurbsSurface::CreateSweepSurface(const LN_Curve& path, const std::vector<LN_Curve>& profiles, LN_Surface& surface)

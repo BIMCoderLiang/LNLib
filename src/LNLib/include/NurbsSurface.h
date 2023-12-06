@@ -189,7 +189,7 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page457
 		/// Create Loft Surface (called Skinned Surfaces in The NURBS Book).
 		/// </summary>
-		static bool CreateLoftSurface(const std::vector<LN_Curve>& guideLines, LN_Surface& surface);
+		static void CreateLoftSurface(const std::vector<LN_Curve>& sections, LN_Surface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page472

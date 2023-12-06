@@ -54,9 +54,9 @@ namespace LNLib
 		{
 			std::vector<T> temp;
 
-			for (int i = 0; i < static_cast<int>(matrix[0].size()); i++)
+			for (int i = 0; i < matrix[0].size(); i++)
 			{
-				for (int j = 0; j < static_cast<int>(matrix.size()); j++)
+				for (int j = 0; j < matrix.size(); j++)
 				{
 					temp.emplace_back(matrix[j][i]);
 				}
