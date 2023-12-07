@@ -1418,15 +1418,23 @@ bool LNLib::NurbsCurve::CreateOpenConic(const XYZ& start, const XYZ& startTangen
 	return false;
 }
 
-void LNLib::NurbsCurve::GlobalInterpolation(int degree, const std::vector<XYZ>& throughPoints, LN_Curve& curve)
+void LNLib::NurbsCurve::GlobalInterpolation(int degree, const std::vector<XYZ>& throughPoints, LN_Curve& curve, const std::vector<double>& params)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(throughPoints.size() > degree, "throughPoints", "ThroughPoints size must greater than degree.");
-
 	int size = throughPoints.size();
 	int n = size - 1;
 
-	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
+	std::vector<double> uk(size);
+	if (params.size() == 0)
+	{
+		uk = Interpolation::GetChordParameterization(throughPoints);
+	}
+	else
+	{
+		VALIDATE_ARGUMENT(params.size() == size , "params", "Params size must be equal to throughPoints size.");
+		uk = params;
+	}
 	std::vector<double> knotVector = Interpolation::AverageKnotVector(degree, uk);
 
 	std::vector<std::vector<double>> A(size, std::vector<double>(size));

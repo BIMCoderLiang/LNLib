@@ -1916,9 +1916,9 @@ bool LNLib::NurbsSurface::CreateSwungSurface(const LN_Curve& profile, const LN_C
 void LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_Curve>& sections, LN_Surface& surface)
 {
 	int degree_max = 0;
-	for (int i = 0; i < sections.size(); i++)
+	for (int k = 0; k < sections.size(); k++)
 	{
-		LN_Curve current = sections[i];
+		LN_Curve current = sections[k];
 		VALIDATE_ARGUMENT(current.Degree > 0, "degree", "Degree must greater than zero.");
 		VALIDATE_ARGUMENT(current.KnotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 		VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(current.KnotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -1933,10 +1933,10 @@ void LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_Curve>& section
 
 	int size = sections.size();
 	std::vector<LN_Curve> internals(size);
-	std::vector<std::vector<XYZW>> controlPointsList(size);
-	for (int i = 0; i < size; i++)
+	std::vector<std::vector<XYZW>> curvesControlPoints(size);
+	for (int k = 0; k < size; k++)
 	{
-		LN_Curve current = sections[i];
+		LN_Curve current = sections[k];
 		if (degree_max > current.Degree)
 		{
 			int times = degree_max - current.Degree;
@@ -1946,52 +1946,50 @@ void LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_Curve>& section
 			current.KnotVector = tc.KnotVector;
 			current.ControlPoints = tc.ControlPoints;
 		}
-		controlPointsList.emplace_back(current.ControlPoints);
+		curvesControlPoints.emplace_back(current.ControlPoints);
 		internals.emplace_back(current);
 	}
 
 	int degreeU = degree_max;
 	int degreeV = degree_max;
 	
-	std::vector<std::vector<double>> ukList;
-	std::vector<std::vector<XYZ>> transposed;
+	std::vector<double> vl(size);
+	vl[0] = 0;
+	vl[size - 1] = 1;
+	for (int k = 1; k <= size - 2; k++)
 	{
-		std::vector<XYZ> t;
-		for (int i = 0; i < controlPointsList[0].size(); i++)
+		std::vector<XYZW> current = curvesControlPoints[k];
+		int tsize = current.size();
+		std::vector<XYZ> cps(tsize);
+		for (int i = 0; i <= tsize; i++)
 		{
-			for (int j = 0; j < controlPointsList.size(); j++)
-			{
-				XYZW wp = controlPointsList[j][i];
-				t.emplace_back(wp.ToXYZ(true));
-			}
-			transposed.emplace_back(t);
-
-			std::vector<double> uk = Interpolation::GetChordParameterization(t);
-			ukList.emplace_back(uk);
-			t.erase(t.begin(), t.end());
+			cps[i] = current[i].ToXYZ(true);
 		}
+
+		double average = 0.0;
+		for (int i = 0; i <= tsize; i++)
+		{
+			double length = Interpolation::GetTotalChordLength(cps);
+			double distance = curvesControlPoints[k][i].Distance(curvesControlPoints[k - 1][i]);
+			average += distance / length;
+		}
+		vl[k] = vl[k - 1] + 1.0/(tsize+1) * average;
 	}
-	
+	std::vector<double> knotVectorV = Interpolation::AverageKnotVector(degreeV, vl);
+
 	std::vector<std::vector<XYZW>> controlPoints;
-	for (int i = 0; i < transposed.size(); i++)
+	int column = curvesControlPoints[0].size();
+	for (int c = 0; c < column; c++)
 	{
-		std::vector<XYZ> cps = transposed[i];
+		std::vector<XYZ> temp(size);
+		for (int k = 0; k < size; k++)
+		{
+			temp[k] = curvesControlPoints[k][c].ToXYZ(true);
+		}
 		LN_Curve tc;
-		NurbsCurve::GlobalInterpolation(degreeV, cps, tc);
+		NurbsCurve::GlobalInterpolation(degreeV, temp, tc, vl);
 		controlPoints.emplace_back(tc.ControlPoints);
 	}
-
-	std::vector<double> averageUk;
-	for (int i = 0; i < ukList[0].size(); i++)
-	{
-		double temp = 0.0;
-		for (int j = 0; j < ukList.size(); j++)
-		{
-			temp += ukList[j][i];
-		}
-		averageUk.emplace_back(temp / ukList.size());
-	}
-	std::vector<double> knotVectorV = Interpolation::AverageKnotVector(degreeV, averageUk);
 
 	surface.DegreeU = degreeU;
 	surface.DegreeV = degreeV;

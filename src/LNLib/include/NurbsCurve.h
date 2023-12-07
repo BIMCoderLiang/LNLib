@@ -168,7 +168,7 @@ namespace LNLib
 		/// Algorithm A9.1
 		/// Global interpolation through n+1 points.
 		/// </summary>
-		static void GlobalInterpolation(int degree, const std::vector<XYZ>& throughPoints, LN_Curve& curve);
+		static void GlobalInterpolation(int degree, const std::vector<XYZ>& throughPoints, LN_Curve& curve, const std::vector<double>& params = {});
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page369 - 374

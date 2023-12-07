@@ -90,7 +90,7 @@ std::vector<double> LNLib::Interpolation::GetCentripetalParameterization(const s
 	return uk;
 }
 
-std::vector<double> LNLib::Interpolation::AverageKnotVector(int degree, const std::vector<double> params)
+std::vector<double> LNLib::Interpolation::AverageKnotVector(int degree, const std::vector<double>& params)
 {
 	
 	std::vector<double> uk = params;
