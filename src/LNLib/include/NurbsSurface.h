@@ -181,9 +181,11 @@ namespace LNLib
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page456
+		/// Algorithm A10.1
 		/// Create Swung Surface.
+		/// The profile curve lie on the xz-plane and trajectory curve  along its y-axis.
 		/// </summary>
-		static bool CreateSwungSurface(const LN_Curve& profile, const LN_Curve& trajectory, LN_Surface& surface);
+		static bool CreateSwungSurface(const LN_Curve& profile, const LN_Curve& trajectory, double scale, LN_Surface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page457
@@ -193,8 +195,8 @@ namespace LNLib
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page472
+		/// Algorithm A10.2
 		/// Create Sweep Surface.
-		/// Algorithm A10.1 & A10.2
 		/// </summary>
 		static bool CreateSweepSurface(const LN_Curve& path, const std::vector<LN_Curve>& profiles, LN_Surface& surface);
 

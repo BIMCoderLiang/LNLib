@@ -1907,8 +1907,27 @@ bool LNLib::NurbsSurface::GlobalApproximation(const std::vector<std::vector<XYZ>
 	return true;
 }
 
-bool LNLib::NurbsSurface::CreateSwungSurface(const LN_Curve& profile, const LN_Curve& trajectory, LN_Surface& surface)
+bool LNLib::NurbsSurface::CreateSwungSurface(const LN_Curve& profile, const LN_Curve& trajectory, double scale, LN_Surface& surface)
 {
+	int pDegree = profile.Degree;
+	std::vector<double> pKnotVector = profile.KnotVector;
+	std::vector<XYZW> pControlPoints = profile.ControlPoints;
+	VALIDATE_ARGUMENT(pDegree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(pKnotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(pKnotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(pControlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(pDegree, pKnotVector.size(), pControlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	
+	int tDegree = trajectory.Degree;
+	std::vector<double> tKnotVector = trajectory.KnotVector;
+	std::vector<XYZW> tControlPoints = trajectory.ControlPoints;
+	VALIDATE_ARGUMENT(tDegree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(tKnotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(tKnotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(tControlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(tDegree, tKnotVector.size(), tControlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+	
+	
 	// to be continued....
 	return true;
 }
@@ -1959,6 +1978,7 @@ void LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_Curve>& section
 	for (int k = 1; k <= size - 2; k++)
 	{
 		std::vector<XYZW> current = curvesControlPoints[k];
+
 		int tsize = current.size();
 		std::vector<XYZ> cps(tsize);
 		for (int i = 0; i <= tsize; i++)
@@ -1967,9 +1987,9 @@ void LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_Curve>& section
 		}
 
 		double average = 0.0;
+		double length = Interpolation::GetTotalChordLength(cps);
 		for (int i = 0; i <= tsize; i++)
 		{
-			double length = Interpolation::GetTotalChordLength(cps);
 			double distance = curvesControlPoints[k][i].Distance(curvesControlPoints[k - 1][i]);
 			average += distance / length;
 		}
