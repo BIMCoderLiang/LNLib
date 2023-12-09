@@ -14,6 +14,7 @@
 namespace LNLib
 {
 	class XYZ;
+	class XYZW;
 	/// <summary>
 	/// 4 * 4 Matrix for model transformation, such as T(x) = M * x
 	/// Matrix4d : [x y z w]
@@ -53,6 +54,7 @@ namespace LNLib
 	public:
 		Matrix4d Multiply(const Matrix4d& right);
 		XYZ OfPoint(const XYZ& point);
+		XYZW OfWeightedPoint(const XYZW& point);
 		XYZ OfVector(const XYZ& vector);
 
 	public:

@@ -13,6 +13,7 @@
 #include "UV.h"
 #include "XYZ.h"
 #include "XYZW.h"
+#include "Matrix4d.h"
 #include "MathUtils.h"
 #include "NurbsCurve.h"
 #include "BsplineSurface.h"
@@ -1927,8 +1928,93 @@ bool LNLib::NurbsSurface::CreateSwungSurface(const LN_Curve& profile, const LN_C
 	VALIDATE_ARGUMENT(tControlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(tDegree, tKnotVector.size(), tControlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
 	
+	int size = tControlPoints.size();
+	int degreeU = pDegree;
+	int degreeV = tDegree;
+	std::vector<double> knotVectorU = pKnotVector;
+	std::vector<double> knotVectorV = tKnotVector;
+	std::vector<std::vector<XYZW>> controlPoints(pControlPoints.size(), std::vector<XYZW>(size));
+
+	std::vector<double> vl(size);
+	vl[0] = tKnotVector[tDegree];
+	vl[size - 1] = tKnotVector[tKnotVector.size() - tDegree - 1];
+	for (int k = 1; k < size - 1; k++)
+	{
+		vl[k] = 0.0;
+		for (int i = k + 1; i < k + tDegree + 1; i++)
+		{
+			vl[k] += knotVectorV[i];
+		}
+		vl[k] /= tDegree;
+	}
+
+	std::vector<XYZ> tempB(vl.size());
+	std::vector<XYZ> td = NurbsCurve::ComputeRationalCurveDerivatives(trajectory, 1, vl[0]);
 	
-	// to be continued....
+	tempB[0] = td[1];
+	if (MathUtils::IsAlmostEqualTo(td[1].GetY(),0.0))
+	{
+		tempB[0] = XYZ(0, 1, 0).CrossProduct(tempB[0]);
+	}
+	else
+	{
+		tempB[0] = XYZ(1, 0, 0).CrossProduct(tempB[0]);
+	}
+	tempB[0] = tempB[0].Normalize();
+
+	for (int i = 1; i < vl.size(); i++)
+	{
+		td = NurbsCurve::ComputeRationalCurveDerivatives(trajectory, 1, vl[i]);
+		XYZ ti = td[1].Normalize();
+		XYZ bi = tempB[i - 1] - (tempB[i - 1] * ti) * ti;
+		tempB[i] = bi.Normalize();
+	}
+
+	LN_Curve Bv;
+	NurbsCurve::GlobalInterpolation(std::min(3,(int)(tempB.size()-1)), tempB, Bv, vl);
+
+	for (int k = 0; k < size; k++) 
+	{
+		std::vector<XYZW> tempCp(pControlPoints.size());
+		for (int i = 0; i < tempCp.size(); i++)
+		{
+			tempCp[i] = scale * pControlPoints[i];
+		}		
+		td = NurbsCurve::ComputeRationalCurveDerivatives(trajectory, 1, vl[k]);
+		XYZ x = td[1].Normalize();
+		XYZ z = NurbsCurve::GetPointOnCurve(Bv, vl[k]).Normalize();
+		XYZ y = z.CrossProduct(x);
+
+		Matrix4d R(y,x,z,XYZ(0,0,1));
+		XYZ o = NurbsCurve::GetPointOnCurve(trajectory, vl[k]);
+		Matrix4d tx = Matrix4d::CreateTranslation(o);
+		Matrix4d A = tx.Multiply(R);
+		for (int i = 0; i < tempCp.size(); i++)
+		{
+			controlPoints[i][k] = A.OfWeightedPoint(tempCp[i]);
+		}
+	}
+
+	for (int i = 0; i < controlPoints.size(); i++) 
+	{
+		std::vector<XYZ> throughPoints(controlPoints[0].size());
+		for (int k = 0; k < controlPoints[0].size(); ++k)
+		{
+			throughPoints[k] = controlPoints[i][k].ToXYZ(true);
+		}
+		LN_Curve R;
+		NurbsCurve::GlobalInterpolation(degreeV, throughPoints, R, vl);
+		for (int k = 0; k < controlPoints[0].size(); k++)
+		{
+			controlPoints[i][k] = R.ControlPoints[k];
+		}	
+	}
+
+	surface.DegreeU = degreeU;
+	surface.DegreeV = degreeV;
+	surface.KnotVectorU = knotVectorU;
+	surface.KnotVectorV = knotVectorV;
+	surface.ControlPoints = controlPoints;
 	return true;
 }
 
