@@ -34,7 +34,7 @@ NURBS Algorithms:
 - ***Chapter 9***:
     - Global/Local Curve/Surface Interpolation and Approximation
 - ***Chapter 10***:
-    - In working progress
+    - Create Swung/Loft/Surface/Gordon/Coons Surface
 - ***Chapter 11***:
     - Curve Modification in Control Point Locations or Weight Values
 - ***Chapter 12***:
