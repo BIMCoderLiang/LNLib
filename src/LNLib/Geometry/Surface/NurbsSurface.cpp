@@ -2104,7 +2104,7 @@ void LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_Curve>& section
 	surface.ControlPoints = controlPoints;
 }
 
-bool LNLib::NurbsSurface::CreateSweepSurface(const LN_Curve& path, const std::vector<LN_Curve>& profiles, LN_Surface& surface)
+void LNLib::NurbsSurface::CreateSweepSurface(const LN_Curve& path, const std::vector<LN_Curve>& profiles, LN_Surface& surface)
 {
 	VALIDATE_ARGUMENT(path.Degree > 0, "degree", "Degree must greater than zero.");
 	VALIDATE_ARGUMENT(path.KnotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
@@ -2125,15 +2125,29 @@ bool LNLib::NurbsSurface::CreateSweepSurface(const LN_Curve& path, const std::ve
 	int profilesSize = profiles.size();
 	double path_min = path.KnotVector[0];
 	double path_max = path.KnotVector[path.KnotVector.size() - 1];
-	std::vector<double> parametersAlongPath(profilesSize);
 	double delta = (path_max - path_min) / profilesSize;
+
+	std::vector<LN_Curve> sections(profilesSize);
 	for (int i = 0; i < profilesSize; i++)
 	{
-		parametersAlongPath[i] = path_min + i * delta;
+		double param =  path_min + i * delta;
+		XYZ point = NurbsCurve::GetPointOnCurve(path, param);
+		std::vector<XYZ> ders = NurbsCurve::ComputeRationalCurveDerivatives(profiles[i], 1, param);
+		XYZ tangent = ders[1];
+		Matrix4d transform = Matrix4d::CreateTranslation(point);
+		if (!tangent.IsZero())
+		{
+			XYZ binormal = NurbsCurve::Normal(profiles[i], CurveNormal::Binormal, param);
+			double rad = binormal.AngleTo(tangent);
+			Matrix4d rotation = Matrix4d::CreateRotationAtPoint(point, binormal, rad);
+			transform = transform.Multiply(rotation);
+		}
+		LN_Curve newProfile;
+		NurbsCurve::CreateTransformed(profiles[i], transform, newProfile);
+		sections.emplace_back(newProfile);
 	}
 
-	// to be continued....
-	return true;
+	CreateLoftSurface(sections, surface);
 }
 
 void LNLib::NurbsSurface::CreateGordonSurface(const std::vector<LN_Curve>& uCurves, const std::vector<LN_Curve>& vCurves, const std::vector<std::vector<XYZ>>& intersectionPoints, LN_Surface& surface)

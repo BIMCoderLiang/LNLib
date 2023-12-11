@@ -198,7 +198,7 @@ namespace LNLib
 		/// Algorithm A10.2
 		/// Create Sweep Surface.
 		/// </summary>
-		static bool CreateSweepSurface(const LN_Curve& path, const std::vector<LN_Curve>& profiles, LN_Surface& surface);
+		static void CreateSweepSurface(const LN_Curve& path, const std::vector<LN_Curve>& profiles, LN_Surface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page494

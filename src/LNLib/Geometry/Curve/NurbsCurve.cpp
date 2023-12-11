@@ -1054,19 +1054,29 @@ double LNLib::NurbsCurve::GetParamOnCurve(const LN_Curve& curve, const XYZ& give
 	return paramT;
 }
 
-void LNLib::NurbsCurve::CreateTransformed(const std::vector<XYZW>& controlPoints, const Matrix4d& matrix, std::vector<XYZW>& transformedControlPoints)
+void LNLib::NurbsCurve::CreateTransformed(const LN_Curve& curve, const Matrix4d& matrix, LN_Curve& result)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
 	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
 
 	int size = controlPoints.size();
-	transformedControlPoints.resize(size);
+	std::vector<XYZW> transformedControlPoints(size);
 
 	Matrix4d tempMatrix = matrix;
 	for (int i = 0; i < size; i++)
 	{
 		XYZW temp = controlPoints[i];
-		transformedControlPoints[i] = XYZW(tempMatrix.OfPoint(temp.ToXYZ(true)), temp.GetW());
+		transformedControlPoints[i] = tempMatrix.OfWeightedPoint(temp);
 	}
+	result = curve;
+	result.ControlPoints = transformedControlPoints;
 }
 
 void LNLib::NurbsCurve::Reparametrize(const LN_Curve& curve, double alpha, double beta, double gamma, double delta, LN_Curve& result)
