@@ -110,14 +110,14 @@ namespace LNLib
 		/// Algorithm A6.1
 		/// Compute pth degree Bezier matrix.
 		/// </summary>
-		static void BezierToPowerMatrix(int degree, std::vector<std::vector<double>>& matrix);
+		static std::vector<std::vector<double>> BezierToPowerMatrix(int degree);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page275
 		/// Algorithm A6.2
 		/// Compute inverse of pth-degree Bezier matrix.
 		/// </summary>
-		static void PowerToBezierMatrix(int degree, const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& inverseMatrix);
+		static std::vector<std::vector<double>> PowerToBezierMatrix(int degree, const std::vector<std::vector<double>>& matrix);
 	};
 
 }

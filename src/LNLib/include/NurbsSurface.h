@@ -154,9 +154,13 @@ namespace LNLib
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page359
+		/// Algorithm A8.2
 		/// Create Nurbs corner fillet surface.
+		/// 
+		/// Curve1,2,3 are three boundary arcs and could arbitrarily positioned and oriented in space but joined at their endpoints. 
+		/// The parameter 'arc' represents curve2;
 		/// </summary>
-		static void MakeCornerFilletSurface();
+		static void MakeCornerFilletSurface(const LN_Curve& arc, LN_Surface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page380

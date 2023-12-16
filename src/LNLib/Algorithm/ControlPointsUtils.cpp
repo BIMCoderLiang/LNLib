@@ -57,3 +57,19 @@ std::vector<std::vector<XYZW>> LNLib::ControlPointsUtils::ToXYZW(const std::vect
 	}
 	return result;
 }
+
+std::vector<std::vector<XYZW>> LNLib::ControlPointsUtils::Multiply(const std::vector<std::vector<XYZW>>& points, const std::vector<std::vector<double>>& coefficient)
+{
+	std::vector<std::vector<XYZW>> result(coefficient.size(), std::vector<XYZW>(points[0].size()));
+	for (int i = 0; i < coefficient.size(); i++)
+	{
+		for (int j = 0; j < points[0].size(); j++)
+		{
+			for (int k = 0; k < coefficient[0].size(); k++)
+			{
+				result[i][j] += coefficient[i][k] * points[k][j];
+			}
+		}
+	}
+	return result;
+}

@@ -35,3 +35,16 @@ bool LNLib::Projection::PointToLine(const XYZ& start, const XYZ& end, const XYZ&
     projectPoint = start + param * (end - start);
     return true;
 }
+
+LNLib::XYZ LNLib::Projection::Stereographic(const XYZ& pointOnSphere, double radius)
+{
+    double x = pointOnSphere.GetX();
+    double y = pointOnSphere.GetY();
+    double z = pointOnSphere.GetZ();
+
+    double alpha = -2 * radius / (z - 2 * radius);
+    double u = alpha * x;
+    double v = alpha * y;
+
+    return XYZ(u, v, 0);
+}

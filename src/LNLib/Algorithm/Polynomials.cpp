@@ -460,9 +460,9 @@ std::vector<std::vector<double>> LNLib::Polynomials::AllBasisFunctions(int spanI
 	return result;
 }
 
-void LNLib::Polynomials::BezierToPowerMatrix(int degree, std::vector<std::vector<double>>& matrix)
+std::vector<std::vector<double>> LNLib::Polynomials::BezierToPowerMatrix(int degree)
 {
-	matrix.resize(degree+1, std::vector<double>(degree + 1));
+	std::vector<std::vector<double>> matrix(degree+1, std::vector<double>(degree + 1));
 	for (int i = 0; i < degree; i++)
 	{
 		for (int j = i + 1; j <= degree; j++)
@@ -494,11 +494,12 @@ void LNLib::Polynomials::BezierToPowerMatrix(int degree, std::vector<std::vector
 		}
 		pk = pk - 1;
 	}
+	return matrix;
 }
 
-void LNLib::Polynomials::PowerToBezierMatrix(int degree, const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& inverseMatrix)
+std::vector<std::vector<double>> LNLib::Polynomials::PowerToBezierMatrix(int degree, const std::vector<std::vector<double>>& matrix)
 {
-	inverseMatrix.resize(degree + 1, std::vector<double>(degree + 1));
+	std::vector<std::vector<double>> inverseMatrix(degree + 1, std::vector<double>(degree + 1));
 	for (int i = 0; i < degree; i++)
 	{
 		for (int j = i + 1; j <= degree; j++)
@@ -530,4 +531,5 @@ void LNLib::Polynomials::PowerToBezierMatrix(int degree, const std::vector<std::
 		}
 		pk = pk - 1;
 	}
+	return inverseMatrix;
 }

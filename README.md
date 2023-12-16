@@ -30,7 +30,7 @@ NURBS Algorithms:
 - ***Chapter 7***:
     - Create Arc/Conic Curve
 - ***Chapter 8***:
-    - Create Bilinear/Cylindrical/Ruled/Revolved Surface
+    - Create Bilinear/Cylindrical/Ruled/Revolved/CornerFillet Surface
 - ***Chapter 9***:
     - Global/Local Curve/Surface Interpolation and Approximation
 - ***Chapter 10***:

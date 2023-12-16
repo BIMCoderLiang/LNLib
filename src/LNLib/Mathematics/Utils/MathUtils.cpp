@@ -136,9 +136,9 @@ double LNLib::MathUtils::ComputerCubicEquationsWithOneVariable(double cubic, dou
 
 std::vector<std::vector<double>> LNLib::MathUtils::MatrixMultiply(const std::vector<std::vector<double>>& left, const std::vector<std::vector<double>>& right)
 {
-    int m = static_cast<int>(left.size());
-    int n = static_cast<int>(left[0].size());
-    int p = static_cast<int>(right[0].size());
+    int m = left.size();
+    int n = left[0].size();
+    int p = right[0].size();
 
     std::vector<std::vector<double>> result(m, std::vector<double>(p,0.0));
     for (int i = 0; i < m; i++)

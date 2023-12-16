@@ -1592,6 +1592,128 @@ std::vector<std::vector<LNLib::XYZW>> LNLib::NurbsSurface::NonuniformScaling(con
 	return result;
 }
 
+void LNLib::NurbsSurface::MakeCornerFilletSurface(const LN_Curve& arc, LN_Surface& surface)
+{
+	XYZ c2_start = NurbsCurve::GetPointOnCurve(arc, 0);
+	XYZ c2_half = NurbsCurve::GetPointOnCurve(arc, 0.5);
+	XYZ c2_end = NurbsCurve::GetPointOnCurve(arc, 1);
+
+	double chordLength = c2_start.Distance(c2_end);
+	XYZ projectPoint;
+	Projection::PointToLine(c2_start, c2_end, c2_half, projectPoint);
+	double archHeight = c2_half.Distance(projectPoint);
+	double radius = (pow(chordLength/2.0,2)+pow(archHeight,2))/(2* archHeight);
+	double radius2 = radius * radius;
+
+	XYZ p01 = Projection::Stereographic(c2_start, radius);
+	XYZ phalf = Projection::Stereographic(c2_half, radius);
+	XYZ p21 = Projection::Stereographic(c2_end, radius);
+	
+	double x1 = p01.GetX();
+	double x2 = p21.GetX();
+	double x3 = phalf.GetX();
+	double y1 = p01.GetY();
+	double y2 = p21.GetY();
+	double y3 = phalf.GetY();
+
+	double x12 = x1 - x2;
+	double x13 = x1 - x3;
+	double y12 = y1 - y2;
+	double y13 = y1 - y3;
+	double y31 = y3 - y1;
+	double y21 = y2 - y1;
+	double x31 = x3 - x1;
+	double x21 = x2 - x1;
+
+	double sx13 = pow(x1, 2) - pow(x3, 2);
+	double sy13 = pow(y1, 2) - pow(y3, 2);
+	double sx21 = pow(x2, 2) - pow(x1, 2);
+	double sy21 = pow(y2, 2) - pow(y1, 2);
+
+	double f = (sx13 * x12 + sy13 * x12 + sx21 * x13 + sy21 * x13) / (2 * (y31 * x12 - y21 * x13));
+	double g = (sx13 * y12 + sy13 * y12 + sx21 * y13 + sy21 * y13) / (2 * (x31 * y12 - x21 * y13));
+	double c = -pow(x1, 2) - pow(y1, 2) - 2 * g * x1 - 2 * f * y1;
+	double cx = -g;
+	double cy = -f;
+	double r = sqrt(cx * cx + cy * cy - c);
+
+	XYZ center = XYZ(cx, cy, 0);
+	XYZ middle = (p01 + p21) / 2.0;
+	double center2Middle = center.Distance(middle);
+	double a = pow(r, 2) / pow(center2Middle, 2);
+	XYZ p11 = (1 - a) * center + a * middle;
+
+	XYZ d1 = p11 - p21;
+	XYZ d2 = p01 - p21;
+	double theta =  d1.AngleTo(d2);
+	double w11 = cos(theta);
+
+	std::vector<std::vector<XYZW>> bezierControlPoints(3, std::vector<XYZW>(2));
+	
+	bezierControlPoints[0][0] = XYZW(0, 0, 0, 1);
+	bezierControlPoints[1][0] = XYZW(0, 0, 0, w11);
+	bezierControlPoints[2][0] = XYZW(0, 0, 0, 1);
+	bezierControlPoints[0][1] = XYZW(p01, 1);
+	bezierControlPoints[1][1] = XYZW(p11, w11);
+	bezierControlPoints[2][1] = XYZW(p21, 1);
+
+	std::vector<std::vector<double>> m2 = Polynomials::BezierToPowerMatrix(2);
+	std::vector<std::vector<double>> m1 = Polynomials::BezierToPowerMatrix(1);
+	std::vector<std::vector<double>> m1T;
+	MathUtils::Transpose(m1, m1T);
+
+	std::vector<std::vector<XYZW>> m2_bz = ControlPointsUtils::Multiply(bezierControlPoints, m2);
+	std::vector<std::vector<XYZW>> alphas = ControlPointsUtils::Multiply(m2_bz, m1T); 
+
+	std::vector<std::vector<double>> u(3, std::vector<double>(2));
+	std::vector<std::vector<double>> v(3, std::vector<double>(2));
+	std::vector<std::vector<double>> h(3, std::vector<double>(2));
+
+	for (int i = 0; i < alphas.size(); i++)
+	{
+		for (int j = 0; j < alphas[0].size(); j++)
+		{
+			XYZW current = alphas[i][j];
+			u[i][j] = current.GetWX();
+			v[i][j] = current.GetWY();
+			h[i][j] = current.GetW();
+		}
+	}
+
+	std::vector<std::vector<XYZW>> b(4, std::vector<XYZW>(2));
+	b[0][0] = XYZW(0, 0, 0, 4* radius2 *h[0][0]);
+	b[0][1] = XYZW(4*radius2*u[0][1]*h[0][0], 0, 0, 1);
+	b[0][2] = XYZW(0, 0, 2*radius*pow(u[0][1],2), pow(u[0][1],2));
+	b[1][0] = XYZW(0, 0, 0, 4*radius2*pow(h[0][0],2));
+	b[1][1] = XYZW(4*radius2*(u[1][1]*h[0][0]+u[0][1]*h[1][0]), 4*radius2*v[1][1]*h[0][0], 0, 1);
+	b[1][2] = XYZW(0, 0, 4*radius*u[0][1]*u[1][1], 2*u[0][1]*u[1][1]);
+	b[2][0] = XYZW(0, 0, 0, 4*radius2*(pow(h[1][0],2)+2*h[0][0]*h[2][0]));
+	b[2][1] = XYZW(4*radius2*(u[2][1]*h[0][0]+u[1][1]*h[1][0]+u[0][1]*h[2][0]), 4*radius2*(v[2][1]*h[0][0]+v[1][1]*h[1][0]), 0, 1);
+	b[2][2] = XYZW(0, 0, 2*radius*(pow(u[1][1],2)+2*u[0][1]*u[2][1]+pow(v[1][1],2)), pow(u[1][1],2)+2*u[0][1]*u[2][1]+pow(v[1][1],2));
+	b[3][0] = XYZW(0, 0, 0, 8*radius2*h[1][0]*h[2][0]);
+	b[3][1] = XYZW(4*radius2*(u[2][1]*h[1][0]+u[1][1]*h[2][0]), 4*radius2*(v[1][1]*h[2][0]+v[2][1]*h[1][0]), 0, 1);
+	b[3][2] = XYZW(0, 0, 4*radius*(u[1][1]*u[2][1]+v[1][1]*v[2][1]), 2*(u[1][1]*u[2][1]+v[1][1]*v[2][1]));
+	b[4][0] = XYZW(0, 0, 0, 4*radius2*pow(h[2][0],2));
+	b[4][1] = XYZW(4*radius2*u[2][1]*h[2][0], 4*radius2*v[2][1]*h[2][0], 0, 1);
+	b[4][2] = XYZW(0, 0, 2*radius*(pow(u[2][1],2)+pow(v[2][1],2)), pow(u[2][1],2)+pow(v[2][1],2));
+
+	std::vector<std::vector<double>> M4 = Polynomials::BezierToPowerMatrix(4);
+	std::vector<std::vector<double>> IM4;
+	MathUtils::MakeInverse(M4, IM4);
+
+	std::vector<std::vector<double>> IM2;
+	MathUtils::MakeInverse(m2, IM2);
+	std::vector<std::vector<double>> IM2T;
+	MathUtils::Transpose(IM2, IM2T);
+
+	std::vector<std::vector<XYZW>> IM4_CP = ControlPointsUtils::Multiply(b, IM4);
+	std::vector<std::vector<XYZW>> controlPoints = ControlPointsUtils::Multiply(IM4_CP, IM2T);
+
+	surface.DegreeU = 4;
+	surface.DegreeV = 2;
+	surface.ControlPoints = controlPoints;
+}
+
 void LNLib::NurbsSurface::GlobalInterpolation(const std::vector<std::vector<XYZ>>& throughPoints, int degreeU, int degreeV, LN_Surface& surface)
 {
 	VALIDATE_ARGUMENT(throughPoints.size() > 0, "throughPoints", "ThroughPoints row size must greater than zero.");
