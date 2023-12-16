@@ -1662,7 +1662,7 @@ void LNLib::NurbsSurface::MakeCornerFilletSurface(const LN_Curve& arc, LN_Surfac
 	std::vector<std::vector<double>> m1T;
 	MathUtils::Transpose(m1, m1T);
 
-	std::vector<std::vector<XYZW>> m2_bz = ControlPointsUtils::Multiply(bezierControlPoints, m2);
+	std::vector<std::vector<XYZW>> m2_bz = ControlPointsUtils::Multiply(m2, bezierControlPoints);
 	std::vector<std::vector<XYZW>> alphas = ControlPointsUtils::Multiply(m2_bz, m1T); 
 
 	std::vector<std::vector<double>> u(3, std::vector<double>(2));
@@ -1706,7 +1706,7 @@ void LNLib::NurbsSurface::MakeCornerFilletSurface(const LN_Curve& arc, LN_Surfac
 	std::vector<std::vector<double>> IM2T;
 	MathUtils::Transpose(IM2, IM2T);
 
-	std::vector<std::vector<XYZW>> IM4_CP = ControlPointsUtils::Multiply(b, IM4);
+	std::vector<std::vector<XYZW>> IM4_CP = ControlPointsUtils::Multiply(IM4, b);
 	std::vector<std::vector<XYZW>> controlPoints = ControlPointsUtils::Multiply(IM4_CP, IM2T);
 
 	surface.DegreeU = 4;

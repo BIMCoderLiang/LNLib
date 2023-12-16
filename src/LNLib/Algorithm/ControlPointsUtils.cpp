@@ -60,12 +60,36 @@ std::vector<std::vector<XYZW>> LNLib::ControlPointsUtils::ToXYZW(const std::vect
 
 std::vector<std::vector<XYZW>> LNLib::ControlPointsUtils::Multiply(const std::vector<std::vector<XYZW>>& points, const std::vector<std::vector<double>>& coefficient)
 {
-	std::vector<std::vector<XYZW>> result(coefficient.size(), std::vector<XYZW>(points[0].size()));
-	for (int i = 0; i < coefficient.size(); i++)
+	int m = points.size();
+	int n = points[0].size();
+	int p = coefficient[0].size();
+
+	std::vector<std::vector<XYZW>> result(m, std::vector<XYZW>(p));
+	for (int i = 0; i < m; i++)
 	{
-		for (int j = 0; j < points[0].size(); j++)
+		for (int j = 0; j < p; j++)
 		{
-			for (int k = 0; k < coefficient[0].size(); k++)
+			for (int k = 0; k < n; k++)
+			{
+				result[i][j] += points[i][k] * coefficient[k][j];
+			}
+		}
+	}
+	return result;
+}
+
+std::vector<std::vector<XYZW>> LNLib::ControlPointsUtils::Multiply(const std::vector<std::vector<double>>& coefficient, const std::vector<std::vector<XYZW>>& points)
+{
+	int m = coefficient.size();
+	int n = coefficient[0].size();
+	int p = points[0].size();
+
+	std::vector<std::vector<XYZW>> result(m, std::vector<XYZW>(p));
+	for (int i = 0; i < m; i++)
+	{
+		for (int j = 0; j < p; j++)
+		{
+			for (int k = 0; k < n; k++)
 			{
 				result[i][j] += coefficient[i][k] * points[k][j];
 			}
