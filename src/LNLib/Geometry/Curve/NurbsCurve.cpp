@@ -291,7 +291,7 @@ LNLib::XYZ LNLib::NurbsCurve::GetPointOnCurveByCornerCut(const LN_Curve& curve, 
 	{
 		return controlPoints[0].ToXYZ(true);
 	}
-	int n = static_cast<int>(controlPoints.size() - 1);
+	int n = controlPoints.size() - 1;
 	if (MathUtils::IsAlmostEqualTo(paramT, knotVector[n + degree + 1]))
 	{
 		return controlPoints[n].ToXYZ(true);

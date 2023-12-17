@@ -46,8 +46,8 @@ namespace LNLib {
 			VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "Degree must greater than zero.");
 			VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "Degree must greater than zero.");
 			VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
-			VALIDATE_ARGUMENT(degreeU + 1 == static_cast<int>(controlPoints.size()), "controlPoints", "ControlPoints row size equals degreeU plus one.");
-			VALIDATE_ARGUMENT(degreeV + 1 == static_cast<int>(controlPoints[0].size()), "controlPoints", "ControlPoints column size equals degreeV plus one.");
+			VALIDATE_ARGUMENT(degreeU + 1 == controlPoints.size(), "controlPoints", "ControlPoints row size equals degreeU plus one.");
+			VALIDATE_ARGUMENT(degreeV + 1 == controlPoints[0].size(), "controlPoints", "ControlPoints column size equals degreeV plus one.");
 			VALIDATE_ARGUMENT_RANGE(uv.GetU(), 0.0, 1.0);
 			VALIDATE_ARGUMENT_RANGE(uv.GetV(), 0.0, 1.0);
 

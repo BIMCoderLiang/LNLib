@@ -591,8 +591,8 @@ std::vector<std::vector<std::vector<LNLib::XYZW>>> LNLib::NurbsSurface::Decompos
 
 	std::vector<std::vector<std::vector<LNLib::XYZW>>> decomposedControlPoints;
 	
-	int rows = static_cast<int>(controlPoints.size());
-	int columns = static_cast<int>(controlPoints[0].size());
+	int rows = controlPoints.size();
+	int columns = controlPoints[0].size();
 
 	std::vector<std::vector<std::vector<LNLib::XYZW>>> temp(rows - degreeU, std::vector<std::vector<XYZW>>(degreeU + 1, std::vector<XYZW>(columns)));
 
