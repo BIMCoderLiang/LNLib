@@ -31,16 +31,19 @@ namespace LNLib
 
     void GetAdjointMatrix(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& adjointMatrix)
     {
-        int n = static_cast<int>(matrix.size());
-        if (n == 1) {
+        int n = matrix.size();
+        if (n == 1) 
+        {
             adjointMatrix[0][0] = 1;
             return;
         }
 
         int sign = 1; 
         std::vector<std::vector<double>> temp(n, std::vector<double>(n));
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
+        for (int i = 0; i < n; i++) 
+        {
+            for (int j = 0; j < n; j++) 
+            {
                 GetCoFactor(matrix, temp, i, j, n);
                 sign = ((i + j) % 2 == 0) ? 1 : -1;
                 adjointMatrix[j][i] = (sign) * (LNLib::MathUtils::GetDeterminant(temp, n - 1));
@@ -151,7 +154,6 @@ std::vector<std::vector<double>> LNLib::MathUtils::MatrixMultiply(const std::vec
             }
         }
     }
-    
     return result;
 }
 
@@ -191,8 +193,8 @@ std::vector<std::vector<double>> LNLib::MathUtils::CreateMatrix(int row, int col
 
 bool LNLib::MathUtils::IsSquareMatrix(const std::vector<std::vector<double>>& matrix)
 {
-    int row = static_cast<int>(matrix.size());
-    int column = static_cast<int>(matrix[0].size());
+    int row = matrix.size();
+    int column = matrix[0].size();
     return row == column;
 }
 
@@ -211,7 +213,8 @@ double LNLib::MathUtils::GetDeterminant(const std::vector<std::vector<double>>& 
     }
        
     int sign = 1; 
-    for (int f = 0; f < dimension; f++) {
+    for (int f = 0; f < dimension; f++) 
+    {
         GetCoFactor(matrix, temp, 0, f, dimension);
         result += sign * matrix[0][f] * GetDeterminant(temp, dimension - 1);
         sign = -sign;
@@ -364,7 +367,7 @@ bool LNLib::MathUtils::LUDecomposition(const std::vector<std::vector<double>>& m
         return false;
     }
 
-    int n = static_cast<int>(matrix.size());
+    int n = matrix.size();
     lowerTriMatrix.resize(n);
     upperTriMatrix.resize(n);
     for (int i = 0; i < n; i++)
@@ -431,7 +434,7 @@ bool LNLib::MathUtils::LUPDecomposition(const std::vector<std::vector<double>>& 
         return false;
     }
 
-    int n = static_cast<int>(matrix.size());
+    int n = matrix.size();
     std::vector<std::vector<double>> copy(n, std::vector<double>(n));
     for (int i = 0; i < n; i++)
     {

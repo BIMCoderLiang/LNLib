@@ -20,7 +20,7 @@ using namespace LNLib;
 double Polynomials::Horner(int degree, const std::vector<double>& coefficients, double paramT)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
-	VALIDATE_ARGUMENT(degree + 1 == static_cast<int>(coefficients.size()), "degree", "Coefficients size equals degree plus one.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidBezier(degree, coefficients.size()), "degree", "Coefficients size equals degree plus one.");
 	double result = coefficients[degree];
 	for (int i = degree - 1; i >= 0; i--)
 	{
@@ -87,8 +87,8 @@ double Polynomials::Horner(int degreeU, int degreeV, const std::vector<std::vect
 	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "DegreeU must greater than zero.");
 	VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "DegreeV must greater than zero.");
 	VALIDATE_ARGUMENT(coefficients.size() > 0, "coefficients", "Coefficients size must greater than zero.");
-	VALIDATE_ARGUMENT(degreeU + 1 == static_cast<int>(coefficients.size()), "degreeU", "Coefficients row size equals degreeU plus one.");
-	VALIDATE_ARGUMENT(degreeV + 1 == static_cast<int>(coefficients[0].size()), "degreeV", "Coefficients column size equals degreeV plus one.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidBezier(degreeU, coefficients.size()), "degreeU", "Coefficients row size equals degreeU plus one.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidBezier(degreeV, coefficients[0].size()), "degreeV", "Coefficients column size equals degreeV plus one.");
 	VALIDATE_ARGUMENT_RANGE(uv.GetU(), 0.0, 1.0);
 	VALIDATE_ARGUMENT_RANGE(uv.GetV(), 0.0, 1.0);
 

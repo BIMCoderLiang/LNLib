@@ -1044,7 +1044,8 @@ double LNLib::NurbsCurve::GetParamOnCurve(const LN_Curve& curve, const XYZ& give
 		}
 
 		double condition4 = ((temp - paramT) * derivatives[1]).Length();
-		if (condition4 < Constants::DistanceEpsilon) {
+		if (condition4 < Constants::DistanceEpsilon) 
+		{
 			return paramT;
 		}
 
