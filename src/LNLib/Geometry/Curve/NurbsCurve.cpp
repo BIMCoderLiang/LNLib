@@ -1170,6 +1170,169 @@ void LNLib::NurbsCurve::Reverse(const LN_Curve& curve, LN_Curve& result)
 	result.ControlPoints = controlPoints;
 }
 
+bool LNLib::NurbsCurve::SplitAt(const LN_Curve& curve, double parameter, LN_Curve& left, LN_Curve& right)
+{
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+	if (MathUtils::IsLessThanOrEqual(parameter, knotVector[degree]) ||
+		MathUtils::IsGreaterThanOrEqual(parameter, knotVector[knotVector.size() - degree - 1]))
+	{
+		return false;
+	}
+
+	int multi = Polynomials::GetKnotMultiplicity(knotVector, parameter);
+	std::vector<double> insert(degree + 1 - multi, parameter);
+	left = curve;
+	if (insert.size() > 0)
+	{
+		LN_Curve temp;
+		NurbsCurve::RefineKnotVector(left, insert, temp);
+		left = temp;
+	}
+
+	int spanIndex = Polynomials::GetKnotSpanIndex(left.Degree, left.KnotVector, parameter) - degree;
+	right.Degree = degree;
+	int rControlPoints = left.ControlPoints.size() - spanIndex;
+	std::vector<XYZW> rightControlPoints(rControlPoints);
+	std::vector<double> rightKnotVector(rControlPoints + degree + 1);
+	for (int i = left.ControlPoints.size() - 1, j = right.ControlPoints.size() - 1; j >= 0; j--, i--)
+	{
+		right.ControlPoints[j] = left.ControlPoints[i];
+	}
+
+	for (int i = left.KnotVector.size() - 1, j = right.KnotVector.size() - 1; j >= 0; j--, i--) 
+	{
+		right.KnotVector[j] = left.KnotVector[i];
+	}
+
+	left.Degree = degree;
+	left.ControlPoints.resize(spanIndex);
+	left.KnotVector.resize(spanIndex + degree + 1);
+
+	return true;
+}
+
+bool LNLib::NurbsCurve::Merge(const LN_Curve& left, const LN_Curve& right, LN_Curve& result)
+{
+	int degree_L = left.Degree;
+	std::vector<double> knotVector_L = left.KnotVector;
+	std::vector<XYZW> controlPoints_L = left.ControlPoints;
+
+	VALIDATE_ARGUMENT(degree_L > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector_L.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector_L), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints_L.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree_L, knotVector_L.size(), controlPoints_L.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+	int degree_R = right.Degree;
+	std::vector<double> knotVector_R = right.KnotVector;
+	std::vector<XYZW> controlPoints_R = right.ControlPoints;
+
+	VALIDATE_ARGUMENT(degree_R > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector_R.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector_R), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints_R.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree_R, knotVector_R.size(), controlPoints_R.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+
+	if (!controlPoints_L[controlPoints_L.size() - 1].IsAlmostEqualTo(controlPoints_R[0]))
+	{
+		return false;
+	}
+
+	int degree = std::max(degree_L, degree_R);
+	LN_Curve tempL = left;
+	if (degree > degree_L)
+	{
+		int times = degree - degree_L;
+		ElevateDegree(left, times, tempL);
+	}
+
+	LN_Curve tempR = right;
+	if (degree > degree_R)
+	{
+		int times = degree - degree_R;
+		ElevateDegree(right, times, tempR);
+	}
+
+	int l = Polynomials::GetKnotMultiplicity(tempL.KnotVector, tempL.KnotVector[tempL.KnotVector.size() - 1]);
+	int r = Polynomials::GetKnotMultiplicity(tempR.KnotVector, tempR.KnotVector[0]);
+
+	if (l != degree + 1 || r != degree + 1)
+	{
+		return false;
+	}
+
+	int size = tempL.ControlPoints.size() + tempR.ControlPoints.size();
+	std::vector<XYZW> controlPoints(size);
+	int ksize = size + degree + 1;
+	std::vector<double> knotVector(ksize);
+
+	int i;
+	for (i = 0; i < tempL.ControlPoints.size(); i++)
+	{
+		controlPoints[i] = tempL.ControlPoints[i];
+	}
+		
+	for (; i < size; i++)
+	{
+		controlPoints[i] = tempR.ControlPoints[i - tempL.ControlPoints.size()];
+	}
+		
+
+	for (i = 0; i <tempL.KnotVector.size(); i++)
+	{
+		knotVector[i] = tempL.KnotVector[i];
+	}
+		
+	for (; i < ksize; i++)
+	{
+		knotVector[i] = tempR.KnotVector[i - tempL.KnotVector.size() + degree + 1];
+	}
+
+	return true;
+}
+
+void LNLib::NurbsCurve::Offset(const LN_Curve& curve, double offset, LN_Curve& result)
+{
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+
+	if (MathUtils::IsAlmostEqualTo(offset, 0.0))
+	{
+		result = curve;
+		return;
+	}
+
+	std::vector<XYZ> tessellatedPoints;
+	std::vector<double> correspondingKnots;
+	EquallyTessellate(curve, tessellatedPoints, correspondingKnots);
+
+	std::vector<XYZ> newPoints(tessellatedPoints.size());
+	for (int i = 0; i < tessellatedPoints.size(); i++)
+	{
+		XYZ newPoint = tessellatedPoints[i] + offset * Normal(curve, CurveNormal::Normal, correspondingKnots[i]);
+		newPoints[i] = newPoint;
+	}
+
+	GlobalInterpolation(3, newPoints, result);
+}
+
 bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ& yAxis, double startRad, double endRad, double xRadius, double yRadius, LN_Curve& curve)
 {
 	VALIDATE_ARGUMENT(!xAxis.IsZero(), "xAxis", "xAxis must not be zero vector.");

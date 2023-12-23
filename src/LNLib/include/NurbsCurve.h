@@ -136,6 +136,12 @@ namespace LNLib
 		/// </summary>
 		static void Reverse(const LN_Curve& curve, LN_Curve& result);
 
+		static bool SplitAt(const LN_Curve& curve, double parameter, LN_Curve& left, LN_Curve& right);
+
+		static bool Merge(const LN_Curve& left, const LN_Curve& right, LN_Curve& result);
+
+		static void Offset(const LN_Curve& curve, double offset, LN_Curve& result);
+
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page308
 		/// Algorithm A7.1

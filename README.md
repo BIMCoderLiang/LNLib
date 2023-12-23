@@ -41,6 +41,7 @@ NURBS Algorithms:
     - Clamp/UnClamp Nurbs Curve
 - ***Additional***:
     - Curve/Surface Curvature and Normal
+    - Curve Split/Merge/Offset
 
 ## Contributing
 Welcome join this project including discussions in **Issues** and make **Pull requests**.
