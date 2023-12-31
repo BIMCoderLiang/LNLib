@@ -42,6 +42,8 @@ NURBS Algorithms:
 - ***Additional***:
     - Curve/Surface Curvature and Normal
     - Curve Split/Merge/Offset
+    - Curve IsClamp/IsClosed/IsPeriodic
+    - Curve IsLine
 
 ## Contributing
 Welcome join this project including discussions in **Issues** and make **Pull requests**.

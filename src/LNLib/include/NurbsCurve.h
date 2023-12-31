@@ -112,6 +112,8 @@ namespace LNLib
 
 		static bool IsClosed(LN_Curve& curve);
 
+		static bool IsPeriodic(const LN_Curve& curve);
+
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page230
 		/// Point inversion:finding the corresponding parameter make C(u) = P.

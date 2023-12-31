@@ -929,6 +929,41 @@ bool LNLib::NurbsCurve::IsClosed(LN_Curve& curve)
 	return MathUtils::IsAlmostEqualTo(distance, 0.0);
 }
 
+bool LNLib::NurbsCurve::IsPeriodic(const LN_Curve& curve)
+{
+	Check(curve);
+
+	bool isClosed = IsClosed(curve);
+	if (!isClosed)
+	{
+		return false;
+	}
+	std::vector<double> knotVector = curve.KnotVector;
+	double first = knotVector[0];
+	double end = knotVector[knotVector.size() - 1];
+
+	int cFirst = KnotVectorUtils::GetContinuity(curve.Degree, knotVector, first);
+	int cEnd = KnotVectorUtils::GetContinuity(curve.Degree, knotVector, end);
+
+	if (cFirst != cEnd)
+	{
+		return false;
+	}
+
+	std::vector<XYZ> fDers = ComputeRationalCurveDerivatives(curve, cFirst, first);
+	std::vector<XYZ> eDers = ComputeRationalCurveDerivatives(curve, cEnd, end);
+
+	for (int i = 0; i <= cFirst; i++)
+	{
+		bool compare = fDers[i].Normalize().IsAlmostEqualTo(eDers[i].Normalize());
+		if (!compare)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 double LNLib::NurbsCurve::GetParamOnCurve(const LN_Curve& curve, const XYZ& givenPoint)
 {
 	Check(curve);
