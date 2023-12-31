@@ -27,7 +27,10 @@ TEST(Test_Clamp, All)
 	curve.ControlPoints = cps;
 
 	XYZ checkP = NurbsCurve::GetPointOnCurve(curve, 0.5);
-	NurbsCurve::ToUnclampCurve(curve);
+
+	LN_Curve result;
+	NurbsCurve::ToUnclampCurve(curve, result);
+	curve = result;
 	XYZ newP = NurbsCurve::GetPointOnCurve(curve, 0.5);
 	EXPECT_TRUE(checkP.IsAlmostEqualTo(newP));
 
@@ -45,7 +48,7 @@ TEST(Test_Clamp, All)
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(kvCopy[10], 5.0 / 4));
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(kvCopy[11], 5.0 / 4));
 
-	NurbsCurve::ToClampCurve(curve);
-	XYZ reCheckP = NurbsCurve::GetPointOnCurve(curve, 0.5);
+	NurbsCurve::ToClampCurve(curve, result);
+	XYZ reCheckP = NurbsCurve::GetPointOnCurve(result, 0.5);
 	EXPECT_TRUE(checkP.IsAlmostEqualTo(reCheckP));
 }

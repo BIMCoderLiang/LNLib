@@ -29,6 +29,8 @@ namespace LNLib
 	{
 	public:
 
+		static void Check(const LN_Curve& curve);
+
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page124
 		/// Algorithm A4.1
@@ -45,7 +47,7 @@ namespace LNLib
 
 		static double Curvature(const LN_Curve& curve, double paramT);
 
-		static XYZ Normal(const LN_Curve& curve, CurveNormal normal, double paramT);
+		static XYZ Normal(const LN_Curve& curve, CurveNormal normalType, double paramT);
 
 		static double Torsion(const LN_Curve& curve, double paramT);
 
@@ -279,14 +281,24 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page572
 		/// Clamp a unclamped curve.
 		/// </summary>
-		static void ToClampCurve(LN_Curve& curve);
+		static void ToClampCurve(const LN_Curve& curve, LN_Curve& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page577
 		/// Algorithm A12.1
 		/// Unclamp a clamped curve.
 		/// </summary>
-		static void ToUnclampCurve(LN_Curve& curve);
+		static void ToUnclampCurve(const LN_Curve& curve, LN_Curve& result);
+
+		static bool IsClamp(const LN_Curve& curve);
+
+		static bool IsLine(const LN_Curve& curve);
+
+		static bool IsArc(const LN_Curve& curve);
+
+		static bool IsEllipse(const LN_Curve& curve);
+
+		static bool IsClosed(const LN_Curve& curve);
 	};
 }
 

@@ -39,6 +39,8 @@ namespace LNLib
 	{
 	public:
 
+		static void Check(const LN_Surface& surface);
+
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page134
 		/// Algorithm A4.3
