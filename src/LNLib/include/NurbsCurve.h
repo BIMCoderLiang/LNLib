@@ -108,6 +108,10 @@ namespace LNLib
 		/// </summary>
 		static void EquallyTessellate(const LN_Curve& curve, std::vector<XYZ>& tessellatedPoints, std::vector<double>& correspondingKnots);
 
+		static bool IsClosed(const LN_Curve& curve);
+
+		static bool IsClosed(LN_Curve& curve);
+
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page230
 		/// Point inversion:finding the corresponding parameter make C(u) = P.
@@ -298,7 +302,6 @@ namespace LNLib
 
 		static bool IsEllipse(const LN_Curve& curve);
 
-		static bool IsClosed(const LN_Curve& curve);
 	};
 }
 

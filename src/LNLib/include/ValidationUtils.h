@@ -41,53 +41,6 @@ namespace LNLib
 		/// TOL = dWmin / (1+abs(Pmax))
 		/// </summary>
 		static double ComputeCurveModifyTolerance(const std::vector<XYZW>& controlPoints);
-
-		template <typename T>
-		static bool IsClosed(const std::vector<T>& controlPoints)
-		{
-			T first = controlPoints[0];
-			T last = controlPoints[controlPoints.size() - 1];
-			return first.IsAlmostEqualTo(last);
-		}
-
-		///  [0][0]  [0][1] ... ...  [0][m]     ------- v direction
-		///  [1][0]  [1][1] ... ...  [1][m]    |
-		///    .                               |
-		///    .                               u direction
-		///    .							   
-		///  [n][0]  [n][1] ... ...  [n][m]      
-		template <typename T>
-		static bool IsClosedU(const std::vector<std::vector<T>>& controlPoints)
-		{
-			std::vector<std::vector<T>> transposed;
-			MathUtils::Transpose(controlPoints, transposed);
-
-			for (int i = 0; i < transposed.size(); i++)
-			{
-				std::vector<T> row = transposed[i];
-				bool rowResult = IsClosed(row);
-				if (!rowResult)
-				{
-					return false;
-				}
-			}
-			return true;
-		}
-
-		template <typename T>
-		static bool IsClosedV(const std::vector<std::vector<T>>& controlPoints)
-		{
-			for (int i = 0; i < controlPoints.size(); i++)
-			{
-				std::vector<T> row = controlPoints[i];
-				bool rowResult = IsClosed(row);
-				if (!rowResult)
-				{
-					return false;
-				}
-			}
-			return true;
-		}
 	};
 }
 

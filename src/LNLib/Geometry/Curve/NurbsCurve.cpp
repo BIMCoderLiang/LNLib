@@ -908,6 +908,27 @@ void LNLib::NurbsCurve::EquallyTessellate(const LN_Curve& curve, std::vector<XYZ
 	tessellatedPoints.emplace_back(const_cast<XYZW&>(controlPoints[controlPoints.size() - 1]).ToXYZ(true));
 }
 
+bool LNLib::NurbsCurve::IsClosed(const LN_Curve& curve)
+{
+	LN_Curve temp = curve;
+	return IsClosed(temp);
+}
+
+bool LNLib::NurbsCurve::IsClosed(LN_Curve& curve)
+{
+	Check(curve);
+
+	std::vector<double> knotVector = curve.KnotVector;
+	double first = knotVector[0];
+	double end = knotVector[knotVector.size() - 1];
+
+	XYZ startPoint = GetPointOnCurve(curve, first);
+	XYZ endPoint = GetPointOnCurve(curve, end);
+
+	double distance = startPoint.Distance(endPoint);
+	return MathUtils::IsAlmostEqualTo(distance, 0.0);
+}
+
 double LNLib::NurbsCurve::GetParamOnCurve(const LN_Curve& curve, const XYZ& givenPoint)
 {
 	Check(curve);
@@ -965,7 +986,7 @@ double LNLib::NurbsCurve::GetParamOnCurve(const LN_Curve& curve, const XYZ& give
 		}
 	}
 
-	bool isClosed = ValidationUtils::IsClosed(controlPoints);
+	bool isClosed = IsClosed(curve);
 	double a = minParam;
 	double b = maxParam;
 
@@ -3104,3 +3125,5 @@ bool LNLib::NurbsCurve::IsLine(const LN_Curve& curve)
 	}
 	return true;
 }
+
+

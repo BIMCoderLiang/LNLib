@@ -944,6 +944,50 @@ void LNLib::NurbsSurface::EquallyTessellate(const LN_Surface& surface, std::vect
 	tessellatedPoints.emplace_back(const_cast<XYZW&>(controlPoints[controlPoints.size() - 1][controlPoints[0].size()-1]).ToXYZ(true));
 }
 
+bool LNLib::NurbsSurface::IsClosed(const LN_Surface& surface, bool isUDirection)
+{
+	Check(surface);
+	if (isUDirection)
+	{
+		std::vector<std::vector<XYZW>> transposed;
+		MathUtils::Transpose(surface.ControlPoints, transposed);
+
+		for (int i = 0; i < transposed.size(); i++)
+		{
+			LN_Curve curve;
+			curve.Degree = surface.DegreeU;
+			curve.KnotVector = surface.KnotVectorU;
+			curve.ControlPoints = transposed[i];
+
+			bool rowResult = NurbsCurve::IsClosed(curve);
+
+			if (!rowResult)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	else
+	{
+		for (int i = 0; i < surface.ControlPoints.size(); i++)
+		{
+			LN_Curve curve;
+			curve.Degree = surface.DegreeV;
+			curve.KnotVector = surface.KnotVectorV;
+			curve.ControlPoints = surface.ControlPoints[i];
+
+			bool rowResult = NurbsCurve::IsClosed(curve);
+			if (!rowResult)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	return false;
+}
+
 LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const LN_Surface& surface, const XYZ& givenPoint)
 {
 	Check(surface);
@@ -969,8 +1013,8 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const LN_Surface& surface, cons
 	double c = minVParam;
 	double d = maxVParam;
 
-	bool isClosedU = ValidationUtils::IsClosedU(controlPoints);
-	bool isClosedV = ValidationUtils::IsClosedV(controlPoints);
+	bool isClosedU = IsClosed(surface, true);
+	bool isClosedV = IsClosed(surface, false);
 
 	std::vector<XYZ> tessellatedPoints;
 	std::vector<UV> correspondingKnots;

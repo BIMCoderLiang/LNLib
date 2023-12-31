@@ -110,6 +110,14 @@ namespace LNLib
 		/// </summary>
 		static void EquallyTessellate(const LN_Surface& surface, std::vector<XYZ>& tessellatedPoints, std::vector<UV>& correspondingKnots);
 
+		///  [0][0]  [0][1] ... ...  [0][m]     ------- v direction
+		///  [1][0]  [1][1] ... ...  [1][m]    |
+		///    .                               |
+		///    .                               u direction
+		///    .							   
+		///  [n][0]  [n][1] ... ...  [n][m]    
+		static bool IsClosed(const LN_Surface& surface, bool isUDirection);
+
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page232
 		/// Point inversion:finding the corresponding parameter make S(u,v) = P.
