@@ -60,8 +60,6 @@ void LNLib::NurbsCurve::Check(const LN_Curve& curve)
 
 LNLib::XYZ LNLib::NurbsCurve::GetPointOnCurve(const LN_Curve& curve, double paramT)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -74,8 +72,6 @@ LNLib::XYZ LNLib::NurbsCurve::GetPointOnCurve(const LN_Curve& curve, double para
 
 std::vector<LNLib::XYZ> LNLib::NurbsCurve::ComputeRationalCurveDerivatives(const LN_Curve& curve, int derivative, double paramT)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -111,8 +107,6 @@ std::vector<LNLib::XYZ> LNLib::NurbsCurve::ComputeRationalCurveDerivatives(const
 
 double LNLib::NurbsCurve::Curvature(const LN_Curve& curve, double paramT)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -133,8 +127,6 @@ double LNLib::NurbsCurve::Curvature(const LN_Curve& curve, double paramT)
 
 LNLib::XYZ LNLib::NurbsCurve::Normal(const LN_Curve& curve, CurveNormal normalType, double paramT)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -173,8 +165,6 @@ LNLib::XYZ LNLib::NurbsCurve::Normal(const LN_Curve& curve, CurveNormal normalTy
 
 double LNLib::NurbsCurve::Torsion(const LN_Curve& curve, double paramT)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -202,8 +192,6 @@ double LNLib::NurbsCurve::Torsion(const LN_Curve& curve, double paramT)
 
 void LNLib::NurbsCurve::InsertKnot(const LN_Curve& curve, double insertKnot, int times, LN_Curve& result)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -272,8 +260,6 @@ void LNLib::NurbsCurve::InsertKnot(const LN_Curve& curve, double insertKnot, int
 
 LNLib::XYZ LNLib::NurbsCurve::GetPointOnCurveByCornerCut(const LN_Curve& curve, double paramT)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -312,8 +298,6 @@ LNLib::XYZ LNLib::NurbsCurve::GetPointOnCurveByCornerCut(const LN_Curve& curve, 
 
 void LNLib::NurbsCurve::RefineKnotVector(const LN_Curve& curve, std::vector<double>& insertKnotElements, LN_Curve& result)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -384,8 +368,6 @@ void LNLib::NurbsCurve::RefineKnotVector(const LN_Curve& curve, std::vector<doub
 
 std::vector<std::vector<LNLib::XYZW>> LNLib::NurbsCurve::DecomposeToBeziers(const LN_Curve& curve)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -456,8 +438,6 @@ std::vector<std::vector<LNLib::XYZW>> LNLib::NurbsCurve::DecomposeToBeziers(cons
 
 bool LNLib::NurbsCurve::RemoveKnot(const LN_Curve& curve, double removeKnot, int times, LN_Curve& result)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -586,8 +566,6 @@ bool LNLib::NurbsCurve::RemoveKnot(const LN_Curve& curve, double removeKnot, int
 
 void LNLib::NurbsCurve::ElevateDegree(const LN_Curve& curve, int times, LN_Curve& result)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -807,8 +785,6 @@ void LNLib::NurbsCurve::ElevateDegree(const LN_Curve& curve, int times, LN_Curve
 
 bool LNLib::NurbsCurve::ReduceDegree(const LN_Curve& curve, LN_Curve& result)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -882,8 +858,6 @@ bool LNLib::NurbsCurve::ReduceDegree(const LN_Curve& curve, LN_Curve& result)
 
 void LNLib::NurbsCurve::EquallyTessellate(const LN_Curve& curve, std::vector<XYZ>& tessellatedPoints, std::vector<double>& correspondingKnots)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -916,8 +890,6 @@ bool LNLib::NurbsCurve::IsClosed(const LN_Curve& curve)
 
 bool LNLib::NurbsCurve::IsClosed(LN_Curve& curve)
 {
-	Check(curve);
-
 	std::vector<double> knotVector = curve.KnotVector;
 	double first = knotVector[0];
 	double end = knotVector[knotVector.size() - 1];
@@ -929,45 +901,8 @@ bool LNLib::NurbsCurve::IsClosed(LN_Curve& curve)
 	return MathUtils::IsAlmostEqualTo(distance, 0.0);
 }
 
-bool LNLib::NurbsCurve::IsPeriodic(const LN_Curve& curve)
-{
-	Check(curve);
-
-	bool isClosed = IsClosed(curve);
-	if (!isClosed)
-	{
-		return false;
-	}
-	std::vector<double> knotVector = curve.KnotVector;
-	double first = knotVector[0];
-	double end = knotVector[knotVector.size() - 1];
-
-	int cFirst = KnotVectorUtils::GetContinuity(curve.Degree, knotVector, first);
-	int cEnd = KnotVectorUtils::GetContinuity(curve.Degree, knotVector, end);
-
-	if (cFirst != cEnd)
-	{
-		return false;
-	}
-
-	std::vector<XYZ> fDers = ComputeRationalCurveDerivatives(curve, cFirst, first);
-	std::vector<XYZ> eDers = ComputeRationalCurveDerivatives(curve, cEnd, end);
-
-	for (int i = 0; i <= cFirst; i++)
-	{
-		bool compare = fDers[i].Normalize().IsAlmostEqualTo(eDers[i].Normalize());
-		if (!compare)
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
 double LNLib::NurbsCurve::GetParamOnCurve(const LN_Curve& curve, const XYZ& givenPoint)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -1081,8 +1016,6 @@ double LNLib::NurbsCurve::GetParamOnCurve(const LN_Curve& curve, const XYZ& give
 
 void LNLib::NurbsCurve::CreateTransformed(const LN_Curve& curve, const Matrix4d& matrix, LN_Curve& result)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -1102,8 +1035,6 @@ void LNLib::NurbsCurve::CreateTransformed(const LN_Curve& curve, const Matrix4d&
 
 void LNLib::NurbsCurve::Reparametrize(const LN_Curve& curve, double alpha, double beta, double gamma, double delta, LN_Curve& result)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -1136,8 +1067,6 @@ void LNLib::NurbsCurve::Reparametrize(const LN_Curve& curve, double alpha, doubl
 
 void LNLib::NurbsCurve::Reparametrize(const LN_Curve& curve, double min, double max, LN_Curve& result)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -1156,8 +1085,6 @@ void LNLib::NurbsCurve::Reparametrize(const LN_Curve& curve, double min, double 
 
 void LNLib::NurbsCurve::Reverse(const LN_Curve& curve, LN_Curve& result)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;;
@@ -1181,8 +1108,6 @@ void LNLib::NurbsCurve::Reverse(const LN_Curve& curve, LN_Curve& result)
 
 bool LNLib::NurbsCurve::SplitAt(const LN_Curve& curve, double parameter, LN_Curve& left, LN_Curve& right)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -1227,9 +1152,6 @@ bool LNLib::NurbsCurve::SplitAt(const LN_Curve& curve, double parameter, LN_Curv
 
 bool LNLib::NurbsCurve::Merge(const LN_Curve& left, const LN_Curve& right, LN_Curve& result)
 {
-	Check(left);
-	Check(right);
-
 	int degree_L = left.Degree;
 	std::vector<double> knotVector_L = left.KnotVector;
 	std::vector<XYZW> controlPoints_L = left.ControlPoints;
@@ -1298,8 +1220,6 @@ bool LNLib::NurbsCurve::Merge(const LN_Curve& left, const LN_Curve& right, LN_Cu
 
 void LNLib::NurbsCurve::Offset(const LN_Curve& curve, double offset, LN_Curve& result)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -2130,8 +2050,6 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(int degre
 
 double LNLib::NurbsCurve::ComputerRemoveKnotErrorBound(const LN_Curve& curve, int removalIndex)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -2180,8 +2098,6 @@ double LNLib::NurbsCurve::ComputerRemoveKnotErrorBound(const LN_Curve& curve, in
 
 void LNLib::NurbsCurve::RemoveKnotsByGivenBound(const LN_Curve& curve, const std::vector<double> params, std::vector<double>& errors, double maxError, LN_Curve& result)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -2684,8 +2600,6 @@ bool LNLib::NurbsCurve::FitWithCubic(const std::vector<XYZ>& throughPoints, int 
 
 bool LNLib::NurbsCurve::ControlPointReposition(const LN_Curve& curve, double parameter, int moveIndex, XYZ moveDirection, double moveDistance, LN_Curve& result)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -2707,16 +2621,14 @@ bool LNLib::NurbsCurve::ControlPointReposition(const LN_Curve& curve, double par
 	XYZ newPoint = movePoint + alpha * moveDirection;
 	updatedControlPoints[moveIndex] = XYZW(newPoint, controlPoints[moveIndex].GetW());
 
-	result.Degree = curve.Degree;
-	result.KnotVector = curve.KnotVector;
+	result.Degree = degree;
+	result.KnotVector = knotVector;
 	result.ControlPoints = updatedControlPoints;
 	return true;
 }
 
 void LNLib::NurbsCurve::WeightModification(const LN_Curve& curve, double parameter, int moveIndex, double moveDistance, LN_Curve& result)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -2734,15 +2646,13 @@ void LNLib::NurbsCurve::WeightModification(const LN_Curve& curve, double paramet
 	std::vector<XYZW> updatedControlPoints = controlPoints;
 	updatedControlPoints[moveIndex] = XYZW(movePoint, updatedControlPoints[moveIndex].GetW() * coefficient);
 
-	result.Degree = curve.Degree;
-	result.KnotVector = curve.KnotVector;
+	result.Degree = degree;
+	result.KnotVector = knotVector;
 	result.ControlPoints = updatedControlPoints;
 }
 
 bool LNLib::NurbsCurve::NeighborWeightsModification(const LN_Curve& curve, double parameter, int moveIndex, double moveDistance, double scale, LN_Curve& result)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -2814,16 +2724,14 @@ bool LNLib::NurbsCurve::NeighborWeightsModification(const LN_Curve& curve, doubl
 	updatedControlPoints[moveIndex] = XYZW(movePoint1, updatedControlPoints[moveIndex].GetW() * betak);
 	updatedControlPoints[moveIndex + 1] = XYZW(movePoint2, updatedControlPoints[moveIndex + 1].GetW() * betak1);
 
-	result.Degree = curve.Degree;
-	result.KnotVector = curve.KnotVector;
+	result.Degree = degree;
+	result.KnotVector = knotVector;
 	result.ControlPoints = updatedControlPoints;
 	return true;
 }
 
 void LNLib::NurbsCurve::Warping(const LN_Curve& curve, const std::vector<double>& warpShape, double warpDistance, const XYZ& planeNormal, double startParameter, double endParameter, LN_Curve& result)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -2849,15 +2757,13 @@ void LNLib::NurbsCurve::Warping(const LN_Curve& curve, const std::vector<double>
 		resultControlPoints.emplace_back(XYZW(newPoint, weight));
 	}
 	
-	result.Degree = curve.Degree;
-	result.KnotVector = curve.KnotVector;
+	result.Degree = degree;
+	result.KnotVector = knotVector;
 	result.ControlPoints = resultControlPoints;
 }
 
 bool LNLib::NurbsCurve::Flattening(const LN_Curve& curve, XYZ lineStartPoint, XYZ lineEndPoint, double startParameter, double endParameter, LN_Curve& result)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -2886,20 +2792,23 @@ bool LNLib::NurbsCurve::Flattening(const LN_Curve& curve, XYZ lineStartPoint, XY
 		int index = it->first;
 		XYZ current = it->second;
 		XYZ project;
-		bool result = Projection::PointToLine(lineStartPoint, lineEndPoint, current, project);
-		if (result)
+		bool isProjection = Projection::PointToLine(lineStartPoint, lineEndPoint, current, project);
+		if (isProjection)
 		{
 			projectCount++;
 			updatedControlPoints[index] = XYZW(project, updatedControlPoints[index].GetW());
 		}
 	}
+
+	result.Degree = degree;
+	result.KnotVector = knotVector;
+	result.ControlPoints = updatedControlPoints;
+
 	return projectCount >= degree + 1;
 }
 
 void LNLib::NurbsCurve::Bending(const LN_Curve& curve, double startParameter, double endParameter, XYZ bendCenter, double radius, double crossRatio, LN_Curve& result)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -2930,15 +2839,13 @@ void LNLib::NurbsCurve::Bending(const LN_Curve& curve, double startParameter, do
 		updatedControlPoints[index] = XYZW(project, updatedControlPoints[index].GetW());
 	}
 
-	result.Degree = curve.Degree;
-	result.KnotVector = curve.KnotVector;
+	result.Degree = degree;
+	result.KnotVector = knotVector;
 	result.ControlPoints = updatedControlPoints;
 }
 
 void LNLib::NurbsCurve::ConstraintBasedModification(const LN_Curve& curve, const std::vector<double>& constraintParams, const std::vector<XYZ>& derivativeConstraints, const std::vector<int>& appliedIndices, const std::vector<int>& appliedDegree, const std::vector<int>& fixedControlPointIndices, LN_Curve& result)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -3039,15 +2946,13 @@ void LNLib::NurbsCurve::ConstraintBasedModification(const LN_Curve& curve, const
 		updatedControlPoints[map[i]] = XYZW(wx + weight * x, wy + weight * y, wz + weight * z, weight);
 	}
 
-	result.Degree = curve.Degree;
-	result.KnotVector = curve.KnotVector;
+	result.Degree = degree;
+	result.KnotVector = knotVector;
 	result.ControlPoints = updatedControlPoints;
 }
 
 void LNLib::NurbsCurve::ToClampCurve(const LN_Curve& curve, LN_Curve& result)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -3075,10 +2980,55 @@ void LNLib::NurbsCurve::ToClampCurve(const LN_Curve& curve, LN_Curve& result)
 	result.ControlPoints = controlPoints;
 }
 
+bool LNLib::NurbsCurve::IsPeriodic(const LN_Curve& curve)
+{
+	bool isClamp = IsClamp(curve);
+	if (isClamp)
+	{
+		return false;
+	}
+	std::vector<double> knotVector = curve.KnotVector;
+	bool isUniform = KnotVectorUtils::IsUniform(knotVector);
+	if (!isUniform)
+	{
+		return false;
+	}
+	bool isClosed = IsClosed(curve);
+	if (!isClosed)
+	{
+		return false;
+	}
+
+	double first = knotVector[0];
+	double end = knotVector[knotVector.size() - 1];
+
+	int cFirst = KnotVectorUtils::GetContinuity(curve.Degree, knotVector, first);
+	int cEnd = KnotVectorUtils::GetContinuity(curve.Degree, knotVector, end);
+
+	if (cFirst != cEnd)
+	{
+		return false;
+	}
+
+	std::vector<XYZ> fDers = ComputeRationalCurveDerivatives(curve, cFirst, first);
+	std::vector<XYZ> eDers = ComputeRationalCurveDerivatives(curve, cEnd, end);
+
+	for (int i = 0; i <= cFirst; i++)
+	{
+		XYZ currentF = fDers[i];
+		XYZ currentE = eDers[i];
+		bool hasSameDirection = currentF.Normalize().IsAlmostEqualTo(currentE.Normalize());
+		bool hasSameMagnitude = MathUtils::IsAlmostEqualTo(currentF.Length(), currentE.Length());
+		if (!hasSameDirection || !hasSameMagnitude)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 void LNLib::NurbsCurve::ToUnclampCurve(const LN_Curve& curve, LN_Curve& result)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -3114,8 +3064,6 @@ void LNLib::NurbsCurve::ToUnclampCurve(const LN_Curve& curve, LN_Curve& result)
 
 bool LNLib::NurbsCurve::IsClamp(const LN_Curve& curve)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	double first = knotVector[0];
@@ -3130,10 +3078,8 @@ bool LNLib::NurbsCurve::IsClamp(const LN_Curve& curve)
 	return false;
 }
 
-bool LNLib::NurbsCurve::IsLine(const LN_Curve& curve)
+bool LNLib::NurbsCurve::IsLinear(const LN_Curve& curve)
 {
-	Check(curve);
-
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
@@ -3147,9 +3093,11 @@ bool LNLib::NurbsCurve::IsLine(const LN_Curve& curve)
 		return false;
 	XYZ dir = (end - start).Normalize();
 
-	for (int i = 1; i < size - 1; i++)
+	auto map = KnotVectorUtils::GetInternalKnotMultiplicityMap(knotVector);
+	for (auto it = map.begin(); it != map.end(); it++)
 	{
-		XYZ cp = controlPoints[i].ToXYZ(true);
+		double u = it->first;
+		XYZ cp = GetPointOnCurve(curve, u);
 		XYZ cp2s = (cp - start).Normalize();
 		XYZ cp2e = (cp - end).Normalize();
 

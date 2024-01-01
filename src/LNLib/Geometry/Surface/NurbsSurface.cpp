@@ -67,8 +67,6 @@ void  LNLib::NurbsSurface::Check(const LN_Surface& surface)
 
 LNLib::XYZ LNLib::NurbsSurface::GetPointOnSurface(const LN_Surface& surface, UV uv)
 {
-	Check(surface);
-
 	int degreeU = surface.DegreeU;
 	int degreeV = surface.DegreeV;
 	std::vector<double> knotVectorU = surface.KnotVectorU;
@@ -85,8 +83,6 @@ LNLib::XYZ LNLib::NurbsSurface::GetPointOnSurface(const LN_Surface& surface, UV 
 
 std::vector<std::vector<LNLib::XYZ>> LNLib::NurbsSurface::ComputeRationalSurfaceDerivatives(const LN_Surface& surface, int derivative, UV uv)
 {
-	Check(surface);
-
 	int degreeU = surface.DegreeU;
 	int degreeV = surface.DegreeV;
 	std::vector<double> knotVectorU = surface.KnotVectorU;
@@ -140,8 +136,6 @@ std::vector<std::vector<LNLib::XYZ>> LNLib::NurbsSurface::ComputeRationalSurface
 
 double LNLib::NurbsSurface::Curvature(const LN_Surface& surface, SurfaceCurvature curvature, UV uv)
 {
-	Check(surface);
-
 	int degreeU = surface.DegreeU;
 	int degreeV = surface.DegreeV;
 	std::vector<double> knotVectorU = surface.KnotVectorU;
@@ -208,8 +202,6 @@ double LNLib::NurbsSurface::Curvature(const LN_Surface& surface, SurfaceCurvatur
 
 LNLib::XYZ LNLib::NurbsSurface::Normal(const LN_Surface& surface, UV uv)
 {
-	Check(surface);
-
 	int degreeU = surface.DegreeU;
 	int degreeV = surface.DegreeV;
 	std::vector<double> knotVectorU = surface.KnotVectorU;
@@ -225,8 +217,6 @@ LNLib::XYZ LNLib::NurbsSurface::Normal(const LN_Surface& surface, UV uv)
 
 void LNLib::NurbsSurface::Swap(const LN_Surface& surface, LN_Surface& result)
 {
-	Check(surface);
-
 	int degreeU = surface.DegreeU;
 	int degreeV = surface.DegreeV;
 	std::vector<double> knotVectorU = surface.KnotVectorU;
@@ -244,8 +234,6 @@ void LNLib::NurbsSurface::Swap(const LN_Surface& surface, LN_Surface& result)
 
 void LNLib::NurbsSurface::Reverse(const LN_Surface& surface, SurfaceDirection direction, LN_Surface& result)
 {
-	Check(surface);
-
 	int degreeU = surface.DegreeU;
 	int degreeV = surface.DegreeV;
 	std::vector<double> knotVectorU = surface.KnotVectorU;
@@ -320,8 +308,6 @@ void LNLib::NurbsSurface::Reverse(const LN_Surface& surface, SurfaceDirection di
 
 void LNLib::NurbsSurface::InsertKnot(const LN_Surface& surface, double insertKnot, int times, bool isUDirection, LN_Surface& result)
 {
-	Check(surface);
-
 	int degreeU = surface.DegreeU;
 	int degreeV = surface.DegreeV;
 	std::vector<double> knotVectorU = surface.KnotVectorU;
@@ -473,8 +459,6 @@ void LNLib::NurbsSurface::InsertKnot(const LN_Surface& surface, double insertKno
 
 void LNLib::NurbsSurface::RefineKnotVector(const LN_Surface& surface, std::vector<double>& insertKnotElements, bool isUDirection, LN_Surface& result)
 {
-	Check(surface);
-
 	int degreeU = surface.DegreeU;
 	int degreeV = surface.DegreeV;
 	std::vector<double> knotVectorU = surface.KnotVectorU;
@@ -533,8 +517,6 @@ void LNLib::NurbsSurface::RefineKnotVector(const LN_Surface& surface, std::vecto
 
 std::vector<std::vector<std::vector<LNLib::XYZW>>> LNLib::NurbsSurface::DecomposeToBeziers(const LN_Surface& surface)
 {
-	Check(surface);
-
 	int degreeU = surface.DegreeU;
 	int degreeV = surface.DegreeV;
 	std::vector<double> knotVectorU = surface.KnotVectorU;
@@ -683,8 +665,6 @@ std::vector<std::vector<std::vector<LNLib::XYZW>>> LNLib::NurbsSurface::Decompos
 
 void LNLib::NurbsSurface::RemoveKnot(const LN_Surface& surface, double removeKnot, int times, bool isUDirection, LN_Surface& result)
 {
-	Check(surface);
-
 	int degreeU = surface.DegreeU;
 	int degreeV = surface.DegreeV;
 	std::vector<double> knotVectorU = surface.KnotVectorU;
@@ -752,7 +732,7 @@ void LNLib::NurbsSurface::RemoveKnot(const LN_Surface& surface, double removeKno
 
 void LNLib::NurbsSurface::ElevateDegree(const LN_Surface& surface, int times, bool isUDirection, LN_Surface& result)
 {
-	Check(surface);
+	 ;
 
 	int degreeU = surface.DegreeU;
 	int degreeV = surface.DegreeV;
@@ -816,8 +796,6 @@ void LNLib::NurbsSurface::ElevateDegree(const LN_Surface& surface, int times, bo
 
 bool LNLib::NurbsSurface::ReduceDegree(const LN_Surface& surface, bool isUDirection, LN_Surface& result)
 {
-	Check(surface);
-
 	int degreeU = surface.DegreeU;
 	int degreeV = surface.DegreeV;
 	std::vector<double> knotVectorU = surface.KnotVectorU;
@@ -888,8 +866,6 @@ bool LNLib::NurbsSurface::ReduceDegree(const LN_Surface& surface, bool isUDirect
 
 void LNLib::NurbsSurface::EquallyTessellate(const LN_Surface& surface, std::vector<XYZ>& tessellatedPoints, std::vector<UV>& correspondingKnots)
 {
-	Check(surface);
-
 	int degreeU = surface.DegreeU;
 	int degreeV = surface.DegreeV;
 	std::vector<double> knotVectorU = surface.KnotVectorU;
@@ -946,7 +922,6 @@ void LNLib::NurbsSurface::EquallyTessellate(const LN_Surface& surface, std::vect
 
 bool LNLib::NurbsSurface::IsClosed(const LN_Surface& surface, bool isUDirection)
 {
-	Check(surface);
 	if (isUDirection)
 	{
 		std::vector<std::vector<XYZW>> transposed;
@@ -990,8 +965,6 @@ bool LNLib::NurbsSurface::IsClosed(const LN_Surface& surface, bool isUDirection)
 
 LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const LN_Surface& surface, const XYZ& givenPoint)
 {
-	Check(surface);
-
 	int degreeU = surface.DegreeU;
 	int degreeV = surface.DegreeV;
 	std::vector<double> knotVectorU = surface.KnotVectorU;
@@ -1164,8 +1137,6 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const LN_Surface& surface, cons
 
 bool LNLib::NurbsSurface::GetUVTangent(const LN_Surface& surface, const UV param, const XYZ& tangent, UV& uvTangent)
 {
-	Check(surface);
-
 	int degreeU = surface.DegreeU;
 	int degreeV = surface.DegreeV;
 	std::vector<double> knotVectorU = surface.KnotVectorU;
@@ -1272,13 +1243,9 @@ bool LNLib::NurbsSurface::CreateCylindricalSurface(const XYZ& origin, const XYZ&
 
 void LNLib::NurbsSurface::CreateRuledSurface(const LN_Curve& curve0, const LN_Curve& curve1, LN_Surface& surface)
 {
-	NurbsCurve::Check(curve0);
-
 	int degree0 = curve0.Degree;
 	std::vector<double> knotVector0 = curve0.KnotVector;
 	std::vector<XYZW> controlPoints0 = curve0.ControlPoints;
-
-	NurbsCurve::Check(curve1);
 
 	int degree1 = curve1.Degree;
 	std::vector<double> knotVector1 = curve1.KnotVector;
@@ -1536,8 +1503,6 @@ std::vector<std::vector<LNLib::XYZW>> LNLib::NurbsSurface::NonuniformScaling(con
 
 void LNLib::NurbsSurface::MakeCornerFilletSurface(const LN_Curve& arc, LN_Surface& surface)
 {
-	NurbsCurve::Check(arc);
-
 	XYZ c2_start = NurbsCurve::GetPointOnCurve(arc, 0);
 	XYZ c2_half = NurbsCurve::GetPointOnCurve(arc, 0.5);
 	XYZ c2_end = NurbsCurve::GetPointOnCurve(arc, 1);
@@ -1976,14 +1941,10 @@ bool LNLib::NurbsSurface::GlobalApproximation(const std::vector<std::vector<XYZ>
 
 bool LNLib::NurbsSurface::CreateSwungSurface(const LN_Curve& profile, const LN_Curve& trajectory, double scale, LN_Surface& surface)
 {
-	NurbsCurve::Check(profile);
-
 	int pDegree = profile.Degree;
 	std::vector<double> pKnotVector = profile.KnotVector;
 	std::vector<XYZW> pControlPoints = profile.ControlPoints;
 	
-	NurbsCurve::Check(trajectory);
-
 	int tDegree = trajectory.Degree;
 	std::vector<double> tKnotVector = trajectory.KnotVector;
 	std::vector<XYZW> tControlPoints = trajectory.ControlPoints;
@@ -2084,9 +2045,6 @@ void LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_Curve>& section
 	for (int k = 0; k < sections.size(); k++)
 	{
 		LN_Curve current = sections[k];
-		
-		NurbsCurve::Check(current);
-
 		if (degree_max < current.Degree)
 		{
 			degree_max = current.Degree;
@@ -2163,14 +2121,6 @@ void LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_Curve>& section
 
 void LNLib::NurbsSurface::CreateSweepSurface(const LN_Curve& path, const std::vector<LN_Curve>& profiles, LN_Surface& surface)
 {
-	NurbsCurve::Check(path);
-	
-	for (int i = 0; i < profiles.size(); i++)
-	{
-		LN_Curve current = profiles[i];
-		NurbsCurve::Check(current);
-	}
-
 	int profilesSize = profiles.size();
 	double path_min = path.KnotVector[0];
 	double path_max = path.KnotVector[path.KnotVector.size() - 1];
@@ -2205,8 +2155,6 @@ void LNLib::NurbsSurface::CreateGordonSurface(const std::vector<LN_Curve>& uCurv
 	for (int i = 0; i < uCurves.size(); i++)
 	{
 		LN_Curve current = uCurves[i];
-		NurbsCurve::Check(current);
-
 		if (current.Degree > degree_u_max)
 		{
 			degree_u_max = current.Degree;
@@ -2253,8 +2201,6 @@ void LNLib::NurbsSurface::CreateGordonSurface(const std::vector<LN_Curve>& uCurv
 	for (int i = 0; i < vCurves.size(); i++)
 	{
 		LN_Curve current = vCurves[i];
-		NurbsCurve::Check(current);
-
 		if (current.Degree > degree_v_max)
 		{
 			degree_v_max = current.Degree;
@@ -2463,8 +2409,6 @@ void LNLib::NurbsSurface::CreateCoonsSurface(const LN_Curve& curve0, const LN_Cu
 	for (int i = 0; i < nurbs.size(); i++)
 	{
 		LN_Curve current = nurbs[i];
-		NurbsCurve::Check(current);
-
 		LN_Curve tc;
 		NurbsCurve::Reparametrize(current, 0, 1, tc);
 		nurbs[i] = tc;

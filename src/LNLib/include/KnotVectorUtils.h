@@ -52,6 +52,11 @@ namespace LNLib
 		static std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> GetKnotMultiplicityMap(const std::vector<double>& knotVector);
 
 		/// <summary>
+		/// Get internal knot multiplcity map.
+		/// </summary>
+		static std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> GetInternalKnotMultiplicityMap(const std::vector<double>& knotVector);
+
+		/// <summary>
 		/// The NURBS Book 2nd Edition Page338
 		/// Get insert elements between two knot vector for create ruled surface.
 		/// </summary>
@@ -62,6 +67,11 @@ namespace LNLib
 		/// Get insert elements between knot vectors for create sweep surface.
 		/// </summary>
 		static std::vector<std::vector<double>> GetInsertedKnotElements(const std::vector<std::vector<double>>& knotVectors);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page572
+		/// </summary>
+		static bool IsUniform(const std::vector<double>& knotVector);
 	};
 
 }

@@ -84,6 +84,18 @@ std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> LNLib::Kno
 	return result;
 }
 
+std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> LNLib::KnotVectorUtils::GetInternalKnotMultiplicityMap(const std::vector<double>& knotVector)
+{
+	auto result = GetKnotMultiplicityMap(knotVector);
+	if (!result.empty()) 
+	{
+		result.erase(result.begin());
+		auto lastElementIterator = prev(result.end(), 1);
+		result.erase(lastElementIterator);
+	}
+	return result;
+}
+
 void LNLib::KnotVectorUtils::GetInsertedKnotElement(const std::vector<double>& knotVector0, const std::vector<double>& knotVector1, std::vector<double>& insertElements0, std::vector<double>& insertElements1)
 {
 	std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> map0 = GetKnotMultiplicityMap(knotVector0);
@@ -203,6 +215,34 @@ std::vector<std::vector<double>> LNLib::KnotVectorUtils::GetInsertedKnotElements
 		result.emplace_back(insertElements);
 	}
 	return result;
+}
+
+bool LNLib::KnotVectorUtils::IsUniform(const std::vector<double>& knotVector)
+{
+	auto map = GetKnotMultiplicityMap(knotVector);
+	if (map.empty())
+	{
+		return false;
+	}
+	std::vector<double> knots;
+	for (auto it = map.begin(); it != map.end(); ++it)
+	{
+		double key = it->first;
+		knots.emplace_back(key);
+	}
+	double standard = knots[1] - knots[0];
+	for (int i = 1; i < knots.size() - 1; i++)
+	{
+		double current = knots[i];
+		double next = knots[i + 1];
+
+		double gap = next - current;
+		if (!MathUtils::IsAlmostEqualTo(gap, standard))
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 

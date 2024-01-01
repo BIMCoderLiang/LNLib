@@ -112,8 +112,7 @@ namespace LNLib
 
 		static bool IsClosed(LN_Curve& curve);
 
-		static bool IsPeriodic(const LN_Curve& curve);
-
+		
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page230
 		/// Point inversion:finding the corresponding parameter make C(u) = P.
@@ -285,9 +284,20 @@ namespace LNLib
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page572
+		/// </summary>
+		static bool IsClamp(const LN_Curve& curve);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page572
 		/// Clamp a unclamped curve.
 		/// </summary>
 		static void ToClampCurve(const LN_Curve& curve, LN_Curve& result);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page575
+		/// UnClamped, uniform and C(degree-1) continues closed curve.
+		/// </summary>
+		static bool IsPeriodic(const LN_Curve& curve);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page577
@@ -296,14 +306,11 @@ namespace LNLib
 		/// </summary>
 		static void ToUnclampCurve(const LN_Curve& curve, LN_Curve& result);
 
-		static bool IsClamp(const LN_Curve& curve);
-
-		static bool IsLine(const LN_Curve& curve);
+		static bool IsLinear(const LN_Curve& curve);
 
 		static bool IsArc(const LN_Curve& curve);
 
 		static bool IsEllipse(const LN_Curve& curve);
-
 	};
 }
 

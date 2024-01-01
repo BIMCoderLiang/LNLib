@@ -38,12 +38,12 @@ NURBS Algorithms:
 - ***Chapter 11***:
     - Curve Modification in Control Point Locations or Weight Values
 - ***Chapter 12***:
-    - Clamp/UnClamp Nurbs Curve
+    - Curve Clamp/UnClamp
 - ***Additional***:
     - Curve/Surface Curvature and Normal
     - Curve Split/Merge/Offset
     - Curve IsClamp/IsClosed/IsPeriodic
-    - Curve IsLine
+    - Curve IsLinear
 
 ## Contributing
 Welcome join this project including discussions in **Issues** and make **Pull requests**.
