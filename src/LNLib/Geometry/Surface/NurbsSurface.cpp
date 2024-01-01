@@ -732,8 +732,6 @@ void LNLib::NurbsSurface::RemoveKnot(const LN_Surface& surface, double removeKno
 
 void LNLib::NurbsSurface::ElevateDegree(const LN_Surface& surface, int times, bool isUDirection, LN_Surface& result)
 {
-	 ;
-
 	int degreeU = surface.DegreeU;
 	int degreeV = surface.DegreeV;
 	std::vector<double> knotVectorU = surface.KnotVectorU;
