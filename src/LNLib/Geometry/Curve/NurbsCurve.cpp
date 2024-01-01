@@ -3109,4 +3109,51 @@ bool LNLib::NurbsCurve::IsLinear(const LN_Curve& curve)
 	return true;
 }
 
+bool LNLib::NurbsCurve::IsArc(const LN_Curve& curve)
+{
+	if (IsLinear(curve))
+	{
+		return false;
+	}
+
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
+	double first = knotVector[0];
+	double end = knotVector[knotVector.size() - 1];
+
+	XYZ P0 = GetPointOnCurve(curve, first);
+	double param = IsClosed(curve)?0.5 * first + 0.5 * end : end;
+	XYZ P1 = GetPointOnCurve(curve,0.5 * first + 0.5 * param);
+	XYZ P2 = GetPointOnCurve(curve, param);
+
+	XYZ v1 = P1 - P0;
+	XYZ v2 = P2 - P0;
+	double v1v1, v2v2, v1v2;
+	v1v1 = v1.DotProduct(v1);
+	v2v2 = v2.DotProduct(v2);
+	v1v2 = v1.DotProduct(v2);
+
+	double base = 0.5 / (v1v1 * v2v2 - v1v2 * v1v2);
+	double k1 = base * v2v2 * (v1v1 - v1v2);
+	double k2 = base * v1v1 * (v2v2 - v1v2);
+	XYZ center = P0 + v1 * k1 + v2 * k2;
+	double radius = center.Distance(P0);
+
+	std::vector<XYZ> tessellatedPoints;
+	std::vector<double> correspondingKnots;
+	EquallyTessellate(curve, tessellatedPoints, correspondingKnots);
+	for (int i = 0; i < tessellatedPoints.size(); i++)
+	{
+		XYZ point = tessellatedPoints[i];
+		double d = point.Distance(center);
+		if (!MathUtils::IsAlmostEqualTo(d, radius))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
 
