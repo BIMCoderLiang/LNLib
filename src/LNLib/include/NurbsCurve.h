@@ -309,8 +309,6 @@ namespace LNLib
 		static bool IsLinear(const LN_Curve& curve);
 
 		static bool IsArc(const LN_Curve& curve);
-
-		static bool IsEllipse(const LN_Curve& curve);
 	};
 }
 

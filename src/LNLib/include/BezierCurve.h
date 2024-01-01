@@ -24,6 +24,14 @@ namespace LNLib
 	{
 	public:
 
+		template <typename T>
+		static void Check(int degree, const std::vector<T>& controlPoints)
+		{
+			VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+			VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+			VALIDATE_ARGUMENT(ValidationUtils::IsValidBezier(degree, controlPoints.size()), "controlPoints", "ControlPoints count equals degree plus one.");
+		}
+
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page22
 		/// Algorithm A1.4
@@ -34,9 +42,6 @@ namespace LNLib
 		template <typename T>
 		static T GetPointOnCurveByBernstein(int degree, const std::vector<T>& controlPoints, double paramT)
 		{
-			VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
-			VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
-			VALIDATE_ARGUMENT(ValidationUtils::IsValidBezier(degree, controlPoints.size()), "controlPoints", "ControlPoints count equals degree plus one.");
 			VALIDATE_ARGUMENT_RANGE(paramT, 0.0, 1.0);
 
 			std::vector<double> bernsteinArray = Polynomials::AllBernstein(degree, paramT);
@@ -58,9 +63,6 @@ namespace LNLib
 		template <typename T>
 		static T GetPointOnCurveByDeCasteljau(int degree, const std::vector<T>& controlPoints, double paramT)
 		{
-			VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
-			VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
-			VALIDATE_ARGUMENT(ValidationUtils::IsValidBezier(degree, controlPoints.size()), "controlPoints", "ControlPoints count equals degree plus one.");
 			VALIDATE_ARGUMENT_RANGE(paramT, 0.0, 1.0);
 
 			std::vector<T> temp = controlPoints;

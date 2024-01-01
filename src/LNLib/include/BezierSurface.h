@@ -24,6 +24,16 @@ namespace LNLib {
 	{
 	public:
 
+		template <typename T>
+		static void Check(int degreeU, int degreeV, const std::vector<std::vector<T>>& controlPoints)
+		{
+			VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "Degree must greater than zero.");
+			VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "Degree must greater than zero.");
+			VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+			VALIDATE_ARGUMENT(degreeU + 1 == controlPoints.size(), "controlPoints", "ControlPoints row size equals degreeU plus one.");
+			VALIDATE_ARGUMENT(degreeV + 1 == controlPoints[0].size(), "controlPoints", "ControlPoints column size equals degreeV plus one.");
+		}
+
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page39
 		/// Algorithm A1.7
@@ -43,11 +53,6 @@ namespace LNLib {
 		template <typename T>
 		static T GetPointOnSurfaceByDeCasteljau(int degreeU, int degreeV, const std::vector<std::vector<T>>& controlPoints, UV uv)
 		{
-			VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "Degree must greater than zero.");
-			VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "Degree must greater than zero.");
-			VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
-			VALIDATE_ARGUMENT(degreeU + 1 == controlPoints.size(), "controlPoints", "ControlPoints row size equals degreeU plus one.");
-			VALIDATE_ARGUMENT(degreeV + 1 == controlPoints[0].size(), "controlPoints", "ControlPoints column size equals degreeV plus one.");
 			VALIDATE_ARGUMENT_RANGE(uv.GetU(), 0.0, 1.0);
 			VALIDATE_ARGUMENT_RANGE(uv.GetV(), 0.0, 1.0);
 
