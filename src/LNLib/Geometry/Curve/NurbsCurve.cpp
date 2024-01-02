@@ -2982,17 +2982,39 @@ void LNLib::NurbsCurve::ToClampCurve(const LN_Curve& curve, LN_Curve& result)
 
 bool LNLib::NurbsCurve::IsPeriodic(const LN_Curve& curve)
 {
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+	int size = controlPoints.size();
+
 	bool isClamp = IsClamp(curve);
 	if (isClamp)
 	{
 		return false;
 	}
-	std::vector<double> knotVector = curve.KnotVector;
 	bool isUniform = KnotVectorUtils::IsUniform(knotVector);
 	if (!isUniform)
 	{
 		return false;
 	}
+
+	if (size >= degree + degree)
+	{
+		bool flag = true;
+		for (int i = 0; i < degree; i++)
+		{
+			if (!controlPoints[i].IsAlmostEqualTo(controlPoints[size - degree + i]))
+			{
+				flag = false;
+				break;
+			}
+		}
+		if (flag)
+		{
+			return true;
+		}
+	}
+
 	bool isClosed = IsClosed(curve);
 	if (!isClosed)
 	{
