@@ -16,7 +16,7 @@ TEST(Test_CommonSurfaces, All)
 		XYZ P11 = XYZ(100, 0, 0);
 		XYZ P10 = XYZ(0, 0, 100);
 
-		LN_Surface surface;
+		LN_NurbsSurface surface;
 		NurbsSurface::CreateBilinearSurface(P00, P01, P11, P10, surface);
 		XYZ result = NurbsSurface::GetPointOnSurface(surface, UV(0.5, 0.5));
 		EXPECT_TRUE(result.IsAlmostEqualTo(XYZ(50, 50, 50)));
@@ -30,7 +30,7 @@ TEST(Test_CommonSurfaces, All)
 		double endRad = 2 * Constants::Pi;
 		double radius = 5;
 		double height = 5;
-		LN_Surface surface;
+		LN_NurbsSurface surface;
 		bool result = NurbsSurface::CreateCylindricalSurface(origin, xAxis, yAxis, startRad, endRad, radius, height, surface);
 		EXPECT_TRUE(result);
 		XYZ C0 = NurbsSurface::GetPointOnSurface(surface, UV(0.5, 0.5));
@@ -48,7 +48,7 @@ TEST(Test_CommonSurfaces, All)
 		std::vector<double> kv0 = { 0,0,0,1.0 / 4,1.0 / 2,3.0 / 4,1,1,1 };
 		std::vector<XYZW> cp0 = { XYZW(20,0,10,1), XYZW(15,0,5,1), XYZW(10,0,5,1),XYZW(5,0,10,1),XYZW(0,0,10,1),XYZW(-5,0,5,1) };
 		
-		LN_Curve curve0;
+		LN_NurbsCurve curve0;
 		curve0.Degree = degree0;
 		curve0.KnotVector = kv0;
 		curve0.ControlPoints = cp0;
@@ -60,7 +60,7 @@ TEST(Test_CommonSurfaces, All)
 		std::vector<double> kv1 = { 0,0,0,0,3.0/10,7.0/10,1,1,1,1 };
 		std::vector<XYZW> cp1 = { XYZW(20,10,5,1), XYZW(15,10,10,1), XYZW(10,10,10,1),XYZW(5,10,5,1),XYZW(0,10,5,1),XYZW(-5,10,10,1) };
 		
-		LN_Curve curve1;
+		LN_NurbsCurve curve1;
 		curve1.Degree = degree1;
 		curve1.KnotVector = kv1;
 		curve1.ControlPoints = cp1;
@@ -68,7 +68,7 @@ TEST(Test_CommonSurfaces, All)
 		XYZ C10 = NurbsCurve::GetPointOnCurve(curve1, 0);
 		XYZ C11 = NurbsCurve::GetPointOnCurve(curve1, 1);
 
-		LN_Surface surface;
+		LN_NurbsSurface surface;
 		NurbsSurface::CreateRuledSurface(curve0, curve1, surface);
 		XYZ S00 = NurbsSurface::GetPointOnSurface(surface, UV(0, 0));
 		EXPECT_TRUE(S00.IsAlmostEqualTo(C00));
@@ -88,12 +88,12 @@ TEST(Test_CommonSurfaces, All)
 		XYZ axis = XYZ(0, 0, 1);
 		double rad = Constants::Pi / 2.0;
 
-		LN_Curve profile;
+		LN_NurbsCurve profile;
 		profile.Degree = degreeV;
 		profile.KnotVector = kvV;
 		profile.ControlPoints = cpsV;
 
-		LN_Surface surface;
+		LN_NurbsSurface surface;
 		bool result = NurbsSurface::CreateRevolvedSurface(origin, axis, rad, profile, surface);
 		EXPECT_TRUE(result);
 		XYZ C0 = NurbsSurface::GetPointOnSurface(surface, UV(0.5, 0.5));

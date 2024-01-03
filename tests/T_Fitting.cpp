@@ -26,7 +26,7 @@ TEST(Test_Fitting, Interpolation)
 		int degree = 3;
 		std::vector<XYZ> Q = { XYZ(0,0,0),XYZ(3,4,0),XYZ(-1,4,0),XYZ(-4,0,0),XYZ(-4,-3,0) };
 
-		LN_Curve curve;
+		LN_NurbsCurve curve;
 		NurbsCurve::GlobalInterpolation(degree, Q, curve);
 		auto cps = curve.ControlPoints;
 		EXPECT_TRUE(cps.size() == Q.size());
@@ -39,7 +39,7 @@ TEST(Test_Fitting, Interpolation)
 		std::vector<XYZ> Q = { XYZ(100,0,0),XYZ(0,100,0),XYZ(-100,0,0),XYZ(0,-100,0)};
 		std::vector<XYZ> T = { XYZ(0,1,0),XYZ(-1,0,0),XYZ(0,-1,0),XYZ(1,0,0)};
 
-		LN_Curve curve;
+		LN_NurbsCurve curve;
 		NurbsCurve::GlobalInterpolation(degree, Q, T, 1, curve);
 		XYZ C0 = NurbsCurve::GetPointOnCurve(curve, 0.0);
 		EXPECT_TRUE(C0.IsAlmostEqualTo(XYZ(100, 0, 0)));
@@ -111,7 +111,7 @@ TEST(Test_Fitting, Interpolation)
 			{P70, P71, P72, P73, P74},
 
 		};
-		LN_Surface surface;
+		LN_NurbsSurface surface;
 		NurbsSurface::GlobalInterpolation(Q, degreeU, degreeV, surface);
 		XYZ C0 = NurbsSurface::GetPointOnSurface(surface, UV(surface.KnotVectorU[0], surface.KnotVectorV[0]));
 		EXPECT_TRUE(C0.IsAlmostEqualTo(P00));
@@ -126,7 +126,7 @@ TEST(Test_Fitting, Interpolation)
 	{
 		std::vector<XYZ> Q = { XYZ(0,0,0),XYZ(3,4,0),XYZ(-1,4,0),XYZ(-4,0,0),XYZ(-4,-3,0) };
 
-		LN_Curve curve;
+		LN_NurbsCurve curve;
 		bool result = NurbsCurve::CubicLocalInterpolation(Q, curve);
 		EXPECT_TRUE(result);
 
@@ -152,7 +152,7 @@ TEST(Test_Fitting, Approximation)
 
 		std::vector<XYZ> points = { P0,P1,P2,P3,P4,P5,P6,P7,P8,P9 };
 		
-		LN_Curve curve;
+		LN_NurbsCurve curve;
 		bool result = NurbsCurve::LeastSquaresApproximation(3, points, 5, curve);
 		EXPECT_TRUE(result);
 		auto kv = curve.KnotVector;
@@ -205,7 +205,7 @@ TEST(Test_Fitting, Approximation)
 		D[0] = D[0].Normalize();
 		D[1] = D[1].Normalize();
 
-		LN_Curve curve;
+		LN_NurbsCurve curve;
 		bool result = NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(3, points, wp, D, Indices, wd, 5, curve);
 		EXPECT_TRUE(result);
 		auto kv = curve.KnotVector;
@@ -215,7 +215,7 @@ TEST(Test_Fitting, Approximation)
 	{
 		int degree = 3;
 		std::vector<XYZ> Q = { XYZ(0,0,0),XYZ(3,4,0),XYZ(-1,4,0),XYZ(-4,0,0),XYZ(-4,-3,0) };
-		LN_Curve curve;
+		LN_NurbsCurve curve;
 		NurbsCurve::GlobalApproximationByErrorBound(degree, Q, 1.5, curve);
 		auto kv = curve.KnotVector;
 		auto cps = curve.ControlPoints;
@@ -291,7 +291,7 @@ TEST(Test_Fitting, Approximation)
 		    {P60, P61, P62, P63, P64, P65, P66},
 		};
 		
-		LN_Surface surface;
+		LN_NurbsSurface surface;
 		NurbsSurface::GlobalApproximation(Q, degreeU, degreeV, 4, 4, surface);
 		EXPECT_TRUE(ValidationUtils::IsValidNurbs(degreeU, surface.KnotVectorU.size(), surface.ControlPoints.size()));
 		EXPECT_TRUE(ValidationUtils::IsValidNurbs(degreeV, surface.KnotVectorV.size(), surface.ControlPoints[0].size()));
@@ -420,7 +420,7 @@ TEST(Test_Fitting, Approximation)
 			{P80, P81, P82, P83, P84, P85, P86, P87, P88, P89},
 			{P90, P91, P92, P93, P94, P95, P96, P97, P98, P99},
 		};
-		LN_Surface surface;
+		LN_NurbsSurface surface;
 		bool result = NurbsSurface::BicubicLocalInterpolation(Q, surface);
 		EXPECT_TRUE(result);
 		EXPECT_TRUE(ValidationUtils::IsValidNurbs(3, surface.KnotVectorU.size(), surface.ControlPoints.size()));

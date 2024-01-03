@@ -26,12 +26,12 @@ TEST(Test_Fundamental, All)
 
 		std::vector<XYZW> cp = { P0,P1,P2,P3,P4,P5,P6,P7 };
 		
-		LN_Curve curve;
+		LN_NurbsCurve curve;
 		curve.Degree = degree;
 		curve.KnotVector = kv;
 		curve.ControlPoints = cp;
 
-		LN_Curve newCurve;
+		LN_NurbsCurve newCurve;
 		NurbsCurve::InsertKnot(curve, insertKnot, 1, newCurve);
 
 		auto newKv = newCurve.KnotVector;
@@ -50,7 +50,7 @@ TEST(Test_Fundamental, All)
 		std::vector<double> kv = { 0,0,0,1,2,3,3,3 };
 		std::vector<XYZW> cps = { XYZW(XYZ(0,0,0),1), XYZW(XYZ(1,1,0),4), XYZW(XYZ(3,2,0),1), XYZW(XYZ(4,1,0),1), XYZW(XYZ(5,-1,0),1) };
 		
-		LN_Curve curve;
+		LN_NurbsCurve curve;
 		curve.Degree = degree;
 		curve.KnotVector = kv;
 		curve.ControlPoints = cps;
@@ -94,14 +94,14 @@ TEST(Test_Fundamental, All)
 			{P70,P71},
 		
 		};
-		LN_Surface surface;
+		LN_NurbsSurface surface;
 		surface.DegreeU = degree;
 		surface.DegreeV = degree;
 		surface.KnotVectorU = kvU;
 		surface.KnotVectorV = kvV;
 		surface.ControlPoints = cp;
 
-		LN_Surface result;
+		LN_NurbsSurface result;
 		NurbsSurface::InsertKnot(surface, insertKnot, 1, true, result);
 		EXPECT_TRUE(result.KnotVectorU.size() == surface.KnotVectorU.size() + 1 &&
 					MathUtils::IsAlmostEqualTo(result.KnotVectorU[5], result.KnotVectorU[6]) &&
@@ -142,14 +142,14 @@ TEST(Test_Fundamental, All)
 
 		};
 
-		LN_Surface surface;
+		LN_NurbsSurface surface;
 		surface.DegreeU = degree;
 		surface.DegreeV = degree;
 		surface.KnotVectorU = kvU;
 		surface.KnotVectorV = kvV;
 		surface.ControlPoints = cp;
 
-		LN_Surface result;
+		LN_NurbsSurface result;
 		NurbsSurface::InsertKnot(surface, insertKnot, 1, false, result);
 		EXPECT_TRUE(result.KnotVectorV.size() == surface.KnotVectorV.size() + 1 &&
 					MathUtils::IsAlmostEqualTo(result.KnotVectorV[5], result.KnotVectorV[6]) &&
@@ -177,12 +177,12 @@ TEST(Test_Fundamental, All)
 
 		std::vector<XYZW> cp = { P0,P1,P2,P3,P4,P5,P6,P7,P8 };
 		
-		LN_Curve curve;
+		LN_NurbsCurve curve;
 		curve.Degree = degree;
 		curve.KnotVector = kv;
 		curve.ControlPoints = cp;
 
-		LN_Curve newCurve;
+		LN_NurbsCurve newCurve;
 		NurbsCurve::RefineKnotVector(curve, ike, newCurve);
 		auto newKv = newCurve.KnotVector;
 		auto newCp = newCurve.ControlPoints;
@@ -206,14 +206,14 @@ TEST(Test_Fundamental, All)
 			{XYZW(25,25,0,1),XYZW(15,25,0,1),XYZW(5,25,5,1),XYZW(-5,25,5,1),XYZW(-15,25,0,1),XYZW(-25,25,0,1)},
 			
 		};
-		LN_Surface surface;
+		LN_NurbsSurface surface;
 		surface.DegreeU = degreeU;
 		surface.DegreeV = degreeV;
 		surface.KnotVectorU = kvU;
 		surface.KnotVectorV = kvV;
 		surface.ControlPoints = cps;
 
-		LN_Surface result;
+		LN_NurbsSurface result;
 		std::vector<double> ike = { 0.5,0.5,0.5,1.0,1.0,1.5,1.5,1.5,2,2,2.5,2.5,2.5 };
 		NurbsSurface::RefineKnotVector(surface, ike, true, result);
 		EXPECT_TRUE(result.KnotVectorU.size() == 23 && result.KnotVectorV.size() == kvV.size());
@@ -227,12 +227,12 @@ TEST(Test_Fundamental, All)
 			XYZW(5,5,0,1),XYZW(10,10,0,1),XYZW(20,15,0,1),XYZW(35,15,0,1),XYZW(45,10,0,1),XYZW(50,5,0,1)
 		};
 
-		LN_Curve curve;
+		LN_NurbsCurve curve;
 		curve.Degree = degree;
 		curve.KnotVector = kv;
 		curve.ControlPoints = cps;
 
-		LN_Curve newCurve;
+		LN_NurbsCurve newCurve;
 
 		NurbsCurve::RemoveKnot(curve, 0.66, 1, newCurve);
 		std::vector<double> newKv = newCurve.KnotVector;
@@ -263,13 +263,13 @@ TEST(Test_Fundamental, All)
 			{XYZW(5,55,0,1),XYZW(10,60,0,1),XYZW(20,65,0,1),XYZW(35,65,0,1),XYZW(45,60,0,1),XYZW(50,55,0,1)},
 		};
 
-		LN_Surface surface;
+		LN_NurbsSurface surface;
 		surface.DegreeU = surface.DegreeV = degree;
 		surface.KnotVectorU = kvU;
 		surface.KnotVectorV = kvV;
 		surface.ControlPoints = cps;
 
-		LN_Surface result;
+		LN_NurbsSurface result;
 		NurbsSurface::RemoveKnot(surface, 0.66, 1, false, result);
 		EXPECT_TRUE(result.KnotVectorV.size() == surface.KnotVectorV.size() - 1);
 		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(result.KnotVectorV[4], 0.33));
@@ -296,12 +296,12 @@ TEST(Test_Fundamental, All)
 		XYZW P7 = XYZW(XYZ(7, 5, 0), 1);
 
 		std::vector<XYZW> cps = { P0,P1,P2,P3,P4,P5,P6,P7 };
-		LN_Curve curve;
+		LN_NurbsCurve curve;
 		curve.Degree = degree;
 		curve.KnotVector = kv;
 		curve.ControlPoints = cps;
 
-		LN_Curve newCurve;
+		LN_NurbsCurve newCurve;
 		NurbsCurve::ElevateDegree(curve, 1, newCurve);
 
 		std::vector<double> updatedKv = newCurve.KnotVector;
@@ -324,12 +324,12 @@ TEST(Test_Fundamental, All)
 
 		std::vector<XYZW> cps = { P0,P1,P2,P3};
 
-		LN_Curve curve;
+		LN_NurbsCurve curve;
 		curve.Degree = degree;
 		curve.KnotVector = kv;
 		curve.ControlPoints = cps;
 
-		LN_Curve newCurve;
+		LN_NurbsCurve newCurve;
 		
 		bool canReduce = NurbsCurve::ReduceDegree(curve, newCurve);
 

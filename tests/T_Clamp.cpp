@@ -21,14 +21,14 @@ TEST(Test_Clamp, All)
 	XYZW P8 = XYZW(10, 0, 0, 1);
 	std::vector<XYZW> cps = { P0,P1,P2,P3,P4,P5,P6,P7,P8 };
 
-	LN_Curve curve;
+	LN_NurbsCurve curve;
 	curve.Degree = degree;
 	curve.KnotVector = kv;
 	curve.ControlPoints = cps;
 
 	XYZ checkP = NurbsCurve::GetPointOnCurve(curve, 0.5);
 
-	LN_Curve result;
+	LN_NurbsCurve result;
 	NurbsCurve::ToUnclampCurve(curve, result);
 	curve = result;
 	XYZ newP = NurbsCurve::GetPointOnCurve(curve, 0.5);

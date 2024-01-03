@@ -15,6 +15,7 @@
 #include "BsplineCurve.h"
 #include "ValidationUtils.h"
 #include "LNLibExceptions.h"
+#include "LNObject.h"
 #include <vector>
 
 namespace LNLib
@@ -26,8 +27,14 @@ namespace LNLib
 	public:
 
 		template <typename T>
-		static void Check(int degreeU, int degreeV, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, const std::vector<std::vector<T>>& controlPoints)
+		static void Check(const LN_BsplineSurface<T>& surface)
 		{
+			int degreeU = surface.DegreeU;
+			int degreeV = surface.DegreeV;
+			std::vector<double> knotVectorU = surface.KnotVectorU;
+			std::vector<double> knotVectorV = surface.KnotVectorV;
+			std::vector<std::vector<T>> controlPoints = surface.ControlPoints;
+
 			VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "Degree must greater than zero.");
 			VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "Degree must greater than zero.");
 			VALIDATE_ARGUMENT(knotVectorU.size() > 0, "knotVectorU", "KnotVector size must greater than zero.");
@@ -45,8 +52,14 @@ namespace LNLib
 		/// Compute surface point.
 		/// </summary>
 		template <typename T>
-		static T GetPointOnSurface(int degreeU, int degreeV, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, UV uv, const std::vector<std::vector<T>>& controlPoints)
+		static T GetPointOnSurface(const LN_BsplineSurface<T>& surface, UV uv)
 		{
+			int degreeU = surface.DegreeU;
+			int degreeV = surface.DegreeV;
+			std::vector<double> knotVectorU = surface.KnotVectorU;
+			std::vector<double> knotVectorV = surface.KnotVectorV;
+			std::vector<std::vector<T>> controlPoints = surface.ControlPoints;
+
 			VALIDATE_ARGUMENT_RANGE(uv.GetU(), knotVectorU[0], knotVectorU[knotVectorU.size() - 1]);
 			VALIDATE_ARGUMENT_RANGE(uv.GetV(), knotVectorV[0], knotVectorV[knotVectorV.size() - 1]);			
 
@@ -77,8 +90,14 @@ namespace LNLib
 		/// Compute surface derivatives. (Usually Use)
 		/// </summary>
 		template <typename T>
-		static std::vector<std::vector<T>> ComputeDerivatives(int degreeU, int degreeV, int derivative, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, UV uv, const std::vector<std::vector<T>>& controlPoints)
+		static std::vector<std::vector<T>> ComputeDerivatives(const LN_BsplineSurface<T>& surface, int derivative, UV uv)
 		{
+			int degreeU = surface.DegreeU;
+			int degreeV = surface.DegreeV;
+			std::vector<double> knotVectorU = surface.KnotVectorU;
+			std::vector<double> knotVectorV = surface.KnotVectorV;
+			std::vector<std::vector<T>> controlPoints = surface.ControlPoints;
+
 			VALIDATE_ARGUMENT(derivative > 0, "derivative", "derivative must greater than zero.");	
 			VALIDATE_ARGUMENT_RANGE(uv.GetU(), knotVectorU[0], knotVectorU[knotVectorU.size() - 1]);
 			VALIDATE_ARGUMENT_RANGE(uv.GetV(), knotVectorV[0], knotVectorV[knotVectorV.size() - 1]);		
@@ -124,8 +143,14 @@ namespace LNLib
 		/// Compute control points of derivative surfaces.
 		/// </summary>
 		template <typename T>
-		static std::vector<std::vector<std::vector<std::vector<T>>>> ComputeControlPointsOfDerivatives(int degreeU, int degreeV, int derivative, int minSpanIndexU, int maxSpanIndexU, int minSpanIndexV, int maxSpanIndexV, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, UV uv, const std::vector<std::vector<T>>& controlPoints)
+		static std::vector<std::vector<std::vector<std::vector<T>>>> ComputeControlPointsOfDerivatives(const LN_BsplineSurface<T>& surface, int derivative, int minSpanIndexU, int maxSpanIndexU, int minSpanIndexV, int maxSpanIndexV, UV uv)
 		{
+			int degreeU = surface.DegreeU;
+			int degreeV = surface.DegreeV;
+			std::vector<double> knotVectorU = surface.KnotVectorU;
+			std::vector<double> knotVectorV = surface.KnotVectorV;
+			std::vector<std::vector<T>> controlPoints = surface.ControlPoints;
+
 			VALIDATE_ARGUMENT(derivative > 0, "derivative", "derivative must greater than zero.");
 			VALIDATE_ARGUMENT_RANGE(minSpanIndexU, 0, maxSpanIndexU);
 			VALIDATE_ARGUMENT_RANGE(minSpanIndexV, 0, maxSpanIndexV);
@@ -149,7 +174,12 @@ namespace LNLib
 					points.emplace_back(controlPoints[i][j]);
 				}
 
-				std::vector<std::vector<T>> temp = BsplineCurve::ComputeControlPointsOfDerivatives(degreeU, du, minSpanIndexU, maxSpanIndexU, knotVectorU, points);
+				LN_BsplineCurve<T> bsplineCurve;
+				bsplineCurve.Degree = degreeU;
+				bsplineCurve.KnotVector = knotVectorU;
+				bsplineCurve.ControlPoints = points;
+
+				std::vector<std::vector<T>> temp = BsplineCurve::ComputeControlPointsOfDerivatives(bsplineCurve, du, minSpanIndexU, maxSpanIndexU);
 				for (int k = 0; k <= du; k++)
 				{
 					for (int i = 0; i <= rangeU - k; i++)
@@ -164,7 +194,13 @@ namespace LNLib
 				for (int i = 0; i <= rangeU - k; i++)
 				{
 					int dd = std::min(derivative - k, dv);
-					std::vector<std::vector<T>> temp = BsplineCurve::ComputeControlPointsOfDerivatives(degreeV, dd, 0, rangeV, tempKv, PKL[k][0][i]);
+
+					LN_BsplineCurve<T> bsplineCurve;
+					bsplineCurve.Degree = degreeV;
+					bsplineCurve.KnotVector = tempKv;
+					bsplineCurve.ControlPoints = PKL[k][0][i];
+
+					std::vector<std::vector<T>> temp = BsplineCurve::ComputeControlPointsOfDerivatives(bsplineCurve, dd, 0, rangeV);
 					for (int l = 1; l <= dd; l++)
 					{
 						for (int j = 0; j < rangeV - l; j++)
@@ -183,8 +219,14 @@ namespace LNLib
 		/// Compute surface derivatives.
 		/// </summary>
 		template <typename T>
-		static std::vector<std::vector<T>> ComputeDerivativesByAllBasisFunctions(int degreeU, int degreeV, int derivative, const std::vector<double>& knotVectorU, const std::vector<double>& knotVectorV, UV uv, const std::vector<std::vector<T>>& controlPoints)
+		static std::vector<std::vector<T>> ComputeDerivativesByAllBasisFunctions(const LN_BsplineSurface<T>& surface, int derivative, UV uv)
 		{
+			int degreeU = surface.DegreeU;
+			int degreeV = surface.DegreeV;
+			std::vector<double> knotVectorU = surface.KnotVectorU;
+			std::vector<double> knotVectorV = surface.KnotVectorV;
+			std::vector<std::vector<T>> controlPoints = surface.ControlPoints;
+
 			VALIDATE_ARGUMENT(derivative > 0, "derivative", "derivative must greater than zero.");
 			VALIDATE_ARGUMENT_RANGE(uv.GetU(), knotVectorU[0], knotVectorU[knotVectorU.size() - 1]);
 			VALIDATE_ARGUMENT_RANGE(uv.GetV(), knotVectorV[0], knotVectorV[knotVectorV.size() - 1]);
@@ -196,7 +238,14 @@ namespace LNLib
 			std::vector<std::vector<double>> Nu = Polynomials::AllBasisFunctions(uSpanIndex, degreeU, knotVectorU, uv.GetU());
 			std::vector<std::vector<double>> Nv = Polynomials::AllBasisFunctions(vSpanIndex, degreeV, knotVectorV, uv.GetV());
 
-			std::vector<std::vector<std::vector<std::vector<T>>>> PKL = ComputeControlPointsOfDerivatives(degreeU, degreeV, derivative, uSpanIndex - degreeU, uSpanIndex, vSpanIndex - degreeV, vSpanIndex, knotVectorU, knotVectorV, uv, controlPoints);
+			LN_BsplineSurface<T> bsplineSurface;
+			bsplineSurface.DegreeU = degreeU;
+			bsplineSurface.DegreeV = degreeV;
+			bsplineSurface.KnotVectorU = knotVectorU;
+			bsplineSurface.KnotVectorV = knotVectorV;
+			bsplineSurface.ControlPoints = controlPoints;
+
+			std::vector<std::vector<std::vector<std::vector<T>>>> PKL = ComputeControlPointsOfDerivatives(bsplineSurface, derivative, uSpanIndex - degreeU, uSpanIndex, vSpanIndex - degreeV, vSpanIndex, uv);
 
 			int du = std::min(derivative, degreeU);
 			int dv = std::min(derivative, degreeV);

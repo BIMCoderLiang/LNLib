@@ -10,7 +10,7 @@ TEST(Test_NurbsCurve, All)
 	std::vector<double> kv = { 0,0,0,1,2,3,3,3};
 	std::vector<XYZW> cps = { XYZW(XYZ(0,0,0),1), XYZW(XYZ(1,1,0),4), XYZW(XYZ(3,2,0),1), XYZW(XYZ(4,1,0),1), XYZW(XYZ(5,-1,0),1)};
 	
-	LN_Curve curve;
+	LN_NurbsCurve curve;
 	curve.Degree = degree;
 	curve.KnotVector = kv;
 	curve.ControlPoints = cps;

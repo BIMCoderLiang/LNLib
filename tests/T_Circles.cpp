@@ -27,7 +27,7 @@ TEST(Test_Circles, All)
 		XYZ xAxis = XYZ(1, 0, 0);
 		XYZ yAxis = XYZ(0, 1, 0);
 		
-		LN_Curve curve;
+		LN_NurbsCurve curve;
 		
 		bool result = NurbsCurve::CreateArc(center, xAxis, yAxis, 0, 2 * Constants::Pi, 10, 10, curve);
 		EXPECT_TRUE(result);
@@ -51,7 +51,7 @@ TEST(Test_Circles, All)
 		XYZ endTangent = XYZ(-1, 0, 0);
 		XYZ pointOnConic = XYZ(10, 0, 0);
 
-		LN_Curve curve;
+		LN_NurbsCurve curve;
 
 		bool result = NurbsCurve::CreateOpenConic(start, startTangent, end, endTangent, pointOnConic, curve);
 		EXPECT_TRUE(result);

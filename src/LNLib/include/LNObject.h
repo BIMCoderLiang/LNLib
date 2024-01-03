@@ -10,19 +10,53 @@
 
 #pragma once
 #include "LNLibDefinitions.h"
+#include "XYZ.h"
 #include "XYZW.h"
 #include <vector>
 
 namespace LNLib
 {
-	struct LNLIB_EXPORT LN_Curve
+	template <typename T>
+	struct LN_BezierCurve
+	{
+		int Degree;
+		std::vector<T> ControlPoints;
+	};
+
+	template <typename T>
+	struct LN_BezierSurface
+	{
+		int DegreeU;
+		int DegreeV;
+		std::vector<std::vector<T>> ControlPoints;
+	};
+
+	template <typename T>
+	struct LN_BsplineCurve
+	{
+		int Degree;
+		std::vector<double> KnotVector;
+		std::vector<T> ControlPoints;
+	};
+
+	template <typename T>
+	struct LN_BsplineSurface
+	{
+		int DegreeU;
+		int DegreeV;
+		std::vector<double> KnotVectorU;
+		std::vector<double> KnotVectorV;
+		std::vector<std::vector<T>> ControlPoints;
+	};
+
+	struct LNLIB_EXPORT LN_NurbsCurve
 	{
 		int Degree;
 		std::vector<double> KnotVector;
 		std::vector<XYZW> ControlPoints;
 	};
 
-	struct LNLIB_EXPORT LN_Surface
+	struct LNLIB_EXPORT LN_NurbsSurface
 	{
 		int DegreeU;
 		int DegreeV;

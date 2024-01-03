@@ -14,6 +14,7 @@
 #include "ValidationUtils.h"
 #include "LNLibDefinitions.h"
 #include "LNLibExceptions.h"
+#include "LNObject.h"
 #include <vector>
 
 namespace LNLib
@@ -25,8 +26,11 @@ namespace LNLib
 	public:
 
 		template <typename T>
-		static void Check(int degree, const std::vector<T>& controlPoints)
+		static void Check(const LN_BezierCurve<T>& curve)
 		{
+			int degree = curve.Degree;
+			std::vector<T> controlPoints = curve.ControlPoints;
+
 			VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
 			VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
 			VALIDATE_ARGUMENT(ValidationUtils::IsValidBezier(degree, controlPoints.size()), "controlPoints", "ControlPoints count equals degree plus one.");
@@ -40,9 +44,12 @@ namespace LNLib
 		/// Rational Bezier Curve:Use XYZW 
 		/// </summary>
 		template <typename T>
-		static T GetPointOnCurveByBernstein(int degree, const std::vector<T>& controlPoints, double paramT)
+		static T GetPointOnCurveByBernstein(const LN_BezierCurve<T>& curve, double paramT)
 		{
 			VALIDATE_ARGUMENT_RANGE(paramT, 0.0, 1.0);
+
+			int degree = curve.Degree;
+			std::vector<T> controlPoints = curve.ControlPoints;
 
 			std::vector<double> bernsteinArray = Polynomials::AllBernstein(degree, paramT);
 			T temp;
@@ -61,11 +68,12 @@ namespace LNLib
 		/// Rational Bezier Curve:Use XYZW 
 		/// </summary>
 		template <typename T>
-		static T GetPointOnCurveByDeCasteljau(int degree, const std::vector<T>& controlPoints, double paramT)
+		static T GetPointOnCurveByDeCasteljau(const LN_BezierCurve<T>& curve, double paramT)
 		{
 			VALIDATE_ARGUMENT_RANGE(paramT, 0.0, 1.0);
 
-			std::vector<T> temp = controlPoints;
+			int degree = curve.Degree;
+			std::vector<T> temp = curve.ControlPoints;
 			for (int k = 1; k <= degree; k++)
 			{
 				for (int i = 0; i <= degree - k; i++)

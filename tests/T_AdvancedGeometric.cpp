@@ -16,7 +16,7 @@ TEST(Test_AdvancedGeometric, All)
 		std::vector<double> kv = { 0,0,0,1,2,3,3,3 };
 		std::vector<XYZW> cps = { XYZW(XYZ(0,0,0),1), XYZW(XYZ(1,1,0),4), XYZW(XYZ(3,2,0),1), XYZW(XYZ(4,1,0),1), XYZW(XYZ(5,-1,0),1) };
 
-		LN_Curve curve;
+		LN_NurbsCurve curve;
 		curve.Degree = degree;
 		curve.KnotVector = kv;
 		curve.ControlPoints = cps;
@@ -93,7 +93,7 @@ TEST(Test_AdvancedGeometric, All)
 			{P70, P71, P72, P73, P74},
 
 		};
-		LN_Surface surface;
+		LN_NurbsSurface surface;
 		surface.DegreeU = degreeU;
 		surface.DegreeV = degreeV;
 		surface.KnotVectorU = kvU;
@@ -120,12 +120,12 @@ TEST(Test_AdvancedGeometric, All)
 		double gamma = 3;
 		double delta = 2;
 
-		LN_Curve curve;
+		LN_NurbsCurve curve;
 		curve.Degree = degree;
 		curve.KnotVector = kv;
 		curve.ControlPoints = cps;
 
-		LN_Curve newtc;
+		LN_NurbsCurve newtc;
 		NurbsCurve::Reparametrize(curve, alpha, beta, gamma, delta, newtc);
 
 		std::vector<double> newKv = newtc.KnotVector;

@@ -13,6 +13,7 @@
 #include "BezierSurface.h"
 #include "BezierCurve.h"
 #include "LNLibDefinitions.h"
+#include "LNObject.h"
 #include <vector>
 
 namespace LNLib {
@@ -25,8 +26,12 @@ namespace LNLib {
 	public:
 
 		template <typename T>
-		static void Check(int degreeU, int degreeV, const std::vector<std::vector<T>>& controlPoints)
+		static void Check(const LN_BezierSurface<T>& surface)
 		{
+			int degreeU = surface.DegreeU;
+			int degreeV = surface.DegreeV;
+			std::vector<T> controlPoints = surface.ControlPoints;
+
 			VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "Degree must greater than zero.");
 			VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "Degree must greater than zero.");
 			VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
@@ -51,18 +56,31 @@ namespace LNLib {
 		/// Rational Bezier Surface:Use XYZW
 		/// </summary>
 		template <typename T>
-		static T GetPointOnSurfaceByDeCasteljau(int degreeU, int degreeV, const std::vector<std::vector<T>>& controlPoints, UV uv)
+		static T GetPointOnSurfaceByDeCasteljau(const LN_BezierSurface<T>& surface, UV uv)
 		{
 			VALIDATE_ARGUMENT_RANGE(uv.GetU(), 0.0, 1.0);
 			VALIDATE_ARGUMENT_RANGE(uv.GetV(), 0.0, 1.0);
+
+			int degreeU = surface.DegreeU;
+			int degreeV = surface.DegreeV;
+			std::vector<std::vector<T>> controlPoints = surface.ControlPoints;
 
 			T point;
 			std::vector<T> temp(degreeU + 1);
 			for (int i = 0; i <= degreeU; i++)
 			{
-				temp[i] = BezierCurve::GetPointOnCurveByDeCasteljau(degreeV, controlPoints[i], uv.GetV());
+				LN_BezierCurve<T> b;
+				b.Degree = degreeV;
+				b.ControlPoints = controlPoints[i];
+
+				temp[i] = BezierCurve::GetPointOnCurveByDeCasteljau(b, uv.GetV());
 			}
-			point = BezierCurve::GetPointOnCurveByDeCasteljau(degreeU, temp, uv.GetU());
+
+			LN_BezierCurve<T> bezierCurve;
+			bezierCurve.Degree = degreeU;
+			bezierCurve.ControlPoints = temp;
+
+			point = BezierCurve::GetPointOnCurveByDeCasteljau(bezierCurve, uv.GetU());
 			return point;
 		}
 	};

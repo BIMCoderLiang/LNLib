@@ -39,43 +39,43 @@ namespace LNLib
 	{
 	public:
 
-		static void Check(const LN_Surface& surface);
+		static void Check(const LN_NurbsSurface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page134
 		/// Algorithm A4.3
 		/// Compute point on rational B-spline surface.
 		/// </summary>
-		static XYZ GetPointOnSurface(const LN_Surface& surface, UV uv);
+		static XYZ GetPointOnSurface(const LN_NurbsSurface& surface, UV uv);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page137
 		/// Algorithm A4.4
 		/// Compute S(paramU,paramV) derivatives.
 		/// </summary>
-		static std::vector<std::vector<XYZ>> ComputeRationalSurfaceDerivatives(const LN_Surface& surface, int derivative, UV uv);
+		static std::vector<std::vector<XYZ>> ComputeRationalSurfaceDerivatives(const LN_NurbsSurface& surface, int derivative, UV uv);
 
-		static double Curvature(const LN_Surface& surface, SurfaceCurvature curvature, UV uv);
+		static double Curvature(const LN_NurbsSurface& surface, SurfaceCurvature curvature, UV uv);
 
-		static XYZ Normal(const LN_Surface& surface, UV uv);
+		static XYZ Normal(const LN_NurbsSurface& surface, UV uv);
 
-		static void Swap(const LN_Surface& surface, LN_Surface& result);
+		static void Swap(const LN_NurbsSurface& surface, LN_NurbsSurface& result);
 
-		static void Reverse(const LN_Surface& surface, SurfaceDirection direction,  LN_Surface& result);
+		static void Reverse(const LN_NurbsSurface& surface, SurfaceDirection direction,  LN_NurbsSurface& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page137
 		/// Algorithm A5.3
 		/// Surface knot insertion along U or V direction.
 		/// </summary>
-		static void InsertKnot(const LN_Surface& surface, double insertKnot, int times, bool isUDirection, LN_Surface& result);
+		static void InsertKnot(const LN_NurbsSurface& surface, double insertKnot, int times, bool isUDirection, LN_NurbsSurface& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page167
 		/// Algorithm A5.5
 		/// Refine surface knot vector.
 		/// </summary>
-		static void RefineKnotVector(const LN_Surface& surface, std::vector<double>& insertKnotElements, bool isUDirection, LN_Surface& result);
+		static void RefineKnotVector(const LN_NurbsSurface& surface, std::vector<double>& insertKnotElements, bool isUDirection, LN_NurbsSurface& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page177
@@ -83,32 +83,32 @@ namespace LNLib
 		/// Decompose surface into Bezier patches.
 		/// decomposedControlPoints[i][j][k] means ith patch jth row kth column control point.
 		/// </summary>
-		static std::vector<std::vector<std::vector<XYZW>>> DecomposeToBeziers(const LN_Surface& surface);
+		static std::vector<std::vector<std::vector<XYZW>>> DecomposeToBeziers(const LN_NurbsSurface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page186
 		/// Surface knot removal.
 		/// </summary>
-		static void RemoveKnot(const LN_Surface& surface, double removeKnot, int times, bool isUDirection, LN_Surface& result);
+		static void RemoveKnot(const LN_NurbsSurface& surface, double removeKnot, int times, bool isUDirection, LN_NurbsSurface& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page209
 		/// Algorithm A5.10
 		/// Degree elevate a surface t times.
 		/// </summary>
-		static void ElevateDegree(const LN_Surface& surface, int times, bool isUDirection, LN_Surface& result);
+		static void ElevateDegree(const LN_NurbsSurface& surface, int times, bool isUDirection, LN_NurbsSurface& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page227
 		/// Degree reduce U or V Direction Bezier-shape nurbs curve from degree to degree - 1.
 		/// </summary>
-		static bool ReduceDegree(const LN_Surface& surface, bool isUDirection, LN_Surface& result);
+		static bool ReduceDegree(const LN_NurbsSurface& surface, bool isUDirection, LN_NurbsSurface& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page232
 		/// Equally spaced parameter values on each candidate span.
 		/// </summary>
-		static void EquallyTessellate(const LN_Surface& surface, std::vector<XYZ>& tessellatedPoints, std::vector<UV>& correspondingKnots);
+		static void EquallyTessellate(const LN_NurbsSurface& surface, std::vector<XYZ>& tessellatedPoints, std::vector<UV>& correspondingKnots);
 
 		///  [0][0]  [0][1] ... ...  [0][m]     ------- v direction
 		///  [1][0]  [1][1] ... ...  [1][m]    |
@@ -116,45 +116,45 @@ namespace LNLib
 		///    .                               u direction
 		///    .							   
 		///  [n][0]  [n][1] ... ...  [n][m]    
-		static bool IsClosed(const LN_Surface& surface, bool isUDirection);
+		static bool IsClosed(const LN_NurbsSurface& surface, bool isUDirection);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page232
 		/// Point inversion:finding the corresponding parameter make S(u,v) = P.
 		/// </summary>
-		static UV GetParamOnSurface(const LN_Surface& surface, const XYZ& givenPoint);
+		static UV GetParamOnSurface(const LN_NurbsSurface& surface, const XYZ& givenPoint);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page235
 		/// Surface Tangent Vector Inversion: finding the corresponding UV tangent [du dv] make T = Su*du+Sv*dv.
 		/// </summary>
-		static bool GetUVTangent(const LN_Surface& surface, const UV param, const XYZ& tangent, UV& uvTangent);
+		static bool GetUVTangent(const LN_NurbsSurface& surface, const UV param, const XYZ& tangent, UV& uvTangent);
 		
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page334
 		/// construct a NURBS surface by four counter-clockwise points.
 		/// point1,point2,point3,point4 are anti-clock placement.
 		/// </summary>
-		static void CreateBilinearSurface(const XYZ& point1, const XYZ& point2, const XYZ& point3, const XYZ& point4, LN_Surface& surface);
+		static void CreateBilinearSurface(const XYZ& point1, const XYZ& point2, const XYZ& point3, const XYZ& point4, LN_NurbsSurface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page336
 		/// Create a right cirular cylinder.
 		/// </summary>
-		static bool CreateCylindricalSurface(const XYZ& origin, const XYZ& xAxis, const XYZ& yAxis, double startRad, double endRad, double radius, double height, LN_Surface& surface);
+		static bool CreateCylindricalSurface(const XYZ& origin, const XYZ& xAxis, const XYZ& yAxis, double startRad, double endRad, double radius, double height, LN_NurbsSurface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page337
 		/// Create a ruled surface.
 		/// </summary>
-		static void CreateRuledSurface(const LN_Curve& curve0, const LN_Curve& curve1, LN_Surface& surface);
+		static void CreateRuledSurface(const LN_NurbsCurve& curve0, const LN_NurbsCurve& curve1, LN_NurbsSurface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page346
 		/// Algorithm A8.1
 		/// Create a revolved surface.
 		/// </summary>
-		static bool CreateRevolvedSurface(const XYZ& origin, const XYZ& axis, double rad, const LN_Curve& profile, LN_Surface& surface);
+		static bool CreateRevolvedSurface(const XYZ& origin, const XYZ& axis, double rad, const LN_NurbsCurve& profile, LN_NurbsSurface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page348
@@ -170,28 +170,28 @@ namespace LNLib
 		/// Curve1,2,3 are three boundary arcs and could arbitrarily positioned and oriented in space but joined at their endpoints. 
 		/// The parameter 'arc' represents curve2;
 		/// </summary>
-		static void MakeCornerFilletSurface(const LN_Curve& arc, LN_Surface& surface);
+		static void MakeCornerFilletSurface(const LN_NurbsCurve& arc, LN_NurbsSurface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page380
 		/// Algorithm A9.4
 		/// Global surface interpolation.
 		/// </summary>
-		static void GlobalInterpolation(const std::vector<std::vector<XYZ>>& throughPoints, int degreeU, int degreeV, LN_Surface& surface);
+		static void GlobalInterpolation(const std::vector<std::vector<XYZ>>& throughPoints, int degreeU, int degreeV, LN_NurbsSurface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page404
 		/// Algorithm A9.5
 		/// Local surface interpolation through (n+1)*(m+1) points.
 		/// </summary>
-		static bool BicubicLocalInterpolation(const std::vector<std::vector<XYZ>>& throughPoints, LN_Surface& surface);
+		static bool BicubicLocalInterpolation(const std::vector<std::vector<XYZ>>& throughPoints, LN_NurbsSurface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page422
 		/// Algorithm A9.7
 		/// Global surface approximation with fixed number of control points.
 		/// </summary>
-		static bool GlobalApproximation(const std::vector<std::vector<XYZ>>& throughPoints, int degreeU, int degreeV, int controlPointsRows, int controlPointsColumns, LN_Surface& surface);
+		static bool GlobalApproximation(const std::vector<std::vector<XYZ>>& throughPoints, int degreeU, int degreeV, int controlPointsRows, int controlPointsColumns, LN_NurbsSurface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page456
@@ -199,20 +199,20 @@ namespace LNLib
 		/// Create Swung Surface.
 		/// The profile curve lie on the xz-plane and trajectory curve  along its y-axis.
 		/// </summary>
-		static bool CreateSwungSurface(const LN_Curve& profile, const LN_Curve& trajectory, double scale, LN_Surface& surface);
+		static bool CreateSwungSurface(const LN_NurbsCurve& profile, const LN_NurbsCurve& trajectory, double scale, LN_NurbsSurface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page457
 		/// Create Loft Surface (called Skinned Surfaces in The NURBS Book).
 		/// </summary>
-		static void CreateLoftSurface(const std::vector<LN_Curve>& sections, LN_Surface& surface);
+		static void CreateLoftSurface(const std::vector<LN_NurbsCurve>& sections, LN_NurbsSurface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page472
 		/// Algorithm A10.2
 		/// Create Sweep Surface.
 		/// </summary>
-		static void CreateSweepSurface(const LN_Curve& path, const std::vector<LN_Curve>& profiles, LN_Surface& surface);
+		static void CreateSweepSurface(const LN_NurbsCurve& path, const std::vector<LN_NurbsCurve>& profiles, LN_NurbsSurface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page494
@@ -225,7 +225,7 @@ namespace LNLib
 		/// 4. Intersection points must be located evenly in parameter spaces of curves. 
 		/// 5. U-curves must be ordered along direction of V-curves, and vice versa. 
 		/// </summary>
-		static void CreateGordonSurface(const std::vector<LN_Curve>& uCurves, const std::vector<LN_Curve>& vCurves, const std::vector<std::vector<XYZ>>& intersectionPoints, LN_Surface& surface);
+		static void CreateGordonSurface(const std::vector<LN_NurbsCurve>& uCurves, const std::vector<LN_NurbsCurve>& vCurves, const std::vector<std::vector<XYZ>>& intersectionPoints, LN_NurbsSurface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page502
@@ -238,6 +238,6 @@ namespace LNLib
 		/// curve0,curve1,curve2,curve3 are anti-clock connected.
 		/// 
 		/// </summary>
-		static void CreateCoonsSurface(const LN_Curve& curve0, const LN_Curve& curve1, const LN_Curve& curve2, const LN_Curve& curve3, LN_Surface& surface);
+		static void CreateCoonsSurface(const LN_NurbsCurve& curve0, const LN_NurbsCurve& curve1, const LN_NurbsCurve& curve2, const LN_NurbsCurve& curve3, LN_NurbsSurface& surface);
 	};
 }

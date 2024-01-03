@@ -3,6 +3,7 @@
 #include "XYZ.h"
 #include "XYZW.h"
 #include "MathUtils.h"
+#include "LNObject.h"
 
 using namespace LNLib;
 
@@ -56,7 +57,15 @@ TEST(Test_BsplineSurface, All)
 	
 	double u = 1.0 / 5;
 	double v = 3.0 / 5;
-	XYZ result = BsplineSurface::GetPointOnSurface(degreeU,degreeV,kvU,kvV,UV(u,v),controlPoints);
+
+	LN_BsplineSurface<XYZ> bsplineSurface;
+	bsplineSurface.DegreeU = degreeU;
+	bsplineSurface.DegreeV = degreeV;
+	bsplineSurface.KnotVectorU = kvU;
+	bsplineSurface.KnotVectorV = kvV;
+	bsplineSurface.ControlPoints = controlPoints;
+
+	XYZ result = BsplineSurface::GetPointOnSurface(bsplineSurface,UV(u,v));
 
 	double N02 = Polynomials::OneBasisFunction(0, degreeU, kvU, u);
 	double N12 = Polynomials::OneBasisFunction(1, degreeU, kvU, u);
@@ -74,8 +83,9 @@ TEST(Test_BsplineSurface, All)
 	EXPECT_TRUE(result.IsAlmostEqualTo(checked));
 
 	int derivative = 2;
-	std::vector<std::vector<XYZ>> ders = BsplineSurface::ComputeDerivatives(degreeU, degreeV, derivative, kvU, kvV, UV(u, v), controlPoints);
-	std::vector<std::vector<XYZ>> checkedders = BsplineSurface::ComputeDerivativesByAllBasisFunctions(degreeU, degreeV, derivative, kvU, kvV, UV(u, v), controlPoints);
+
+	std::vector<std::vector<XYZ>> ders = BsplineSurface::ComputeDerivatives(bsplineSurface, derivative, UV(u, v));
+	std::vector<std::vector<XYZ>> checkedders = BsplineSurface::ComputeDerivativesByAllBasisFunctions(bsplineSurface, derivative, UV(u, v));
 	EXPECT_TRUE(ders[0][0].IsAlmostEqualTo(checkedders[0][0]) &&
 				ders[1][0].IsAlmostEqualTo(checkedders[1][0]) &&
 				ders[2][0].IsAlmostEqualTo(checkedders[2][0]));

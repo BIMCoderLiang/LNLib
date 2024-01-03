@@ -74,7 +74,7 @@ TEST(Test_NurbsSurface, All)
 		{P70, P71, P72, P73, P74},
 		
 	};
-	LN_Surface surface;
+	LN_NurbsSurface surface;
 	surface.DegreeU = degreeU;
 	surface.DegreeV = degreeV;
 	surface.KnotVectorU = kvU;
