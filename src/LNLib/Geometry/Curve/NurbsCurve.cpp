@@ -22,6 +22,7 @@
 #include "ValidationUtils.h"
 #include "KnotVectorUtils.h"
 #include "Interpolation.h"
+#include "Integrator.h"
 #include "LNLibExceptions.h"
 #include "LNObject.h"
 #include <vector>
@@ -42,6 +43,33 @@ namespace LNLib
 			t = sum * (1.0 / degree);
 		}
 		return t;
+	}
+
+	double Simpson(const LN_NurbsCurve& curve, double start, double end)
+	{
+		double st = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, start)[1].Length();
+		double mt = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, (start + end) / 2.0)[1].Length();
+		double et = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, end)[1].Length();
+		return Integrator::Simpson(start, end, st, mt, et);
+	}
+
+	double ArcLengthBySimpson(const LN_NurbsCurve& curve, double start, double end, double simpson, double tolearance)
+	{
+		double length = 0.0;
+		double m = (start + end) / 2.0;
+		double left = Simpson(curve, start, m);
+		double right = Simpson(curve, m, end);
+
+		double differ = left + right - simpson;
+		if (MathUtils::IsLessThan(abs(differ) / 10.0, tolearance))
+		{
+			length = left + right + differ / 10.0;
+		}
+		else
+		{
+			length = ArcLengthBySimpson(curve, start, m, left, tolearance / 2.0) + ArcLengthBySimpson(curve, m, end, right, tolearance / 2.0);
+		}
+		return length;
 	}
 }
 
@@ -2755,7 +2783,7 @@ void LNLib::NurbsCurve::Warping(const LN_NurbsCurve& curve, const std::vector<do
 	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(endParameter, startParameter), "endParameter", "EndParameter must be greater than startParamter.");
 
 	double halfParameter = 0.5 * (startParameter + endParameter);
-	XYZ tangent = ComputeRationalCurveDerivatives(curve, 1, halfParameter)[0];
+	XYZ tangent = ComputeRationalCurveDerivatives(curve, 1, halfParameter)[1];
 	XYZ normal = tangent.CrossProduct(planeNormal);
 	XYZ W = MathUtils::IsGreaterThan(warpDistance,0.0)? normal : -normal;
 	std::vector<XYZW> temp = controlPoints;
@@ -3189,4 +3217,15 @@ bool LNLib::NurbsCurve::IsArc(const LN_NurbsCurve& curve)
 	return true;
 }
 
+double LNLib::NurbsCurve::Length(const LN_NurbsCurve& curve)
+{
+	std::vector<double> knotVector = curve.KnotVector;
+
+	double start = knotVector[0];
+	double end = knotVector[knotVector.size() - 1];
+	double simpson = Simpson(curve, start, end);
+
+	double arcLength =  ArcLengthBySimpson(curve, start, end, simpson, Constants::DistanceEpsilon);
+	return arcLength;
+}
 

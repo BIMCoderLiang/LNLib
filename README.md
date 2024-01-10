@@ -45,6 +45,7 @@ NURBS Algorithms:
     - Curve/Surface Curvature and Normal
     - Curve Split/Merge/Offset
     - Curve IsLinear/IsArc
+    - Curve Length
 
 ## Contributing
 Welcome join this project including discussions in **Issues** and make **Pull requests**.
