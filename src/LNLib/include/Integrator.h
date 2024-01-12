@@ -10,6 +10,7 @@
 
 #pragma once
 #include "LNLibDefinitions.h"
+#include <vector>
 
 namespace LNLib
 {
@@ -18,6 +19,8 @@ namespace LNLib
 
 	public:
 		static double Simpson(double start, double end, double startTangentLength, double middleTangentLength, double endTangentLength);
+
+		static double Simpson(double start, double end, std::vector<double> odds, std::vector<double> evens, double delta);
 	};
 
 }

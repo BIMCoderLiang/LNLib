@@ -17,6 +17,22 @@ namespace LNLib
 		double result = ((end - start) / 6.0) * (startTangentLength + 4 * middleTangentLength + endTangentLength);
 		return result;
 	}
+
+	double Integrator::Simpson(double start, double end, std::vector<double> odds, std::vector<double> evens, double delta)
+	{
+		double oddsSum = 0.0;
+		double evensSum = 0.0;
+		for (int i = 0; i < odds.size(); i++)
+		{
+			oddsSum += 4 * odds[i];
+		}
+		for (int i = 0; i < evens.size(); i++)
+		{
+			evensSum += 2 * evens[i];
+		}
+		double result = (delta / 3.0) * (start + oddsSum + evensSum + end);
+		return result;
+	}
 }
 
 

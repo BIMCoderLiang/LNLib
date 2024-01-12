@@ -239,5 +239,7 @@ namespace LNLib
 		/// 
 		/// </summary>
 		static void CreateCoonsSurface(const LN_NurbsCurve& curve0, const LN_NurbsCurve& curve1, const LN_NurbsCurve& curve2, const LN_NurbsCurve& curve3, LN_NurbsSurface& surface);
+
+		static double Area(const LN_NurbsSurface& surface);
 	};
 }
