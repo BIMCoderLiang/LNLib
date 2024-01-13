@@ -23,6 +23,7 @@
 #include "ValidationUtils.h"
 #include "KnotVectorUtils.h"
 #include "ControlPointsUtils.h"
+#include "Integrator.h"
 #include "LNLibExceptions.h"
 #include "LNObject.h"
 #include <algorithm>
@@ -2671,6 +2672,55 @@ void LNLib::NurbsSurface::CreateCoonsSurface(const LN_NurbsCurve& curve0, const 
 		}
 	}
 	surface.ControlPoints = controlPoints;
+}
+
+double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface)
+{
+	std::vector<double> knotVectorU = surface.KnotVectorU;
+	std::vector<double> knotVectorV = surface.KnotVectorV;
+
+	double startU = knotVectorU[0];
+	double endU = knotVectorU[knotVectorU.size() - 1];
+	double startV = knotVectorV[0];
+	double endV = knotVectorV[knotVectorV.size() - 1];
+
+	double halfV = (startV + endV) / 2.0;
+	XYZ halfStart = GetPointOnSurface(surface, UV(startU, halfV));
+	XYZ halfEnd = GetPointOnSurface(surface, UV(endU, halfV));
+	double totalWidth = halfStart.Distance(halfEnd);
+	int count = floor(totalWidth / Constants::DefaultTolerance);
+
+	XYZ start1 = GetPointOnSurface(surface, UV(startU, startV));
+	XYZ start2 = GetPointOnSurface(surface, UV(startU, endV));
+	double startLength = start1.Distance(start2);
+
+	std::vector<double> odds;
+	std::vector<double> evens;
+
+	for (int i = 1; i < count; i++)
+	{
+		XYZ current = halfStart + (halfEnd - halfStart).Normalize() * Constants::DefaultTolerance * i;
+		UV uv = GetParamOnSurface(surface, current);
+		XYZ point1 = GetPointOnSurface(surface, UV(uv.GetU(), startV));
+		XYZ point2 = GetPointOnSurface(surface, UV(uv.GetU(), endV));
+		double length = point1.Distance(point2);
+
+		if (i % 2 == 0)
+		{
+			evens.emplace_back(length);
+		}
+		else
+		{
+			odds.emplace_back(length);
+		}
+	}
+
+	XYZ end1 = GetPointOnSurface(surface, UV(endU, startV));
+	XYZ end2 = GetPointOnSurface(surface, UV(endU, endV));
+	double endLength = end1.Distance(end2);
+	
+	double area = Integrator::Simpson(startLength, endLength, odds, evens, Constants::DefaultTolerance);
+	return area;
 }
 
 

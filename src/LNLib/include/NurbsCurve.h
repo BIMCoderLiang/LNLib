@@ -307,7 +307,7 @@ namespace LNLib
 
 		static bool IsArc(const LN_NurbsCurve& curve);
 
-		static double Length(const LN_NurbsCurve& curve);
+		static double ApproximateLength(const LN_NurbsCurve& curve);
 	};
 }
 

@@ -53,7 +53,7 @@ namespace LNLib
 		return Integrator::Simpson(start, end, st, mt, et);
 	}
 
-	double ArcLengthBySimpson(const LN_NurbsCurve& curve, double start, double end, double simpson, double tolearance)
+	double CalculateLengthBySimpson(const LN_NurbsCurve& curve, double start, double end, double simpson, double tolearance)
 	{
 		double length = 0.0;
 		double m = (start + end) / 2.0;
@@ -67,7 +67,7 @@ namespace LNLib
 		}
 		else
 		{
-			length = ArcLengthBySimpson(curve, start, m, left, tolearance / 2.0) + ArcLengthBySimpson(curve, m, end, right, tolearance / 2.0);
+			length = CalculateLengthBySimpson(curve, start, m, left, tolearance / 2.0) + CalculateLengthBySimpson(curve, m, end, right, tolearance / 2.0);
 		}
 		return length;
 	}
@@ -3217,7 +3217,7 @@ bool LNLib::NurbsCurve::IsArc(const LN_NurbsCurve& curve)
 	return true;
 }
 
-double LNLib::NurbsCurve::Length(const LN_NurbsCurve& curve)
+double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve)
 {
 	std::vector<double> knotVector = curve.KnotVector;
 
@@ -3225,7 +3225,7 @@ double LNLib::NurbsCurve::Length(const LN_NurbsCurve& curve)
 	double end = knotVector[knotVector.size() - 1];
 	double simpson = Simpson(curve, start, end);
 
-	double arcLength =  ArcLengthBySimpson(curve, start, end, simpson, Constants::DistanceEpsilon);
-	return arcLength;
+	double length = CalculateLengthBySimpson(curve, start, end, simpson, Constants::DistanceEpsilon);
+	return length;
 }
 

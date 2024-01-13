@@ -19,6 +19,7 @@ namespace LNLib
 
 	public:
 
+		static const double DefaultTolerance;
 		static const double DoubleEpsilon;
 		static const double DistanceEpsilon;
 		static const double MaxDistance;
