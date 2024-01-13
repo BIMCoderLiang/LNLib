@@ -10,17 +10,13 @@
 
 #pragma once
 
+#include "LNEnums.h"
 #include "LNLibDefinitions.h"
 #include "LNObject.h"
 #include <vector>
 
 namespace LNLib
 {
-	enum class CurveNormal:int
-	{
-		Normal = 0,
-		Binormal = 1,
-	};
 
 	class XYZ;
 	class XYZW;
@@ -307,7 +303,7 @@ namespace LNLib
 
 		static bool IsArc(const LN_NurbsCurve& curve);
 
-		static double ApproximateLength(const LN_NurbsCurve& curve);
+		static double ApproximateLength(const LN_NurbsCurve& curve, IntegratorType type);
 	};
 }
 

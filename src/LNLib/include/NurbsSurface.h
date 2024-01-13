@@ -11,27 +11,11 @@
 #pragma once
 #include "LNLibDefinitions.h"
 #include "LNObject.h"
+#include "LNEnums.h"
 #include <vector>
 
 namespace LNLib
 {
-	enum class SurfaceDirection : int
-	{
-		All = 0,
-		UDirection = 1,
-		VDirection = 2,
-	};
-
-	enum class SurfaceCurvature : int
-	{
-		Maximum = 0,
-		Minimum = 1,
-		Gauss = 2,
-		Mean = 3,
-		Abs = 4,
-		Rms = 5
-	};
-
 	class UV;
 	class XYZ;
 	class XYZW;

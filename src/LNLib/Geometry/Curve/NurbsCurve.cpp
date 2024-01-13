@@ -3217,15 +3217,33 @@ bool LNLib::NurbsCurve::IsArc(const LN_NurbsCurve& curve)
 	return true;
 }
 
-double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve)
+double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, IntegratorType type)
 {
 	std::vector<double> knotVector = curve.KnotVector;
-
-	double start = knotVector[0];
-	double end = knotVector[knotVector.size() - 1];
-	double simpson = Simpson(curve, start, end);
-
-	double length = CalculateLengthBySimpson(curve, start, end, simpson, Constants::DistanceEpsilon);
+	double length = 0.0;
+	switch (type)
+	{
+		case IntegratorType::Simpson:
+		{
+			double start = knotVector[0];
+			double end = knotVector[knotVector.size() - 1];
+			double simpson = Simpson(curve, start, end);
+			length = CalculateLengthBySimpson(curve, start, end, simpson, Constants::DistanceEpsilon);
+			break;
+		}
+		case IntegratorType::Gauss_Legendre:
+		{
+			// to be continued...
+			break;
+		}
+		case IntegratorType::Chebyshev:
+		{
+			// to be continued...
+			break;
+		}
+		default:
+			 break;
+	}
 	return length;
 }
 

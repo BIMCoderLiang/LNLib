@@ -10,25 +10,11 @@
 
 #pragma once
 
+#include "LNEnums.h"
 #include "LNLibDefinitions.h"
 
 namespace LNLib
 {
-	enum class CurveCurveIntersectionType : int
-	{
-		Intersecting = 0,
-		Parallel = 1,
-		Coincident = 2,
-		Skew = 3,
-	};
-
-	enum class LinePlaneIntersectionType : int
-	{
-		Intersecting = 0,
-		Parallel = 1,
-		On = 2,
-	};
-
 	class XYZ;
 	class LNLIB_EXPORT Intersection
 	{
