@@ -11,6 +11,7 @@
 #pragma once
 
 #include "LNLibDefinitions.h"
+#include <vector>
 
 namespace LNLib
 {
@@ -24,6 +25,13 @@ namespace LNLib
 		static const double DistanceEpsilon;
 		static const double MaxDistance;
 		static const double Pi;
+
+		/// <summary>
+		/// According to https://github.com/Pomax/bezierjs
+		/// Order n = 24.
+		/// </summary>
+		static const std::vector<double> GaussLegendreAbscissae;
+		static const std::vector<double> GaussLegendreWeights;
 
 	};
 

@@ -65,9 +65,8 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page177
 		/// Algorithm A5.7
 		/// Decompose surface into Bezier patches.
-		/// decomposedControlPoints[i][j][k] means ith patch jth row kth column control point.
 		/// </summary>
-		static std::vector<std::vector<std::vector<XYZW>>> DecomposeToBeziers(const LN_NurbsSurface& surface);
+		static std::vector<LN_NurbsSurface> DecomposeToBeziers(const LN_NurbsSurface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page186

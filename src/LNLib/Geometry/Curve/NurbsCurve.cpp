@@ -406,13 +406,30 @@ void LNLib::NurbsCurve::RefineKnotVector(const LN_NurbsCurve& curve, std::vector
 	result.ControlPoints = updatedControlPoints;
 }
 
-std::vector<std::vector<LNLib::XYZW>> LNLib::NurbsCurve::DecomposeToBeziers(const LN_NurbsCurve& curve)
+std::vector<LNLib::LN_NurbsCurve> LNLib::NurbsCurve::DecomposeToBeziers(const LN_NurbsCurve& curve)
 {
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
 
-	std::vector<std::vector<XYZW>> decomposedControlPoints(controlPoints.size() - degree, std::vector<XYZW>(degree + 1));
+	int knotSize = 2 * (degree + 1);
+	std::vector<double> bezierKnots(knotSize);
+	for (int i = 0; i < knotSize / 2; i++)
+	{
+		bezierKnots[i] = 0;
+	}	
+	for (int i = knotSize / 2; i < knotSize; i++)
+	{
+		bezierKnots[i] = 1;
+	}
+	int bezierSize = controlPoints.size() - degree;
+	std::vector<LNLib::LN_NurbsCurve> beziers(bezierSize);
+	for (int i = 0; i < bezierSize; i++)
+	{
+		beziers[i].Degree = degree;
+		beziers[i].KnotVector = bezierKnots;
+		beziers[i].ControlPoints = std::vector<XYZW>(degree + 1);
+	}
 
 	int n = controlPoints.size() - 1;
 	int m = n + degree + 1;
@@ -423,7 +440,7 @@ std::vector<std::vector<LNLib::XYZW>> LNLib::NurbsCurve::DecomposeToBeziers(cons
 	int nb = 0;
 	for (int i = 0; i <= degree; i++)
 	{
-		decomposedControlPoints[nb][i] = controlPoints[i];
+		beziers[nb].ControlPoints[i] = controlPoints[i];
 	}
 
 	while (b < m)
@@ -451,12 +468,12 @@ std::vector<std::vector<LNLib::XYZW>> LNLib::NurbsCurve::DecomposeToBeziers(cons
 				for (int k = degree; k >= s; k--)
 				{
 					double alpha = alphaVector[k - s];
-					decomposedControlPoints[nb][k] = alpha * decomposedControlPoints[nb][k] + (1.0 - alpha) * decomposedControlPoints[nb][k - 1];
+					beziers[nb].ControlPoints[k] = alpha * beziers[nb].ControlPoints[k] + (1.0 - alpha) * beziers[nb].ControlPoints[k-1];
 				}
 
 				if (b < m)
 				{
-					decomposedControlPoints[nb + 1][save] = decomposedControlPoints[nb][degree];
+					beziers[nb + 1].ControlPoints[save] = beziers[nb].ControlPoints[degree];
 				}
 			}
 
@@ -465,7 +482,7 @@ std::vector<std::vector<LNLib::XYZW>> LNLib::NurbsCurve::DecomposeToBeziers(cons
 			{
 				for (int i = degree - multi; i <= degree; i++)
 				{
-					decomposedControlPoints[nb][i] = controlPoints[b - degree + i];
+					beziers[nb].ControlPoints[i] = controlPoints[b - degree + i];
 				}
 
 				a = b;
@@ -473,7 +490,7 @@ std::vector<std::vector<LNLib::XYZW>> LNLib::NurbsCurve::DecomposeToBeziers(cons
 			}
 		}
 	}
-	return decomposedControlPoints;
+	return beziers;
 }
 
 bool LNLib::NurbsCurve::RemoveKnot(const LN_NurbsCurve& curve, double removeKnot, int times, LN_NurbsCurve& result)
@@ -3219,7 +3236,9 @@ bool LNLib::NurbsCurve::IsArc(const LN_NurbsCurve& curve)
 
 double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, IntegratorType type)
 {
+	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
+
 	double length = 0.0;
 	switch (type)
 	{
@@ -3233,7 +3252,26 @@ double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, Integrat
 		}
 		case IntegratorType::Gauss_Legendre:
 		{
-			// to be continued...
+			// Strongly recommend read this blog:
+		    // https://raphlinus.github.io/curves/2018/12/28/bezier-arclength.html
+
+			std::vector<LN_NurbsCurve> bezierCurves =  DecomposeToBeziers(curve);
+			for (int i = 0; i < bezierCurves.size(); i++)
+			{
+				LN_NurbsCurve bezierCurve = bezierCurves[i];
+
+				double bLength = 0.0;
+				std::vector<double> abscissae = Constants::GaussLegendreAbscissae;
+				int size = abscissae.size();
+				double coefficient = 0.5;
+				for (int i = 0, t; i < size; i++)
+				{
+					t = coefficient * (abscissae[i] + 1);
+					bLength += Constants::GaussLegendreWeights[i] + ComputeRationalCurveDerivatives(bezierCurve,1,t)[1].Length();
+				}
+				bLength = coefficient * bLength;
+				length += bLength;
+			}
 			break;
 		}
 		case IntegratorType::Chebyshev:

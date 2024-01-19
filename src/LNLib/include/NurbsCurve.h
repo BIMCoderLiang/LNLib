@@ -73,9 +73,8 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page173
 		/// Algorithm A5.6
 		/// Decompose curve into Bezier segements.
-		/// decomposedControlPoints[i][j] means ith segement jth control point.
 		/// </summary>
-		static std::vector<std::vector<XYZW>> DecomposeToBeziers(const LN_NurbsCurve& curve);
+		static std::vector<LN_NurbsCurve> DecomposeToBeziers(const LN_NurbsCurve& curve);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page185

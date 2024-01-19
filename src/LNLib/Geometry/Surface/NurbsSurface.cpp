@@ -531,7 +531,7 @@ void LNLib::NurbsSurface::RefineKnotVector(const LN_NurbsSurface& surface, std::
 	}
 }
 
-std::vector<std::vector<std::vector<LNLib::XYZW>>> LNLib::NurbsSurface::DecomposeToBeziers(const LN_NurbsSurface& surface)
+std::vector<LNLib::LN_NurbsSurface> LNLib::NurbsSurface::DecomposeToBeziers(const LN_NurbsSurface& surface)
 {
 	int degreeU = surface.DegreeU;
 	int degreeV = surface.DegreeV;
@@ -539,12 +539,39 @@ std::vector<std::vector<std::vector<LNLib::XYZW>>> LNLib::NurbsSurface::Decompos
 	std::vector<double> knotVectorV = surface.KnotVectorV;
 	std::vector<std::vector<XYZW>> controlPoints = surface.ControlPoints;
 
-	std::vector<std::vector<std::vector<LNLib::XYZW>>> decomposedControlPoints;
-	
 	int rows = controlPoints.size();
 	int columns = controlPoints[0].size();
 
-	std::vector<std::vector<std::vector<LNLib::XYZW>>> temp(rows - degreeU, std::vector<std::vector<XYZW>>(degreeU + 1, std::vector<XYZW>(columns)));
+	int knotUSize = 2 * (degreeU + 1);
+	std::vector<double> bezierKnotsU(knotUSize);
+	for (int i = 0; i < knotUSize / 2; i++)
+	{
+		bezierKnotsU[i] = 0;
+	}
+	for (int i = knotUSize / 2; i < knotUSize; i++)
+	{
+		bezierKnotsU[i] = 1;
+	}
+	int knotVSize = 2 * (degreeV + 1);
+	std::vector<double> bezierKnotsV(knotVSize);
+	for (int i = 0; i < knotVSize / 2; i++)
+	{
+		bezierKnotsV[i] = 0;
+	}
+	for (int i = knotVSize / 2; i < knotVSize; i++)
+	{
+		bezierKnotsV[i] = 1;
+	}
+
+	std::vector<LNLib::LN_NurbsSurface> tempBezierPatches(rows - degreeU);
+	for (int i = 0; i < tempBezierPatches.size(); i++)
+	{
+		tempBezierPatches[i].DegreeU = degreeU;
+		tempBezierPatches[i].DegreeV = degreeV;
+		tempBezierPatches[i].KnotVectorU = bezierKnotsU;
+		tempBezierPatches[i].KnotVectorV = knotVectorV;
+		tempBezierPatches[i].ControlPoints = std::vector<std::vector<XYZW>>(degreeU + 1, std::vector<XYZW>(columns));
+	}
 
 	int m = rows - 1 + degreeU + 1;
 	int a = degreeU;
@@ -554,12 +581,11 @@ std::vector<std::vector<std::vector<LNLib::XYZW>>> LNLib::NurbsSurface::Decompos
 
 	for (int i = 0; i <= degreeU; i++)
 	{
-		for (int col = 0; col < columns; col++)
+		for (int j = 0; j < columns; j++)
 		{
-			temp[nb][i][col] = controlPoints[i][col];
+			tempBezierPatches[nb].ControlPoints[i][j] = controlPoints[i][j];
 		}
 	}
-
 	std::vector<double> alphaVector(std::max(degreeU,degreeV) + 1);
 	while (b < m)
 	{
@@ -587,14 +613,14 @@ std::vector<std::vector<std::vector<LNLib::XYZW>>> LNLib::NurbsSurface::Decompos
 					double alpha = alphaVector[k - s];
 					for (int col = 0; col < columns; col++)
 					{
-						temp[nb][k][col] = alpha * decomposedControlPoints[nb][k][col] + (1.0 - alpha) * decomposedControlPoints[nb][k - 1][col];
+						tempBezierPatches[nb].ControlPoints[k][col] = alpha * tempBezierPatches[nb].ControlPoints[k][col] + (1.0 - alpha) * tempBezierPatches[nb].ControlPoints[k - 1][col];
 					}
 				}
 				if (b < m)
 				{
 					for (int col = 0; col < columns; col++)
 					{
-						temp[nb + 1][save][col] = decomposedControlPoints[nb][degreeU][col];
+						tempBezierPatches[nb + 1].ControlPoints[save][col] = tempBezierPatches[nb].ControlPoints[degreeU][col];
 					}
 				}
 			}
@@ -606,7 +632,7 @@ std::vector<std::vector<std::vector<LNLib::XYZW>>> LNLib::NurbsSurface::Decompos
 			{
 				for (int col = 0; col < columns; col++)
 				{
-					temp[nb][i][col] = controlPoints[b - degreeU + i][col];
+					tempBezierPatches[nb].ControlPoints[i][col] = controlPoints[b - degreeU + i][col];
 				}
 			}
 			a = b;
@@ -614,7 +640,15 @@ std::vector<std::vector<std::vector<LNLib::XYZW>>> LNLib::NurbsSurface::Decompos
 		}
 	}
 
-	decomposedControlPoints.resize(nb * (columns - degreeV), std::vector<std::vector<XYZW>>(degreeU + 1, std::vector<XYZW>(degreeV + 1)));
+	std::vector<LNLib::LN_NurbsSurface> bezierPatches(tempBezierPatches.size() * (columns-degreeV));
+	for (int i = 0; i < bezierPatches.size(); i++)
+	{
+		bezierPatches[i].DegreeU = degreeU;
+		bezierPatches[i].DegreeV = degreeV;
+		bezierPatches[i].KnotVectorU = bezierKnotsU;
+		bezierPatches[i].KnotVectorV = bezierKnotsV;
+		bezierPatches[i].ControlPoints = std::vector<std::vector<XYZW>>(degreeU + 1, std::vector<XYZW>(degreeV + 1));
+	}
 
 	nb = 0;
 	for (int np = 0; np < nb; np++)
@@ -623,7 +657,7 @@ std::vector<std::vector<std::vector<LNLib::XYZW>>> LNLib::NurbsSurface::Decompos
 		{
 			for (int j = 0; j <= degreeV; j++)
 			{
-				decomposedControlPoints[nb][i][j] = temp[np][i][j];
+				bezierPatches[nb].ControlPoints[i][j] = tempBezierPatches[np].ControlPoints[i][j];
 			}
 		}
 
@@ -656,8 +690,15 @@ std::vector<std::vector<std::vector<LNLib::XYZW>>> LNLib::NurbsSurface::Decompos
 						double alpha = alphaVector[k - s];
 						for (int row = 0; row <= degreeU; row++)
 						{
-							decomposedControlPoints[nb][row][k] = alpha * decomposedControlPoints[nb][row][k] + (1.0 - alpha) * decomposedControlPoints[nb][row][k - 1];
+							bezierPatches[nb].ControlPoints[row][k] = alpha * bezierPatches[nb].ControlPoints[row][k] + (1.0 - alpha) * bezierPatches[nb].ControlPoints[row][k - 1];
 						}
+					}
+					if (b < m)
+					{
+						for (int row = 0; row <= degreeU; row++)
+						{
+							bezierPatches[nb + 1].ControlPoints[row][save] = bezierPatches[nb].ControlPoints[row][degreeV];
+						}	
 					}
 				}
 			}
@@ -668,7 +709,7 @@ std::vector<std::vector<std::vector<LNLib::XYZW>>> LNLib::NurbsSurface::Decompos
 				{
 					for (int row = 0; row <= degreeU; row++)
 					{
-						decomposedControlPoints[nb][row][i] = temp[np][row][b - degreeV + i];
+						bezierPatches[nb].ControlPoints[row][i] = bezierPatches[np].ControlPoints[row][b - degreeV + i];
 					}
 				}
 				a = b;
@@ -676,7 +717,7 @@ std::vector<std::vector<std::vector<LNLib::XYZW>>> LNLib::NurbsSurface::Decompos
 			}
 		}
 	}
-	return decomposedControlPoints;
+	return bezierPatches;
 }
 
 void LNLib::NurbsSurface::RemoveKnot(const LN_NurbsSurface& surface, double removeKnot, int times, bool isUDirection, LN_NurbsSurface& result)
@@ -2694,6 +2735,7 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface)
 	XYZ start2 = GetPointOnSurface(surface, UV(startU, endV));
 	double startLength = start1.Distance(start2);
 
+	int size = (count / 2.0) + 1;
 	std::vector<double> odds;
 	std::vector<double> evens;
 
