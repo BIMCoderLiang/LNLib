@@ -1208,12 +1208,12 @@ bool LNLib::NurbsCurve::SplitAt(const LN_NurbsCurve& curve, double parameter, LN
 	int rControlPoints = left.ControlPoints.size() - spanIndex;
 	std::vector<XYZW> rightControlPoints(rControlPoints);
 	std::vector<double> rightKnotVector(rControlPoints + degree + 1);
-	for (int i = left.ControlPoints.size() - 1, j = right.ControlPoints.size() - 1; j >= 0; j--, i--)
+	for (int i = left.ControlPoints.size() - 1, j = rControlPoints - 1; j >= 0; j--, i--)
 	{
 		right.ControlPoints[j] = left.ControlPoints[i];
 	}
 
-	for (int i = left.KnotVector.size() - 1, j = right.KnotVector.size() - 1; j >= 0; j--, i--) 
+	for (int i = left.KnotVector.size() - 1, j = rControlPoints + degree; j >= 0; j--, i--)
 	{
 		right.KnotVector[j] = left.KnotVector[i];
 	}
@@ -3328,7 +3328,21 @@ double LNLib::NurbsCurve::GetParamOnCurve(const LN_NurbsCurve& curve, double giv
 
 std::vector<double> LNLib::NurbsCurve::GetParamsOnCurve(const LN_NurbsCurve& curve, double givenLength, IntegratorType type)
 {
-	// to be continued...
-	return std::vector<double>();
+	std::vector<double> result;
+
+	std::vector<double> knotVector = curve.KnotVector;
+	double end = knotVector[knotVector.size() - 1];
+	
+	double param = GetParamOnCurve(curve, givenLength, type);
+	while (!MathUtils::IsAlmostEqualTo(param, end))
+	{
+		result.emplace_back(param);
+
+		LN_NurbsCurve left;
+		LN_NurbsCurve right;
+		SplitAt(curve, param, left, right);
+		param = GetParamOnCurve(right, givenLength, type);
+	}
+	return result;
 }
 
