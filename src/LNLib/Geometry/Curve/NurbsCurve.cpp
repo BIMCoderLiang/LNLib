@@ -71,6 +71,30 @@ namespace LNLib
 		}
 		return length;
 	}
+
+	double GetParamByLength(const LN_NurbsCurve& curve, double start, double end, double givenLength, IntegratorType type)
+	{
+		double middle = (start + end) / 2.0;
+
+		LN_NurbsCurve left;
+		LN_NurbsCurve right;
+		NurbsCurve::SplitAt(curve, middle, left, right);
+		double length = NurbsCurve::ApproximateLength(left, type);
+		if (MathUtils::IsAlmostEqualTo(length, givenLength, Constants::DefaultTolerance))
+		{
+			return middle;
+		}
+		else if (MathUtils::IsGreaterThan(length, givenLength, Constants::DefaultTolerance))
+		{
+			start = middle;
+			GetParamByLength(curve, start, end, givenLength, type);
+		}
+		else if (MathUtils::IsLessThan(length, givenLength, Constants::DefaultTolerance))
+		{
+			end = middle;
+			GetParamByLength(curve, start, end, givenLength, type);
+		}
+	}
 }
 
 void LNLib::NurbsCurve::Check(const LN_NurbsCurve& curve)
@@ -3253,7 +3277,7 @@ double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, Integrat
 		case IntegratorType::Gauss_Legendre:
 		{
 			// Strongly recommend read this blog:
-		    // https://raphlinus.github.io/curves/2018/12/28/bezier-arclength.html
+			// https://raphlinus.github.io/curves/2018/12/28/bezier-arclength.html
 
 			std::vector<LN_NurbsCurve> bezierCurves =  DecomposeToBeziers(curve);
 			for (int i = 0; i < bezierCurves.size(); i++)
@@ -3283,5 +3307,28 @@ double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, Integrat
 			 break;
 	}
 	return length;
+}
+
+
+double LNLib::NurbsCurve::GetParamOnCurve(const LN_NurbsCurve& curve, double givenLength, IntegratorType type)
+{
+	std::vector<double> knotVector = curve.KnotVector;
+	double start = knotVector[0];
+	double end = knotVector[knotVector.size() - 1];
+
+	double totalLength = ApproximateLength(curve, type);
+	if (MathUtils::IsLessThan(totalLength, givenLength, Constants::DefaultTolerance))
+	{
+		return end;
+	}
+
+	double param =  GetParamByLength(curve, start, end, givenLength, type);
+	return param;
+}
+
+std::vector<double> LNLib::NurbsCurve::GetParamsOnCurve(const LN_NurbsCurve& curve, double givenLength, IntegratorType type)
+{
+	// to be continued...
+	return std::vector<double>();
 }
 

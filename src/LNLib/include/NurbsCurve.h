@@ -303,6 +303,10 @@ namespace LNLib
 		static bool IsArc(const LN_NurbsCurve& curve);
 
 		static double ApproximateLength(const LN_NurbsCurve& curve, IntegratorType type);
+
+		static double GetParamOnCurve(const LN_NurbsCurve& curve, double givenLength, IntegratorType type);
+
+		static std::vector<double> GetParamsOnCurve(const LN_NurbsCurve& curve, double givenLength, IntegratorType type);
 	};
 }
 
