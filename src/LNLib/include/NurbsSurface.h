@@ -223,6 +223,13 @@ namespace LNLib
 		/// </summary>
 		static void CreateCoonsSurface(const LN_NurbsCurve& curve0, const LN_NurbsCurve& curve1, const LN_NurbsCurve& curve2, const LN_NurbsCurve& curve3, LN_NurbsSurface& surface);
 
-		static double ApproximateArea(const LN_NurbsSurface& surface);
+		/// <summary>
+		/// Calculate surface area.
+		/// 
+		/// Use Simpson integration for low accuracy.
+		/// Use Gauss-Legendre integration for medium accuracy.
+		/// Use Chebyshev integration for high accuracy.
+		/// </summary>
+		static double ApproximateArea(const LN_NurbsSurface& surface, IntegratorType type);
 	};
 }

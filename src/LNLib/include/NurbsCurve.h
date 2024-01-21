@@ -302,6 +302,13 @@ namespace LNLib
 
 		static bool IsArc(const LN_NurbsCurve& curve);
 
+		/// <summary>
+		/// Calculate curve arc length.
+		/// 
+		/// Use Simpson integration for low accuracy.
+		/// Use Gauss-Legendre integration for medium accuracy.
+		/// Use Chebyshev integration for high accuracy.
+		/// </summary>
 		static double ApproximateLength(const LN_NurbsCurve& curve, IntegratorType type);
 
 		static double GetParamOnCurve(const LN_NurbsCurve& curve, double givenLength, IntegratorType type);

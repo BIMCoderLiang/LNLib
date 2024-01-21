@@ -3262,7 +3262,7 @@ double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, Integrat
 {
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
-
+	
 	double length = 0.0;
 	switch (type)
 	{
@@ -3279,19 +3279,18 @@ double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, Integrat
 			// Strongly recommend read this blog:
 			// https://raphlinus.github.io/curves/2018/12/28/bezier-arclength.html
 
+			double coefficient = 0.5;
 			std::vector<LN_NurbsCurve> bezierCurves =  DecomposeToBeziers(curve);
 			for (int i = 0; i < bezierCurves.size(); i++)
 			{
 				LN_NurbsCurve bezierCurve = bezierCurves[i];
-
 				double bLength = 0.0;
 				std::vector<double> abscissae = Constants::GaussLegendreAbscissae;
 				int size = abscissae.size();
-				double coefficient = 0.5;
 				for (int i = 0, t; i < size; i++)
 				{
 					t = coefficient * (abscissae[i] + 1);
-					bLength += Constants::GaussLegendreWeights[i] + ComputeRationalCurveDerivatives(bezierCurve,1,t)[1].Length();
+					bLength += Constants::GaussLegendreWeights[i] * ComputeRationalCurveDerivatives(bezierCurve,1,t)[1].Length();
 				}
 				bLength = coefficient * bLength;
 				length += bLength;
