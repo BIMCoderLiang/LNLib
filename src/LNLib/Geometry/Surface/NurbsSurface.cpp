@@ -2771,12 +2771,48 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 		}
 		case IntegratorType::Gauss_Legendre:
 		{
-			// to be continued...
+			std::vector<LN_NurbsSurface> bezierSurfaces = DecomposeToBeziers(surface);
+			for (int i = 0; i < bezierSurfaces.size(); i++)
+			{
+				LN_NurbsSurface bezierSurface = bezierSurfaces[i];
+
+				std::vector<double> bKnotsU = bezierSurface.KnotVectorU;
+				double a = bKnotsU[0];
+				double b = bKnotsU[bKnotsU.size() - 1];
+				double coefficient1 = (b - a) / 2.0;
+
+				std::vector<double> bKnotsV = bezierSurface.KnotVectorV;
+				double c = bKnotsV[0];
+				double d = bKnotsV[bKnotsV.size() - 1];
+				double coefficient2 = (d - c) / 2.0;
+
+				double bArea = 0.0;
+				std::vector<double> abscissae = Constants::GaussLegendreAbscissae;
+				int size = abscissae.size();
+				for (int i = 0; i < size; i++)
+				{
+					double u = coefficient1 * abscissae[i] + (a + b) / 2.0;
+					for (int j = 0; j < size; j++)
+					{
+						double v = coefficient2 * abscissae[i] + (c + d) / 2.0;
+						std::vector<std::vector<XYZ>> derivatives = ComputeRationalSurfaceDerivatives(bezierSurface, 1, UV(u,v));
+						XYZ Su = derivatives[1][0];
+						XYZ Sv = derivatives[0][1];
+						double E = Su.DotProduct(Su);
+						double F = Su.DotProduct(Sv);
+						double G = Sv.DotProduct(Sv);
+						double ds = sqrt(E * G - F * F);
+						bArea += Constants::GaussLegendreWeights[i] * Constants::GaussLegendreWeights[i] * ds;
+					}
+				}
+				bArea = coefficient1 * coefficient2 * bArea;
+				area += bArea;
+			}
 			break;
 		}
 		case IntegratorType::Chebyshev:
 		{
-
+			// to be continued...
 			break;
 		}
 		default:
