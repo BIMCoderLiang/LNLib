@@ -26,15 +26,7 @@ namespace LNLib
 		static const double MaxDistance;
 		static const double Pi;
 
-		/// <summary>
-		/// According to https://github.com/Pomax/bezierjs
-		/// Order n = 24.
-		/// </summary>
-		static const std::vector<double> GaussLegendreAbscissae;
-		static const std::vector<double> GaussLegendreWeights;
-
 	};
-
 }
 
 

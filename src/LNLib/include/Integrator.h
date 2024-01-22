@@ -21,6 +21,15 @@ namespace LNLib
 		static double Simpson(double start, double end, double startTangentLength, double middleTangentLength, double endTangentLength);
 
 		static double Simpson(double start, double end, std::vector<double> odds, std::vector<double> evens, double delta);
+
+		/// <summary>
+		/// According to https://github.com/Pomax/bezierjs
+		/// Order n = 24.
+		/// </summary>
+		static const std::vector<double> GaussLegendreAbscissae;
+		static const std::vector<double> GaussLegendreWeights;
+
+		static std::vector<double> ClenshawCurtisQuadratureWeights(int degree);
 	};
 
 }

@@ -2787,7 +2787,7 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 				double coefficient2 = (d - c) / 2.0;
 
 				double bArea = 0.0;
-				std::vector<double> abscissae = Constants::GaussLegendreAbscissae;
+				std::vector<double> abscissae = Integrator::GaussLegendreAbscissae;
 				int size = abscissae.size();
 				for (int i = 0; i < size; i++)
 				{
@@ -2802,7 +2802,7 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 						double F = Su.DotProduct(Sv);
 						double G = Sv.DotProduct(Sv);
 						double ds = sqrt(E * G - F * F);
-						bArea += Constants::GaussLegendreWeights[i] * Constants::GaussLegendreWeights[i] * ds;
+						bArea += Integrator::GaussLegendreWeights[i] * Integrator::GaussLegendreWeights[i] * ds;
 					}
 				}
 				bArea = coefficient1 * coefficient2 * bArea;

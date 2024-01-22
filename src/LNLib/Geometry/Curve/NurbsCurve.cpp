@@ -3290,12 +3290,12 @@ double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, Integrat
 				double coefficient = (b - a) / 2.0;
 
 				double bLength = 0.0;
-				std::vector<double> abscissae = Constants::GaussLegendreAbscissae;
+				std::vector<double> abscissae = Integrator::GaussLegendreAbscissae;
 				int size = abscissae.size();
 				for (int i = 0; i < size; i++)
 				{
 					double t = coefficient * abscissae[i] + (a + b)/2.0;
-					bLength += Constants::GaussLegendreWeights[i] * ComputeRationalCurveDerivatives(bezierCurve,1,t)[1].Length();
+					bLength += Integrator::GaussLegendreWeights[i] * ComputeRationalCurveDerivatives(bezierCurve,1,t)[1].Length();
 				}
 				bLength = coefficient * bLength;
 				length += bLength;
