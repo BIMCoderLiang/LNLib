@@ -89,11 +89,71 @@ namespace LNLib
 			start = middle;
 			GetParamByLength(curve, start, end, givenLength, type);
 		}
-		else if (MathUtils::IsLessThan(length, givenLength, Constants::DefaultTolerance))
+		else
 		{
 			end = middle;
 			GetParamByLength(curve, start, end, givenLength, type);
 		}
+	}
+
+	double ClenshawCurtisQuadrature(const LN_NurbsCurve& curve, double start, double end, std::vector<double>& series)
+	{
+		double integration;
+		double eps = Constants::DefaultTolerance;
+
+		int j, k, l;
+		double err, esf, eref, erefh, hh, ir, iback, irback, ba, ss, x, y, fx, errir;
+		int lenw = series.size() - 1;
+		esf = 10;
+		ba = 0.5 * (end - start);
+		ss = 2 * series[lenw];
+		x = ba * series[lenw];
+		series[0] = 0.5 * NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, start)[1].Length();
+		series[3] = 0.5 * NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, end)[1].Length();
+		series[2] = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, start + x)[1].Length(); 
+		series[4] = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, end - x)[1].Length();
+		series[1] = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, start + ba)[1].Length();
+		eref = 0.5 * (fabs(series[0]) + fabs(series[1]) + fabs(series[2]) + fabs(series[3]) + fabs(series[4]));
+		series[0] += series[3];
+		series[2] += series[4];
+		ir = series[0] + series[1] + series[2];
+		integration = series[0] * series[lenw - 1] + series[1] * series[lenw - 2] + series[2] * series[lenw - 3];
+		erefh = eref * sqrt(eps);
+		eref *= eps;
+		hh = 0.25;
+		l = 2;
+		k = lenw - 5;
+		do {
+			iback = integration;
+			irback = ir;
+			x = ba * series[k + 1];
+			y = 0;
+			integration = series[0] * series[k];
+			for (j = 1; j <= l; j++) {
+				x += y;
+				y += ss * (ba - x);
+				fx = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, start + x)[1].Length() + NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, end - x)[1].Length();
+				ir += fx;
+				integration += series[j] * series[k - j] + fx * series[k - j - l];
+				series[j + l] = fx;
+			}
+			ss = 2 * series[k + 1];
+			err = esf * l * fabs(integration - iback);
+			hh *= 0.25;
+			errir = hh * fabs(ir - 2 * irback);
+			l *= 2;
+			k -= l + 2;
+		} while ((err > erefh || errir > eref) && k > 4 * l);
+		integration *= end - start;
+		if (err > erefh || errir > eref)
+		{
+			err *= -fabs(end - start);
+		}
+		else
+		{
+			err = eref * fabs(end - start);
+		}
+		return integration;
 	}
 }
 
@@ -3262,7 +3322,8 @@ double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, Integrat
 {
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
-	
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
 	double length = 0.0;
 	switch (type)
 	{
@@ -3304,7 +3365,13 @@ double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, Integrat
 		}
 		case IntegratorType::Chebyshev:
 		{
-			// to be continued...
+			std::vector<double> series = Integrator::ChebyshevSeries(100);
+			for (int i = degree; i < controlPoints.size(); i++) 
+			{
+				double a = knotVector[i];
+				double b = knotVector[i + 1];
+				length += ClenshawCurtisQuadrature(curve, a, b, series);
+			}
 			break;
 		}
 		default:

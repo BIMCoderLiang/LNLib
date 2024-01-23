@@ -9,6 +9,7 @@
  */
 
 #include "Integrator.h"
+#include "FFT.h"
 #include "Constants.h"
 
 namespace LNLib
@@ -91,26 +92,52 @@ namespace LNLib
         0.0123412297999871995468056670700372915759,
     };
 
-	std::vector<double> Integrator::ClenshawCurtisQuadratureWeights(int degree)
-	{
-        std::vector<double> weights(degree + 1);
-        for (int k = 0; k <= degree; k++)
-        {
-            double thetaK = (k * Constants::Pi) / degree;
-            double ck = k == 0 || k == degree ? 1 : 2;
-            double coeffcient = ck / degree;
+    std::vector<double> Integrator::ChebyshevSeries(int size)
+    {
+        std::vector<double> series(size);
 
-            double sum = 0.0;
-            for (int j = 1; j <= degree / 2; j++)
+        int lenw = series.size() - 1;
+        int j, k, l, m;
+        double cos2, sin1, sin2, hl;
+
+        cos2 = 0;
+        sin1 = 1;
+        sin2 = 1;
+        hl = 0.5;
+        k = lenw;
+        l = 2;
+        while (l < k - l - 1) 
+        {
+            series[0] = hl * 0.5;
+            for (j = 1; j <= l; j++) 
             {
-                int bj = j == (int)(degree / 2) ? 1 : 2;
-                sum += (bj / (4 * j * j - 1))* cos(2 * j * thetaK);
+                series[j] = hl / (1 - 4 * j * j);
             }
-            sum = coeffcient * (1 - sum);
-            weights[k] = sum;
+            series[l] *= 0.5;
+            dfct(l, 0.5 * cos2, sin1, series);
+            cos2 = sqrt(2 + cos2);
+            sin1 /= cos2;
+            sin2 /= 2 + cos2;
+            series[k] = sin2;
+            series[k - 1] = series[0];
+            series[k - 2] = series[l];
+            k -= 3;
+            m = l;
+            while (m > 1) 
+            {
+                m >>= 1;
+                for (j = m; j <= l - m; j += (m << 1)) 
+                {
+                    series[k] = series[j];
+                    k--;
+                }
+            }
+            hl *= 0.5;
+            l *= 2;
         }
-		return weights;
-	}
+        return series;
+    }
+    
 }
 
 

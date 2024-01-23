@@ -24,14 +24,16 @@ namespace LNLib
 
 		/// <summary>
 		/// According to https://github.com/Pomax/bezierjs
-		/// Order n = 24.
+		/// Order is set 24.
 		/// </summary>
 		static const std::vector<double> GaussLegendreAbscissae;
 		static const std::vector<double> GaussLegendreWeights;
 
-		static std::vector<double> ClenshawCurtisQuadratureWeights(int degree);
+		/// <summary>
+		/// According to https://github.com/chrisidefix/nurbs
+		/// </summary>
+		static std::vector<double> ChebyshevSeries(int size);
 	};
-
 }
 
 
