@@ -10,7 +10,6 @@
 
 #include "Integrator.h"
 #include "FFT.h"
-#include "Constants.h"
 
 namespace LNLib
 {
