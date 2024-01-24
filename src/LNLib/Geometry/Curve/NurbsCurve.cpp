@@ -30,6 +30,14 @@
 
 namespace LNLib
 {
+	class FirstDerivativeLengthFunction : public IntegrationFunction
+	{
+		double operator()(double parameter, const LN_NurbsCurve& curve)
+		{
+			return NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, parameter)[1].Length();
+		}
+	};
+
 	double GetNode(int degree, const std::vector<double>& knotVector, int lastIndex)
 	{
 		double t = 0.0;
@@ -45,20 +53,12 @@ namespace LNLib
 		return t;
 	}
 
-	double Simpson(const LN_NurbsCurve& curve, double start, double end)
-	{
-		double st = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, start)[1].Length();
-		double mt = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, (start + end) / 2.0)[1].Length();
-		double et = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, end)[1].Length();
-		return Integrator::Simpson(start, end, st, mt, et);
-	}
-
-	double CalculateLengthBySimpson(const LN_NurbsCurve& curve, double start, double end, double simpson, double tolearance)
+	double CalculateLengthBySimpson(FirstDerivativeLengthFunction function, const LN_NurbsCurve& curve, double start, double end, double simpson, double tolearance)
 	{
 		double length = 0.0;
 		double m = (start + end) / 2.0;
-		double left = Simpson(curve, start, m);
-		double right = Simpson(curve, m, end);
+		double left = Integrator::Simpson((IntegrationFunction*)& function, curve, start, m);
+		double right = Integrator::Simpson((IntegrationFunction*)& function, curve, m, end);
 
 		double differ = left + right - simpson;
 		if (MathUtils::IsLessThan(abs(differ) / 10.0, tolearance))
@@ -67,7 +67,7 @@ namespace LNLib
 		}
 		else
 		{
-			length = CalculateLengthBySimpson(curve, start, m, left, tolearance / 2.0) + CalculateLengthBySimpson(curve, m, end, right, tolearance / 2.0);
+			length = CalculateLengthBySimpson(function, curve, start, m, left, tolearance / 2.0) + CalculateLengthBySimpson(function, curve, m, end, right, tolearance / 2.0);
 		}
 		return length;
 	}
@@ -89,71 +89,11 @@ namespace LNLib
 			start = middle;
 			GetParamByLength(curve, start, end, givenLength, type);
 		}
-		else
+		else if (MathUtils::IsLessThan(length, givenLength, Constants::DefaultTolerance))
 		{
 			end = middle;
 			GetParamByLength(curve, start, end, givenLength, type);
 		}
-	}
-
-	double ClenshawCurtisQuadrature(const LN_NurbsCurve& curve, double start, double end, std::vector<double>& series)
-	{
-		double integration;
-		double eps = Constants::DefaultTolerance;
-
-		int j, k, l;
-		double err, esf, eref, erefh, hh, ir, iback, irback, ba, ss, x, y, fx, errir;
-		int lenw = series.size() - 1;
-		esf = 10;
-		ba = 0.5 * (end - start);
-		ss = 2 * series[lenw];
-		x = ba * series[lenw];
-		series[0] = 0.5 * NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, start)[1].Length();
-		series[3] = 0.5 * NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, end)[1].Length();
-		series[2] = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, start + x)[1].Length(); 
-		series[4] = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, end - x)[1].Length();
-		series[1] = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, start + ba)[1].Length();
-		eref = 0.5 * (fabs(series[0]) + fabs(series[1]) + fabs(series[2]) + fabs(series[3]) + fabs(series[4]));
-		series[0] += series[3];
-		series[2] += series[4];
-		ir = series[0] + series[1] + series[2];
-		integration = series[0] * series[lenw - 1] + series[1] * series[lenw - 2] + series[2] * series[lenw - 3];
-		erefh = eref * sqrt(eps);
-		eref *= eps;
-		hh = 0.25;
-		l = 2;
-		k = lenw - 5;
-		do {
-			iback = integration;
-			irback = ir;
-			x = ba * series[k + 1];
-			y = 0;
-			integration = series[0] * series[k];
-			for (j = 1; j <= l; j++) {
-				x += y;
-				y += ss * (ba - x);
-				fx = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, start + x)[1].Length() + NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, end - x)[1].Length();
-				ir += fx;
-				integration += series[j] * series[k - j] + fx * series[k - j - l];
-				series[j + l] = fx;
-			}
-			ss = 2 * series[k + 1];
-			err = esf * l * fabs(integration - iback);
-			hh *= 0.25;
-			errir = hh * fabs(ir - 2 * irback);
-			l *= 2;
-			k -= l + 2;
-		} while ((err > erefh || errir > eref) && k > 4 * l);
-		integration *= end - start;
-		if (err > erefh || errir > eref)
-		{
-			err *= -fabs(end - start);
-		}
-		else
-		{
-			err = eref * fabs(end - start);
-		}
-		return integration;
 	}
 }
 
@@ -1377,6 +1317,23 @@ void LNLib::NurbsCurve::Offset(const LN_NurbsCurve& curve, double offset, LN_Nur
 	}
 
 	GlobalInterpolation(3, newPoints, result);
+}
+
+void LNLib::NurbsCurve::CreateLine(const XYZ& start, const XYZ& end, LN_NurbsCurve result)
+{
+	VALIDATE_ARGUMENT(!start.IsAlmostEqualTo(end), "end", "start must not be equal to end.");
+
+	int degree = 1;
+	std::vector<XYZW> controlPoints(2);
+	controlPoints[0] = XYZW(start, 1);
+	controlPoints[1] = XYZW(end, 1);
+	std::vector<double> knotVector(4);
+	knotVector[0] = knotVector[1] = 0;
+	knotVector[2] = knotVector[3] = 1;
+
+	result.Degree = degree;
+	result.KnotVector = knotVector;
+	result.ControlPoints = controlPoints;
 }
 
 bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ& yAxis, double startRad, double endRad, double xRadius, double yRadius, LN_NurbsCurve& curve)
@@ -3331,8 +3288,9 @@ double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, Integrat
 		{
 			double start = knotVector[0];
 			double end = knotVector[knotVector.size() - 1];
-			double simpson = Simpson(curve, start, end);
-			length = CalculateLengthBySimpson(curve, start, end, simpson, Constants::DistanceEpsilon);
+			FirstDerivativeLengthFunction function;
+			double simpson = Integrator::Simpson((IntegrationFunction*)& function, curve, start, end);
+			length = CalculateLengthBySimpson(function ,curve, start, end, simpson, Constants::DistanceEpsilon);
 			break;
 		}
 		case IntegratorType::Gauss_Legendre:
@@ -3365,12 +3323,13 @@ double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, Integrat
 		}
 		case IntegratorType::Chebyshev:
 		{
-			std::vector<double> series = Integrator::ChebyshevSeries(100);
+			std::vector<double> series = Integrator::ChebyshevSeries();
 			for (int i = degree; i < controlPoints.size(); i++) 
 			{
 				double a = knotVector[i];
 				double b = knotVector[i + 1];
-				length += ClenshawCurtisQuadrature(curve, a, b, series);
+				FirstDerivativeLengthFunction function;
+				length += Integrator::ClenshawCurtisQuadrature((IntegrationFunction*)& function, curve, a, b, series);
 			}
 			break;
 		}

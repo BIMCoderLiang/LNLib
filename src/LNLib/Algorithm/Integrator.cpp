@@ -10,15 +10,10 @@
 
 #include "Integrator.h"
 #include "FFT.h"
+#include "Constants.h"
 
 namespace LNLib
 {
-	double Integrator::Simpson(double start, double end, double startTangentLength, double middleTangentLength, double endTangentLength)
-	{
-		double result = ((end - start) / 6.0) * (startTangentLength + 4 * middleTangentLength + endTangentLength);
-		return result;
-	}
-
 	double Integrator::Simpson(double start, double end, std::vector<double> odds, std::vector<double> evens, double delta)
 	{
 		double oddsSum = 0.0;
@@ -136,7 +131,6 @@ namespace LNLib
         }
         return series;
     }
-    
 }
 
 
