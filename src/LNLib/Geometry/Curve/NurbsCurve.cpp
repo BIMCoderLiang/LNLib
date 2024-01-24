@@ -32,9 +32,10 @@ namespace LNLib
 {
 	class FirstDerivativeLengthFunction : public IntegrationFunction
 	{
-		double operator()(double parameter, const LN_NurbsCurve& curve)
+		double operator()(double parameter, void* customData)
 		{
-			return NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, parameter)[1].Length();
+			LN_NurbsCurve* curve = (LN_NurbsCurve*)customData;
+			return NurbsCurve::ComputeRationalCurveDerivatives(*curve, 1, parameter)[1].Length();
 		}
 	};
 
@@ -57,8 +58,8 @@ namespace LNLib
 	{
 		double length = 0.0;
 		double m = (start + end) / 2.0;
-		double left = Integrator::Simpson((IntegrationFunction*)& function, curve, start, m);
-		double right = Integrator::Simpson((IntegrationFunction*)& function, curve, m, end);
+		double left = Integrator::Simpson((IntegrationFunction*)& function, (void*)& curve, start, m);
+		double right = Integrator::Simpson((IntegrationFunction*)& function, (void*)& curve, m, end);
 
 		double differ = left + right - simpson;
 		if (MathUtils::IsLessThan(abs(differ) / 10.0, tolearance))
@@ -80,20 +81,21 @@ namespace LNLib
 		LN_NurbsCurve right;
 		NurbsCurve::SplitAt(curve, middle, left, right);
 		double length = NurbsCurve::ApproximateLength(left, type);
-		if (MathUtils::IsAlmostEqualTo(length, givenLength, Constants::DefaultTolerance))
+		if (MathUtils::IsAlmostEqualTo(length, givenLength, Constants::DistanceEpsilon))
 		{
 			return middle;
 		}
-		else if (MathUtils::IsGreaterThan(length, givenLength, Constants::DefaultTolerance))
+		else if (MathUtils::IsGreaterThan(length, givenLength, Constants::DistanceEpsilon))
 		{
 			start = middle;
 			GetParamByLength(curve, start, end, givenLength, type);
 		}
-		else if (MathUtils::IsLessThan(length, givenLength, Constants::DefaultTolerance))
+		else if (MathUtils::IsLessThan(length, givenLength, Constants::DistanceEpsilon))
 		{
 			end = middle;
 			GetParamByLength(curve, start, end, givenLength, type);
 		}
+		return middle;
 	}
 }
 
@@ -3289,8 +3291,8 @@ double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, Integrat
 			double start = knotVector[0];
 			double end = knotVector[knotVector.size() - 1];
 			FirstDerivativeLengthFunction function;
-			double simpson = Integrator::Simpson((IntegrationFunction*)& function, curve, start, end);
-			length = CalculateLengthBySimpson(function ,curve, start, end, simpson, Constants::DistanceEpsilon);
+			double simpson = Integrator::Simpson((IntegrationFunction*)& function, (void*)& curve, start, end);
+			length = CalculateLengthBySimpson(function , curve, start, end, simpson, Constants::DistanceEpsilon);
 			break;
 		}
 		case IntegratorType::Gauss_Legendre:
@@ -3329,7 +3331,7 @@ double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, Integrat
 				double a = knotVector[i];
 				double b = knotVector[i + 1];
 				FirstDerivativeLengthFunction function;
-				length += Integrator::ClenshawCurtisQuadrature((IntegrationFunction*)& function, curve, a, b, series);
+				length += Integrator::ClenshawCurtisQuadrature((IntegrationFunction*)& function, (void*)& curve, a, b, series);
 			}
 			break;
 		}
@@ -3347,12 +3349,12 @@ double LNLib::NurbsCurve::GetParamOnCurve(const LN_NurbsCurve& curve, double giv
 	double end = knotVector[knotVector.size() - 1];
 
 	double totalLength = ApproximateLength(curve, type);
-	if (MathUtils::IsLessThan(totalLength, givenLength, Constants::DefaultTolerance))
+	if (MathUtils::IsLessThan(totalLength, givenLength, Constants::DistanceEpsilon))
 	{
 		return end;
 	}
 
-	double param =  GetParamByLength(curve, start, end, givenLength, type);
+	double param = GetParamByLength(curve, start, end, givenLength, type);
 	return param;
 }
 

@@ -18,7 +18,7 @@ namespace LNLib
 	class LNLIB_EXPORT IntegrationFunction
 	{
 	public:
-		virtual double operator()(double parameter, const LN_NurbsCurve& curve) = 0;
+		virtual double operator()(double parameter, void* customData) = 0;
 	};
 
 	class LNLIB_EXPORT Integrator
@@ -26,11 +26,11 @@ namespace LNLib
 
 	public:
 		template<typename Function>
-		static double Simpson(Function function, const LN_NurbsCurve& curve, double start, double end)
+		static double Simpson(Function function, void* customData, double start, double end)
 		{
-			double st = (*function)(start, curve);
-			double mt = (*function)((start + end) / 2.0, curve);
-			double et = (*function)((end) / 2.0, curve);
+			double st = (*function)(start, customData);
+			double mt = (*function)((start + end) / 2.0, customData);
+			double et = (*function)((end) / 2.0, customData);
 			double result = ((end - start) / 6.0) * (st + 4 * mt + et);
 			return result;
 		}
@@ -49,7 +49,7 @@ namespace LNLib
 		/// </summary>
 		static std::vector<double> ChebyshevSeries(int size = 100);
 		template<typename Function>
-		static double ClenshawCurtisQuadrature(Function function, const LN_NurbsCurve& curve, double start, double end, std::vector<double>& series, double epsilon = Constants::DefaultTolerance)
+		static double ClenshawCurtisQuadrature(Function function, void* customData, double start, double end, std::vector<double>& series, double epsilon = Constants::DistanceEpsilon)
 		{
 			double integration;
 			int j, k, l;
@@ -59,11 +59,11 @@ namespace LNLib
 			ba = 0.5 * (end - start);
 			ss = 2 * series[lenw];
 			x = ba * series[lenw];
-			series[0] = 0.5 * (*function)(start, curve);
-			series[3] = 0.5 * (*function)(end, curve);
-			series[2] = (*function)(start + x, curve);
-			series[4] = (*function)(end - x, curve);
-			series[1] = (*function)(start + ba, curve);
+			series[0] = 0.5 * (*function)(start, customData);
+			series[3] = 0.5 * (*function)(end, customData);
+			series[2] = (*function)(start + x, customData);
+			series[4] = (*function)(end - x, customData);
+			series[1] = (*function)(start + ba, customData);
 			eref = 0.5 * (fabs(series[0]) + fabs(series[1]) + fabs(series[2]) + fabs(series[3]) + fabs(series[4]));
 			series[0] += series[3];
 			series[2] += series[4];
@@ -83,7 +83,7 @@ namespace LNLib
 				for (j = 1; j <= l; j++) {
 					x += y;
 					y += ss * (ba - x);
-					fx = (*function)(start + x, curve) + (*function)(end - x, curve);
+					fx = (*function)(start + x, customData) + (*function)(end - x, customData);
 					ir += fx;
 					integration += series[j] * series[k - j] + fx * series[k - j - l];
 					series[j + l] = fx;

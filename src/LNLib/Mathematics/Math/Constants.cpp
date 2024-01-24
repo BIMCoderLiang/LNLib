@@ -10,7 +10,6 @@
 
 #include "Constants.h"
 
-const double LNLib::Constants::DefaultTolerance = 0.1;
 const double LNLib::Constants::DoubleEpsilon = 1E-6;
 const double LNLib::Constants::DistanceEpsilon = 1E-4;
 const double LNLib::Constants::MaxDistance = 1E9;

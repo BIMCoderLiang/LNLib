@@ -2734,7 +2734,7 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 			XYZ halfStart = GetPointOnSurface(surface, UV(startU, halfV));
 			XYZ halfEnd = GetPointOnSurface(surface, UV(endU, halfV));
 			double totalWidth = halfStart.Distance(halfEnd);
-			int count = floor(totalWidth / Constants::DefaultTolerance);
+			int count = floor(totalWidth / Constants::DistanceEpsilon);
 
 			XYZ start1 = GetPointOnSurface(surface, UV(startU, startV));
 			XYZ start2 = GetPointOnSurface(surface, UV(startU, endV));
@@ -2746,7 +2746,7 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 
 			for (int i = 1; i < count; i++)
 			{
-				XYZ current = halfStart + (halfEnd - halfStart).Normalize() * Constants::DefaultTolerance * i;
+				XYZ current = halfStart + (halfEnd - halfStart).Normalize() * Constants::DistanceEpsilon * i;
 				UV uv = GetParamOnSurface(surface, current);
 				XYZ point1 = GetPointOnSurface(surface, UV(uv.GetU(), startV));
 				XYZ point2 = GetPointOnSurface(surface, UV(uv.GetU(), endV));
@@ -2766,7 +2766,7 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 			XYZ end2 = GetPointOnSurface(surface, UV(endU, endV));
 			double endLength = end1.Distance(end2);
 
-			area = Integrator::Simpson(startLength, endLength, odds, evens, Constants::DefaultTolerance);
+			area = Integrator::Simpson(startLength, endLength, odds, evens, Constants::DistanceEpsilon);
 			break;
 		}
 		case IntegratorType::Gauss_Legendre:
