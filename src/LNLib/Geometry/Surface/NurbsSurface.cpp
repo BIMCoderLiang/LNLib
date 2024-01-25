@@ -2717,8 +2717,11 @@ void LNLib::NurbsSurface::CreateCoonsSurface(const LN_NurbsCurve& curve0, const 
 
 double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, IntegratorType type)
 {
+	int degreeU = surface.DegreeU;
+	int degreeV = surface.DegreeV;
 	std::vector<double> knotVectorU = surface.KnotVectorU;
 	std::vector<double> knotVectorV = surface.KnotVectorV;
+	std::vector<std::vector<XYZW>> controlPoints = surface.ControlPoints;
 
 	double startU = knotVectorU[0];
 	double endU = knotVectorU[knotVectorU.size() - 1];

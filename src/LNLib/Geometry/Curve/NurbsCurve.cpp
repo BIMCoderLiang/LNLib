@@ -58,8 +58,8 @@ namespace LNLib
 	{
 		double length = 0.0;
 		double m = (start + end) / 2.0;
-		double left = Integrator::Simpson((IntegrationFunction*)& function, (void*)& curve, start, m);
-		double right = Integrator::Simpson((IntegrationFunction*)& function, (void*)& curve, m, end);
+		double left = Integrator::Simpson(function, (void*)& curve, start, m);
+		double right = Integrator::Simpson(function, (void*)& curve, m, end);
 
 		double differ = left + right - simpson;
 		if (MathUtils::IsLessThan(abs(differ) / 10.0, tolearance))
@@ -3279,9 +3279,12 @@ bool LNLib::NurbsCurve::IsArc(const LN_NurbsCurve& curve)
 
 double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, IntegratorType type)
 {
-	int degree = curve.Degree;
-	std::vector<double> knotVector = curve.KnotVector;
-	std::vector<XYZW> controlPoints = curve.ControlPoints;
+	LN_NurbsCurve reCurve;
+	Reparametrize(curve, 0.0, 1.0, reCurve);
+
+	int degree = reCurve.Degree;
+	std::vector<double> knotVector = reCurve.KnotVector;
+	std::vector<XYZW> controlPoints = reCurve.ControlPoints;
 
 	double length = 0.0;
 	switch (type)
@@ -3291,8 +3294,8 @@ double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, Integrat
 			double start = knotVector[0];
 			double end = knotVector[knotVector.size() - 1];
 			FirstDerivativeLengthFunction function;
-			double simpson = Integrator::Simpson((IntegrationFunction*)& function, (void*)& curve, start, end);
-			length = CalculateLengthBySimpson(function , curve, start, end, simpson, Constants::DistanceEpsilon);
+			double simpson = Integrator::Simpson(function, (void*)&reCurve, start, end);
+			length = CalculateLengthBySimpson(function, reCurve, start, end, simpson, Constants::DistanceEpsilon);
 			break;
 		}
 		case IntegratorType::Gauss_Legendre:
@@ -3300,7 +3303,7 @@ double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, Integrat
 			// Strongly recommend read this blog:
 			// https://raphlinus.github.io/curves/2018/12/28/bezier-arclength.html
 
-			std::vector<LN_NurbsCurve> bezierCurves =  DecomposeToBeziers(curve);
+			std::vector<LN_NurbsCurve> bezierCurves =  DecomposeToBeziers(reCurve);
 			for (int i = 0; i < bezierCurves.size(); i++)
 			{
 				LN_NurbsCurve bezierCurve = bezierCurves[i];
@@ -3331,7 +3334,7 @@ double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, Integrat
 				double a = knotVector[i];
 				double b = knotVector[i + 1];
 				FirstDerivativeLengthFunction function;
-				length += Integrator::ClenshawCurtisQuadrature((IntegrationFunction*)& function, (void*)& curve, a, b, series);
+				length += Integrator::ClenshawCurtisQuadrature(function, (void*)&reCurve, a, b, series);
 			}
 			break;
 		}
