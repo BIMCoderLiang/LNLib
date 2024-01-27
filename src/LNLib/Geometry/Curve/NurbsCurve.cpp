@@ -1144,9 +1144,7 @@ void LNLib::NurbsCurve::Reparametrize(const LN_NurbsCurve& curve, double alpha, 
 
 void LNLib::NurbsCurve::Reparametrize(const LN_NurbsCurve& curve, double min, double max, LN_NurbsCurve& result)
 {
-	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
-	std::vector<XYZW> controlPoints = curve.ControlPoints;
 
 	if (MathUtils::IsAlmostEqualTo(min, knotVector[0]) && MathUtils::IsAlmostEqualTo(max, knotVector[knotVector.size() - 1]))
 	{
@@ -1155,9 +1153,8 @@ void LNLib::NurbsCurve::Reparametrize(const LN_NurbsCurve& curve, double min, do
 	}
 
 	std::vector<double> newKnotVector = KnotVectorUtils::Rescale(knotVector, min, max);
-	result.Degree = degree;
+	result = curve;
 	result.KnotVector = newKnotVector;
-	result.ControlPoints = controlPoints;
 }
 
 void LNLib::NurbsCurve::Reverse(const LN_NurbsCurve& curve, LN_NurbsCurve& result)

@@ -24,7 +24,7 @@ NURBS Algorithms:
 - ***Chapter 6***:
     - Curve/Surface Point Inversion
     - Surface Tangent Vector Inversion
-    - Curve Reparameterization
+    - Curve/Surface Reparameterization
     - Curve Transform and Reverse
     - Surface Swap and Reverse
 - ***Chapter 7***:

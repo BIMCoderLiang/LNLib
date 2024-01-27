@@ -30,6 +30,46 @@
 
 namespace LNLib
 {
+	struct AreaData
+	{
+		const LN_NurbsSurface& Surface;
+		double ParameterV;
+		double CurrentKnotU;
+		double NextKnotU;
+		double CurrentKnotV;
+		double NextKnotV;
+		const std::vector<double>& Series;
+
+		AreaData(const LN_NurbsSurface& surface, const std::vector<double>& series) :
+			Surface(surface), Series(series), ParameterV(0.0), CurrentKnotU(0.0), NextKnotU(1.0) {}
+	};
+	class AreaCoreFunction : public IntegrationFunction
+	{
+		double operator()(double parameter, void* customData)
+		{
+			AreaData* data = (AreaData*)customData;
+			std::vector<std::vector<XYZ>> derivatives = NurbsSurface::ComputeRationalSurfaceDerivatives(data->Surface, 1, UV(parameter, data->ParameterV));
+			XYZ Su = derivatives[1][0];
+			XYZ Sv = derivatives[0][1];
+			double E = Su.DotProduct(Su);
+			double F = Su.DotProduct(Sv);
+			double G = Sv.DotProduct(Sv);
+			double ds = sqrt(E * G - F * F);
+			return ds;
+		}
+	};
+	class AreaWrapperFunction : public IntegrationFunction
+	{
+		double operator()(double parameter, void* customData)
+		{
+			static std::vector<double> series;
+			AreaCoreFunction areaCoreFunction;
+			AreaData* data = (AreaData*)customData;
+			data->ParameterV = parameter;
+			return Integrator::ClenshawCurtisQuadrature(areaCoreFunction, data, data->CurrentKnotU, data->NextKnotU, series);
+		}
+	};
+
 	std::vector<int> GetIndex(int size)
 	{
 		std::vector<int> ind(2 * (size - 1) + 2);
@@ -1188,6 +1228,26 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const LN_NurbsSurface& surface,
 		counters++;
 	}
 	return param;
+}
+
+void LNLib::NurbsSurface::Reparametrize(const LN_NurbsSurface& surface, double minU, double maxU, double minV, double maxV, LN_NurbsSurface& result)
+{
+	std::vector<double> knotVectorU = surface.KnotVectorU;
+	std::vector<double> knotVectorV = surface.KnotVectorV;
+
+	if ((MathUtils::IsAlmostEqualTo(minU, knotVectorU[0]) && MathUtils::IsAlmostEqualTo(maxU, knotVectorU[knotVectorU.size() - 1])) ||
+		(MathUtils::IsAlmostEqualTo(minV, knotVectorV[0]) && MathUtils::IsAlmostEqualTo(maxV, knotVectorV[knotVectorV.size() - 1])))
+	{
+		result = surface;
+		return;
+	}
+
+	std::vector<double> newKnotVectorU = KnotVectorUtils::Rescale(knotVectorU, minU, maxU);
+	std::vector<double> newKnotVectorV = KnotVectorUtils::Rescale(knotVectorV, minV, maxV);
+	
+	result = surface;
+	result.KnotVectorU = newKnotVectorU;
+	result.KnotVectorV = newKnotVectorV;
 }
 
 bool LNLib::NurbsSurface::GetUVTangent(const LN_NurbsSurface& surface, const UV param, const XYZ& tangent, UV& uvTangent)
@@ -2717,11 +2777,14 @@ void LNLib::NurbsSurface::CreateCoonsSurface(const LN_NurbsCurve& curve0, const 
 
 double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, IntegratorType type)
 {
-	int degreeU = surface.DegreeU;
-	int degreeV = surface.DegreeV;
-	std::vector<double> knotVectorU = surface.KnotVectorU;
-	std::vector<double> knotVectorV = surface.KnotVectorV;
-	std::vector<std::vector<XYZW>> controlPoints = surface.ControlPoints;
+	LN_NurbsSurface reSurface;
+	Reparametrize(surface, 0.0, 1.0, 0.0, 1.0, reSurface);
+
+	int degreeU = reSurface.DegreeU;
+	int degreeV = reSurface.DegreeV;
+	std::vector<double> knotVectorU = reSurface.KnotVectorU;
+	std::vector<double> knotVectorV = reSurface.KnotVectorV;
+	std::vector<std::vector<XYZW>> controlPoints = reSurface.ControlPoints;
 
 	double startU = knotVectorU[0];
 	double endU = knotVectorU[knotVectorU.size() - 1];
@@ -2734,13 +2797,13 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 		case IntegratorType::Simpson:
 		{
 			double halfV = (startV + endV) / 2.0;
-			XYZ halfStart = GetPointOnSurface(surface, UV(startU, halfV));
-			XYZ halfEnd = GetPointOnSurface(surface, UV(endU, halfV));
+			XYZ halfStart = GetPointOnSurface(reSurface, UV(startU, halfV));
+			XYZ halfEnd = GetPointOnSurface(reSurface, UV(endU, halfV));
 			double totalWidth = halfStart.Distance(halfEnd);
 			int count = floor(totalWidth / Constants::DistanceEpsilon);
 
-			XYZ start1 = GetPointOnSurface(surface, UV(startU, startV));
-			XYZ start2 = GetPointOnSurface(surface, UV(startU, endV));
+			XYZ start1 = GetPointOnSurface(reSurface, UV(startU, startV));
+			XYZ start2 = GetPointOnSurface(reSurface, UV(startU, endV));
 			double startLength = start1.Distance(start2);
 
 			int size = (count / 2.0) + 1;
@@ -2750,9 +2813,9 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 			for (int i = 1; i < count; i++)
 			{
 				XYZ current = halfStart + (halfEnd - halfStart).Normalize() * Constants::DistanceEpsilon * i;
-				UV uv = GetParamOnSurface(surface, current);
-				XYZ point1 = GetPointOnSurface(surface, UV(uv.GetU(), startV));
-				XYZ point2 = GetPointOnSurface(surface, UV(uv.GetU(), endV));
+				UV uv = GetParamOnSurface(reSurface, current);
+				XYZ point1 = GetPointOnSurface(reSurface, UV(uv.GetU(), startV));
+				XYZ point2 = GetPointOnSurface(reSurface, UV(uv.GetU(), endV));
 				double length = point1.Distance(point2);
 
 				if (i % 2 == 0)
@@ -2765,8 +2828,8 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 				}
 			}
 
-			XYZ end1 = GetPointOnSurface(surface, UV(endU, startV));
-			XYZ end2 = GetPointOnSurface(surface, UV(endU, endV));
+			XYZ end1 = GetPointOnSurface(reSurface, UV(endU, startV));
+			XYZ end2 = GetPointOnSurface(reSurface, UV(endU, endV));
 			double endLength = end1.Distance(end2);
 
 			area = Integrator::Simpson(startLength, endLength, odds, evens, Constants::DistanceEpsilon);
@@ -2774,7 +2837,7 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 		}
 		case IntegratorType::Gauss_Legendre:
 		{
-			std::vector<LN_NurbsSurface> bezierSurfaces = DecomposeToBeziers(surface);
+			std::vector<LN_NurbsSurface> bezierSurfaces = DecomposeToBeziers(reSurface);
 			for (int i = 0; i < bezierSurfaces.size(); i++)
 			{
 				LN_NurbsSurface bezierSurface = bezierSurfaces[i];
@@ -2815,7 +2878,20 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 		}
 		case IntegratorType::Chebyshev:
 		{
-			// to be continued...
+			std::vector<double> series = Integrator::ChebyshevSeries();
+			for (int i = degreeU; i < controlPoints.size(); i++) 
+			{
+				double a = knotVectorU[i];
+				double b = knotVectorU[i + 1];
+				for (int j = degreeV; j < controlPoints[0].size(); j++) 
+				{
+					double c = knotVectorV[i];
+					double d = knotVectorV[i + 1];
+					AreaData data(reSurface, series);
+					AreaWrapperFunction function;
+					area += Integrator::ClenshawCurtisQuadrature(function, (void*)&data, c, d, series);
+				}
+			}
 			break;
 		}
 		default:

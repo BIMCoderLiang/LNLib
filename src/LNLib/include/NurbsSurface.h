@@ -107,6 +107,8 @@ namespace LNLib
 		/// </summary>
 		static UV GetParamOnSurface(const LN_NurbsSurface& surface, const XYZ& givenPoint);
 
+		static void Reparametrize(const LN_NurbsSurface& surface, double minU, double maxU, double minV, double maxV, LN_NurbsSurface& result);
+
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page235
 		/// Surface Tangent Vector Inversion: finding the corresponding UV tangent [du dv] make T = Su*du+Sv*dv.
