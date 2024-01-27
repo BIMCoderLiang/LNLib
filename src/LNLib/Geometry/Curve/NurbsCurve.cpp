@@ -1318,7 +1318,7 @@ void LNLib::NurbsCurve::Offset(const LN_NurbsCurve& curve, double offset, LN_Nur
 	GlobalInterpolation(3, newPoints, result);
 }
 
-void LNLib::NurbsCurve::CreateLine(const XYZ& start, const XYZ& end, LN_NurbsCurve result)
+void LNLib::NurbsCurve::CreateLine(const XYZ& start, const XYZ& end, LN_NurbsCurve& result)
 {
 	VALIDATE_ARGUMENT(!start.IsAlmostEqualTo(end), "end", "start must not be equal to end.");
 

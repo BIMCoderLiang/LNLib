@@ -141,7 +141,7 @@ namespace LNLib
 
 		static void Offset(const LN_NurbsCurve& curve, double offset, LN_NurbsCurve& result);
 
-		static void CreateLine(const XYZ& start, const XYZ& end, LN_NurbsCurve result);
+		static void CreateLine(const XYZ& start, const XYZ& end, LN_NurbsCurve& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page308
