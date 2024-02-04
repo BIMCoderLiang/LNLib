@@ -3110,7 +3110,7 @@ void LNLib::NurbsCurve::ToClampCurve(const LN_NurbsCurve& curve, LN_NurbsCurve& 
 
 	std::vector<double> kv = tc.KnotVector;
 	std::vector<XYZW> cps = tc.ControlPoints;
-	knotVector.resize(kv.size() - degree - degree, 0.0);
+	knotVector.resize(kv.size() - t1 - t2, 0.0);
 	controlPoints.resize(knotVector.size() - degree - 1);
 	for (int i = knotVector.size() - 1; i >= 0; i--)
 	{
