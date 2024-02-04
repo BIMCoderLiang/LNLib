@@ -53,7 +53,7 @@ namespace LNLib
 		/// Curve knot insertion.
 		/// Note that multiplicity + times <= degree.
 		/// </summary>
-		static void InsertKnot(const LN_NurbsCurve& curve, double insertKnot, int times, LN_NurbsCurve& result);
+		static int InsertKnot(const LN_NurbsCurve& curve, double insertKnot, int times, LN_NurbsCurve& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page155

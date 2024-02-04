@@ -25,12 +25,15 @@ TEST(Test_Clamp, All)
 	curve.Degree = degree;
 	curve.KnotVector = kv;
 	curve.ControlPoints = cps;
-
+	EXPECT_TRUE(NurbsCurve::IsClamp(curve));
+	EXPECT_TRUE(NurbsCurve::IsClosed(curve));
 	XYZ checkP = NurbsCurve::GetPointOnCurve(curve, 0.5);
 
 	LN_NurbsCurve result;
 	NurbsCurve::ToUnclampCurve(curve, result);
+	EXPECT_TRUE(NurbsCurve::IsClosed(result));
 	curve = result;
+	EXPECT_FALSE(NurbsCurve::IsClamp(curve));
 	XYZ newP = NurbsCurve::GetPointOnCurve(curve, 0.5);
 	EXPECT_TRUE(checkP.IsAlmostEqualTo(newP));
 
@@ -49,6 +52,8 @@ TEST(Test_Clamp, All)
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(kvCopy[11], 5.0 / 4));
 
 	NurbsCurve::ToClampCurve(curve, result);
+	EXPECT_TRUE(NurbsCurve::IsClamp(result));
+	EXPECT_TRUE(NurbsCurve::IsClosed(result));
 	XYZ reCheckP = NurbsCurve::GetPointOnCurve(result, 0.5);
 	EXPECT_TRUE(checkP.IsAlmostEqualTo(reCheckP));
 }

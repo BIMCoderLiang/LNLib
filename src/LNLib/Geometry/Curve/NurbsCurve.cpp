@@ -256,7 +256,7 @@ double LNLib::NurbsCurve::Torsion(const LN_NurbsCurve& curve, double paramT)
 }
 
 
-void LNLib::NurbsCurve::InsertKnot(const LN_NurbsCurve& curve, double insertKnot, int times, LN_NurbsCurve& result)
+int LNLib::NurbsCurve::InsertKnot(const LN_NurbsCurve& curve, double insertKnot, int times, LN_NurbsCurve& result)
 {
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
@@ -267,9 +267,13 @@ void LNLib::NurbsCurve::InsertKnot(const LN_NurbsCurve& curve, double insertKnot
 	int knotSpanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, insertKnot);
 	int originMultiplicity = Polynomials::GetKnotMultiplicity(knotVector, insertKnot);
 
-	if (originMultiplicity + times > degree)
+	if (originMultiplicity + times > degree + 1)
 	{
-		times = degree - originMultiplicity;
+		times = degree - 1 - originMultiplicity;
+	}
+	if (times <= 0)
+	{
+		return 0;
 	}
 	
 	std::vector<double> insertedKnotVector(knotVector.size() + times);
@@ -312,16 +316,23 @@ void LNLib::NurbsCurve::InsertKnot(const LN_NurbsCurve& curve, double insertKnot
 			temp[i] = alpha * temp[i + 1] + (1.0 - alpha) * temp[i];
 		}
 		updatedControlPoints[L] = temp[0];
-		updatedControlPoints[knotSpanIndex + times - j - originMultiplicity] = temp[degree - j - originMultiplicity];
+		if (degree - j - originMultiplicity > 0)
+		{
+			updatedControlPoints[knotSpanIndex + times - j - originMultiplicity] = temp[degree - j - originMultiplicity];
+		}
 	}
 
 	for (int i = L + 1; i < knotSpanIndex - originMultiplicity; i++)
 	{
 		updatedControlPoints[i] = temp[i - L];
 	}
+
+	std::sort(insertedKnotVector.begin(), insertedKnotVector.end());
 	result.Degree = degree;
 	result.KnotVector = insertedKnotVector;
 	result.ControlPoints = updatedControlPoints;
+
+	return times;
 }
 
 LNLib::XYZ LNLib::NurbsCurve::GetPointOnCurveByCornerCut(const LN_NurbsCurve& curve, double paramT)
@@ -975,7 +986,38 @@ bool LNLib::NurbsCurve::IsClosed(const LN_NurbsCurve& curve)
 	XYZ endPoint = GetPointOnCurve(curve, end);
 
 	double distance = startPoint.Distance(endPoint);
-	return MathUtils::IsAlmostEqualTo(distance, 0.0);
+	bool isMatch = MathUtils::IsAlmostEqualTo(distance, 0.0);
+	if (isMatch) return true;
+
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+	int n = controlPoints.size() - 1;
+	XYZ last = controlPoints[n].ToXYZ(true);
+
+	bool flag = false;
+	int index = 0;
+	for (int i = 0; i < n; i++)
+	{
+		XYZ current = controlPoints[i].ToXYZ(true);
+		if (last.IsAlmostEqualTo(current))
+		{
+			index = i;
+			flag = true;
+			break;
+		}
+	}
+
+	if (!flag) return false;
+	if (index == 0) return true;
+	for (int i = index; i >= 0; i--)
+	{
+		XYZ current = controlPoints[i].ToXYZ(true);
+		XYZ another = controlPoints[n - index + i].ToXYZ(true);
+		if (!another.IsAlmostEqualTo(current))
+		{
+			return false;
+		}
+	}
+	return true;
 }
 
 double LNLib::NurbsCurve::GetParamOnCurve(const LN_NurbsCurve& curve, const XYZ& givenPoint)
@@ -3053,27 +3095,43 @@ void LNLib::NurbsCurve::ToClampCurve(const LN_NurbsCurve& curve, LN_NurbsCurve& 
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
 
+	int m = knotVector.size() - 1;
+	double up = knotVector[degree];
+	double ump = knotVector[m - degree];
+
+	int upMulti = Polynomials::GetKnotMultiplicity(knotVector, up);
+	int umpMulti = Polynomials::GetKnotMultiplicity(knotVector, ump);
+	
 	LN_NurbsCurve tc;
-	InsertKnot(curve, knotVector[degree], degree, tc);
+	int t1 = InsertKnot(curve, up, degree + 1 - upMulti, tc);
+	LN_NurbsCurve temp;
+	temp = tc;
+	int t2 = InsertKnot(temp, ump, degree + 1 - umpMulti, tc);
 
-	result = tc;
-
-	InsertKnot(curve, knotVector[controlPoints.size()], degree, tc);
-	std::vector<double> insertKnotVectorNc = tc.KnotVector;
-	std::vector<XYZW> updatedControlPointsNc = tc.ControlPoints;
-
-	knotVector.resize(insertKnotVectorNc.size() - degree - degree, 0.0);
+	std::vector<double> kv = tc.KnotVector;
+	std::vector<XYZW> cps = tc.ControlPoints;
+	knotVector.resize(kv.size() - degree - degree, 0.0);
 	controlPoints.resize(knotVector.size() - degree - 1);
 	for (int i = knotVector.size() - 1; i >= 0; i--)
 	{
-		knotVector[i] = insertKnotVectorNc[i + degree];
+		knotVector[i] = kv[i + degree];
 		if (i < controlPoints.size())
 		{
-			controlPoints[i] = updatedControlPointsNc[i + degree];
+			controlPoints[i] = cps[i + degree];
 		}
 	}
+
+	result.Degree = tc.Degree;
 	result.KnotVector = knotVector;
 	result.ControlPoints = controlPoints;
+
+	bool isClosed = IsClosed(curve);
+	bool isNowClosed = IsClosed(result);
+	if (isClosed && !isNowClosed)
+	{
+		controlPoints[controlPoints.size() - 1] = controlPoints[0];
+		result.ControlPoints = controlPoints;
+	}
 }
 
 bool LNLib::NurbsCurve::IsPeriodic(const LN_NurbsCurve& curve)
@@ -3276,6 +3334,14 @@ bool LNLib::NurbsCurve::IsArc(const LN_NurbsCurve& curve)
 
 double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, IntegratorType type)
 {
+	if (IsLinear(curve))
+	{
+		std::vector<XYZW> controlPoints = curve.ControlPoints;
+		XYZ startPoint = controlPoints[0].ToXYZ(true);
+		XYZ endPoint = controlPoints[controlPoints.size() - 1].ToXYZ(true);
+		return startPoint.Distance(endPoint);
+	}
+
 	LN_NurbsCurve reCurve;
 	Reparametrize(curve, 0.0, 1.0, reCurve);
 
@@ -3316,7 +3382,10 @@ double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, Integrat
 				for (int i = 0; i < size; i++)
 				{
 					double t = coefficient * abscissae[i] + (a + b)/2.0;
-					bLength += Integrator::GaussLegendreWeights[i] * ComputeRationalCurveDerivatives(bezierCurve,1,t)[1].Length();
+					double derLength = ComputeRationalCurveDerivatives(bezierCurve, 1, t)[1].Length();
+					if (std::isnan(derLength))
+						derLength = 0.0;
+					bLength += Integrator::GaussLegendreWeights[i] * derLength;
 				}
 				bLength = coefficient * bLength;
 				length += bLength;
