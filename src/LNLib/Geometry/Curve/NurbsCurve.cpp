@@ -600,7 +600,7 @@ bool LNLib::NurbsCurve::RemoveKnot(const LN_NurbsCurve& curve, double removeKnot
 		else
 		{
 			double alphai = (removeKnot - knotVector[i]) / (knotVector[i + order + t] - knotVector[i]);
-			if (MathUtils::IsLessThanOrEqual(controlPoints[i].Distance(alphai * temp[ii + t + 1] + (1.0 * alphai) * temp[ii - 1]), tol))
+			if (MathUtils::IsLessThanOrEqual(controlPoints[i].Distance(alphai * temp[ii + t + 1] + (1.0 - alphai) * temp[ii - 1]), tol))
 			{
 				remflag = true;
 			}
