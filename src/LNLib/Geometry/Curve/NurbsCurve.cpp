@@ -606,19 +606,22 @@ bool LNLib::NurbsCurve::RemoveKnot(const LN_NurbsCurve& curve, double removeKnot
 			}
 		}
 
-		if (remflag)
+		if (!remflag)
 		{
-			i = first;
-			j = last;
-
-			while (j - i > t)
-			{
-				updatedControlPoints[i] = temp[i - off];
-				updatedControlPoints[j] = temp[j - off];
-				i = i + 1;
-				j = j - 1;
-			}
+			break;
 		}
+
+		i = first;
+		j = last;
+
+		while (j - i > t)
+		{
+			updatedControlPoints[i] = temp[i - off];
+			updatedControlPoints[j] = temp[j - off];
+			i = i + 1;
+			j = j - 1;
+		}
+
 		first = first - 1;
 		last = last + 1;
 	}
