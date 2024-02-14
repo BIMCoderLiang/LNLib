@@ -600,25 +600,28 @@ bool LNLib::NurbsCurve::RemoveKnot(const LN_NurbsCurve& curve, double removeKnot
 		else
 		{
 			double alphai = (removeKnot - knotVector[i]) / (knotVector[i + order + t] - knotVector[i]);
-			if (MathUtils::IsLessThanOrEqual(controlPoints[i].Distance(alphai * temp[ii + t + 1] + (1.0 * alphai) * temp[ii - 1]), tol))
+			if (MathUtils::IsLessThanOrEqual(controlPoints[i].Distance(alphai * temp[ii + t + 1] + (1.0 - alphai) * temp[ii - 1]), tol))
 			{
 				remflag = true;
 			}
 		}
 
-		if (remflag)
+		if (!remflag)
 		{
-			i = first;
-			j = last;
-
-			while (j - i > t)
-			{
-				updatedControlPoints[i] = temp[i - off];
-				updatedControlPoints[j] = temp[j - off];
-				i = i + 1;
-				j = j - 1;
-			}
+			break;
 		}
+
+		i = first;
+		j = last;
+
+		while (j - i > t)
+		{
+			updatedControlPoints[i] = temp[i - off];
+			updatedControlPoints[j] = temp[j - off];
+			i = i + 1;
+			j = j - 1;
+		}
+
 		first = first - 1;
 		last = last + 1;
 	}
