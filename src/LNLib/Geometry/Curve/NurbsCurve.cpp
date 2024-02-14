@@ -2629,7 +2629,7 @@ bool LNLib::NurbsCurve::FitWithCubic(const std::vector<XYZ>& throughPoints, int 
 		newThroughPoints.emplace_back(throughPoints[i]);
 	}
 	std::vector<double> uh = Interpolation::GetChordParameterization(newThroughPoints);
-	std::vector<double> alfak(dk);
+	std::vector<double> alphak(dk);
 	std::vector<double> betak(dk);
 	for (int k = 1; k < dk; k++)
 	{
@@ -2662,7 +2662,7 @@ bool LNLib::NurbsCurve::FitWithCubic(const std::vector<XYZ>& throughPoints, int 
 			if (MathUtils::IsGreaterThan(ak, 0.0) &&
 				MathUtils::IsLessThan(bk, 0.0))
 			{
-				alfak[k] = ak;
+				alphak[k] = ak;
 				betak[k] = bk;
 			}
 			else
@@ -2695,7 +2695,7 @@ bool LNLib::NurbsCurve::FitWithCubic(const std::vector<XYZ>& throughPoints, int 
 				double b = -Pd.Distance(throughPoints[k + startPointIndex]);
 				double b13 = Polynomials::Bernstein(1, 3, uh[k]);
 				double b23 = Polynomials::Bernstein(2, 3, uh[k]);
-				alfak[k] = a / b13;
+				alphak[k] = a / b13;
 				betak[k] = b / b23;
 			}
 		}
@@ -2704,7 +2704,7 @@ bool LNLib::NurbsCurve::FitWithCubic(const std::vector<XYZ>& throughPoints, int 
 	beta = 0.0;
 	for (int k = 1; k < dk; k++)
 	{
-		alpha += alfak[k];
+		alpha += alphak[k];
 		beta += betak[k];
 	}
 	alpha = alpha / (dk - 1);
@@ -2716,7 +2716,7 @@ bool LNLib::NurbsCurve::FitWithCubic(const std::vector<XYZ>& throughPoints, int 
 	for (int k = 1; k < dk; k++)
 	{
 		double u = uh[k];
-		double deltaAk = alfak[k] - alpha;
+		double deltaAk = alphak[k] - alpha;
 		double deltaBk = betak[k] - beta;
 		double e = (deltaAk * Polynomials::Bernstein(1, 3, u) * startTangent).Distance(deltaBk * Polynomials::Bernstein(2, 3, u) * endTangent);
 		if (MathUtils::IsLessThanOrEqual(e, maxError)) continue;
@@ -3219,8 +3219,8 @@ void LNLib::NurbsCurve::ToUnclampCurve(const LN_NurbsCurve& curve, LN_NurbsCurve
 		int k = degree - 1;
 		for (int j = i; j >= 0; j--)
 		{
-			double alfa = (knotVector[degree] - knotVector[k]) / (knotVector[degree + j + 1] - knotVector[k]);
-			controlPoints[j] = (controlPoints[j] - alfa * controlPoints[j + 1]) / (1.0 - alfa);
+			double alpha = (knotVector[degree] - knotVector[k]) / (knotVector[degree + j + 1] - knotVector[k]);
+			controlPoints[j] = (controlPoints[j] - alpha * controlPoints[j + 1]) / (1.0 - alpha);
 			k = k - 1;
 		}
 	}
@@ -3230,8 +3230,8 @@ void LNLib::NurbsCurve::ToUnclampCurve(const LN_NurbsCurve& curve, LN_NurbsCurve
 		knotVector[n + i + 2] = knotVector[n + i + 1] + (knotVector[degree + i + 1] - knotVector[degree + i]);
 		for (int j = i; j >= 0; j--)
 		{
-			double alfa = (knotVector[n + 1] - knotVector[n - j]) / (knotVector[n - j + i + 2] - knotVector[n - j]);
-			controlPoints[n - j] = (controlPoints[n - j] - (1.0 - alfa) * controlPoints[n - j - 1]) / alfa;
+			double alpha = (knotVector[n + 1] - knotVector[n - j]) / (knotVector[n - j + i + 2] - knotVector[n - j]);
+			controlPoints[n - j] = (controlPoints[n - j] - (1.0 - alpha) * controlPoints[n - j - 1]) / alpha;
 		}
 	}
 	knotVector[n + degree + 1] = knotVector[n + degree] + (knotVector[2 * degree] - knotVector[2 * degree - 1]);
