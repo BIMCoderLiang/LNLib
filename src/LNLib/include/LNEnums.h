@@ -9,7 +9,6 @@
  */
 
 #pragma once
-#include "LNLibDefinitions.h"
 
 namespace LNLib
 {

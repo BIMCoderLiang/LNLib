@@ -228,7 +228,6 @@ LNLib::XYZ LNLib::NurbsCurve::Normal(const LN_NurbsCurve& curve, CurveNormal nor
 	}
 }
 
-
 double LNLib::NurbsCurve::Torsion(const LN_NurbsCurve& curve, double paramT)
 {
 	int degree = curve.Degree;
@@ -3431,7 +3430,7 @@ double LNLib::NurbsCurve::GetParamOnCurve(const LN_NurbsCurve& curve, double giv
 		LN_NurbsCurve left;
 		LN_NurbsCurve right;
 		double knot = knotVector[i];
-		NurbsCurve::SplitAt(curve, knot, left, right);
+		SplitAt(curve, knot, left, right);
 		double length = ApproximateLength(left, type);
 		if (MathUtils::IsGreaterThanOrEqual(length, givenLength))
 		{

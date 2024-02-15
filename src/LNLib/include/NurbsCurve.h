@@ -18,7 +18,6 @@
 
 namespace LNLib
 {
-
 	class XYZ;
 	class XYZW;
 	class Matrix4d;
@@ -26,6 +25,9 @@ namespace LNLib
 	{
 	public:
 
+		/// <summary>
+		/// Check curve whether fits NURBS.
+		/// </summary>
 		static void Check(const LN_NurbsCurve& curve);
 
 		/// <summary>
@@ -42,10 +44,19 @@ namespace LNLib
 		/// </summary>
 		static std::vector<XYZ> ComputeRationalCurveDerivatives(const LN_NurbsCurve& curve, int derivative, double paramT);
 
+		/// <summary>
+		/// Calculate curve curvature.
+		/// </summary>
 		static double Curvature(const LN_NurbsCurve& curve, double paramT);
 
+		/// <summary>
+		/// Calculate curve normal direction.
+		/// </summary>
 		static XYZ Normal(const LN_NurbsCurve& curve, CurveNormal normalType, double paramT);
 
+		/// <summary>
+		/// Calculate curve torsion.
+		/// </summary>
 		static double Torsion(const LN_NurbsCurve& curve, double paramT);
 
 		/// <summary>
@@ -104,6 +115,10 @@ namespace LNLib
 		/// </summary>
 		static void EquallyTessellate(const LN_NurbsCurve& curve, std::vector<XYZ>& tessellatedPoints, std::vector<double>& correspondingKnots);
 
+		/// <summary>
+		/// Detemine curve is closed.
+		/// Close means end point equals start point or points overlap.
+		/// </summary>
 		static bool IsClosed(const LN_NurbsCurve& curve);
 
 		/// <summary>
@@ -136,12 +151,24 @@ namespace LNLib
 		/// </summary>
 		static void Reverse(const LN_NurbsCurve& curve, LN_NurbsCurve& result);
 
+		/// <summary>
+		/// Split curve at certain parameter.
+		/// </summary>
 		static bool SplitAt(const LN_NurbsCurve& curve, double parameter, LN_NurbsCurve& left, LN_NurbsCurve& right);
 
+		/// <summary>
+		/// Merge two connected curves to one curve.
+		/// </summary>
 		static bool Merge(const LN_NurbsCurve& left, const LN_NurbsCurve& right, LN_NurbsCurve& result);
 
+		/// <summary>
+		/// Offset curve makes bigger or smaller.
+		/// </summary>
 		static void Offset(const LN_NurbsCurve& curve, double offset, LN_NurbsCurve& result);
 
+		/// <summary>
+		/// Create line represented by NURBS.
+		/// </summary>
 		static void CreateLine(const XYZ& start, const XYZ& end, LN_NurbsCurve& result);
 
 		/// <summary>
@@ -301,8 +328,14 @@ namespace LNLib
 		/// </summary>
 		static void ToUnclampCurve(const LN_NurbsCurve& curve, LN_NurbsCurve& result);
 
+		/// <summary>
+		/// Detemine curve whether is linear.
+		/// </summary>
 		static bool IsLinear(const LN_NurbsCurve& curve);
 
+		/// <summary>
+		/// Detemine curve whether is arc.
+		/// </summary>
 		static bool IsArc(const LN_NurbsCurve& curve);
 
 		/// <summary>
@@ -314,8 +347,14 @@ namespace LNLib
 		/// </summary>
 		static double ApproximateLength(const LN_NurbsCurve& curve, IntegratorType type = IntegratorType::Chebyshev);
 
+		/// <summary>
+		/// Calculate parameter makes first segment length equals to given length.
+		/// </summary>
 		static double GetParamOnCurve(const LN_NurbsCurve& curve, double givenLength, IntegratorType type = IntegratorType::Chebyshev);
 
+		/// <summary>
+		/// Calculate parameters makes every segments length equal to given length.
+		/// </summary>
 		static std::vector<double> GetParamsOnCurve(const LN_NurbsCurve& curve, double givenLength, IntegratorType type = IntegratorType::Chebyshev);
 	};
 }
