@@ -13,6 +13,7 @@
 #include "LNEnums.h"
 #include "LNLibDefinitions.h"
 #include "LNObject.h"
+#include "LNEnums.h"
 #include <vector>
 
 namespace LNLib
@@ -289,7 +290,7 @@ namespace LNLib
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page575
-		/// UnClamped, uniform and C(degree-1) continues closed curve.
+		/// UnClamped, uniform and C[degree-1] continues closed curve.
 		/// </summary>
 		static bool IsPeriodic(const LN_NurbsCurve& curve);
 
@@ -311,11 +312,11 @@ namespace LNLib
 		/// Use Gauss-Legendre integration for medium accuracy.
 		/// Use Chebyshev integration for high accuracy.
 		/// </summary>
-		static double ApproximateLength(const LN_NurbsCurve& curve, IntegratorType type);
+		static double ApproximateLength(const LN_NurbsCurve& curve, IntegratorType type = IntegratorType::Chebyshev);
 
-		static double GetParamOnCurve(const LN_NurbsCurve& curve, double givenLength, IntegratorType type);
+		static double GetParamOnCurve(const LN_NurbsCurve& curve, double givenLength, IntegratorType type = IntegratorType::Chebyshev);
 
-		static std::vector<double> GetParamsOnCurve(const LN_NurbsCurve& curve, double givenLength, IntegratorType type);
+		static std::vector<double> GetParamsOnCurve(const LN_NurbsCurve& curve, double givenLength, IntegratorType type = IntegratorType::Chebyshev);
 	};
 }
 

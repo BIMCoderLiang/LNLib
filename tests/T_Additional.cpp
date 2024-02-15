@@ -15,7 +15,7 @@ TEST(Test_Addintional, All)
 	EXPECT_TRUE(NurbsCurve::IsLinear(result));
 	EXPECT_FALSE(NurbsCurve::IsArc(result));
 	double simpson = NurbsCurve::ApproximateLength(result, IntegratorType::Simpson);
-	double gaussLegendre = NurbsCurve::ApproximateLength(result, IntegratorType::Gauss_Legendre);
+	double gaussLegendre = NurbsCurve::ApproximateLength(result, IntegratorType::GaussLegendre);
 	double chebyshev = NurbsCurve::ApproximateLength(result, IntegratorType::Chebyshev);
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(simpson, 100.0));
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(gaussLegendre, 100.0));
@@ -30,7 +30,7 @@ TEST(Test_Addintional, All)
 	EXPECT_TRUE(NurbsCurve::IsArc(curve));
 	EXPECT_FALSE(NurbsCurve::IsLinear(curve));
 	simpson = NurbsCurve::ApproximateLength(curve, IntegratorType::Simpson);
-	gaussLegendre = NurbsCurve::ApproximateLength(curve, IntegratorType::Gauss_Legendre);
+	gaussLegendre = NurbsCurve::ApproximateLength(curve, IntegratorType::GaussLegendre);
 	chebyshev = NurbsCurve::ApproximateLength(curve, IntegratorType::Chebyshev);
 	EXPECT_FALSE(MathUtils::IsAlmostEqualTo(simpson, 2 * Constants::Pi * 100)); // not accuracy when use Simpson
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(gaussLegendre, 2 * Constants::Pi * 100));

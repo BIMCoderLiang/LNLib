@@ -3364,7 +3364,7 @@ double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, Integrat
 			length = CalculateLengthBySimpson(function, reCurve, start, end, simpson, Constants::DistanceEpsilon);
 			break;
 		}
-		case IntegratorType::Gauss_Legendre:
+		case IntegratorType::GaussLegendre:
 		{
 			// Strongly recommend read this blog:
 			// https://raphlinus.github.io/curves/2018/12/28/bezier-arclength.html
@@ -3426,6 +3426,19 @@ double LNLib::NurbsCurve::GetParamOnCurve(const LN_NurbsCurve& curve, double giv
 		return end;
 	}
 
+	for (int i = 0; i < knotVector.size(); i++)
+	{
+		LN_NurbsCurve left;
+		LN_NurbsCurve right;
+		double knot = knotVector[i];
+		NurbsCurve::SplitAt(curve, knot, left, right);
+		double length = ApproximateLength(left, type);
+		if (MathUtils::IsGreaterThanOrEqual(length, givenLength))
+		{
+			end = knot;
+			break;
+		}
+	}
 	double param = GetParamByLength(curve, start, end, givenLength, type);
 	return param;
 }

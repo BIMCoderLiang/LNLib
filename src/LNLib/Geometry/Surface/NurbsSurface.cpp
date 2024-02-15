@@ -2835,7 +2835,7 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 			area = Integrator::Simpson(startLength, endLength, odds, evens, Constants::DistanceEpsilon);
 			break;
 		}
-		case IntegratorType::Gauss_Legendre:
+		case IntegratorType::GaussLegendre:
 		{
 			std::vector<LN_NurbsSurface> bezierSurfaces = DecomposeToBeziers(reSurface);
 			for (int i = 0; i < bezierSurfaces.size(); i++)

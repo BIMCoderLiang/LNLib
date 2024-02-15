@@ -43,8 +43,14 @@ namespace LNLib
 
 		static XYZ Normal(const LN_NurbsSurface& surface, UV uv);
 
+		/// <summary>
+		/// Swap surface UV.
+		/// </summary>
 		static void Swap(const LN_NurbsSurface& surface, LN_NurbsSurface& result);
 
+		/// <summary>
+		/// Reverse surface U or V direction.
+		/// </summary>
 		static void Reverse(const LN_NurbsSurface& surface, SurfaceDirection direction,  LN_NurbsSurface& result);
 
 		/// <summary>
@@ -232,6 +238,6 @@ namespace LNLib
 		/// Use Gauss-Legendre integration for medium accuracy.
 		/// Use Chebyshev integration for high accuracy.
 		/// </summary>
-		static double ApproximateArea(const LN_NurbsSurface& surface, IntegratorType type);
+		static double ApproximateArea(const LN_NurbsSurface& surface, IntegratorType type = IntegratorType::Chebyshev);
 	};
 }

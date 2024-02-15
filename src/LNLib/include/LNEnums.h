@@ -54,7 +54,7 @@ namespace LNLib
 	enum class IntegratorType :int
 	{
 		Simpson = 0,
-		Gauss_Legendre = 1,
+		GaussLegendre = 1,
 		Chebyshev = 2,
 	};
 
