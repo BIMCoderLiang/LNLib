@@ -230,6 +230,11 @@ bool LNLib::KnotVectorUtils::IsUniform(const std::vector<double>& knotVector)
 		double key = it->first;
 		knots.emplace_back(key);
 	}
+	std::sort(knots.begin(), knots.end());
+	if (map[knots[0]] != map[knots[knots.size() - 1]])
+	{
+		return false;
+	}
 	double standard = knots[1] - knots[0];
 	for (int i = 1; i < knots.size() - 1; i++)
 	{
@@ -240,6 +245,19 @@ bool LNLib::KnotVectorUtils::IsUniform(const std::vector<double>& knotVector)
 		if (!MathUtils::IsAlmostEqualTo(gap, standard))
 		{
 			return false;
+		}
+		int currentCounts = map[current];
+		int nextCounts = map[next];
+		if (currentCounts != nextCounts)
+		{
+			if (i + 1 == knots.size() - 1)
+			{
+				continue;
+			}
+			else
+			{
+				return false;
+			}
 		}
 	}
 	return true;
