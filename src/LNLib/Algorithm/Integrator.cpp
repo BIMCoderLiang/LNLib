@@ -18,7 +18,7 @@ namespace LNLib
     {
         double st = (function)(start, customData);
         double mt = (function)((start + end) / 2.0, customData);
-        double et = (function)((end) / 2.0, customData);
+        double et = (function)((end), customData);
         double result = ((end - start) / 6.0) * (st + 4 * mt + et);
         return result;
     }

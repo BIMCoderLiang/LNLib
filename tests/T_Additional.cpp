@@ -44,7 +44,15 @@ TEST(Test_Additional, All)
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(gaussLegendre, 0.25));
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(chebyshev, 0.25));
 
-	std::vector<double> arcParameters = NurbsCurve::GetParamsOnCurve(curve, 0.25 * 2 * Constants::Pi * radius);
+	std::vector<double> arcParameters = NurbsCurve::GetParamsOnCurve(curve, 0.25 * 2 * Constants::Pi * radius, IntegratorType::Simpson);
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(arcParameters[0], 0.25));
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(arcParameters[1], 0.5));
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(arcParameters[2], 0.75));
+	arcParameters = NurbsCurve::GetParamsOnCurve(curve, 0.25 * 2 * Constants::Pi * radius, IntegratorType::GaussLegendre);
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(arcParameters[0], 0.25));
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(arcParameters[1], 0.5));
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(arcParameters[2], 0.75));
+	arcParameters = NurbsCurve::GetParamsOnCurve(curve, 0.25 * 2 * Constants::Pi * radius, IntegratorType::Chebyshev);
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(arcParameters[0], 0.25));
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(arcParameters[1], 0.5));
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(arcParameters[2], 0.75));
