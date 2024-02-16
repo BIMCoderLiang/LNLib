@@ -118,7 +118,7 @@ TEST(Test_Additional, Area)
 	double standardArea = 4384.255895045;
 
 	//Need fix, to be continued...
-	//simpson = NurbsSurface::ApproximateArea(surface, IntegratorType::Simpson);
-	//gaussLegendre = NurbsSurface::ApproximateArea(surface, IntegratorType::GaussLegendre);
-	//chebyshev = NurbsSurface::ApproximateArea(surface, IntegratorType::Chebyshev);
+	//double simpson = NurbsSurface::ApproximateArea(surface, IntegratorType::Simpson);
+	//double gaussLegendre = NurbsSurface::ApproximateArea(surface, IntegratorType::GaussLegendre);
+	//double chebyshev = NurbsSurface::ApproximateArea(surface, IntegratorType::Chebyshev);
 }
