@@ -690,8 +690,9 @@ std::vector<LNLib::LN_NurbsSurface> LNLib::NurbsSurface::DecomposeToBeziers(cons
 		bezierPatches[i].ControlPoints = std::vector<std::vector<XYZW>>(degreeU + 1, std::vector<XYZW>(degreeV + 1));
 	}
 
+	int size = nb;
 	nb = 0;
-	for (int np = 0; np < nb; np++)
+	for (int np = 0; np < size; np++)
 	{
 		for (int i = 0; i <= degreeU; i++)
 		{
@@ -749,7 +750,7 @@ std::vector<LNLib::LN_NurbsSurface> LNLib::NurbsSurface::DecomposeToBeziers(cons
 				{
 					for (int row = 0; row <= degreeU; row++)
 					{
-						bezierPatches[nb].ControlPoints[row][i] = bezierPatches[np].ControlPoints[row][b - degreeV + i];
+						bezierPatches[nb].ControlPoints[row][i] = tempBezierPatches[np].ControlPoints[row][b - degreeV + i];
 					}
 				}
 				a = b;
@@ -1225,6 +1226,16 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const LN_NurbsSurface& surface,
 		}
 
 		param = temp;
+		double u = param.GetU();
+		double v = param.GetV();
+		if (MathUtils::IsAlmostEqualTo(u, 0.0))
+		{
+			param = UV(0, param.GetV());
+		}
+		if (MathUtils::IsAlmostEqualTo(v, 0.0))
+		{
+			param = UV(param.GetU(), 0.0);
+		}
 		counters++;
 	}
 	return param;
