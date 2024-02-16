@@ -8,7 +8,7 @@
 
 using namespace LNLib;
 
-TEST(Test_Addintional, All)
+TEST(Test_Additional, All)
 {
 	LN_NurbsCurve result;
 	NurbsCurve::CreateLine(XYZ(0, 0, 0), XYZ(100, 0, 0), result);
@@ -37,8 +37,12 @@ TEST(Test_Addintional, All)
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(gaussLegendre, 2 * Constants::Pi * radius));
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(chebyshev, 2 * Constants::Pi * radius));
 
-	double quadraticParameter = NurbsCurve::GetParamOnCurve(curve, 0.5 * Constants::Pi * radius, IntegratorType::GaussLegendre);
-	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(quadraticParameter, 0.25));
+	simpson = NurbsCurve::GetParamOnCurve(curve, 0.5 * Constants::Pi * radius, IntegratorType::Simpson);
+	gaussLegendre = NurbsCurve::GetParamOnCurve(curve, 0.5 * Constants::Pi * radius, IntegratorType::GaussLegendre);
+	chebyshev = NurbsCurve::GetParamOnCurve(curve, 0.5 * Constants::Pi * radius, IntegratorType::Chebyshev);
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(simpson, 0.25));
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(gaussLegendre, 0.25));
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(chebyshev, 0.25));
 
 	std::vector<double> arcParameters = NurbsCurve::GetParamsOnCurve(curve, 0.25 * 2 * Constants::Pi * radius);
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(arcParameters[0], 0.25));
@@ -46,7 +50,7 @@ TEST(Test_Addintional, All)
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(arcParameters[2], 0.75));
 }
 
-TEST(Test_Addintional, Area)
+TEST(Test_Additional, Area)
 {
 	int degreeU = 3;
 	int degreeV = 3;

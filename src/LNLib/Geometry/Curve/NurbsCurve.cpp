@@ -62,7 +62,8 @@ namespace LNLib
 		double right = Integrator::Simpson(function, (void*)& curve, m, end);
 
 		double differ = left + right - simpson;
-		if (MathUtils::IsLessThan(abs(differ) / 10.0, tolearance))
+		if (MathUtils::IsAlmostEqualTo(differ, 0.0) || 
+			MathUtils::IsLessThan(abs(differ) / 10.0, tolearance))
 		{
 			length = left + right + differ / 10.0;
 		}
