@@ -79,7 +79,8 @@ namespace LNLib
 
 		LN_NurbsCurve left;
 		LN_NurbsCurve right;
-		NurbsCurve::SplitAt(curve, middle, left, right);
+		bool isSplited = NurbsCurve::SplitAt(curve, middle, left, right);
+		if (!isSplited) return start;
 		double length = NurbsCurve::ApproximateLength(left, type);
 		if (MathUtils::IsAlmostEqualTo(length, givenLength, Constants::DistanceEpsilon))
 		{
@@ -87,12 +88,12 @@ namespace LNLib
 		}
 		else if (MathUtils::IsGreaterThan(length, givenLength, Constants::DistanceEpsilon))
 		{
-			start = middle;
+			end = middle;
 			GetParamByLength(curve, start, end, givenLength, type);
 		}
 		else if (MathUtils::IsLessThan(length, givenLength, Constants::DistanceEpsilon))
 		{
-			end = middle;
+			start = middle;
 			GetParamByLength(curve, start, end, givenLength, type);
 		}
 		return middle;
@@ -1251,6 +1252,8 @@ bool LNLib::NurbsCurve::SplitAt(const LN_NurbsCurve& curve, double parameter, LN
 	int rControlPoints = left.ControlPoints.size() - spanIndex;
 	std::vector<XYZW> rightControlPoints(rControlPoints);
 	std::vector<double> rightKnotVector(rControlPoints + degree + 1);
+	right.KnotVector = rightKnotVector;
+	right.ControlPoints = rightControlPoints;
 	for (int i = left.ControlPoints.size() - 1, j = rControlPoints - 1; j >= 0; j--, i--)
 	{
 		right.ControlPoints[j] = left.ControlPoints[i];
@@ -3412,7 +3415,6 @@ double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, Integrat
 	return length;
 }
 
-
 double LNLib::NurbsCurve::GetParamOnCurve(const LN_NurbsCurve& curve, double givenLength, IntegratorType type)
 {
 	std::vector<double> knotVector = curve.KnotVector;
@@ -3430,9 +3432,14 @@ double LNLib::NurbsCurve::GetParamOnCurve(const LN_NurbsCurve& curve, double giv
 		LN_NurbsCurve left;
 		LN_NurbsCurve right;
 		double knot = knotVector[i];
-		SplitAt(curve, knot, left, right);
+		bool isSplited = SplitAt(curve, knot, left, right);
+		if (!isSplited) continue;
 		double length = ApproximateLength(left, type);
-		if (MathUtils::IsGreaterThanOrEqual(length, givenLength))
+		if (MathUtils::IsAlmostEqualTo(length, givenLength))
+		{
+			return knot;
+		}
+		if (MathUtils::IsGreaterThan(length, givenLength))
 		{
 			end = knot;
 			break;
@@ -3456,7 +3463,8 @@ std::vector<double> LNLib::NurbsCurve::GetParamsOnCurve(const LN_NurbsCurve& cur
 
 		LN_NurbsCurve left;
 		LN_NurbsCurve right;
-		SplitAt(curve, param, left, right);
+		bool isSplited = SplitAt(curve, param, left, right);
+		if (!isSplited) continue;
 		param = GetParamOnCurve(right, givenLength, type);
 	}
 	return result;
