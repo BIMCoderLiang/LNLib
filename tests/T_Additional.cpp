@@ -119,6 +119,7 @@ TEST(Test_Additional, Area)
 
 	//Need fix, to be continued...
 	//double simpson = NurbsSurface::ApproximateArea(surface, IntegratorType::Simpson);
-	//double gaussLegendre = NurbsSurface::ApproximateArea(surface, IntegratorType::GaussLegendre);
+	double gaussLegendre = NurbsSurface::ApproximateArea(surface, IntegratorType::GaussLegendre);
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(gaussLegendre, standardArea));
 	//double chebyshev = NurbsSurface::ApproximateArea(surface, IntegratorType::Chebyshev);
 }

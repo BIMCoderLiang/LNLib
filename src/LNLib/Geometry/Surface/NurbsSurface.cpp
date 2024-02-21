@@ -2871,7 +2871,7 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 					double u = coefficient1 * abscissae[i] + (a + b) / 2.0;
 					for (int j = 0; j < size; j++)
 					{
-						double v = coefficient2 * abscissae[i] + (c + d) / 2.0;
+						double v = coefficient2 * abscissae[j] + (c + d) / 2.0;
 						std::vector<std::vector<XYZ>> derivatives = ComputeRationalSurfaceDerivatives(bezierSurface, 1, UV(u,v));
 						XYZ Su = derivatives[1][0];
 						XYZ Sv = derivatives[0][1];
@@ -2879,7 +2879,7 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 						double F = Su.DotProduct(Sv);
 						double G = Sv.DotProduct(Sv);
 						double ds = sqrt(E * G - F * F);
-						bArea += Integrator::GaussLegendreWeights[i] * Integrator::GaussLegendreWeights[i] * ds;
+						bArea += Integrator::GaussLegendreWeights[i] * Integrator::GaussLegendreWeights[j] * ds;
 					}
 				}
 				bArea = coefficient1 * coefficient2 * bArea;
@@ -2890,17 +2890,19 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 		case IntegratorType::Chebyshev:
 		{
 			std::vector<double> series = Integrator::ChebyshevSeries();
+			AreaWrapperFunction function;
+			AreaData data(reSurface, series);
+
 			for (int i = degreeU; i < controlPoints.size(); i++) 
 			{
-				double a = knotVectorU[i];
-				double b = knotVectorU[i + 1];
+				data.CurrentKnotU = knotVectorU[i];
+				data.NextKnotU = knotVectorU[i + 1];
 				for (int j = degreeV; j < controlPoints[0].size(); j++) 
 				{
-					double c = knotVectorV[i];
-					double d = knotVectorV[i + 1];
-					AreaData data(reSurface, series);
-					AreaWrapperFunction function;
-					area += Integrator::ClenshawCurtisQuadrature(function, (void*)&data, c, d, series);
+					data.CurrentKnotV = knotVectorV[i];
+					data.NextKnotV = knotVectorV[i + 1];
+					
+					area += Integrator::ClenshawCurtisQuadrature(function, (void*)&data, data.CurrentKnotV, data.NextKnotV, series);
 				}
 			}
 			break;
