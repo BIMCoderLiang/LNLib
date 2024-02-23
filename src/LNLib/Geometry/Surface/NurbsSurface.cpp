@@ -1228,13 +1228,23 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const LN_NurbsSurface& surface,
 		param = temp;
 		double u = param.GetU();
 		double v = param.GetV();
-		if (MathUtils::IsAlmostEqualTo(u, 0.0))
+
+		if (MathUtils::IsLessThan(u, minUParam))
 		{
-			param = UV(0, param.GetV());
+			param = UV(minUParam, param.GetV());
 		}
-		if (MathUtils::IsAlmostEqualTo(v, 0.0))
+		if (MathUtils::IsGreaterThan(u, maxUParam))
 		{
-			param = UV(param.GetU(), 0.0);
+			param = UV(maxUParam, param.GetV());
+		}
+
+		if (MathUtils::IsLessThan(v, minVParam))
+		{
+			param = UV(param.GetU(), minVParam);
+		}
+		if (MathUtils::IsGreaterThan(v, maxUParam))
+		{
+			param = UV(param.GetU(), maxUParam);
 		}
 		counters++;
 	}
@@ -2810,23 +2820,27 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 			double halfV = (startV + endV) / 2.0;
 			XYZ halfStart = GetPointOnSurface(reSurface, UV(startU, halfV));
 			XYZ halfEnd = GetPointOnSurface(reSurface, UV(endU, halfV));
+
 			double totalWidth = halfStart.Distance(halfEnd);
-			int count = floor(totalWidth / Constants::DistanceEpsilon);
+			int intervals = 20;
+			double delta = totalWidth / intervals;
 
 			XYZ start1 = GetPointOnSurface(reSurface, UV(startU, startV));
 			XYZ start2 = GetPointOnSurface(reSurface, UV(startU, endV));
 			double startLength = start1.Distance(start2);
 
-			int size = (count / 2.0) + 1;
 			std::vector<double> odds;
 			std::vector<double> evens;
 
-			for (int i = 1; i < count; i++)
+			XYZ dir = (halfEnd - halfStart).Normalize();
+
+			for (int i = 1; i < intervals; i++)
 			{
-				XYZ current = halfStart + (halfEnd - halfStart).Normalize() * Constants::DistanceEpsilon * i;
+				XYZ current = halfStart + dir * delta * i;
 				UV uv = GetParamOnSurface(reSurface, current);
-				XYZ point1 = GetPointOnSurface(reSurface, UV(uv.GetU(), startV));
-				XYZ point2 = GetPointOnSurface(reSurface, UV(uv.GetU(), endV));
+				double u = uv.GetU();
+				XYZ point1 = GetPointOnSurface(reSurface, UV(u, startV));
+				XYZ point2 = GetPointOnSurface(reSurface, UV(u, endV));
 				double length = point1.Distance(point2);
 
 				if (i % 2 == 0)
@@ -2843,7 +2857,7 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 			XYZ end2 = GetPointOnSurface(reSurface, UV(endU, endV));
 			double endLength = end1.Distance(end2);
 
-			area = Integrator::Simpson(startLength, endLength, odds, evens, Constants::DistanceEpsilon);
+			area = Integrator::Simpson(startLength, endLength, odds, evens, delta);
 			break;
 		}
 		case IntegratorType::GaussLegendre:
