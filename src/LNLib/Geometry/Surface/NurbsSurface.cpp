@@ -66,7 +66,7 @@ namespace LNLib
 			AreaCoreFunction areaCoreFunction;
 			AreaData* data = (AreaData*)customData;
 			data->ParameterV = parameter;
-			return Integrator::ClenshawCurtisQuadrature(areaCoreFunction, data, data->CurrentKnotU, data->NextKnotU, series);
+			return Integrator::ClenshawCurtisQuadrature2(areaCoreFunction, data, data->CurrentKnotU, data->NextKnotU, data->Series);
 		}
 	};
 
@@ -2913,10 +2913,10 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 				data.NextKnotU = knotVectorU[i + 1];
 				for (int j = degreeV; j < controlPoints[0].size(); j++) 
 				{
-					data.CurrentKnotV = knotVectorV[i];
-					data.NextKnotV = knotVectorV[i + 1];
+					data.CurrentKnotV = knotVectorV[j];
+					data.NextKnotV = knotVectorV[j + 1];
 					
-					area += Integrator::ClenshawCurtisQuadrature(function, (void*)&data, data.CurrentKnotV, data.NextKnotV, series);
+					area += Integrator::ClenshawCurtisQuadrature2(function, (void*)&data, data.CurrentKnotV, data.NextKnotV, series);
 				}
 			}
 			break;

@@ -196,6 +196,63 @@ namespace LNLib
         }
         return integration;
     }
+    double Integrator::ClenshawCurtisQuadrature2(IntegrationFunction& function, void* customData, double start, double end, std::vector<double> series, double epsilon)
+    {
+        double integration;
+        int j, k, l;
+        double err, esf, eref, erefh, hh, ir, iback, irback, ba, ss, x, y, fx, errir;
+        int lenw = series.size() - 1;
+        esf = 10;
+        ba = 0.5 * (end - start);
+        ss = 2 * series[lenw];
+        x = ba * series[lenw];
+        series[0] = 0.5 * (function)(start, customData);
+        series[3] = 0.5 * (function)(end, customData);
+        series[2] = (function)(start + x, customData);
+        series[4] = (function)(end - x, customData);
+        series[1] = (function)(start + ba, customData);
+        eref = 0.5 * (fabs(series[0]) + fabs(series[1]) + fabs(series[2]) + fabs(series[3]) + fabs(series[4]));
+        series[0] += series[3];
+        series[2] += series[4];
+        ir = series[0] + series[1] + series[2];
+        integration = series[0] * series[lenw - 1] + series[1] * series[lenw - 2] + series[2] * series[lenw - 3];
+        erefh = eref * sqrt(epsilon);
+        eref *= epsilon;
+        hh = 0.25;
+        l = 2;
+        k = lenw - 5;
+        do {
+            iback = integration;
+            irback = ir;
+            x = ba * series[k + 1];
+            y = 0;
+            integration = series[0] * series[k];
+            for (j = 1; j <= l; j++) {
+                x += y;
+                y += ss * (ba - x);
+                fx = (function)(start + x, customData) + (function)(end - x, customData);
+                ir += fx;
+                integration += series[j] * series[k - j] + fx * series[k - j - l];
+                series[j + l] = fx;
+            }
+            ss = 2 * series[k + 1];
+            err = esf * l * fabs(integration - iback);
+            hh *= 0.25;
+            errir = hh * fabs(ir - 2 * irback);
+            l *= 2;
+            k -= l + 2;
+        } while ((err > erefh || errir > eref) && k > 4 * l);
+        integration *= end - start;
+        if (err > erefh || errir > eref)
+        {
+            err *= -fabs(end - start);
+        }
+        else
+        {
+            err = eref * fabs(end - start);
+        }
+        return integration;
+    }
 }
 
 

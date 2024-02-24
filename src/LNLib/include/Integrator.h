@@ -39,7 +39,8 @@ namespace LNLib
 		/// According to https://github.com/chrisidefix/nurbs
 		/// </summary>
 		static std::vector<double> ChebyshevSeries(int size = 100);
-		static double ClenshawCurtisQuadrature(IntegrationFunction& function, void* customData, double start, double end, std::vector<double>& series, double epsilon = Constants::DistanceEpsilon);	
+		static double ClenshawCurtisQuadrature(IntegrationFunction& function, void* customData, double start, double end, std::vector<double>& series, double epsilon = Constants::DistanceEpsilon);
+		static double ClenshawCurtisQuadrature2(IntegrationFunction& function, void* customData, double start, double end, std::vector<double> series, double epsilon = Constants::DistanceEpsilon);
 	};
 }
 
