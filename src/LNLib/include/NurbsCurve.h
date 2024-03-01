@@ -356,6 +356,11 @@ namespace LNLib
 		/// Calculate parameters makes every segments length equal to given length.
 		/// </summary>
 		static std::vector<double> GetParamsOnCurve(const LN_NurbsCurve& curve, double givenLength, IntegratorType type = IntegratorType::Chebyshev);
+
+		/// <summary>
+		/// Tessellate nurbs curve.
+		/// </summary>
+		static std::vector<XYZ> Tessellate(const LN_NurbsCurve& curve);
 	};
 }
 

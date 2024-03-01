@@ -21,6 +21,7 @@
 #include "Projection.h"
 #include "ValidationUtils.h"
 #include "KnotVectorUtils.h"
+#include "ControlPointsUtils.h"
 #include "Interpolation.h"
 #include "Integrator.h"
 #include "LNLibExceptions.h"
@@ -98,6 +99,24 @@ namespace LNLib
 			GetParamByLength(curve, start, end, givenLength, type);
 		}
 		return middle;
+	}
+
+	void TessellateCore(const LN_NurbsCurve& curve, double start, double end, XYZ startPoint, XYZ endPoint, std::vector<double>& parameters)
+	{
+		double mid = 0.5 * (start + end);
+		XYZ midPoint = NurbsCurve::GetPointOnCurve(curve, mid);
+		XYZ segMidPoint = 0.5 * (startPoint + endPoint);
+
+		double distance = midPoint.Distance(segMidPoint);
+		if (MathUtils::IsLessThanOrEqual(distance, Constants::DistanceEpsilon))
+		{
+			parameters.emplace_back(mid);
+		}
+		else
+		{
+			TessellateCore(curve, start, mid, startPoint, midPoint, parameters);
+			TessellateCore(curve, mid, end, midPoint, endPoint, parameters);
+		}
 	}
 }
 
@@ -3469,5 +3488,35 @@ std::vector<double> LNLib::NurbsCurve::GetParamsOnCurve(const LN_NurbsCurve& cur
 		param = GetParamOnCurve(right, givenLength, type);
 	}
 	return result;
+}
+
+std::vector<LNLib::XYZ> LNLib::NurbsCurve::Tessellate(const LN_NurbsCurve& curve)
+{
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
+	if (degree == 1)
+	{
+		return ControlPointsUtils::ToXYZ(controlPoints);
+	}
+
+	double start = knotVector[0];
+	double end = knotVector[knotVector.size() - 1];
+
+	XYZ startPoint = controlPoints[0].ToXYZ(true);
+	XYZ endPoint = controlPoints[controlPoints.size() - 1].ToXYZ(true);
+
+	std::vector<double> parameters;
+	TessellateCore(curve, start, end, startPoint, endPoint, parameters);
+	std::sort(parameters.begin(), parameters.end());
+
+	std::vector<XYZ> points;
+	for (int i = 0; i < parameters.size(); i++)
+	{
+		XYZ point = GetPointOnCurve(curve, parameters[i]);
+		points.emplace_back(point);
+	}
+	return points;
 }
 
