@@ -47,6 +47,8 @@ NURBS Algorithms:
     - Curve IsLinear/IsArc
     - Curve Approximate Length
     - Surface Approximate Area
+- ***Tessellation***:
+    - Curve Tessellation.
 
 ## Contributing
 Welcome join this project including discussions in **Issues** and make **Pull requests**.
