@@ -10,6 +10,7 @@
 
 #pragma once
 #include "LNLibDefinitions.h"
+#include "UV.h"
 #include "XYZ.h"
 #include "XYZW.h"
 #include <vector>
@@ -63,6 +64,16 @@ namespace LNLib
 		std::vector<double> KnotVectorU;
 		std::vector<double> KnotVectorV;
 		std::vector<std::vector<XYZW>> ControlPoints;
+	};
+
+	struct LNLIB_EXPORT LN_Mesh
+	{
+		std::vector<XYZ> Vertices;
+		std::vector<std::vector<int>> Faces;
+		std::vector<UV> UVs;
+		std::vector<int> UVIndices;
+		std::vector<XYZ> Normals;
+		std::vector<int> NormalIndices;
 	};
 }
 

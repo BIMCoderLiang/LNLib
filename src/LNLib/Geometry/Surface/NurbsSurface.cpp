@@ -2927,4 +2927,10 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 	return area;
 }
 
+LNLib::LN_Mesh LNLib::NurbsSurface::Tessellate(const LN_NurbsSurface& surface)
+{
+	//to be contiued...
+	return LN_Mesh();
+}
+
 

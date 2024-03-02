@@ -239,5 +239,10 @@ namespace LNLib
 		/// Use Chebyshev integration for high accuracy.
 		/// </summary>
 		static double ApproximateArea(const LN_NurbsSurface& surface, IntegratorType type = IntegratorType::Chebyshev);
+
+		/// <summary>
+		/// Tessellate nurbs surface.
+		/// </summary>
+		static LN_Mesh Tessellate(const LN_NurbsSurface& surface);
 	};
 }
