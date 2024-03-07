@@ -2822,8 +2822,8 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 			XYZ halfEnd = GetPointOnSurface(reSurface, UV(endU, halfV));
 
 			double totalWidth = halfStart.Distance(halfEnd);
-			int intervals = 20;
-			double delta = totalWidth / intervals;
+			int num = 20;
+			double delta = totalWidth / (num - 1);
 
 			XYZ start1 = GetPointOnSurface(reSurface, UV(startU, startV));
 			XYZ start2 = GetPointOnSurface(reSurface, UV(startU, endV));
@@ -2834,7 +2834,7 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 
 			XYZ dir = (halfEnd - halfStart).Normalize();
 
-			for (int i = 1; i < intervals; i++)
+			for (int i = 1; i < num; i++)
 			{
 				XYZ current = halfStart + dir * delta * i;
 				UV uv = GetParamOnSurface(reSurface, current);
@@ -2929,7 +2929,34 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 
 LNLib::LN_Mesh LNLib::NurbsSurface::Tessellate(const LN_NurbsSurface& surface)
 {
-	//to be contiued...
+	int samplesU = 100;
+	int samplesV = 100;
+
+	int degreeU = surface.DegreeU;
+	int degreeV = surface.DegreeV;
+	std::vector<double> knotVectorU = surface.KnotVectorU;
+	std::vector<double> knotVectorV = surface.KnotVectorV;
+	std::vector<std::vector<XYZW>> controlPoints = surface.ControlPoints;
+
+	double umin = knotVectorU[0];
+	double umax = knotVectorU[knotVectorU.size() - 1];
+	double vmin = knotVectorV[0];
+	double vmax = knotVectorV[knotVectorV.size() - 1];
+
+	std::vector<std::vector<double>> curvatures(samplesU, std::vector<double>(samplesV));
+	double uInterval = (umax - umin) / (samplesU - 1);
+	double vInterval = (vmax - vmin) / (samplesV - 1);
+	for (int i = 0; i < samplesU; i++)
+	{
+		double u = umin + i * uInterval;
+		for (int j = 0; j < samplesV; j++)
+		{
+			double v = vmin + j * vInterval;
+			curvatures[i][j] = Curvature(surface, SurfaceCurvature::Gauss, UV(u,v));
+		}		
+	}
+
+	//to be continued...
 	return LN_Mesh();
 }
 
