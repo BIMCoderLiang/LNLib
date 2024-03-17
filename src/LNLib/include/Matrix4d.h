@@ -33,6 +33,9 @@ namespace LNLib
 				 double a30, double a31, double a32, double a33);
 
 	public:
+
+		static Matrix4d CreateReflection(const XYZ& normal, double distanceFromOrigin);
+		//The distance from reflection plane to origin (0,0,0) is set as 0.0.
 		static Matrix4d CreateReflection(const XYZ& normal);
 		static Matrix4d CreateRotation(const XYZ& axis, double rad);
 		static Matrix4d CreateRotationAtPoint(const XYZ& origin, const XYZ& axis, double rad);

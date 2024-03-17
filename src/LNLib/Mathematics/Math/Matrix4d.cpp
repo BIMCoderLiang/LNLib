@@ -71,7 +71,7 @@ LNLib::Matrix4d::Matrix4d(double a00, double a01, double a02, double a03, double
 	m_matrix4d[3][3] = a33;
 }
 
-Matrix4d LNLib::Matrix4d::CreateReflection(const XYZ& normal)
+Matrix4d LNLib::Matrix4d::CreateReflection(const XYZ& normal, double distanceFromOrigin)
 {
 	Matrix4d result = Matrix4d();
 
@@ -80,26 +80,31 @@ Matrix4d LNLib::Matrix4d::CreateReflection(const XYZ& normal)
 	double y = t[1];
 	double z = t[2];
 
-	result.m_matrix4d[0][0] = 1 - 2 * x * x;
-	result.m_matrix4d[0][1] = -2 * x * y;
-	result.m_matrix4d[0][2] = -2 * x * z;
-	result.m_matrix4d[0][3] = 0;
+	result.m_matrix4d[0][0] = -2 * x * x + 1;
+	result.m_matrix4d[0][1] = -2 * y * x;
+	result.m_matrix4d[0][2] = -2 * z * x;
+	result.m_matrix4d[0][3] = -2 * x * distanceFromOrigin;
 
-	result.m_matrix4d[1][0] = - 2 * x * y;
-	result.m_matrix4d[1][1] = 1 - 2 * y * y;
-	result.m_matrix4d[1][2] = - 2 * y * z;
-	result.m_matrix4d[1][3] = 0;
+	result.m_matrix4d[1][0] = -2 * x * y;
+	result.m_matrix4d[1][1] = -2 * y * y + 1;
+	result.m_matrix4d[1][2] = -2 * z * y;
+	result.m_matrix4d[1][3] = -2 * y * distanceFromOrigin;
 
-	result.m_matrix4d[2][0] = - 2 * x * z;
-	result.m_matrix4d[2][1] = - 2 * y * z;
-	result.m_matrix4d[2][2] = 1 - 2 * z * z;
-	result.m_matrix4d[2][3] = 0;
+	result.m_matrix4d[2][0] = -2 * x * z;
+	result.m_matrix4d[2][1] = -2 * y * z;
+	result.m_matrix4d[2][2] = -2 * z * z + 1;
+	result.m_matrix4d[2][3] = -2 * z * distanceFromOrigin;
 
 	result.m_matrix4d[3][0] = 0.0;
 	result.m_matrix4d[3][1] = 0.0;
 	result.m_matrix4d[3][2] = 0.0;
 	result.m_matrix4d[3][3] = 1.0;
 	return result;
+}
+
+Matrix4d LNLib::Matrix4d::CreateReflection(const XYZ& normal)
+{
+	return CreateReflection(normal, 0.0);
 }
 
 Matrix4d LNLib::Matrix4d::CreateRotation(const XYZ& axis, double rad)
