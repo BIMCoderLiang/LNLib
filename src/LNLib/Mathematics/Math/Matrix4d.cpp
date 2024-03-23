@@ -125,7 +125,7 @@ Matrix4d LNLib::Matrix4d::CreateRotation(const XYZ& axis, double rad)
 	result.m_matrix4d[0][3] = 0.0;
 
 	result.m_matrix4d[1][0] = y * x * t + z * s;
-	result.m_matrix4d[1][1] = c * y * y * t;
+	result.m_matrix4d[1][1] = c + y * y * t;
 	result.m_matrix4d[1][2] = y * z * t - x * s;
 	result.m_matrix4d[1][3] = 0.0;
 
