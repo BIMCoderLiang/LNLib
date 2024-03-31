@@ -982,21 +982,20 @@ void LNLib::NurbsCurve::EquallyTessellate(const LN_NurbsCurve& curve, std::vecto
 	std::vector<double> uniqueKv = knotVector;
 	uniqueKv.erase(unique(uniqueKv.begin(), uniqueKv.end()), uniqueKv.end());
 	int size = uniqueKv.size();
-	int intervals = 100;
+	int num = 100;
 	for (int i = 0; i < size - 1; i++)
 	{
 		double currentU = uniqueKv[i];
 		double nextU = uniqueKv[i + 1];
-		double step = (nextU - currentU) / intervals;
-		for (int j = 0; j < intervals; j++)
+
+		double step = (nextU - currentU) / (num - 1);
+		for (int j = 0; j < num; j++)
 		{
 			double u = currentU + step * j;
 			correspondingKnots.emplace_back(u);
 			tessellatedPoints.emplace_back(GetPointOnCurve(curve, u));
 		}
 	}
-	correspondingKnots.emplace_back(knotVector[knotVector.size() - 1]);
-	tessellatedPoints.emplace_back(const_cast<XYZW&>(controlPoints[controlPoints.size() - 1]).ToXYZ(true));
 }
 
 bool LNLib::NurbsCurve::IsClosed(const LN_NurbsCurve& curve)
@@ -1121,7 +1120,7 @@ double LNLib::NurbsCurve::GetParamOnCurve(const LN_NurbsCurve& curve, const XYZ&
 		double df = derivatives[2].DotProduct(difference) + derivatives[1] * derivatives[1];
 		double temp = paramT - f / df;
 
-		if (isClosed)
+		if (!isClosed)
 		{
 			if (temp < a)
 			{
