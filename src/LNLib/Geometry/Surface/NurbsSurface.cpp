@@ -3233,8 +3233,10 @@ LNLib::LN_Mesh LNLib::NurbsSurface::Tessellate(const LN_NurbsSurface& surface)
 		// to be continued....
 	}
 
-	delete(uValues);
-	delete(vValues);
+	delete[] uValues;
+	uValues = nullptr;
+	delete[] vValues;
+	vValues = nullptr;
 #pragma endregion
 	LN_Mesh mesh;
 	return mesh;
