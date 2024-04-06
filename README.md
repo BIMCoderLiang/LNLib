@@ -48,7 +48,8 @@ NURBS Algorithms:
     - Curve Approximate Length
     - Surface Approximate Area
 - ***Tessellation***:
-    - Curve Tessellation.
+    - Curve Tessellation
+    - Surface Tessellation
 
 ## Visualization
 [LNLibViewer](https://github.com/BIMCoderLiang/LNLibViewer) based on [VTK](https://vtk.org/)

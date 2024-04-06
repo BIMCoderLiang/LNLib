@@ -3223,7 +3223,10 @@ LNLib::LN_Mesh LNLib::NurbsSurface::Tessellate(const LN_NurbsSurface& surface)
 	vdg.setGenerateDelaunay(true);
 	vdg.generateVoronoi(uValues, vValues, uvSize, uMin, uMax, vMin, vMax, Constants::DistanceEpsilon, true);
 	std::vector<std::vector<int>> triangles = vdg.getTriangles();
-
+	delete[] uValues;
+	uValues = nullptr;
+	delete[] vValues;
+	vValues = nullptr;
 #pragma endregion
 	LN_Mesh mesh;
 	std::vector<XYZ> vertices;
@@ -3231,19 +3234,12 @@ LNLib::LN_Mesh LNLib::NurbsSurface::Tessellate(const LN_NurbsSurface& surface)
 	{
 		for (int j = 0; j < uvSize; j++)
 		{
-			//Need fix exception error.
-			LNLib::XYZ point = GetPointOnSurface(surface, UV(uValues[i], vValues[j]));
+			LNLib::XYZ point = GetPointOnSurface(surface, UV(usList[i], vsList[j]));
 			vertices.emplace_back(point);
 		}
 	}
 	mesh.Vertices = vertices;
 	mesh.Faces = triangles;
-
-	delete[] uValues;
-	uValues = nullptr;
-	delete[] vValues;
-	vValues = nullptr;
-
 	return mesh;
 }
 
