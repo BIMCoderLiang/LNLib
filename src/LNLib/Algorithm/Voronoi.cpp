@@ -91,6 +91,12 @@ void LNLib::VoronoiDiagramGenerator::reset()
 	vertexLinks = 0;
 	vertices = 0;
 	finalVertexLinks = 0;
+	triangles.clear();
+}
+
+std::vector<std::vector<int>> LNLib::VoronoiDiagramGenerator::getTriangles()
+{
+	return triangles;
 }
 
 void LNLib::VoronoiDiagramGenerator::setGenerateDelaunay(bool genDel)
@@ -529,6 +535,15 @@ void LNLib::VoronoiDiagramGenerator::makevertex(struct Site* v)
 	v->sitenbr = nvertices;
 	insertVertexAddress(nvertices, v);
 	nvertices += 1;
+}
+
+void LNLib::VoronoiDiagramGenerator::out_triple(Site* s1, Site* s2, Site* s3)
+{
+	std::vector<int> v(3);
+	v[0] = s1->sitenbr;
+	v[1] = s2->sitenbr;
+	v[2] = s3->sitenbr;
+	triangles.emplace_back(v);
 }
 
 void LNLib::VoronoiDiagramGenerator::deref(struct Site* v)
@@ -1068,6 +1083,8 @@ bool LNLib::VoronoiDiagramGenerator::voronoi(bool genVertexInfo)
 			rrbnd = ELright(rbnd);						//get the HalfEdge to the right of the HE to the right of the lowest HE 
 			bot = leftreg(lbnd);						//get the Site to the left of the left HE which it bisects
 			top = rightreg(rbnd);						//get the Site to the right of the right HE which it bisects
+
+			out_triple(bot, top, rightreg(lbnd));
 
 			v = lbnd->vertex;						//get the vertex that caused this event
 			makevertex(v);							//set the vertex number - couldn't do this earlier since we didn't know when it would be processed

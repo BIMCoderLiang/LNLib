@@ -34,6 +34,7 @@ email: shaneosullivan1@gmail.com
 
 #include <math.h>
 #include <stdlib.h>
+#include <vector>
 #include "LNLibDefinitions.h"
 
 #ifndef NULL
@@ -197,8 +198,12 @@ namespace LNLib
 		}
 
 		void reset();
+		std::vector<std::vector<int>> getTriangles();
 
 	private:
+
+		std::vector<std::vector<int>> triangles;
+
 		void cleanup();
 		void cleanupEdges();
 		char* getfree(struct Freelist* fl);
@@ -227,6 +232,7 @@ namespace LNLib
 		struct Halfedge* ELleftbnd(struct PointVDG* p);
 		struct Halfedge* ELright(struct Halfedge* he);
 		void makevertex(struct Site* v);
+		void out_triple(struct Site* s1, struct Site* s2, struct Site* s3);
 
 		void		PQinsert(struct Halfedge* he, struct Site* v, float offset);
 		void		PQdelete(struct Halfedge* he);

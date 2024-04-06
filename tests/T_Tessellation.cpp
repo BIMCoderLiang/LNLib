@@ -41,6 +41,9 @@ TEST(Test_Tessellation, Voronoi)
 		edges++;
 	}
 	EXPECT_TRUE(edges == 5);
+
+	std::vector<std::vector<int>> triangles =  vdg.getTriangles();
+	EXPECT_TRUE(triangles.size() == 2);
 }
 
 TEST(Test_Tessellation, Surface)
@@ -100,5 +103,6 @@ TEST(Test_Tessellation, Surface)
 	surface.KnotVectorV = kvV;
 	surface.ControlPoints = controlPoints;
 
-	//NurbsSurface::Tessellate(surface);
+	//LNLib::LN_Mesh mesh = NurbsSurface::Tessellate(surface);
+	
 }

@@ -3199,46 +3199,51 @@ LNLib::LN_Mesh LNLib::NurbsSurface::Tessellate(const LN_NurbsSurface& surface)
 	double uCoeff = uLength / (umax - umin);
 	double vCoeff = vLength / (vmax - vmin);
 
-	int uSize = usList.size();
-	float* uValues = new float[uSize];
-	for (int i = 0; i < uSize; i++)
+	int uvSize = usList.size();
+	float* uValues = new float[uvSize];
+	for (int i = 0; i < uvSize; i++)
 	{
 		double u = usList[i] * uCoeff;
 		uValues[i] = u;
 	}
-	int vSize = vsList.size();
-	float* vValues = new float[vSize];
-	for (int j = 0; j < vSize; j++)
+	float* vValues = new float[uvSize];
+	for (int j = 0; j < uvSize; j++)
 	{
 		double v = vsList[j] * vCoeff;
 		vValues[j] = v;
 	}
 
-	float uMin = *std::min_element(uValues, uValues + uSize);
-	float uMax = *std::max_element(uValues, uValues + uSize);
-	float vMin = *std::min_element(vValues, vValues + vSize);
-	float vMax = *std::max_element(vValues, vValues + vSize);
+	float uMin = *std::min_element(uValues, uValues + uvSize);
+	float uMax = *std::max_element(uValues, uValues + uvSize);
+	float vMin = *std::min_element(vValues, vValues + uvSize);
+	float vMax = *std::max_element(vValues, vValues + uvSize);
 
 	VoronoiDiagramGenerator vdg;
 	vdg.setGenerateVoronoi(true);
 	vdg.setGenerateDelaunay(true);
-	vdg.generateVoronoi(uValues, vValues, uSize, uMin, uMax, vMin, vMax, Constants::DistanceEpsilon, true);
-	vdg.resetDelaunayEdgesIterator();
+	vdg.generateVoronoi(uValues, vValues, uvSize, uMin, uMax, vMin, vMax, Constants::DistanceEpsilon, true);
+	std::vector<std::vector<int>> triangles = vdg.getTriangles();
 
-	float x1, y1, x2, y2;
-	int edges = 0;
-	while (vdg.getNextDelaunay(x1, y1, x2, y2))
+#pragma endregion
+	LN_Mesh mesh;
+	std::vector<XYZ> vertices;
+	for (int i = 0; i < uvSize; i++)
 	{
-		edges++;
-		// to be continued....
+		for (int j = 0; j < uvSize; j++)
+		{
+			//Need fix exception error.
+			LNLib::XYZ point = GetPointOnSurface(surface, UV(uValues[i], vValues[j]));
+			vertices.emplace_back(point);
+		}
 	}
+	mesh.Vertices = vertices;
+	mesh.Faces = triangles;
 
 	delete[] uValues;
 	uValues = nullptr;
 	delete[] vValues;
 	vValues = nullptr;
-#pragma endregion
-	LN_Mesh mesh;
+
 	return mesh;
 }
 
