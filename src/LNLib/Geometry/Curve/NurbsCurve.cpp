@@ -27,6 +27,7 @@
 #include "LNLibExceptions.h"
 #include "LNObject.h"
 #include <vector>
+#include <random>
 #include <algorithm>
 
 namespace LNLib
@@ -101,11 +102,11 @@ namespace LNLib
 		return middle;
 	}
 
-	void TessellateCore(const LN_NurbsCurve& curve, double start, double end, XYZ startPoint, XYZ endPoint, std::vector<double>& parameters)
+	void TessellateCore(const LN_NurbsCurve& curve, double start, double end, XYZ startPoint, XYZ endPoint, double standardParameter, std::vector<double>& parameters)
 	{
-		double mid = 0.5 * (start + end);
+		double mid = start + (end - start) * standardParameter;
 		XYZ midPoint = NurbsCurve::GetPointOnCurve(curve, mid);
-		XYZ segMidPoint = 0.5 * (startPoint + endPoint);
+		XYZ segMidPoint = startPoint + (endPoint - startPoint) * standardParameter;
 
 		double distance = midPoint.Distance(segMidPoint);
 		if (MathUtils::IsLessThanOrEqual(distance, Constants::DistanceEpsilon))
@@ -114,8 +115,8 @@ namespace LNLib
 		}
 		else
 		{
-			TessellateCore(curve, start, mid, startPoint, midPoint, parameters);
-			TessellateCore(curve, mid, end, midPoint, endPoint, parameters);
+			TessellateCore(curve, start, mid, startPoint, midPoint, standardParameter, parameters);
+			TessellateCore(curve, mid, end, midPoint, endPoint, standardParameter, parameters);
 		}
 	}
 }
@@ -3507,7 +3508,16 @@ std::vector<LNLib::XYZ> LNLib::NurbsCurve::Tessellate(const LN_NurbsCurve& curve
 	XYZ endPoint = controlPoints[controlPoints.size() - 1].ToXYZ(true);
 
 	std::vector<double> parameters;
-	TessellateCore(curve, start, end, startPoint, endPoint, parameters);
+	parameters.emplace_back(start);
+	if (!startPoint.IsAlmostEqualTo(endPoint))
+	{
+		parameters.emplace_back(end);
+	}
+	
+	std::mt19937 gen(1);
+	std::uniform_real_distribution<> dis(0.0, 1.0);
+	double standardParamter = 0.5 + dis(gen) * 0.1;
+	TessellateCore(curve, start, end, startPoint, endPoint, standardParamter, parameters);
 	std::sort(parameters.begin(), parameters.end());
 
 	std::vector<XYZ> points;
