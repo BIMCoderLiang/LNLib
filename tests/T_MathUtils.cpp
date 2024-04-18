@@ -40,3 +40,9 @@ TEST(Test_MathUtils, Matrix)
 				MathUtils::IsAlmostEqualTo(upper[2][1], 0) &&
 				MathUtils::IsAlmostEqualTo(upper[2][2], -15));
 }
+
+TEST(Test_MathUtils, Binomial)
+{
+	double bi = MathUtils::Binomial(5, 3);
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(bi, 10.0));
+}
