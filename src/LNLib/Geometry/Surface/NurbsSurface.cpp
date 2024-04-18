@@ -1591,7 +1591,7 @@ bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& ax
 	return true;
 }
 
-std::vector<std::vector<LNLib::XYZW>> LNLib::NurbsSurface::NonuniformScaling(const std::vector<std::vector<XYZW>>& controlPoints, double xFactor, double yFactor, double zFactor, const XYZ& referencePoint)
+std::vector<std::vector<LNLib::XYZW>> LNLib::NurbsSurface::NonUniformScaling(const std::vector<std::vector<XYZW>>& controlPoints, double xFactor, double yFactor, double zFactor, const XYZ& referencePoint)
 {
 	std::vector<std::vector<XYZW>> result;
 	int row = controlPoints.size();
@@ -2540,10 +2540,10 @@ void LNLib::NurbsSurface::CreateGordonSurface(const std::vector<LN_NurbsCurve>& 
 void LNLib::NurbsSurface::CreateCoonsSurface(const LN_NurbsCurve& curve0, const LN_NurbsCurve& curve1, const LN_NurbsCurve& curve2, const LN_NurbsCurve& curve3, LN_NurbsSurface& surface)
 {
 	std::vector<LN_NurbsCurve> nurbs(4);
-	nurbs.emplace_back(curve0);
-	nurbs.emplace_back(curve1);
-	nurbs.emplace_back(curve2);
-	nurbs.emplace_back(curve3);
+	nurbs[0] = curve0;
+	nurbs[1] = curve1;
+	nurbs[2] = curve2;
+	nurbs[3] = curve3;
 
 	for (int i = 0; i < nurbs.size(); i++)
 	{

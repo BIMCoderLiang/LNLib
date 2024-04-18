@@ -17,8 +17,11 @@ TEST(Test_Tessellation, Curve)
 	double radius = 100;
 	LN_NurbsCurve curve;
 	bool createArc = NurbsCurve::CreateArc(center, xAxis, yAxis, 0, 2 * Constants::Pi, radius, radius, curve);
+	std::vector<double> knots = curve.KnotVector;
 	std::vector<XYZ> points = NurbsCurve::Tessellate(curve);
 	EXPECT_TRUE(points.size() > 0);
+	EXPECT_TRUE(points[0].IsAlmostEqualTo(NurbsCurve::GetPointOnCurve(curve, knots[0])));
+	EXPECT_TRUE(points[points.size()-1].IsAlmostEqualTo(NurbsCurve::GetPointOnCurve(curve, knots[knots.size()-1])));
 }
 
 TEST(Test_Tessellation, Voronoi)
