@@ -121,7 +121,7 @@ int LNLib::MathUtils::Factorial(int number)
 
 double LNLib::MathUtils::Binomial(int number, int i)
 {
-    return Factorial(number) / (Factorial(i) * Factorial(number - 1));
+    return Factorial(number) / (Factorial(i) * Factorial(number - i));
 }
 
 double LNLib::MathUtils::ComputerCubicEquationsWithOneVariable(double cubic, double quadratic, double linear, double constant)
