@@ -3509,12 +3509,10 @@ std::vector<LNLib::XYZ> LNLib::NurbsCurve::Tessellate(const LN_NurbsCurve& curve
 
 	std::vector<double> parameters;
 	parameters.emplace_back(start);
-	
 	std::mt19937 gen(1);
 	std::uniform_real_distribution<> dis(0.0, 1.0);
 	double standardParamter = 0.5 + dis(gen) * 0.1;
 	TessellateCore(curve, start, end, startPoint, endPoint, standardParamter, parameters);
-	std::sort(parameters.begin(), parameters.end());
 	parameters.emplace_back(end);
 
 	std::vector<XYZ> points;
