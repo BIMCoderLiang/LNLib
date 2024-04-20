@@ -1402,6 +1402,63 @@ void LNLib::NurbsCurve::CreateLine(const XYZ& start, const XYZ& end, LN_NurbsCur
 	result.ControlPoints = controlPoints;
 }
 
+void LNLib::NurbsCurve::CreateCubicHermite(const std::vector<XYZ>& throughPoints, const std::vector<XYZ>& tangents, LN_NurbsCurve& curve)
+{
+	int n = throughPoints.size();
+	VALIDATE_ARGUMENT(n > 3, "throughPoints", "ThroughPoints size must greater than three.");
+	VALIDATE_ARGUMENT(n == tangents.size(), "tangents", "Tangents size must equals to throughPoints size.");
+	
+	XYZ startPoint = throughPoints[0];
+	XYZ endPoint = throughPoints[throughPoints.size() - 1];
+
+	std::vector<double> uk = Interpolation::GetCentripetalParameterization(throughPoints);
+
+	bool isCyclePoint = startPoint.IsAlmostEqualTo(endPoint);
+	XYZ startTangent = tangents[0];
+	XYZ endTangent = tangents[tangents.size()-1];
+	bool isCycleTangent = startTangent.IsAlmostEqualTo(endTangent);
+
+	int kn = 2 * n;
+	int knotSize = kn + 3 + 1;
+	std::vector<double> knotVector(knotSize);
+	for (int i = 2,  j = 0; i < kn + 2; i += 2, j++)
+	{
+		knotVector[i] = knotVector[i + 1] = uk[j];
+	}
+	
+	if (isCyclePoint && isCycleTangent)
+	{
+		knotVector[0] = knotVector[1] = uk[0] - (uk[n - 1] - uk[n - 2]);
+		knotVector[kn + 2] = knotVector[kn + 3] = uk[n - 1] + uk[1] - uk[0];
+	}
+	else if (isCyclePoint && !isCycleTangent)
+	{
+		knotVector[0] = uk[0] - (uk[n - 1] - uk[n - 2]);
+		knotVector[1] = knotVector[2];
+		knotVector[kn + 2] = knotVector[kn];
+		knotVector[kn + 3] = uk[n - 1] + uk[1] - uk[0];
+	}
+	else
+	{
+		knotVector[0] = knotVector[1] = knotVector[2];
+		knotVector[kn + 2] = knotVector[kn + 3] = knotVector[kn];
+	}
+
+	std::vector<XYZW> controlPoints(kn);
+	for (int j = 0; j < kn; j += 2)
+	{
+		double i1 = knotVector[j + 3] - knotVector[j + 1];
+		double i2 = knotVector[j + 4] - knotVector[j + 2];
+
+		controlPoints[j] = XYZW((throughPoints[j] - i1 * tangents[j] / 3.0),1);
+		controlPoints[j + 1] = XYZW((throughPoints[j + 1] + i2 * tangents[j + 1] / 3.0), 1);
+	}
+
+	curve.Degree = 3;
+	curve.KnotVector = knotVector;
+	curve.ControlPoints = controlPoints;
+}
+
 bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ& yAxis, double startRad, double endRad, double xRadius, double yRadius, LN_NurbsCurve& curve)
 {
 	VALIDATE_ARGUMENT(!xAxis.IsZero(), "xAxis", "xAxis must not be zero vector.");
@@ -1737,13 +1794,8 @@ void LNLib::NurbsCurve::GlobalInterpolation(int degree, const std::vector<XYZ>& 
 	std::vector<XYZW> controlPoints(n);
 	std::vector<double> knotVector(n + degree + 1);
 
-	std::vector<double> uk(size);
-	uk[size - 1] = 1.0;
-	double d = Interpolation::GetTotalChordLength(throughPoints) * tangentFactor;
-	for (int i = 1; i <= size - 2; i++)
-	{
-		uk[i] = uk[i - 1] + (throughPoints[i].Distance(throughPoints[i - 1])) / d;
-	}
+	double d = Interpolation::GetTotalChordLength(throughPoints);
+	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
 	switch (degree)
 	{
 	case 2:

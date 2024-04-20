@@ -172,6 +172,11 @@ namespace LNLib
 		static void CreateLine(const XYZ& start, const XYZ& end, LN_NurbsCurve& result);
 
 		/// <summary>
+		/// Create cubic hermite spline by interpolation.
+		/// </summary>
+		static void CreateCubicHermite(const std::vector<XYZ>& throughPoints, const std::vector<XYZ>& tangents, LN_NurbsCurve& curve);
+
+		/// <summary>
 		/// The NURBS Book 2nd Edition Page308
 		/// Algorithm A7.1
 		/// Create arbitrary NURBS arc.
