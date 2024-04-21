@@ -3178,10 +3178,12 @@ LNLib::LN_Mesh LNLib::NurbsSurface::Tessellate(const LN_NurbsSurface& surface)
 	std::vector<double> usList;
 	usList.insert(usList.end(), us.begin(), us.end());
 	usList.insert(usList.end(), newU.begin(), newU.end());
+	std::sort(usList.begin(), usList.end());
 
 	std::vector<double> vsList;
 	vsList.insert(vsList.end(), vs.begin(), vs.end());
 	vsList.insert(vsList.end(), newV.begin(), newV.end());
+	std::sort(vsList.begin(), vsList.end());
 
 	row = surfacePoints.size();
 	column = surfacePoints[0].size();
@@ -3232,11 +3234,8 @@ LNLib::LN_Mesh LNLib::NurbsSurface::Tessellate(const LN_NurbsSurface& surface)
 	std::vector<XYZ> vertices;
 	for (int i = 0; i < uvSize; i++)
 	{
-		for (int j = 0; j < uvSize; j++)
-		{
-			LNLib::XYZ point = GetPointOnSurface(surface, UV(usList[i], vsList[j]));
-			vertices.emplace_back(point);
-		}
+		LNLib::XYZ point = GetPointOnSurface(surface, UV(usList[i], vsList[i]));
+		vertices.emplace_back(point);
 	}
 	mesh.Vertices = vertices;
 	mesh.Faces = triangles;
