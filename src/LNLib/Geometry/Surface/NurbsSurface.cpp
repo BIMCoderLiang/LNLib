@@ -3203,16 +3203,11 @@ LNLib::LN_Mesh LNLib::NurbsSurface::Tessellate(const LN_NurbsSurface& surface)
 
 	int uvSize = usList.size();
 	float* uValues = new float[uvSize];
+	float* vValues = new float[uvSize];
 	for (int i = 0; i < uvSize; i++)
 	{
-		double u = usList[i] * uCoeff;
-		uValues[i] = u;
-	}
-	float* vValues = new float[uvSize];
-	for (int j = 0; j < uvSize; j++)
-	{
-		double v = vsList[j] * vCoeff;
-		vValues[j] = v;
+		uValues[i] = usList[i] * uCoeff;
+		vValues[i] = vsList[i] * vCoeff;
 	}
 
 	float uMin = *std::min_element(uValues, uValues + uvSize);
@@ -3231,11 +3226,11 @@ LNLib::LN_Mesh LNLib::NurbsSurface::Tessellate(const LN_NurbsSurface& surface)
 	vValues = nullptr;
 #pragma endregion
 	LN_Mesh mesh;
-	std::vector<XYZ> vertices;
+	std::vector<XYZ> vertices(uvSize);
 	for (int i = 0; i < uvSize; i++)
 	{
 		LNLib::XYZ point = GetPointOnSurface(surface, UV(usList[i], vsList[i]));
-		vertices.emplace_back(point);
+		vertices[i] = point;
 	}
 	mesh.Vertices = vertices;
 	mesh.Faces = triangles;
