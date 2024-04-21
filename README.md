@@ -12,7 +12,7 @@ Basic Elements:
 - Matrix4d
 - LNObject
 
-NURBS Algorithms:
+Algorithms in ***The Nurbs Book***:
 - ***Chapter 1***:
     - Basis Function Computation
 - ***Chapter 1,2,3,4***:
@@ -41,19 +41,22 @@ NURBS Algorithms:
     - Curve Clamp/UnClamp/IsClamp
     - KnotVector IsUniform
     - Curve IsClosed/IsPeriodic
-- ***Additional***:
+
+Additional Algorithms:  
+- ***Basic Properties***:
     - Curve/Surface Curvature and Normal
     - Curve Split/Merge/Offset
     - Curve IsLinear/IsArc
     - Curve Approximate Length
     - Surface Approximate Area
+- ***Curve Creation***
+    - Create Line/Cubic Hermite
 - ***Tessellation***:
     - Curve Tessellation
     - Surface Tessellation
 
 ## Visualization
 [LNLibViewer](https://github.com/BIMCoderLiang/LNLibViewer) based on [VTK](https://vtk.org/)
-
 
 ## Contributing
 Welcome join this project including discussions in **Issues** and make **Pull requests**.

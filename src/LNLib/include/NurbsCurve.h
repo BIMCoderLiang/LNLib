@@ -172,6 +172,7 @@ namespace LNLib
 		static void CreateLine(const XYZ& start, const XYZ& end, LN_NurbsCurve& result);
 
 		/// <summary>
+		/// The SISL Reference Manual v4.4 Page30 s1379
 		/// Create cubic hermite spline by interpolation.
 		/// </summary>
 		static void CreateCubicHermite(const std::vector<XYZ>& throughPoints, const std::vector<XYZ>& tangents, LN_NurbsCurve& curve);
