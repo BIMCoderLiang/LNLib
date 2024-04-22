@@ -726,7 +726,7 @@ void LNLib::NurbsCurve::ElevateDegree(const LN_NurbsCurve& curve, int times, LN_
 	int cind = 1;
 	double ua = knotVector[0];
 
-	int moresize = n * times * 2;
+	int moresize = controlPoints.size() + controlPoints.size() * times;
 	std::vector<XYZW> updatedControlPoints(moresize,XYZW(Constants::MaxDistance, Constants::MaxDistance, Constants::MaxDistance,1));
 	updatedControlPoints[0] = controlPoints[0];
 
