@@ -841,15 +841,13 @@ void LNLib::NurbsCurve::ElevateDegree(const LN_NurbsCurve& curve, int times, LN_
 		{
 			for (int i = 0; i < ph - oldr; i++)
 			{
-				updatedKnotVector[kind] = ua;
-				kind++;
+				updatedKnotVector[kind++] = ua;
 			}
 		}
 
 		for (int j = lbz; j <= rbz; j++)
 		{
-			updatedControlPoints[cind] = ebpts[j];
-			cind++;
+			updatedControlPoints[cind++] = ebpts[j];
 		}
 
 		if (b < m)
@@ -1329,7 +1327,7 @@ bool LNLib::NurbsCurve::Merge(const LN_NurbsCurve& left, const LN_NurbsCurve& ri
 		return false;
 	}
 
-	int size = tempL.ControlPoints.size() + tempR.ControlPoints.size();
+	int size = tempL.ControlPoints.size() + tempR.ControlPoints.size() - 1;
 	std::vector<XYZW> controlPoints(size);
 	int ksize = size + degree + 1;
 	std::vector<double> knotVector(ksize);
@@ -1342,20 +1340,33 @@ bool LNLib::NurbsCurve::Merge(const LN_NurbsCurve& left, const LN_NurbsCurve& ri
 		
 	for (; i < size; i++)
 	{
-		controlPoints[i] = tempR.ControlPoints[i - tempL.ControlPoints.size()];
-	}
-		
-
-	for (i = 0; i <tempL.KnotVector.size(); i++)
-	{
-		knotVector[i] = tempL.KnotVector[i];
-	}
-		
-	for (; i < ksize; i++)
-	{
-		knotVector[i] = tempR.KnotVector[i - tempL.KnotVector.size() + degree + 1];
+		controlPoints[i] = tempR.ControlPoints[i - tempL.ControlPoints.size() + 1];
 	}
 
+	double kl = tempL.KnotVector[tempL.KnotVector.size() - 1];
+	for (i = 0; i < degree + 1; i++)
+	{
+		knotVector[i] = tempL.KnotVector[0];
+		knotVector[ksize - i - 1] = kl + tempR.KnotVector[tempR.KnotVector.size() - 1];
+	}
+	
+	for (int j = 0; j < degree; j++, i++)
+	{
+		knotVector[i] = kl;
+	}
+
+	auto map = KnotVectorUtils::GetInternalKnotMultiplicityMap(tempR.KnotVector);
+	for (auto it = map.begin(); it != map.end(); it++)
+	{
+		for (int j = 0; j < degree; j++, i++)
+		{
+			knotVector[i] = kl + it->first;
+		}
+	}	
+
+	result.Degree = degree;
+	result.KnotVector = knotVector;
+	result.ControlPoints = controlPoints;
 	return true;
 }
 

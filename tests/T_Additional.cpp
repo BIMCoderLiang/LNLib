@@ -124,3 +124,34 @@ TEST(Test_Additional, Area)
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(gaussLegendre, standardArea));
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(chebyshev, standardArea));
 }
+
+TEST(Test_Additional, MergeCurve)
+{
+	// Make line.
+	XYZ start(0, 0, 0);
+	XYZ end(5, 0, 0);
+	LN_NurbsCurve line;
+	NurbsCurve::CreateLine(start, end, line);
+
+	// Make arc.
+	XYZ center(10, 0, 0);
+	XYZ xAxis(-1, 0, 0);
+	XYZ yAxis(0, 1, 0);
+	double startRad = 0;
+	double endRad = Constants::Pi;
+	double radius = 5;
+	LN_NurbsCurve arc;
+	NurbsCurve::CreateArc(center, xAxis, yAxis, startRad, endRad, radius, radius, arc);
+
+	// Merge.
+	LN_NurbsCurve merged;
+	bool success = NurbsCurve::Merge(line, arc, merged);
+	EXPECT_TRUE(success);
+
+	// Verify length.
+	double lineLength = NurbsCurve::ApproximateLength(line);
+	double arcLength = NurbsCurve::ApproximateLength(arc);
+	double standard = lineLength + arcLength;
+	double mergedLength = NurbsCurve::ApproximateLength(merged, IntegratorType::GaussLegendre);
+	EXPECT_NEAR(standard, mergedLength, Constants::DistanceEpsilon);
+}

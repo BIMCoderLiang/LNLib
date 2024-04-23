@@ -68,23 +68,24 @@ std::vector<double> LNLib::KnotVectorUtils::GetInsertedKnotElement(int degree, c
 	return result;
 }
 
-std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> LNLib::KnotVectorUtils::GetKnotMultiplicityMap(const std::vector<double>& knotVector)
+std::map<double, int> LNLib::KnotVectorUtils::GetKnotMultiplicityMap(const std::vector<double>& knotVector)
 {
-	std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> result;
+	std::map<double, int> result;
 
 	for (int i = 0; i < knotVector.size(); i++)
 	{
-		auto got = result.find(knotVector[i]);
+		double knot = knotVector[i];
+		auto got = result.find(knot);
 		if (got == result.end())
 		{
 			int multi = Polynomials::GetKnotMultiplicity(knotVector, knotVector[i]);
-			result.insert({ knotVector[i], multi });
+			result.insert(std::make_pair(knotVector[i], multi));
 		}
 	}
 	return result;
 }
 
-std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> LNLib::KnotVectorUtils::GetInternalKnotMultiplicityMap(const std::vector<double>& knotVector)
+std::map<double, int> LNLib::KnotVectorUtils::GetInternalKnotMultiplicityMap(const std::vector<double>& knotVector)
 {
 	auto result = GetKnotMultiplicityMap(knotVector);
 	if (!result.empty()) 
@@ -98,8 +99,8 @@ std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> LNLib::Kno
 
 void LNLib::KnotVectorUtils::GetInsertedKnotElement(const std::vector<double>& knotVector0, const std::vector<double>& knotVector1, std::vector<double>& insertElements0, std::vector<double>& insertElements1)
 {
-	std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> map0 = GetKnotMultiplicityMap(knotVector0);
-	std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> map1 = GetKnotMultiplicityMap(knotVector1);
+	std::map<double, int> map0 = GetKnotMultiplicityMap(knotVector0);
+	std::map<double, int> map1 = GetKnotMultiplicityMap(knotVector1);
 
 	for (auto it = map0.begin(); it != map0.end(); ++it)
 	{
@@ -157,11 +158,11 @@ void LNLib::KnotVectorUtils::GetInsertedKnotElement(const std::vector<double>& k
 
 std::vector<std::vector<double>> LNLib::KnotVectorUtils::GetInsertedKnotElements(const std::vector<std::vector<double>>& knotVectors)
 {
-	std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> finalMap;
+	std::map<double, int> finalMap;
 	for (int i = 0; i < knotVectors.size(); i++)
 	{
 		auto kv = knotVectors[i];
-		std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> map = GetKnotMultiplicityMap(kv);
+		std::map<double, int> map = GetKnotMultiplicityMap(kv);
 		for (auto it = map.begin(); it != map.end(); ++it)
 		{
 			double key = it->first;
@@ -186,7 +187,7 @@ std::vector<std::vector<double>> LNLib::KnotVectorUtils::GetInsertedKnotElements
 	for (int i = 0; i < knotVectors.size(); i++)
 	{
 		auto kv = knotVectors[i];
-		std::unordered_map<double, int, std::hash<double>, CustomDoubleEqual> map = GetKnotMultiplicityMap(kv);
+		std::map<double, int> map = GetKnotMultiplicityMap(kv);
 
 		std::vector<double> insertElements;
 		for (auto it = finalMap.begin(); it != finalMap.end(); ++it)
