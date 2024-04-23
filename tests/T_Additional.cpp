@@ -146,16 +146,12 @@ TEST(Test_Additional, MergeCurve)
 	// Merge.
 	LN_NurbsCurve merged;
 	bool success = NurbsCurve::Merge(line, arc, merged);
-	EXPECT_TRUE(success);// failing
-
-	// A bug is uncovered here.
-	// line degree elevated to 2, expecting knots to be {0,0,0,1,1,1}
-	// actually: {0,0,0,1,1}
-	// The multiplicity of the last knot is incorrect.
+	EXPECT_TRUE(success);
 
 	// Verify length.
 	double lineLength = NurbsCurve::ApproximateLength(line);
 	double arcLength = NurbsCurve::ApproximateLength(arc);
-	double mergedLength = NurbsCurve::ApproximateLength(merged);
-	EXPECT_NEAR(lineLength + arcLength, mergedLength, Constants::DoubleEpsilon);
+	double standard = lineLength + arcLength;
+	double mergedLength = NurbsCurve::ApproximateLength(merged, IntegratorType::GaussLegendre);
+	EXPECT_NEAR(standard, mergedLength, Constants::DistanceEpsilon);
 }
