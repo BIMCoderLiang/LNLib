@@ -3002,7 +3002,7 @@ bool LNLib::NurbsCurve::Flattening(const LN_NurbsCurve& curve, XYZ lineStartPoin
 	int spanMinIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, startParameter);
 	int spanMaxIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, endParameter);
 	
-	std::unordered_map<int, XYZ> selectedControlPoints;
+	std::map<int, XYZ> selectedControlPoints;
 	for (int i = spanMinIndex; i <= spanMaxIndex - degree - 1; i++)
 	{
 		XYZ p = const_cast<XYZW&>(controlPoints[i]).ToXYZ(true);
@@ -3047,7 +3047,7 @@ void LNLib::NurbsCurve::Bending(const LN_NurbsCurve& curve, double startParamete
 	int spanMaxIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, endParameter);
 
 	std::vector<XYZW> updatedControlPoints = controlPoints;
-	std::unordered_map<int, XYZ> selectedControlPoints;
+	std::map<int, XYZ> selectedControlPoints;
 	for (int i = spanMinIndex; i <= spanMaxIndex - degree - 1; i++)
 	{
 		XYZ p = const_cast<XYZW&>(updatedControlPoints[i]).ToXYZ(true);
