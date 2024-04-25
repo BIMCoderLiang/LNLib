@@ -21,16 +21,3 @@ TEST(Test_AdvancedSurface, KnotVector)
 	EXPECT_TRUE(result[0].size() == 4);
 	EXPECT_TRUE(result[1].size() == 3);
 }
-
-TEST(Test_AdvancedSurface, Bilinear)
-{
-	XYZ p00 = XYZ(0, 0, 0);
-	XYZ p01 = XYZ(2, 0.5, 0);
-	XYZ p10 = XYZ(0.2, 1.0, 0);
-	XYZ p11 = XYZ(1.8, 1.5, 0);
-
-	LN_NurbsSurface surface;
-	NurbsSurface::CreateBilinearSurface(p00, p01, p10, p11, surface);
-	XYZ point = NurbsSurface::GetPointOnSurface(surface, UV(0.5, 0.5));
-	EXPECT_TRUE(point.IsAlmostEqualTo(XYZ(1.0, 0.75, 0.0)));
-}

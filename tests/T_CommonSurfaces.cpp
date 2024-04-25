@@ -11,15 +11,28 @@ using namespace LNLib;
 TEST(Test_CommonSurfaces, All)
 {
 	{
-		XYZ P00 = XYZ(0, 100, 0);
-		XYZ P01 = XYZ(100, 100, 100);
-		XYZ P11 = XYZ(100, 0, 0);
-		XYZ P10 = XYZ(0, 0, 100);
+		{
+			XYZ P00 = XYZ(0, 100, 0);
+			XYZ P01 = XYZ(100, 100, 100);
+			XYZ P10 = XYZ(0, 0, 100);
+			XYZ P11 = XYZ(100, 0, 0);
 
-		LN_NurbsSurface surface;
-		NurbsSurface::CreateBilinearSurface(P00, P01, P11, P10, surface);
-		XYZ result = NurbsSurface::GetPointOnSurface(surface, UV(0.5, 0.5));
-		EXPECT_TRUE(result.IsAlmostEqualTo(XYZ(50, 50, 50)));
+			LN_NurbsSurface surface;
+			NurbsSurface::CreateBilinearSurface(P00, P01, P11, P10, surface);
+			XYZ result = NurbsSurface::GetPointOnSurface(surface, UV(0.5, 0.5));
+			EXPECT_TRUE(result.IsAlmostEqualTo(XYZ(50, 50, 50)));
+		}
+		{
+			XYZ p00 = XYZ(0, 0, 0);
+			XYZ p01 = XYZ(2, 0.5, 0);
+			XYZ p10 = XYZ(0.2, 1.0, 0);
+			XYZ p11 = XYZ(1.8, 1.5, 0);
+
+			LN_NurbsSurface surface;
+			NurbsSurface::CreateBilinearSurface(p00, p01, p10, p11, surface);
+			XYZ point = NurbsSurface::GetPointOnSurface(surface, UV(0.5, 0.5));
+			EXPECT_TRUE(point.IsAlmostEqualTo(XYZ(1.0, 0.75, 0.0)));
+		}
 	}
 
 	{
