@@ -2537,13 +2537,25 @@ void LNLib::NurbsSurface::CreateGordonSurface(const std::vector<LN_NurbsCurve>& 
 	surface.ControlPoints = controlPoints;
 }
 
-void LNLib::NurbsSurface::CreateCoonsSurface(const LN_NurbsCurve& curve0, const LN_NurbsCurve& curve1, const LN_NurbsCurve& curve2, const LN_NurbsCurve& curve3, LN_NurbsSurface& surface)
+void LNLib::NurbsSurface::CreateCoonsSurface(const LN_NurbsCurve& curve00, const LN_NurbsCurve& curve01, const LN_NurbsCurve& curve10, const LN_NurbsCurve& curve11, LN_NurbsSurface& surface)
 {
 	std::vector<LN_NurbsCurve> nurbs(4);
-	nurbs[0] = curve0;
-	nurbs[1] = curve1;
-	nurbs[2] = curve2;
-	nurbs[3] = curve3;
+	nurbs[0] = curve00;
+	nurbs[1] = curve01;
+	nurbs[2] = curve10;
+	nurbs[3] = curve11;
+
+	{
+		LN_NurbsCurve tc;
+		NurbsCurve::Reverse(nurbs[0], tc);
+		nurbs[0] = tc;
+	}
+
+	{
+		LN_NurbsCurve tc;
+		NurbsCurve::Reverse(nurbs[2], tc);
+		nurbs[2] = tc;
+	}
 
 	for (int i = 0; i < nurbs.size(); i++)
 	{
@@ -2627,18 +2639,6 @@ void LNLib::NurbsSurface::CreateCoonsSurface(const LN_NurbsCurve& curve0, const 
 		}
 	}
 
-	{
-		LN_NurbsCurve tc;
-		NurbsCurve::Reverse(n0, tc);
-		n0 = tc;
-	}
-
-	{
-		LN_NurbsCurve tc;
-		NurbsCurve::Reverse(n3, tc);
-		n3 = tc;
-	}
-
 	LN_NurbsSurface ruledSurface0;
 	{
 		std::vector<std::vector<XYZW>> cps;
@@ -2654,16 +2654,17 @@ void LNLib::NurbsSurface::CreateCoonsSurface(const LN_NurbsCurve& curve0, const 
 
 	LN_NurbsSurface bilinearSurface;
 	{
-		XYZ point1 = NurbsCurve::GetPointOnCurve(n0, n0.KnotVector[0]);
-		XYZ point2 = NurbsCurve::GetPointOnCurve(n2, n2.KnotVector[0]);
-		XYZ point3 = NurbsCurve::GetPointOnCurve(n0, n0.KnotVector[n0.KnotVector.size() - 1]);
-		XYZ point4 = NurbsCurve::GetPointOnCurve(n2, n2.KnotVector[n2.KnotVector.size() - 1]);
+		XYZ point00 = NurbsCurve::GetPointOnCurve(n0, n0.KnotVector[0]);
+		XYZ point01 = NurbsCurve::GetPointOnCurve(n0, n0.KnotVector[n0.KnotVector.size() - 1]);
+		XYZ point10 = NurbsCurve::GetPointOnCurve(n2, n2.KnotVector[0]);
+		XYZ point11 = NurbsCurve::GetPointOnCurve(n2, n2.KnotVector[n2.KnotVector.size() - 1]);
+
 		int degree_u;
 		int degree_v;
 		std::vector<double> kv_u;
 		std::vector<double> kv_v;
 		std::vector<std::vector<XYZW>> cps;
-		CreateBilinearSurface(point1, point2, point3, point4, bilinearSurface);
+		CreateBilinearSurface(point00, point01, point10, point11, bilinearSurface);
 	}
 
 	{
