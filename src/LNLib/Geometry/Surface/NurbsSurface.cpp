@@ -1307,7 +1307,7 @@ bool LNLib::NurbsSurface::GetUVTangent(const LN_NurbsSurface& surface, const UV 
 	return true;
 }
 
-void LNLib::NurbsSurface::CreateBilinearSurface(const XYZ& point1, const XYZ& point2, const XYZ& point3, const XYZ& point4, LN_NurbsSurface& surface)
+void LNLib::NurbsSurface::CreateBilinearSurface(const XYZ& point00, const XYZ& point01, const XYZ& point10, const XYZ& point11, LN_NurbsSurface& surface)
 {
 	int degree = 3;
 	surface.DegreeU = surface.DegreeV = degree;
@@ -1322,10 +1322,10 @@ void LNLib::NurbsSurface::CreateBilinearSurface(const XYZ& point1, const XYZ& po
 		for (int j = 0; j <= degree; j++)
 		{
 			double l = 1.0 - i / (double)degree;
-			XYZ inter12 = l * point1 + (1 - l) * point2;
-			XYZ inter43 = l * point4 + (1 - l) * point3;
+			XYZ d1 = l * point01 + (1 - l) * point00;
+			XYZ d2 = l * point11 + (1 - l) * point10;
 
-			XYZ res = inter12 * (1 - j / (double)degree) + (j / (double)degree) * inter43;
+			XYZ res = d1 * (1 - j / (double)degree) + (j / (double)degree) * d2;
 			row.emplace_back(XYZW(res, 1.0));
 		}
 		controlPoints.emplace_back(row);
