@@ -221,11 +221,20 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page502
 		/// Algorithm A10.4
 		/// Create Coons Surface.
-		/// The difference between Coons and Gordon is that Coons Surface is created by 4 curves.
+		/// The difference between Coons and Gordon is that Coons Surface is created by 4 anti-clock curves.
+		///		
+		///		top                 ------- v direction
+		/// _____________			|
+		///	|			|			|
+		///	| left		|right		u direction
+		///	|			|
+		/// _____________ 
+		///		bottom
+		/// 
 		/// The coons surface is the special case of Gordon Surface.
 		/// 
 		/// </summary>
-		static void CreateCoonsSurface(const LN_NurbsCurve& curve00, const LN_NurbsCurve& curve01, const LN_NurbsCurve& curve10, const LN_NurbsCurve& curve11, LN_NurbsSurface& surface);
+		static void CreateCoonsSurface(const LN_NurbsCurve& leftCurve, const LN_NurbsCurve& bottomCurve, const LN_NurbsCurve& rightCurve, const LN_NurbsCurve& topCurve, LN_NurbsSurface& surface);
 
 		/// <summary>
 		/// Calculate surface area.

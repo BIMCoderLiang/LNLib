@@ -2537,24 +2537,24 @@ void LNLib::NurbsSurface::CreateGordonSurface(const std::vector<LN_NurbsCurve>& 
 	surface.ControlPoints = controlPoints;
 }
 
-void LNLib::NurbsSurface::CreateCoonsSurface(const LN_NurbsCurve& curve00, const LN_NurbsCurve& curve01, const LN_NurbsCurve& curve10, const LN_NurbsCurve& curve11, LN_NurbsSurface& surface)
+void LNLib::NurbsSurface::CreateCoonsSurface(const LN_NurbsCurve& leftCurve, const LN_NurbsCurve& bottomCurve, const LN_NurbsCurve& rightCurve, const LN_NurbsCurve& topCurve, LN_NurbsSurface& surface)
 {
 	std::vector<LN_NurbsCurve> nurbs(4);
-	nurbs[0] = curve00;
-	nurbs[1] = curve01;
-	nurbs[2] = curve10;
-	nurbs[3] = curve11;
-
-	{
-		LN_NurbsCurve tc;
-		NurbsCurve::Reverse(nurbs[0], tc);
-		nurbs[0] = tc;
-	}
+	nurbs[0] = leftCurve;
+	nurbs[1] = bottomCurve;
+	nurbs[2] = rightCurve;
+	nurbs[3] = topCurve;
 
 	{
 		LN_NurbsCurve tc;
 		NurbsCurve::Reverse(nurbs[2], tc);
 		nurbs[2] = tc;
+	}
+
+	{
+		LN_NurbsCurve tc;
+		NurbsCurve::Reverse(nurbs[3], tc);
+		nurbs[3] = tc;
 	}
 
 	for (int i = 0; i < nurbs.size(); i++)
@@ -2564,6 +2564,14 @@ void LNLib::NurbsSurface::CreateCoonsSurface(const LN_NurbsCurve& curve00, const
 		NurbsCurve::Reparametrize(current, 0, 1, tc);
 		nurbs[i] = tc;
 	}
+
+	bool isP00 = NurbsCurve::GetPointOnCurve(nurbs[0], 0).IsAlmostEqualTo(NurbsCurve::GetPointOnCurve(nurbs[3], 0));
+	bool isP01 = NurbsCurve::GetPointOnCurve(nurbs[2], 0).IsAlmostEqualTo(NurbsCurve::GetPointOnCurve(nurbs[3], 1));
+	bool isP10 = NurbsCurve::GetPointOnCurve(nurbs[0], 1).IsAlmostEqualTo(NurbsCurve::GetPointOnCurve(nurbs[1], 0));
+	bool isP11 = NurbsCurve::GetPointOnCurve(nurbs[2], 1).IsAlmostEqualTo(NurbsCurve::GetPointOnCurve(nurbs[1], 1));
+
+	VALIDATE_ARGUMENT(isP00 & isP01 & isP10 & isP11, "Curves", "Four Curves must be a loop to make a surface.");
+
 
 	auto n0 = nurbs[0]; auto n2 = nurbs[2];
 	int degree_n0 = n0.Degree;
@@ -2655,8 +2663,8 @@ void LNLib::NurbsSurface::CreateCoonsSurface(const LN_NurbsCurve& curve00, const
 	LN_NurbsSurface bilinearSurface;
 	{
 		XYZ point00 = NurbsCurve::GetPointOnCurve(n0, n0.KnotVector[0]);
-		XYZ point01 = NurbsCurve::GetPointOnCurve(n0, n0.KnotVector[n0.KnotVector.size() - 1]);
-		XYZ point10 = NurbsCurve::GetPointOnCurve(n2, n2.KnotVector[0]);
+		XYZ point01 = NurbsCurve::GetPointOnCurve(n2, n2.KnotVector[0]);
+		XYZ point10 = NurbsCurve::GetPointOnCurve(n0, n0.KnotVector[n0.KnotVector.size() - 1]);
 		XYZ point11 = NurbsCurve::GetPointOnCurve(n2, n2.KnotVector[n2.KnotVector.size() - 1]);
 
 		int degree_u;
