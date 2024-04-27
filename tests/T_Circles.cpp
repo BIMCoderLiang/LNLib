@@ -42,6 +42,23 @@ TEST(Test_Circles, All)
 		EXPECT_TRUE(C3.IsAlmostEqualTo(XYZ(0, -10, 0)));
 		XYZ C4 = NurbsCurve::GetPointOnCurve(curve, 1.0);
 		EXPECT_TRUE(C4.IsAlmostEqualTo(XYZ(10, 0, 0)));
+
+		// Test arcs of 1/2/3/4 portions.
+		double endAngle[] = {Constants::Pi/4, 3*Constants::Pi/4, 5*Constants::Pi/4, 7*Constants::Pi/4};
+		for(int i=0;i<4;++i)
+		{
+			// Create arc.
+			const double radius = 10;
+			const double startAngle = 0;
+			bool result = NurbsCurve::CreateArc(center, xAxis, yAxis, 
+				startAngle, endAngle[i], radius, radius, curve);
+			EXPECT_TRUE(result);
+
+			// Verify length.
+			double length = NurbsCurve::ApproximateLength(curve, LNLib::IntegratorType::Chebyshev);
+			double expectedLen = (endAngle[i] - startAngle) * radius;
+			EXPECT_NEAR(length, expectedLen, Constants::DistanceEpsilon);
+		}
 	}
 
 	{
