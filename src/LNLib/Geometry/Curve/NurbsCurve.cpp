@@ -1552,8 +1552,8 @@ bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ
 		knotVector[3] = knotVector[4] = 0.5;
 		break;
 	case 3:
-		knotVector[3] = knotVector[4] = 1 / 3;
-		knotVector[5] = knotVector[6] = 2 / 3;
+		knotVector[3] = knotVector[4] = 1.0 / 3;
+		knotVector[5] = knotVector[6] = 2.0 / 3;
 		break;
 	case 4:
 		knotVector[3] = knotVector[4] = 0.25;
@@ -3356,6 +3356,15 @@ bool LNLib::NurbsCurve::IsLinear(const LN_NurbsCurve& curve)
 	if ((end - start).IsAlmostEqualTo(XYZ()))
 		return false;
 	XYZ dir = (end - start).Normalize();
+	for (int i = 0; i < size - 1; i++)
+	{
+		XYZ current = controlPoints[i].ToXYZ(true);
+		XYZ next = controlPoints[i + 1].ToXYZ(true);
+		if (!(next - current).IsAlmostEqualTo(dir))
+		{
+			return false;
+		}
+	}
 
 	auto map = KnotVectorUtils::GetInternalKnotMultiplicityMap(knotVector);
 	for (auto it = map.begin(); it != map.end(); it++)
@@ -3373,7 +3382,7 @@ bool LNLib::NurbsCurve::IsLinear(const LN_NurbsCurve& curve)
 	return true;
 }
 
-bool LNLib::NurbsCurve::IsArc(const LN_NurbsCurve& curve)
+bool LNLib::NurbsCurve::IsArc(const LN_NurbsCurve& curve, double& radius)
 {
 	if (IsLinear(curve))
 	{
@@ -3403,7 +3412,7 @@ bool LNLib::NurbsCurve::IsArc(const LN_NurbsCurve& curve)
 	double k1 = base * v2v2 * (v1v1 - v1v2);
 	double k2 = base * v1v1 * (v2v2 - v1v2);
 	XYZ center = P0 + v1 * k1 + v2 * k2;
-	double radius = center.Distance(P0);
+	radius = center.Distance(P0);
 
 	std::vector<XYZ> tessellatedPoints;
 	std::vector<double> correspondingKnots;

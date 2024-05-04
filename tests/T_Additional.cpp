@@ -13,7 +13,8 @@ TEST(Test_Additional, All)
 	LN_NurbsCurve result;
 	NurbsCurve::CreateLine(XYZ(0, 0, 0), XYZ(100, 0, 0), result);
 	EXPECT_TRUE(NurbsCurve::IsLinear(result));
-	EXPECT_FALSE(NurbsCurve::IsArc(result));
+	double arcRadius = 0.0;
+	EXPECT_FALSE(NurbsCurve::IsArc(result, arcRadius));
 	double simpson = NurbsCurve::ApproximateLength(result, IntegratorType::Simpson);
 	double gaussLegendre = NurbsCurve::ApproximateLength(result, IntegratorType::GaussLegendre);
 	double chebyshev = NurbsCurve::ApproximateLength(result, IntegratorType::Chebyshev);
@@ -28,7 +29,7 @@ TEST(Test_Additional, All)
 	LN_NurbsCurve curve;
 	bool createArc = NurbsCurve::CreateArc(center, xAxis, yAxis, 0, 2 * Constants::Pi, radius, radius, curve);
 	EXPECT_TRUE(createArc);
-	EXPECT_TRUE(NurbsCurve::IsArc(curve));
+	EXPECT_TRUE(NurbsCurve::IsArc(curve, arcRadius));
 	EXPECT_FALSE(NurbsCurve::IsLinear(curve));
 	simpson = NurbsCurve::ApproximateLength(curve, IntegratorType::Simpson);
 	gaussLegendre = NurbsCurve::ApproximateLength(curve, IntegratorType::GaussLegendre);
