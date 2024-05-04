@@ -106,6 +106,6 @@ TEST(Test_Tessellation, Surface)
 	surface.KnotVectorV = kvV;
 	surface.ControlPoints = controlPoints;
 
-	LNLib::LN_Mesh mesh = NurbsSurface::Tessellate(surface);
+	LNLib::LN_Mesh mesh = NurbsSurface::Triangulate(surface);
 	EXPECT_TRUE(mesh.Faces.size() != 0);
 }

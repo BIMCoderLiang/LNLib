@@ -2939,7 +2939,7 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 	return area;
 }
 
-LNLib::LN_Mesh LNLib::NurbsSurface::Tessellate(const LN_NurbsSurface& surface)
+LNLib::LN_Mesh LNLib::NurbsSurface::Triangulate(const LN_NurbsSurface& surface)
 {
 	int samplesU = 25;
 	int samplesV = 25;
@@ -3024,7 +3024,7 @@ LNLib::LN_Mesh LNLib::NurbsSurface::Tessellate(const LN_NurbsSurface& surface)
 		for (int j = 0; j < samplesV - 1; j++)
 		{
 			double c = std::max({ cur0[i][j], curdu[i][j], curdv[i][j], curdudv[i][j]});
-			maxCurvatures[i][j] = isnan(c) ? 0 : c;
+			maxCurvatures[i][j] = isnan(c) ? 0.0 : c;
 		}
 	}
 
@@ -3034,15 +3034,23 @@ LNLib::LN_Mesh LNLib::NurbsSurface::Tessellate(const LN_NurbsSurface& surface)
 	double minCurvature = *min_element(iterMin->begin(), iterMin->end());
 	double curvatureRange = maxCurvature - minCurvature;
 
-	row = maxCurvatures.size();
-	column = maxCurvatures[0].size();
-	for (int i = 0; i < row; i++)
+	if (MathUtils::IsAlmostEqualTo(curvatureRange, 0.0))
 	{
-		for (int j = 0; j < column; j++)
+		maxCurvatures = std::vector<std::vector<double>>(samplesU - 1, std::vector<double>(samplesV - 1, 0.0));
+	}
+	else
+	{
+		row = maxCurvatures.size();
+		column = maxCurvatures[0].size();
+		for (int i = 0; i < row; i++)
 		{
-			maxCurvatures[i][j] = (maxCurvatures[i][j] - minCurvature) / curvatureRange;
+			for (int j = 0; j < column; j++)
+			{
+				maxCurvatures[i][j] = (maxCurvatures[i][j] - minCurvature) / curvatureRange;
+			}
 		}
 	}
+	
 #pragma endregion
 
 #pragma region Calculate Areas
@@ -3109,16 +3117,23 @@ LNLib::LN_Mesh LNLib::NurbsSurface::Tessellate(const LN_NurbsSurface& surface)
 	iterMin = min_element(area.begin(), area.end());
 	double minArea = *min_element(iterMin->begin(), iterMin->end());
 	double areaRange = maxArea - minArea;
-
-	row = area.size();
-	column = area[0].size();
-	for (int i = 0; i < row; i++)
+	if (MathUtils::IsAlmostEqualTo(curvatureRange, 0.0))
 	{
-		for (int j = 0; j < column; j++)
+		area = std::vector<std::vector<double>>(samplesU - 1, std::vector<double>(samplesV - 1, 0.0));
+	}
+	else
+	{
+		row = area.size();
+		column = area[0].size();
+		for (int i = 0; i < row; i++)
 		{
-			area[i][j] = (area[i][j] - minArea) / areaRange;
+			for (int j = 0; j < column; j++)
+			{
+				area[i][j] = (area[i][j] - minArea) / areaRange;
+			}
 		}
 	}
+	
 #pragma endregion
 
 #pragma region Calculate Factors
@@ -3219,10 +3234,10 @@ LNLib::LN_Mesh LNLib::NurbsSurface::Tessellate(const LN_NurbsSurface& surface)
 		vValues[i] = vsList[i] * vCoeff;
 	}
 
-	float uMin = *std::min_element(uValues, uValues + uvSize);
-	float uMax = *std::max_element(uValues, uValues + uvSize);
-	float vMin = *std::min_element(vValues, vValues + uvSize);
-	float vMax = *std::max_element(vValues, vValues + uvSize);
+	float uMin = usList[0] * uCoeff;
+	float uMax = usList[usList.size() - 1] * uCoeff;
+	float vMin = vsList[0] * vCoeff;
+	float vMax = vsList[vsList.size() - 1] * vCoeff;
 
 	VoronoiDiagramGenerator vdg;
 	vdg.setGenerateVoronoi(true);

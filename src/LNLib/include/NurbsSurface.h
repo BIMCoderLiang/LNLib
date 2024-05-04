@@ -246,8 +246,9 @@ namespace LNLib
 		static double ApproximateArea(const LN_NurbsSurface& surface, IntegratorType type = IntegratorType::Chebyshev);
 
 		/// <summary>
-		/// Tessellate nurbs surface.
+		/// Triangulate nurbs surface.
+		/// According to https://github.com/nortikin/sverchok/blob/master/utils/adaptive_surface.py
 		/// </summary>
-		static LN_Mesh Tessellate(const LN_NurbsSurface& surface);
+		static LN_Mesh Triangulate(const LN_NurbsSurface& surface);
 	};
 }

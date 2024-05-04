@@ -53,7 +53,7 @@ Additional Algorithms:
     - Create Line/Cubic Hermite
 - ***Tessellation***:
     - Curve Tessellation
-    - Surface Tessellation
+    - Surface Triangulation
 
 ## Visualization
 [LNLibViewer](https://github.com/BIMCoderLiang/LNLibViewer) based on [VTK](https://vtk.org/)
