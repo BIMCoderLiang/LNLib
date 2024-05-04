@@ -52,6 +52,11 @@ TEST(Test_Circles, All)
 			const double startAngle = 0;
 			bool result = NurbsCurve::CreateArc(center, xAxis, yAxis, 
 				startAngle, endAngle[i], radius, radius, curve);
+			
+			double arcRadius = 0.0;
+			bool isArc = NurbsCurve::IsArc(curve, arcRadius);
+			EXPECT_TRUE(isArc);
+			EXPECT_TRUE(MathUtils::IsAlmostEqualTo(radius, arcRadius));
 			EXPECT_TRUE(result);
 
 			// Verify length.
