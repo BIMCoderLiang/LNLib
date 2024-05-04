@@ -342,7 +342,7 @@ namespace LNLib
 		/// <summary>
 		/// Detemine curve whether is arc.
 		/// </summary>
-		static bool IsArc(const LN_NurbsCurve& curve, double& radius);
+		static bool IsArc(const LN_NurbsCurve& curve, LN_ArcInfo& arcInfo);
 
 		/// <summary>
 		/// Calculate curve arc length.

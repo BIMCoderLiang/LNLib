@@ -53,10 +53,10 @@ TEST(Test_Circles, All)
 			bool result = NurbsCurve::CreateArc(center, xAxis, yAxis, 
 				startAngle, endAngle[i], radius, radius, curve);
 			
-			double arcRadius = 0.0;
-			bool isArc = NurbsCurve::IsArc(curve, arcRadius);
+			LN_ArcInfo arcInfo;
+			bool isArc = NurbsCurve::IsArc(curve, arcInfo);
 			EXPECT_TRUE(isArc);
-			EXPECT_TRUE(MathUtils::IsAlmostEqualTo(radius, arcRadius));
+			EXPECT_TRUE(MathUtils::IsAlmostEqualTo(radius, arcInfo.Radius));
 			EXPECT_TRUE(result);
 
 			// Verify length.

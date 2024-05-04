@@ -75,6 +75,12 @@ namespace LNLib
 		std::vector<XYZ> Normals;
 		std::vector<int> NormalIndices;
 	};
+
+	struct LNLIB_EXPORT LN_ArcInfo
+	{
+		double Radius;
+		XYZ Center;
+	};
 }
 
 

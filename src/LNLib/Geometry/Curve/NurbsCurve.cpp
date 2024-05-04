@@ -3382,7 +3382,7 @@ bool LNLib::NurbsCurve::IsLinear(const LN_NurbsCurve& curve)
 	return true;
 }
 
-bool LNLib::NurbsCurve::IsArc(const LN_NurbsCurve& curve, double& radius)
+bool LNLib::NurbsCurve::IsArc(const LN_NurbsCurve& curve, LN_ArcInfo& arcInfo)
 {
 	if (IsLinear(curve))
 	{
@@ -3412,7 +3412,7 @@ bool LNLib::NurbsCurve::IsArc(const LN_NurbsCurve& curve, double& radius)
 	double k1 = base * v2v2 * (v1v1 - v1v2);
 	double k2 = base * v1v1 * (v2v2 - v1v2);
 	XYZ center = P0 + v1 * k1 + v2 * k2;
-	radius = center.Distance(P0);
+	double radius = center.Distance(P0);
 
 	std::vector<XYZ> tessellatedPoints;
 	std::vector<double> correspondingKnots;
@@ -3426,6 +3426,8 @@ bool LNLib::NurbsCurve::IsArc(const LN_NurbsCurve& curve, double& radius)
 			return false;
 		}
 	}
+	arcInfo.Radius = radius;
+	arcInfo.Center = center;
 	return true;
 }
 
