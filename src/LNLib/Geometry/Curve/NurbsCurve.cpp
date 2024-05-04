@@ -1305,14 +1305,16 @@ bool LNLib::NurbsCurve::Merge(const LN_NurbsCurve& left, const LN_NurbsCurve& ri
 	}
 
 	int degree = std::max(degree_L, degree_R);
-	LN_NurbsCurve tempL = left;
+	LN_NurbsCurve  tempL;
+	Reparametrize(left, 0.0, 1.0, tempL);
 	if (degree > degree_L)
 	{
 		int times = degree - degree_L;
 		ElevateDegree(left, times, tempL);
 	}
 
-	LN_NurbsCurve tempR = right;
+	LN_NurbsCurve tempR;
+	Reparametrize(right, 0.0, 1.0, tempR);
 	if (degree > degree_R)
 	{
 		int times = degree - degree_R;
