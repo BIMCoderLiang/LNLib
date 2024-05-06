@@ -9,6 +9,8 @@
  */
 
 #include "MathUtils.h"
+
+#include <cmath>
 #include <limits>
 
 namespace LNLib
@@ -56,7 +58,7 @@ bool LNLib::MathUtils::IsAlmostEqualTo(double value1, double value2, double tole
 {
     if (IsNaN(value1) || IsNaN(value2))
         return false;
-    double eps = (abs(value1) + abs(value2) + 10) * tolerance;
+    double eps = (std::abs(value1) + std::abs(value2) + 10) * tolerance;
     double delta = value1 - value2;
     return (-eps < delta) && (eps > delta);
 }
@@ -128,11 +130,11 @@ double LNLib::MathUtils::ComputerCubicEquationsWithOneVariable(double cubic, dou
 {
     double result;
     double initial = 0.001;
-    result = initial - ((cubic * pow(initial,3) + quadratic * pow(initial, 2) + linear * initial + constant) / (3 * cubic * pow(initial, 2) + 2 * quadratic * initial + linear));
-    while(MathUtils::IsGreaterThan(abs(result-initial),Constants::DoubleEpsilon))
+    result = initial - ((cubic * std::pow(initial,3) + quadratic * std::pow(initial, 2) + linear * initial + constant) / (3 * cubic * std::pow(initial, 2) + 2 * quadratic * initial + linear));
+    while(MathUtils::IsGreaterThan(std::abs(result-initial),Constants::DoubleEpsilon))
     {
         initial = result;
-        result = initial - ((cubic * pow(initial,3) + quadratic * pow(initial, 2) + linear * initial + constant) / (3 * cubic * pow(initial, 2) + 2 * quadratic * initial + linear));
+        result = initial - ((cubic * std::pow(initial,3) + quadratic * std::pow(initial, 2) + linear * initial + constant) / (3 * cubic * std::pow(initial, 2) + 2 * quadratic * initial + linear));
     }
     return result;
 }
@@ -262,7 +264,7 @@ bool LNLib::MathUtils::MakeInverse(const std::vector<std::vector<double>>& matri
                 {
                     s = s + upper[k][j] * inverseUpper[j][i];
                 }
-                if (IsAlmostEqualTo(abs(s), 0.0))
+                if (IsAlmostEqualTo(std::abs(s), 0.0))
                 {
                     inverseUpper[k][i] = 0.0;
                 }
@@ -457,9 +459,9 @@ bool LNLib::MathUtils::LUPDecomposition(const std::vector<std::vector<double>>& 
         double p = 0.0;
         for (int j = i; j < n; j++)
         {
-            if (IsGreaterThan(abs(copy[j][i]),p))
+            if (IsGreaterThan(std::abs(copy[j][i]),p))
             {
-                p = abs(copy[j][i]);
+                p = std::abs(copy[j][i]);
                 row = j;
             }
         }

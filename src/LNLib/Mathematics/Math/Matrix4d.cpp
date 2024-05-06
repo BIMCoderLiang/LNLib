@@ -12,13 +12,15 @@
 #include "XYZ.h"
 #include "XYZW.h"
 #include "MathUtils.h"
+
 #include <algorithm>
+#include <cstring>
 
 using namespace LNLib;
 
 LNLib::Matrix4d::Matrix4d()
 {
-	memset(m_matrix4d, 0, sizeof(double) * 16);
+	std::memset(m_matrix4d, 0, sizeof(double) * 16);
 	for (int i = 0; i <= 3; i++)
 	{
 		m_matrix4d[i][i] = 1;

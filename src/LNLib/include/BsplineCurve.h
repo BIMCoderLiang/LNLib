@@ -29,7 +29,7 @@ namespace LNLib
 		static void Check(const LN_BsplineCurve<T>& curve)
 		{
 			int degree = curve.Degree;
-			std::vector<double> knotVectors = curve.KnotVector;
+			std::vector<double> knotVector = curve.KnotVector;
 			std::vector<T> controlPoints = curve.ControlPoints;
 
 			VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");

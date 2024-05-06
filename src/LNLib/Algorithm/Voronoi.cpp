@@ -32,6 +32,8 @@ email: shaneosullivan1@gmail.com
 
 #include "Voronoi.h"
 
+#include <cmath>
+
 LNLib::VoronoiDiagramGenerator::VoronoiDiagramGenerator()
 {
 	siteidx = 0;
@@ -778,7 +780,7 @@ void LNLib::VoronoiDiagramGenerator::pushGraphEdge(float x1, float y1, float x2,
 
 void LNLib::VoronoiDiagramGenerator::pushDelaunayGraphEdge(float x1, float y1, float x2, float y2)
 {
-	if (sqrt(((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1))) < minDistanceBetweenSites)
+	if (std::sqrt(((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1))) < minDistanceBetweenSites)
 	{
 		return;
 	}
@@ -848,7 +850,7 @@ void LNLib::VoronoiDiagramGenerator::clip_line(struct Edge* e)
 
 	//if the distance between the two points this line was created from is less than 
 	//the square root of 2, then ignore it
-	if (sqrt(((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1))) < minDistanceBetweenSites)
+	if (std::sqrt(((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1))) < minDistanceBetweenSites)
 	{
 		return;
 	}

@@ -11,7 +11,7 @@
 #pragma once
 #include "LNLibDefinitions.h"
 #include "XYZ.h"
-#include <math.h>
+#include <cmath>
 
 namespace LNLib
 {

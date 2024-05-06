@@ -13,10 +13,12 @@
 #define DLL_EXPORT __declspec(dllexport)
 #define DLL_IMPORT __declspec(dllimport)
 
-#ifdef LNLIB_HOME
-#define LNLIB_EXPORT DLL_EXPORT
+#if defined(WIN64) || defined(_WIN64) || defined(__WIN64__) || defined(__CYGWIN__)
+    #ifdef LNLIB_HOME
+        #define LNLIB_EXPORT DLL_EXPORT
+    #else
+        #define LNLIB_EXPORT DLL_IMPORT
+    #endif
 #else
-#define LNLIB_EXPORT DLL_IMPORT
+    #define LNLIB_EXPORT
 #endif
-
-

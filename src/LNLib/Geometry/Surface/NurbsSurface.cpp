@@ -27,9 +27,10 @@
 #include "Integrator.h"
 #include "LNLibExceptions.h"
 #include "LNObject.h"
-#include <math.h>
+
 #include <random>
 #include <algorithm>
+#include <cmath>
 
 namespace LNLib
 {
@@ -57,7 +58,7 @@ namespace LNLib
 			double E = Su.DotProduct(Su);
 			double F = Su.DotProduct(Sv);
 			double G = Sv.DotProduct(Sv);
-			double ds = sqrt(E * G - F * F);
+			double ds = std::sqrt(E * G - F * F);
 			return ds;
 		}
 	};
@@ -229,8 +230,8 @@ double LNLib::NurbsSurface::Curvature(const LN_NurbsSurface& surface, SurfaceCur
 
 	double K = (L * N - M * M) / denominator;
 	double H = (E * N + G * L - 2 * F * M) / (2 * denominator);
-	double k1 = H + sqrt(abs(H * H - K));
-	double k2 = H - sqrt(abs(H * H - K));
+	double k1 = H + std::sqrt(abs(H * H - K));
+	double k2 = H - std::sqrt(abs(H * H - K));
 
 	if (curvature == SurfaceCurvature::Gauss)
 	{
@@ -254,7 +255,7 @@ double LNLib::NurbsSurface::Curvature(const LN_NurbsSurface& surface, SurfaceCur
 	}
 	else if (curvature == SurfaceCurvature::Rms)
 	{
-		return sqrt(k1 * k1 + k2 * k2);
+		return std::sqrt(k1 * k1 + k2 * k2);
 	}
 	return 0.0;
 }
@@ -1683,7 +1684,7 @@ void LNLib::NurbsSurface::MakeCornerFilletSurface(const LN_NurbsCurve& arc, LN_N
 	double c = -pow(x1, 2) - pow(y1, 2) - 2 * g * x1 - 2 * f * y1;
 	double cx = -g;
 	double cy = -f;
-	double r = sqrt(cx * cx + cy * cy - c);
+	double r = std::sqrt(cx * cx + cy * cy - c);
 
 	XYZ center = XYZ(cx, cy, 0);
 	XYZ middle = (p01 + p21) / 2.0;
@@ -2904,7 +2905,7 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 						double E = Su.DotProduct(Su);
 						double F = Su.DotProduct(Sv);
 						double G = Sv.DotProduct(Sv);
-						double ds = sqrt(E * G - F * F);
+						double ds = std::sqrt(E * G - F * F);
 						bArea += Integrator::GaussLegendreWeights[i] * Integrator::GaussLegendreWeights[j] * ds;
 					}
 				}
@@ -3024,7 +3025,7 @@ LNLib::LN_Mesh LNLib::NurbsSurface::Triangulate(const LN_NurbsSurface& surface)
 		for (int j = 0; j < samplesV - 1; j++)
 		{
 			double c = std::max({ cur0[i][j], curdu[i][j], curdv[i][j], curdudv[i][j]});
-			maxCurvatures[i][j] = isnan(c) ? 0.0 : c;
+			maxCurvatures[i][j] = std::isnan(c) ? 0.0 : c;
 		}
 	}
 
@@ -3177,7 +3178,7 @@ LNLib::LN_Mesh LNLib::NurbsSurface::Triangulate(const LN_NurbsSurface& surface)
 
 			double f = factors[i][j];
 			double ppf = 0.0;
-			if (MathUtils::IsAlmostEqualTo(f, 0.0) || isnan(f))
+			if (MathUtils::IsAlmostEqualTo(f, 0.0) || std::isnan(f))
 			{
 				ppf = (perMin + perMax) / 2.0;
 			}
