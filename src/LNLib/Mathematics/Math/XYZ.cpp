@@ -9,8 +9,9 @@
  */
 
 #include "XYZ.h"
-#include <math.h>
 #include "MathUtils.h"
+
+#include <cmath>
 
 using namespace LNLib;
 
@@ -87,7 +88,7 @@ bool LNLib::XYZ::IsZero(const double epsilon) const
 
 bool LNLib::XYZ::IsUnit(const double epsilon) const
 {
-	return fabs(SqrLength() - 1) < epsilon * epsilon;
+	return std::fabs(SqrLength() - 1) < epsilon * epsilon;
 }
 
 bool LNLib::XYZ::IsAlmostEqualTo(const XYZ& another) const
@@ -99,7 +100,7 @@ bool LNLib::XYZ::IsAlmostEqualTo(const XYZ& another) const
 
 double XYZ::Length() const
 {
-	return sqrt(m_xyz[0]* m_xyz[0] + m_xyz[1] * m_xyz[1] + m_xyz[2] * m_xyz[2]);
+	return std::sqrt(m_xyz[0]* m_xyz[0] + m_xyz[1] * m_xyz[1] + m_xyz[2] * m_xyz[2]);
 }
 
 double XYZ::SqrLength() const
@@ -166,7 +167,7 @@ XYZ XYZ::CrossProduct(const XYZ& another) const
 double LNLib::XYZ::Distance(const XYZ& another) const
 {
 	double squareValue = pow((another.GetX() - m_xyz[0]),2) + pow((another.GetY() - m_xyz[1]),2) + pow((another.GetZ() - m_xyz[2]),2);
-	return sqrt(squareValue);
+	return std::sqrt(squareValue);
 }
 
 XYZ& XYZ::operator=(const XYZ& xyz)

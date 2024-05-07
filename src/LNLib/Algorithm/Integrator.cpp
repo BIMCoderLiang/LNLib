@@ -12,6 +12,8 @@
 #include "FFT.h"
 #include "Constants.h"
 
+#include <cmath>
+
 namespace LNLib
 {
     double Integrator::Simpson(IntegrationFunction& function, void* customData, double start, double end)
@@ -117,7 +119,7 @@ namespace LNLib
             }
             series[l] *= 0.5;
             dfct(l, 0.5 * cos2, sin1, series);
-            cos2 = sqrt(2 + cos2);
+            cos2 = std::sqrt(2 + cos2);
             sin1 /= cos2;
             sin2 /= 2 + cos2;
             series[k] = sin2;
@@ -154,12 +156,12 @@ namespace LNLib
         series[2] = (function)(start + x, customData);
         series[4] = (function)(end - x, customData);
         series[1] = (function)(start + ba, customData);
-        eref = 0.5 * (fabs(series[0]) + fabs(series[1]) + fabs(series[2]) + fabs(series[3]) + fabs(series[4]));
+        eref = 0.5 * (fabs(series[0]) + std::fabs(series[1]) + std::fabs(series[2]) + std::fabs(series[3]) + std::fabs(series[4]));
         series[0] += series[3];
         series[2] += series[4];
         ir = series[0] + series[1] + series[2];
         integration = series[0] * series[lenw - 1] + series[1] * series[lenw - 2] + series[2] * series[lenw - 3];
-        erefh = eref * sqrt(epsilon);
+        erefh = eref * std::sqrt(epsilon);
         eref *= epsilon;
         hh = 0.25;
         l = 2;
@@ -179,9 +181,9 @@ namespace LNLib
                 series[j + l] = fx;
             }
             ss = 2 * series[k + 1];
-            err = esf * l * fabs(integration - iback);
+            err = esf * l * std::fabs(integration - iback);
             hh *= 0.25;
-            errir = hh * fabs(ir - 2 * irback);
+            errir = hh * std::fabs(ir - 2 * irback);
             l *= 2;
             k -= l + 2;
         } while ((err > erefh || errir > eref) && k > 4 * l);
@@ -192,7 +194,7 @@ namespace LNLib
         }
         else
         {
-            err = eref * fabs(end - start);
+            err = eref * std::fabs(end - start);
         }
         return integration;
     }
@@ -211,12 +213,12 @@ namespace LNLib
         series[2] = (function)(start + x, customData);
         series[4] = (function)(end - x, customData);
         series[1] = (function)(start + ba, customData);
-        eref = 0.5 * (fabs(series[0]) + fabs(series[1]) + fabs(series[2]) + fabs(series[3]) + fabs(series[4]));
+        eref = 0.5 * (fabs(series[0]) + std::fabs(series[1]) + std::fabs(series[2]) + std::fabs(series[3]) + std::fabs(series[4]));
         series[0] += series[3];
         series[2] += series[4];
         ir = series[0] + series[1] + series[2];
         integration = series[0] * series[lenw - 1] + series[1] * series[lenw - 2] + series[2] * series[lenw - 3];
-        erefh = eref * sqrt(epsilon);
+        erefh = eref * std::sqrt(epsilon);
         eref *= epsilon;
         hh = 0.25;
         l = 2;
@@ -236,9 +238,9 @@ namespace LNLib
                 series[j + l] = fx;
             }
             ss = 2 * series[k + 1];
-            err = esf * l * fabs(integration - iback);
+            err = esf * l * std::fabs(integration - iback);
             hh *= 0.25;
-            errir = hh * fabs(ir - 2 * irback);
+            errir = hh * std::fabs(ir - 2 * irback);
             l *= 2;
             k -= l + 2;
         } while ((err > erefh || errir > eref) && k > 4 * l);
@@ -249,7 +251,7 @@ namespace LNLib
         }
         else
         {
-            err = eref * fabs(end - start);
+            err = eref * std::fabs(end - start);
         }
         return integration;
     }

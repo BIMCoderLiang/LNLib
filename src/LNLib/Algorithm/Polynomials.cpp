@@ -13,7 +13,9 @@
 #include "MathUtils.h"
 #include "ValidationUtils.h"
 #include "LNLibExceptions.h"
+
 #include <algorithm>
+#include <cmath>
 
 using namespace LNLib;
 

@@ -26,9 +26,11 @@
 #include "Integrator.h"
 #include "LNLibExceptions.h"
 #include "LNObject.h"
+
 #include <vector>
 #include <random>
 #include <algorithm>
+#include <cmath>
 
 namespace LNLib
 {
@@ -950,7 +952,7 @@ bool LNLib::NurbsCurve::ReduceDegree(const LN_NurbsCurve& curve, LN_NurbsCurve& 
 		XYZW PRr = (controlPoints[r + 1] - (1 - alpha[r + 1]) * updatedControlPoints[r + 1]) / alpha[r + 1];
 		updatedControlPoints[r] = 0.5 * (PLr + PRr);
 		error = PLr.Distance(PRr);
-		double maxU = (degree - sqrt(degree)) / (2 * degree);
+		double maxU = (degree - std::sqrt(degree)) / (2 * degree);
 		error = error * 0.5 * (1 - alpha[r]) * (MathUtils::Binomial(degree, r) * pow(maxU, r) * pow(1 - maxU, r + 1) * (1 - 2 * maxU));
 	}
 	if (error > tol) return false;
@@ -1587,7 +1589,7 @@ bool LNLib::NurbsCurve::CreateOneConicArc(const XYZ& start, const XYZ& startTang
 		type = Intersection::ComputeRays(point, v1p, start, pDiff, alf0, alf2, dummy);
 		if (type == CurveCurveIntersectionType::Intersecting)
 		{
-			double a = sqrt(alf2 / (1.0 - alf2));
+			double a = std::sqrt(alf2 / (1.0 - alf2));
 			double u = a / (1.0 + a);
 			double num = (1.0 - u) * (1.0 - u) * (pointOnConic - start).DotProduct(point - pointOnConic) + u * u * (pointOnConic - end).DotProduct(point - pointOnConic);
 			double den = 2.0 * u * (1.0 - u) * (point - pointOnConic).DotProduct(point - pointOnConic);
@@ -1601,7 +1603,7 @@ bool LNLib::NurbsCurve::CreateOneConicArc(const XYZ& start, const XYZ& startTang
 		type = Intersection::ComputeRays(pointOnConic, startTangent, start, pDiff, alf0, alf2, dummy);
 		if (type == CurveCurveIntersectionType::Intersecting)
 		{
-			double a = sqrt(alf2 / (1.0 - alf2));
+			double a = std::sqrt(alf2 / (1.0 - alf2));
 			double u = a / (1.0 + a);
 			double b = 2.0 * u * (1.0 - u);
 			b = -alf0 * (1.0 - b) / b;
@@ -1618,7 +1620,7 @@ void LNLib::NurbsCurve::SplitArc(const XYZ& start, const XYZ& projectPoint, doub
 	insertPointAtStartSide = start + projectPoint;
 	insertPointAtEndSide = end + projectPoint;
 	splitPoint = (insertPointAtStartSide + insertPointAtEndSide) / 2.0;
-	insertWeight = sqrt(1 + projectPointWeight) / 2.0;
+	insertWeight = std::sqrt(1 + projectPointWeight) / 2.0;
 }
 
 bool LNLib::NurbsCurve::CreateOpenConic(const XYZ& start, const XYZ& startTangent, const XYZ& end, const XYZ& endTangent, const XYZ& pointOnConic, LN_NurbsCurve& curve)
@@ -1939,7 +1941,7 @@ bool LNLib::NurbsCurve::CubicLocalInterpolation(const std::vector<XYZ>& throughP
 		double b = 12 * (p3 - p0).DotProduct(t0 + t3);
 		double c = -36 * (p3 - p0).SqrLength();
 
-		double alpha = (-b + sqrt(b * b - 4 * a * c)) / (2 * a);
+		double alpha = (-b + std::sqrt(b * b - 4 * a * c)) / (2 * a);
 
 		XYZ pk0 = throughPoints[k];
 		XYZ pk1 = p0 + (1 / 3) * alpha * t0;

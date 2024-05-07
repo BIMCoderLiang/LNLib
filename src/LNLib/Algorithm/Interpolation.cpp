@@ -13,7 +13,9 @@
 #include "MathUtils.h"
 #include "Intersection.h"
 #include "Polynomials.h"
+
 #include <algorithm>
+#include <cmath>
 
 namespace LNLib
 {
@@ -69,7 +71,7 @@ double LNLib::Interpolation::GetCentripetalLength(const std::vector<XYZ>& throug
 	double length = 0.0;
 	for (int i = 1; i <= n; i++)
 	{
-		length += sqrt(throughPoints[i].Distance(throughPoints[i - 1]));
+		length += std::sqrt(throughPoints[i].Distance(throughPoints[i - 1]));
 	}
 	return length;
 }
@@ -85,7 +87,7 @@ std::vector<double> LNLib::Interpolation::GetCentripetalParameterization(const s
 	double d = GetCentripetalLength(throughPoints);
 	for (int i = 1; i <= n - 1; i++)
 	{
-		uk[i] = uk[i - 1] + sqrt(throughPoints[i].Distance(throughPoints[i - 1])) / d;
+		uk[i] = uk[i - 1] + std::sqrt(throughPoints[i].Distance(throughPoints[i - 1])) / d;
 	}
 	return uk;
 }

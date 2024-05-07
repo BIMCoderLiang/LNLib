@@ -12,6 +12,8 @@
 #include "XYZ.h"
 #include "MathUtils.h"
 
+#include <cmath>
+
 using namespace LNLib;
 
 LNLib::XYZW::XYZW()
@@ -122,7 +124,7 @@ bool LNLib::XYZW::IsAlmostEqualTo(const XYZW& another) const
 double LNLib::XYZW::Distance(const XYZW& another) const
 {
 	double squareValue = pow((another.GetWX() - m_xyzw[0]), 2) + pow((another.GetWY() - m_xyzw[1]), 2) + pow((another.GetWZ() - m_xyzw[2]), 2) + pow((another.GetW() - m_xyzw[3]), 2);
-	return sqrt(squareValue);
+	return std::sqrt(squareValue);
 }
 
 double& LNLib::XYZW::operator[](int index)

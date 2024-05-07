@@ -10,7 +10,8 @@
 
 #include "UV.h"
 #include "MathUtils.h"
-#include <math.h>
+
+#include <cmath>
 
 using namespace LNLib;
 
@@ -72,7 +73,7 @@ bool LNLib::UV::IsZero(const double epsilon) const
 
 bool LNLib::UV::IsUnit(const double epsilon) const
 {
-	return fabs(SqrLength() - 1) < epsilon * epsilon;
+	return std::fabs(SqrLength() - 1) < epsilon * epsilon;
 }
 
 bool LNLib::UV::IsAlmostEqualTo(const UV& another) const
@@ -83,7 +84,7 @@ bool LNLib::UV::IsAlmostEqualTo(const UV& another) const
 
 double UV::Length() const
 {
-	return sqrt(m_uv[0] * m_uv[0] + m_uv[1] * m_uv[1]);
+	return std::sqrt(m_uv[0] * m_uv[0] + m_uv[1] * m_uv[1]);
 }
 
 double UV::SqrLength() const
@@ -137,7 +138,7 @@ double UV::CrossProduct(const UV& another) const
 double LNLib::UV::Distance(const UV& another) const
 {
 	double squareValue = pow((another.GetU() - m_uv[0]), 2) + pow((another.GetV() - m_uv[1]), 2);
-	return sqrt(squareValue);
+	return std::sqrt(squareValue);
 }
 
 UV& UV::operator=(const UV& uv)
