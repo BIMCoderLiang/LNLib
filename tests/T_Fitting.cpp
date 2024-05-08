@@ -33,7 +33,23 @@ TEST(Test_Fitting, Interpolation)
 		EXPECT_TRUE(cps[0].ToXYZ(true).IsAlmostEqualTo(Q[0]));
 		EXPECT_TRUE(cps[4].ToXYZ(true).IsAlmostEqualTo(Q[4]));
 	}
+	{
+		// not work yet.
+		int degree = 3;
+		std::vector<XYZ> Q = 
+		{
+			{282.9136, 219.7436, 0}, {323.8285, 216.8496, 0}, {359.7841, 219.0878, 0},
+			{390.926, 225.7011, 0}, {417.4904, 235.9736, 0}, {439.7787, 249.2801, 0},
+			{458.0961, 265.1101, 0}, {472.6844, 283.0457, 0}, {483.6853, 302.7034, 0},
+			{491.1519, 323.6775, 0}, {495.0864, 345.5107, 0}, {495.4815, 367.6969, 0},
+			{492.3456, 389.7038, 0}, {485.7093, 411.0023, 0}, {475.6128, 431.0941, 0},
+			{462.0758, 449.5273, 0}, {445.0582, 465.8904, 0}, {424.4307, 479.7753, 0}
+		};
 
+		LN_NurbsCurve curve;
+		NurbsCurve::GlobalInterpolation(degree, Q, curve);
+		auto cps = curve.ControlPoints;
+	}
 	{
 		int degree = 2;
 		std::vector<XYZ> Q = { XYZ(100,0,0),XYZ(0,100,0),XYZ(-100,0,0),XYZ(0,-100,0)};
@@ -46,7 +62,6 @@ TEST(Test_Fitting, Interpolation)
 		XYZ C1 = NurbsCurve::GetPointOnCurve(curve, 1.0);
 		EXPECT_TRUE(C1.IsAlmostEqualTo(XYZ(0, -100, 0)));
 	}
-
 	{
 		int degreeU = 2;
 		int degreeV = 2;
