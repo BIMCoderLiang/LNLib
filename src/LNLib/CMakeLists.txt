@@ -14,7 +14,7 @@ FetchContent_Declare(
 FetchContent_GetProperties(eigen3)
 if (NOT eigen3_POPULATED)
   FetchContent_Populate(eigen3)
-endif ()
+endif()
 
 target_include_directories(${TARGET_NAME} PRIVATE ${eigen3_SOURCE_DIR})
 
