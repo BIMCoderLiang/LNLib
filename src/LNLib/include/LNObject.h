@@ -50,20 +50,13 @@ namespace LNLib
 		std::vector<std::vector<T>> ControlPoints;
 	};
 
+	typedef LN_BsplineSurface<XYZW> LNLIB_EXPORT LN_NurbsSurface;
+
 	struct LNLIB_EXPORT LN_NurbsCurve
 	{
 		int Degree;
 		std::vector<double> KnotVector;
 		std::vector<XYZW> ControlPoints;
-	};
-
-	struct LNLIB_EXPORT LN_NurbsSurface
-	{
-		int DegreeU;
-		int DegreeV;
-		std::vector<double> KnotVectorU;
-		std::vector<double> KnotVectorV;
-		std::vector<std::vector<XYZW>> ControlPoints;
 	};
 
 	struct LNLIB_EXPORT LN_Mesh

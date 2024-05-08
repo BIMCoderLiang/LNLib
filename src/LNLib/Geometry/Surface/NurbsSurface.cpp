@@ -113,26 +113,9 @@ void  LNLib::NurbsSurface::Check(const LN_NurbsSurface& surface)
 
 LNLib::XYZ LNLib::NurbsSurface::GetPointOnSurface(const LN_NurbsSurface& surface, UV uv)
 {
-	int degreeU = surface.DegreeU;
-	int degreeV = surface.DegreeV;
-	std::vector<double> knotVectorU = surface.KnotVectorU;
-	std::vector<double> knotVectorV = surface.KnotVectorV;
-	std::vector<std::vector<XYZW>> controlPoints = surface.ControlPoints;
-
-	VALIDATE_ARGUMENT_RANGE(uv.GetU(), knotVectorU[0], knotVectorU[knotVectorU.size() - 1]);
-	VALIDATE_ARGUMENT_RANGE(uv.GetV(), knotVectorV[0], knotVectorV[knotVectorV.size() - 1]);
-
-	LN_BsplineSurface<XYZW> bsplineSurface;
-	bsplineSurface.DegreeU = degreeU;
-	bsplineSurface.DegreeV = degreeV;
-	bsplineSurface.KnotVectorU = knotVectorU;
-	bsplineSurface.KnotVectorV = knotVectorV;
-	bsplineSurface.ControlPoints = controlPoints;
-
-	XYZW result = BsplineSurface::GetPointOnSurface(bsplineSurface, uv);
+	XYZW result = BsplineSurface::GetPointOnSurface(surface, uv);
 	return result.ToXYZ(true);
 }
-
 
 std::vector<std::vector<LNLib::XYZ>> LNLib::NurbsSurface::ComputeRationalSurfaceDerivatives(const LN_NurbsSurface& surface, int derivative, UV uv)
 {
