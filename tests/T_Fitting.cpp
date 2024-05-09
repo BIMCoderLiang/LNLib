@@ -34,7 +34,6 @@ TEST(Test_Fitting, Interpolation)
 		EXPECT_TRUE(cps[4].ToXYZ(true).IsAlmostEqualTo(Q[4]));
 	}
 	{
-		// not work yet.
 		int degree = 3;
 		std::vector<XYZ> Q = 
 		{
@@ -48,7 +47,7 @@ TEST(Test_Fitting, Interpolation)
 
 		LN_NurbsCurve curve;
 		NurbsCurve::GlobalInterpolation(degree, Q, curve);
-		auto cps = curve.ControlPoints;
+		NurbsCurve::Check(curve);
 	}
 	{
 		int degree = 2;

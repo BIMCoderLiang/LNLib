@@ -8,51 +8,20 @@
  * the LICENSE file.
  */
 
+
+/*
+ * 
+ * NoTICE: The Eigen C++ Library is Only used in MathUitls.cpp 
+ * since we should provide uniform LNLib API Style to the public.
+ * 
+ */
+
 #include "MathUtils.h"
+
+#include <Eigen/Dense>
 
 #include <cmath>
 #include <limits>
-
-namespace LNLib
-{
-    void GetCoFactor(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& temp, int row, int column, int n)
-    {
-        int i = 0, j = 0;
-        for (int r = 0; r < n; r++) {
-            for (int col = 0; col < n; col++) {
-                if (r != row && col != column) {
-                    temp[i][j++] = matrix[r][col];
-                    if (j == n - 1) {
-                        j = 0;
-                        i++;
-                    }
-                }
-            }
-        }
-    }
-
-    void GetAdjointMatrix(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& adjointMatrix)
-    {
-        int n = matrix.size();
-        if (n == 1) 
-        {
-            adjointMatrix[0][0] = 1;
-            return;
-        }
-
-        int sign = 1; 
-        std::vector<std::vector<double>> temp(n, std::vector<double>(n));
-        for (int i = 0; i < n; i++) 
-        {
-            for (int j = 0; j < n; j++) 
-            {
-                GetCoFactor(matrix, temp, i, j, n);
-                sign = ((i + j) % 2 == 0) ? 1 : -1;
-                adjointMatrix[j][i] = (sign) * (LNLib::MathUtils::GetDeterminant(temp, n - 1));
-            }
-        }
-    }
-}
 
 bool LNLib::MathUtils::IsAlmostEqualTo(double value1, double value2, double tolerance)
 {
@@ -180,8 +149,6 @@ std::vector<std::vector<double>> LNLib::MathUtils::MakeDiagonal(int size)
     return result;
 }
 
-
-
 std::vector<std::vector<double>> LNLib::MathUtils::CreateMatrix(int row, int column)
 {
     std::vector<std::vector<double>> result;
@@ -193,324 +160,43 @@ std::vector<std::vector<double>> LNLib::MathUtils::CreateMatrix(int row, int col
     return result;
 }
 
-bool LNLib::MathUtils::IsSquareMatrix(const std::vector<std::vector<double>>& matrix)
+double LNLib::MathUtils::GetDeterminant(const std::vector<std::vector<double>>& matrix)
 {
-    int row = matrix.size();
-    int column = matrix[0].size();
-    return row == column;
-}
-
-double LNLib::MathUtils::GetDeterminant(const std::vector<std::vector<double>>& matrix, int dimension)
-{
-    if (!IsSquareMatrix(matrix))
+    Eigen::MatrixXd m(matrix.size(), matrix[0].size());
+    for (int i = 0; i < matrix.size(); i++)
     {
-        return 0.0;
+        m.row(i) = Eigen::VectorXd::Map(&matrix[i][0], matrix[i].size());
     }
-   
-    std::vector<std::vector<double>> temp = matrix;
-    double result = 0.0;
-    if (dimension == 1)
-    {
-        return matrix[0][0];
-    }
-       
-    int sign = 1; 
-    for (int f = 0; f < dimension; f++) 
-    {
-        GetCoFactor(matrix, temp, 0, f, dimension);
-        result += sign * matrix[0][f] * GetDeterminant(temp, dimension - 1);
-        sign = -sign;
-    }
-
-    return result;
+    return m.determinant();
 }
 
 bool LNLib::MathUtils::MakeInverse(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& inverse)
 {
-    if (!IsSquareMatrix(matrix))
+    int row = matrix.size();
+    int column = matrix[0].size();
+
+    if (!(row == column))
     {
         return false;
     }
-
-    int n = matrix.size();
-    double det = GetDeterminant(matrix, n);
-    if (IsAlmostEqualTo(det, 0.0))
+    Eigen::MatrixXd m(matrix.size(), matrix[0].size());
+    for (int i = 0; i < row; i++)
     {
-        if (n == 1 && !IsAlmostEqualTo(matrix[0][0],0.0))
-        {
-            inverse = { { 1.0/(double)matrix[0][0]} };
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        m.row(i) = Eigen::VectorXd::Map(&matrix[i][0], matrix[i].size());
     }
 
-    std::vector<std::vector<double>> lower;
-    std::vector<std::vector<double>> upper;
-    if (LUDecomposition(matrix, lower, upper))
+    auto result = m.inverse();
+    inverse.resize(row);
+    for (int k = 0; k < row; k++)
     {
-        std::vector<std::vector<double>> inverseLower(n, std::vector<double>(n));
-        std::vector<std::vector<double>> inverseUpper(n, std::vector<double>(n));
-
-        for (int i = 0; i < n; i++)
-        {
-            inverseUpper[i][i] = 1 / upper[i][i];
-            for (int k = i - 1; k >= 0; k--)
-            {
-                double s = 0;
-                for (int j = k + 1; j <= i; j++)
-                {
-                    s = s + upper[k][j] * inverseUpper[j][i];
-                }
-                if (IsAlmostEqualTo(std::abs(s), 0.0))
-                {
-                    inverseUpper[k][i] = 0.0;
-                }
-                else
-                {
-                    inverseUpper[k][i] = -s / upper[k][k];
-                }
-            }
-        }
-
-        for (int i = 0; i < n; i++)
-        {
-            inverseLower[i][i] = 1;
-            for (int k = i + 1; k < n; k++)
-            {
-                for (int j = i; j <= k - 1; j++)
-                {
-                    double temp = inverseLower[k][i] - lower[k][j] * inverseLower[j][i];
-                    if (IsAlmostEqualTo(temp, 0.0))
-                    {
-                        inverseLower[k][i] = 0.0;
-                    }
-                    else
-                    {
-                        inverseLower[k][i] = temp;
-                    }
-                }
-            }
-        }
-
-        inverse = MatrixMultiply(inverseUpper, inverseLower);
-        return true;
-    }
-    else
-    {
-        bool rs = false;
-        inverse.resize(n);
-        for (int k = 0; k < n; k++)
-        {
-            inverse[k].resize(n);
-        }
-        for (int k = 0; k < n; k++)
-        {
-            std::vector<double> b(n, 0.0);
-            b[k] = 1;
-            std::vector<double> pivot;
-            if (!LUPDecomposition(matrix, lower, upper, pivot))
-            {
-                rs = false;
-                break;
-            }
-            std::vector<double> x(n);
-            std::vector<double> y(n);
-
-            for (int i = 0; i < n; i++)
-            {
-                y[i] = b[static_cast<int>(pivot[i])];
-                for (int j = 0; j < i; j++)
-                {
-                    y[i] = y[i] - lower[i][j] * y[j];
-                }
-            }
-            for (int i = n - 1; i >= 0; i--)
-            {
-                x[i] = y[i];
-                for (int j = n - 1; j > i; j--)
-                {
-                    x[i] = x[i] - upper[i][j] * x[j];
-                }
-                x[i] /= upper[i][i];
-            }
-            
-            for (int i = 0; i < n; i++)
-            {
-                inverse[i][k] = x[i];
-            }
-        }
-        if (rs)
-        {
-            return true;
-        }
-        else
-        {
-            std::vector<std::vector<double>> adjoint(n, std::vector<double>(n));
-            GetAdjointMatrix(matrix, adjoint);
-            for (int i = 0; i < n; i++)
-            {
-                for (int j = 0; j < n; j++)
-                {
-                    inverse[i][j] = adjoint[i][j] / float(det);
-                }
-            }       
-            return true;
-        }
-    }
-}
-
-bool LNLib::MathUtils::LUDecomposition(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& lowerTriMatrix, std::vector<std::vector<double>>& upperTriMatrix)
-{
-    if (!IsSquareMatrix(matrix))
-    {
-        return false;
+        inverse[k].resize(column);
     }
 
-    int n = matrix.size();
-    lowerTriMatrix.resize(n);
-    upperTriMatrix.resize(n);
-    for (int i = 0; i < n; i++)
+    for (int col = 0; col < result.cols(); ++col)
     {
-        lowerTriMatrix[i].resize(n);
-        upperTriMatrix[i].resize(n);
-        for (int j = 0; j < n; j++)
+        for (int row = 0; row < result.rows(); ++row)
         {
-            upperTriMatrix[i][j] = 0;
-            if (i == j)
-            {
-                lowerTriMatrix[i][j] = 1.0;
-            }
-        }
-    }
-    
-    for (int i = 0; i < n; i++)
-    {
-        double sum = 0;
-        for (int j = i; j < n; j++)
-        {
-            for (int k = 0; k <= i - 1; k++)
-            {
-                sum += lowerTriMatrix[i][k] * upperTriMatrix[k][j];
-            }
-            double temp = matrix[i][j] - sum;
-            if (IsAlmostEqualTo(temp, 0.0))
-            {
-                if (i == j) return false;
-                upperTriMatrix[i][j] = 0.0;
-            }
-            else
-            {
-                upperTriMatrix[i][j] = temp;
-            }
-            sum = 0.0;
-        }
-
-        for (int x = i + 1; x < n; x++)
-        {
-            for (int k = 0; k <= i - 1; k++)
-            {
-                sum += lowerTriMatrix[x][k] * upperTriMatrix[k][i];
-            }
-            double temp = matrix[x][i] - sum;
-            if (IsAlmostEqualTo(temp, 0.0))
-            {
-                lowerTriMatrix[x][i] = 0.0;
-            }
-            else
-            {
-                lowerTriMatrix[x][i] = temp / upperTriMatrix[i][i];
-            }
-            sum = 0.0;
-        }
-    }
-    return true;
-}
-
-bool LNLib::MathUtils::LUPDecomposition(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& lowerTriMatrix, std::vector<std::vector<double>>& upperTriMatrix, std::vector<double>& pivot)
-{
-    if (!IsSquareMatrix(matrix))
-    {
-        return false;
-    }
-
-    int n = matrix.size();
-    std::vector<std::vector<double>> copy(n, std::vector<double>(n));
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-        {
-            copy[i][j] = matrix[i][j];
-            lowerTriMatrix[i][j] = 0.0;
-            upperTriMatrix[i][j] = 0.0;
-        }
-    }
-    pivot.resize(n);
-    for (int i = 0; i < n; i++)
-    {
-        pivot[i] = i;
-    }
-
-    int row = 0;
-    for (int i = 0; i < n - 1; i++)
-    {
-        double p = 0.0;
-        for (int j = i; j < n; j++)
-        {
-            if (IsGreaterThan(std::abs(copy[j][i]),p))
-            {
-                p = std::abs(copy[j][i]);
-                row = j;
-            }
-        }
-        if (IsAlmostEqualTo(p,0.0))
-        {
-            return false;
-        }
-
-        int tmp = pivot[i];
-        pivot[i] = pivot[row];
-        pivot[row] = tmp;
-
-        double tmp2 = 0.0;
-        for (int j = 0; j < n; j++)
-        {
-            tmp2 = copy[i][j];
-            copy[i][j] = copy[row][j];
-            copy[row][j] = tmp2;
-        }
-
-        double u = copy[i][i];
-        double l = 0.0;
-        for (int j = i + 1; j < n; j++)
-        {
-            l = copy[j][i] / u;
-            copy[j][i] = l;
-            for (int k = i + 1; k < n; k++)
-            {
-                copy[j][k] = copy[j][k] - copy[i][k] * l;
-            }
-        }
-    }
-
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j <= i; j++)
-        {
-            if (i != j)
-            {
-                lowerTriMatrix[i][j] = copy[i][j];
-            }
-            else
-            {
-                lowerTriMatrix[i][j] = 1;
-            }
-        }
-        for (int k = i; k < n; k++)
-        {
-            upperTriMatrix[i][k] = copy[i][k];
+            inverse[row][col] = result(row, col);
         }
     }
     return true;
@@ -518,12 +204,27 @@ bool LNLib::MathUtils::LUPDecomposition(const std::vector<std::vector<double>>& 
 
 std::vector<std::vector<double>> LNLib::MathUtils::SolveLinearSystem(const std::vector<std::vector<double>>& matrix, const std::vector<std::vector<double>>& right)
 {
-    std::vector<std::vector<double>> result;
-    std::vector<std::vector<double>> inverse;
-    bool canInverse = MakeInverse(matrix, inverse);
-    if (canInverse)
+    std::vector<std::vector<double>> result(matrix.size(), std::vector<double>(right[0].size()));
+
+    Eigen::MatrixXd m(matrix.size(), matrix[0].size());
+    for (int i = 0; i < matrix.size(); i++)
     {
-        result = MatrixMultiply(inverse, right);
+        m.row(i) = Eigen::VectorXd::Map(&matrix[i][0], matrix[i].size());
+    }
+        
+    Eigen::MatrixXd r(right.size(),  right[0].size());
+    for (int i = 0; i < right.size(); i++)
+    {
+        r.row(i) = Eigen::VectorXd::Map(&right[i][0], right[i].size());
+    }
+
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> solve = m.lu().solve(r);
+    for (int col = 0; col < solve.cols(); ++col)
+    {
+        for (int row = 0; row < solve.rows(); ++row)
+        {
+            result[row][col] = solve(row, col);
+        }
     }
     return result;
 }
