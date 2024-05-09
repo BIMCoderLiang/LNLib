@@ -83,15 +83,9 @@ namespace LNLib
 		
 		static std::vector<std::vector<double>> CreateMatrix(int row, int column);
 
-		static bool IsSquareMatrix(const std::vector<std::vector<double>>& matrix);
-
-		static double GetDeterminant(const std::vector<std::vector<double>>& matrix, int dimension);
+		static double GetDeterminant(const std::vector<std::vector<double>>& matrix);
 
 		static bool MakeInverse(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& inverse);
-
-		static bool LUDecomposition(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& lowerTriMatrix, std::vector<std::vector<double>>& upperTriMatrix);
-		
-		static bool LUPDecomposition(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& lowerTriMatrix, std::vector<std::vector<double>>& upperTriMatrix, std::vector<double>& pivot);
 
 		/// <summary>
 		/// matrix * result = right.

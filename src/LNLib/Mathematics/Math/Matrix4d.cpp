@@ -339,7 +339,7 @@ double LNLib::Matrix4d::GetDeterminant()
 			matrix[i][j] = m_matrix4d[i][j];
 		}
 	}
-	return MathUtils::GetDeterminant(matrix, 4);
+	return MathUtils::GetDeterminant(matrix);
 }
 
 bool LNLib::Matrix4d::IsIdentity()

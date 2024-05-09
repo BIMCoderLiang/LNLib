@@ -6,6 +6,21 @@ target_compile_definitions(LNLib PRIVATE LNLIB_HOME)
 
 target_include_directories(${TARGET_NAME} PRIVATE ${SOURCE_DIR}/include)
 
+include(FetchContent)
+FetchContent_Declare(
+  Eigen
+  GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+  GIT_TAG master
+  GIT_SHALLOW TRUE
+  GIT_PROGRESS TRUE)
+set(BUILD_TESTING OFF)
+set(EIGEN_BUILD_TESTING OFF)
+set(EIGEN_MPL2_ONLY ON)
+set(EIGEN_BUILD_PKGCONFIG OFF)
+set(EIGEN_BUILD_DOC OFF)
+FetchContent_MakeAvailable(Eigen)
+target_link_libraries(${TARGET_NAME} PRIVATE Eigen3::Eigen)
+
 file(GLOB rootfiles *.cpp *.h)
 source_group("" FILES ${rootfiles})
 target_sources(${TARGET_NAME} PRIVATE ${rootfiles})
