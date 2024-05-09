@@ -56,9 +56,9 @@ namespace LNLib
 		{
 			int degreeU = surface.DegreeU;
 			int degreeV = surface.DegreeV;
-			std::vector<double> knotVectorU = surface.KnotVectorU;
-			std::vector<double> knotVectorV = surface.KnotVectorV;
-			std::vector<std::vector<T>> controlPoints = surface.ControlPoints;
+			const std::vector<double>& knotVectorU = surface.KnotVectorU;
+			const std::vector<double>& knotVectorV = surface.KnotVectorV;
+			const std::vector<std::vector<T>>& controlPoints = surface.ControlPoints;
 
 			VALIDATE_ARGUMENT_RANGE(uv.GetU(), knotVectorU[0], knotVectorU[knotVectorU.size() - 1]);
 			VALIDATE_ARGUMENT_RANGE(uv.GetV(), knotVectorV[0], knotVectorV[knotVectorV.size() - 1]);			
