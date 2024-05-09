@@ -11,8 +11,8 @@
 
 /*
  * 
- * NoTICE: The Eigen C++ Library is Only used in MathUitls.cpp 
- * since we should provide uniform LNLib API Style to the public.
+ * NOTICE: The Eigen C++ Library is Only used in MathUitls.cpp 
+ * since we should provide uniform style API to the public.
  * 
  */
 
