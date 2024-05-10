@@ -24,20 +24,41 @@ namespace LNLib
         double result = ((end - start) / 6.0) * (st + 4 * mt + et);
         return result;
     }
-    double Integrator::Simpson(double start, double end, std::vector<double> odds, std::vector<double> evens, double delta)
+
+	double Integrator::Simpson(BinaryIntegrationFunction& function, void* customData, 
+				double u1, double u2, double v1, double v2)
 	{
-		double oddsSum = 0.0;
-		double evensSum = 0.0;
-		for (int i = 0; i < odds.size(); i++)
-		{
-			oddsSum += 4 * odds[i];
-		}
-		for (int i = 0; i < evens.size(); i++)
-		{
-			evensSum += 2 * evens[i];
-		}
-		double result = (delta / 3.0) * (start + oddsSum + evensSum + end);
-		return result;
+        double du = u2 - u1;
+        double dv = v2 - v1;
+        double hdu = 0.5 * du;
+        double hdv = 0.5 * dv;
+		
+        // Sample 9 points with weights
+        double uvw[] = {
+            u1,       v1,       1,
+            u1,       v1 + hdv, 4,
+            u1,       v2,       1,
+            u1 + hdu, v1,       4,
+            u1 + hdu, v1 + hdv, 16,
+            u1 + hdu, v2,       4,
+            u2,       v1,       1,
+            u2,       v1 + hdv, 4,
+            u2,       v2,       1,
+            };
+        
+        double sum = 0;
+        for(int i=0;i<9;++i)
+        {
+            double* base = uvw + i*3;
+            double u = base[0];
+            double v = base[1];
+            double w = base[2];
+            double f = function(u, v, customData);
+            sum += w * f;
+        }
+
+        sum *= du * dv / 36;
+        return sum;
 	}
 
     const std::vector<double> Integrator::GaussLegendreAbscissae =
