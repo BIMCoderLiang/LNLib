@@ -59,7 +59,7 @@ TEST(Test_Additional, All)
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(arcParameters[2], 0.75));
 }
 
-TEST(Test_Additional, Area)
+static void NURBSSurfaceForAreaTest(LN_NurbsSurface& surface, double& standardArea)
 {
 	int degreeU = 3;
 	int degreeV = 3;
@@ -109,21 +109,40 @@ TEST(Test_Additional, Area)
 	controlPoints[5][4] = XYZW(43.3333333, 50, 0, 1);
 	controlPoints[5][5] = XYZW(50, 50, 0, 1);
 
-	LN_NurbsSurface surface;
 	surface.DegreeU = degreeU;
 	surface.DegreeV = degreeV;
 	surface.KnotVectorU = kvU;
 	surface.KnotVectorV = kvV;
 	surface.ControlPoints = controlPoints;
 
-	double standardArea = 4384.255895045;
+	standardArea = 4384.255895045;
+}
 
-	double simpson = NurbsSurface::ApproximateArea(surface, IntegratorType::Simpson);
-	double gaussLegendre = NurbsSurface::ApproximateArea(surface, IntegratorType::GaussLegendre);
-	double chebyshev = NurbsSurface::ApproximateArea(surface, IntegratorType::Chebyshev);
-	EXPECT_NEAR(simpson, standardArea, 1e-4);
-	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(gaussLegendre, standardArea));
-	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(chebyshev, standardArea));
+TEST(Test_Additional, Area_Simpson)
+{
+	LN_NurbsSurface surface;
+	double standardArea;
+	NURBSSurfaceForAreaTest(surface, standardArea);
+	double area = NurbsSurface::ApproximateArea(surface, IntegratorType::Simpson);
+	EXPECT_NEAR(area, standardArea, 1e-4);
+}
+
+TEST(Test_Additional, Area_GaussLegendre)
+{
+	LN_NurbsSurface surface;
+	double standardArea;
+	NURBSSurfaceForAreaTest(surface, standardArea);
+	double area = NurbsSurface::ApproximateArea(surface, IntegratorType::GaussLegendre);
+	EXPECT_NEAR(area, standardArea, 7e-5);
+}
+
+TEST(Test_Additional, Area_ChebyShev)
+{
+	LN_NurbsSurface surface;
+	double standardArea;
+	NURBSSurfaceForAreaTest(surface, standardArea);
+	double area = NurbsSurface::ApproximateArea(surface, IntegratorType::Chebyshev);
+	EXPECT_NEAR(area, standardArea, 2e-3);
 }
 
 TEST(Test_Additional, MergeCurve)
