@@ -119,26 +119,13 @@ LNLib::XYZ LNLib::NurbsSurface::GetPointOnSurface(const LN_NurbsSurface& surface
 
 std::vector<std::vector<LNLib::XYZ>> LNLib::NurbsSurface::ComputeRationalSurfaceDerivatives(const LN_NurbsSurface& surface, int derivative, UV uv)
 {
-	int degreeU = surface.DegreeU;
-	int degreeV = surface.DegreeV;
-	std::vector<double> knotVectorU = surface.KnotVectorU;
-	std::vector<double> knotVectorV = surface.KnotVectorV;
-	std::vector<std::vector<XYZW>> controlPoints = surface.ControlPoints;
-
 	VALIDATE_ARGUMENT(derivative > 0, "derivative", "derivative must greater than zero.");
-	VALIDATE_ARGUMENT_RANGE(uv.GetU(), knotVectorU[0], knotVectorU[knotVectorU.size() - 1]);
-	VALIDATE_ARGUMENT_RANGE(uv.GetV(), knotVectorV[0], knotVectorV[knotVectorV.size() - 1]);
+	VALIDATE_ARGUMENT_RANGE(uv.GetU(), surface.KnotVectorU[0], surface.KnotVectorU.back());
+	VALIDATE_ARGUMENT_RANGE(uv.GetV(), surface.KnotVectorV[0], surface.KnotVectorV.back());
 
 	std::vector<std::vector<XYZ>> derivatives(derivative + 1, std::vector<XYZ>(derivative + 1));
 
-	LN_BsplineSurface<XYZW> bsplineSurface;
-	bsplineSurface.DegreeU = degreeU;
-	bsplineSurface.DegreeV = degreeV;
-	bsplineSurface.KnotVectorU = knotVectorU;
-	bsplineSurface.KnotVectorV = knotVectorV;
-	bsplineSurface.ControlPoints = controlPoints;
-
-	std::vector<std::vector<XYZW>> ders = BsplineSurface::ComputeDerivatives(bsplineSurface, derivative, uv);
+	std::vector<std::vector<XYZW>> ders = BsplineSurface::ComputeDerivatives(surface, derivative, uv);
 	std::vector<std::vector<XYZ>> Aders(derivative + 1, std::vector<XYZ>(derivative + 1));
 	std::vector<std::vector<double>> wders(derivative + 1, std::vector<double>(derivative + 1));
 	for (int i = 0; i < ders.size(); i++)
