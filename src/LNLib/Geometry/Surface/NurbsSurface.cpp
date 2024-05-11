@@ -1346,8 +1346,8 @@ void LNLib::NurbsSurface::CreateBilinearSurface(const XYZ& point00, const XYZ& p
 
 bool LNLib::NurbsSurface::CreateCylindricalSurface(const XYZ& origin, const XYZ& xAxis, const XYZ& yAxis, double startRad, double endRad, double radius, double height, LN_NurbsSurface& surface)
 {
-	VALIDATE_ARGUMENT(!xAxis.IsZero(), "xAxis", "xAxis must not be be zero vector.");
-	VALIDATE_ARGUMENT(!yAxis.IsZero(), "yAxis", "yAxis must not be be zero vector.");
+	VALIDATE_ARGUMENT(!xAxis.IsZero(), "xAxis", "xAxis must not be zero vector.");
+	VALIDATE_ARGUMENT(!yAxis.IsZero(), "yAxis", "yAxis must not be zero vector.");
 	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(endRad, startRad), "endRad", "endRad must be greater than startRad.");
 	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(radius, 0.0), "radius", "Radius must be greater than zero.");
 	VALIDATE_ARGUMENT(MathUtils::IsGreaterThan(height, 0.0), "height", "Height must be greater than zero.");
@@ -1468,7 +1468,7 @@ void LNLib::NurbsSurface::CreateRuledSurface(const LN_NurbsCurve& curve0, const 
 
 bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& axis, double rad, const LN_NurbsCurve& profile, LN_NurbsSurface& surface)
 {
-	VALIDATE_ARGUMENT(!axis.IsZero(), "axis", "Axis must not be be zero vector.");
+	VALIDATE_ARGUMENT(!axis.IsZero(), "axis", "Axis must not be zero vector.");
 	std::vector<double> knotVectorU;
 
 	int narcs = 0;
