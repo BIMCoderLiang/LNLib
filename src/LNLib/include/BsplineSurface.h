@@ -35,15 +35,15 @@ namespace LNLib
 			std::vector<double> knotVectorV = surface.KnotVectorV;
 			std::vector<std::vector<T>> controlPoints = surface.ControlPoints;
 
-			VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "Degree must greater than zero.");
-			VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "Degree must greater than zero.");
-			VALIDATE_ARGUMENT(knotVectorU.size() > 0, "knotVectorU", "KnotVector size must greater than zero.");
+			VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "Degree must be greater than zero.");
+			VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "Degree must be greater than zero.");
+			VALIDATE_ARGUMENT(knotVectorU.size() > 0, "knotVectorU", "KnotVector size must be greater than zero.");
 			VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorU), "knotVectorU", "KnotVector must be a nondecreasing sequence of real numbers.");
-			VALIDATE_ARGUMENT(knotVectorV.size() > 0, "knotVectorV", "KnotVector size must greater than zero.");
+			VALIDATE_ARGUMENT(knotVectorV.size() > 0, "knotVectorV", "KnotVector size must be greater than zero.");
 			VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVectorV), "knotVectorV", "KnotVector must be a nondecreasing sequence of real numbers.");
 			VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
-			VALIDATE_ARGUMENT(ValidationUtils::IsValidBspline(degreeU, knotVectorU.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
-			VALIDATE_ARGUMENT(ValidationUtils::IsValidBspline(degreeV, knotVectorV.size(), controlPoints[0].size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+			VALIDATE_ARGUMENT(ValidationUtils::IsValidBspline(degreeU, knotVectorU.size(), controlPoints.size()), "controlPoints", "Arguments must be fit: m = n + p + 1");
+			VALIDATE_ARGUMENT(ValidationUtils::IsValidBspline(degreeV, knotVectorV.size(), controlPoints[0].size()), "controlPoints", "Arguments must be fit: m = n + p + 1");
 		}
 
 		/// <summary>
@@ -64,10 +64,11 @@ namespace LNLib
 			VALIDATE_ARGUMENT_RANGE(uv.GetV(), knotVectorV[0], knotVectorV[knotVectorV.size() - 1]);			
 
 			int uSpanIndex = Polynomials::GetKnotSpanIndex(degreeU, knotVectorU, uv.GetU());
-			std::vector<double> Nu = Polynomials::BasisFunctions(uSpanIndex, degreeU, knotVectorU, uv.GetU());
-
+			double Nu[Constants::NURBSMaxDegree + 1];
+			Polynomials::BasisFunctions(uSpanIndex, degreeU, knotVectorU, uv.GetU(), Nu);
 			int vSpanIndex = Polynomials::GetKnotSpanIndex(degreeV, knotVectorV, uv.GetV());
-			std::vector<double> Nv = Polynomials::BasisFunctions(vSpanIndex, degreeV, knotVectorV, uv.GetV());
+			double Nv[Constants::NURBSMaxDegree + 1];
+			Polynomials::BasisFunctions(vSpanIndex, degreeV, knotVectorV, uv.GetV(), Nv);
 
 			int uind = uSpanIndex - degreeU;
 			T point;
@@ -98,7 +99,7 @@ namespace LNLib
 			const std::vector<double>& knotVectorV = surface.KnotVectorV;
 			const std::vector<std::vector<T>>& controlPoints = surface.ControlPoints;
 
-			VALIDATE_ARGUMENT(derivative > 0, "derivative", "derivative must greater than zero.");	
+			VALIDATE_ARGUMENT(derivative > 0, "derivative", "derivative must be greater than zero.");	
 			VALIDATE_ARGUMENT_RANGE(uv.GetU(), knotVectorU[0], knotVectorU[knotVectorU.size() - 1]);
 			VALIDATE_ARGUMENT_RANGE(uv.GetV(), knotVectorV[0], knotVectorV[knotVectorV.size() - 1]);		
 
@@ -138,6 +139,56 @@ namespace LNLib
 		}
 
 		/// <summary>
+		/// This is an optimized function of ComputeDerivatives for order 1 case.
+		/// </summary>
+		template <typename T>
+		static void ComputeFirstOrderDerivative(const LN_BsplineSurface<T>& surface, UV uv,
+			T derivatives[2][2])
+		{
+			int degreeU = surface.DegreeU;
+			int degreeV = surface.DegreeV;
+			const std::vector<double>& knotVectorU = surface.KnotVectorU;
+			const std::vector<double>& knotVectorV = surface.KnotVectorV;
+			const std::vector<std::vector<T>>& controlPoints = surface.ControlPoints;
+
+			VALIDATE_ARGUMENT_RANGE(uv.GetU(), knotVectorU[0], knotVectorU[knotVectorU.size() - 1]);
+			VALIDATE_ARGUMENT_RANGE(uv.GetV(), knotVectorV[0], knotVectorV[knotVectorV.size() - 1]);		
+
+			int uSpanIndex = Polynomials::GetKnotSpanIndex(degreeU, knotVectorU, uv.GetU());
+			double Nu[2][Constants::NURBSMaxDegree + 1];
+			Polynomials::BasisFunctionsFirstOrderDerivative(uSpanIndex, degreeU, knotVectorU, uv.GetU(), Nu);
+
+			int vSpanIndex = Polynomials::GetKnotSpanIndex(degreeV, knotVectorV, uv.GetV());
+			double Nv[2][Constants::NURBSMaxDegree + 1];
+			Polynomials::BasisFunctionsFirstOrderDerivative(vSpanIndex, degreeV, knotVectorV, uv.GetV(), Nv);
+
+			int du = std::min(1, degreeU);
+			int dv = std::min(1, degreeV);
+
+			T temp[Constants::NURBSMaxDegree + 1];
+
+			for (int k = 0; k <= du; k++)
+			{
+				for (int s = 0; s <= degreeV; s++)
+				{
+					temp[s] = T();
+					for (int r = 0; r <= degreeU; r++)
+					{
+						temp[s] += Nu[k][r] * controlPoints[uSpanIndex - degreeU + r][vSpanIndex - degreeV + s];
+					}
+				}
+				int dd = std::min(1, dv);
+				for (int l = 0; l <= dd; l++)
+				{
+					for (int s = 0; s <= degreeV; s++)
+					{
+						derivatives[k][l] += Nv[l][s] * temp[s];
+					}
+				}
+			}
+		}
+
+		/// <summary>
 		/// The NURBS Book 2nd Edition Page114.
 		/// Algorithm A3.7
 		/// Compute control points of derivative surfaces.
@@ -151,7 +202,7 @@ namespace LNLib
 			std::vector<double> knotVectorV = surface.KnotVectorV;
 			std::vector<std::vector<T>> controlPoints = surface.ControlPoints;
 
-			VALIDATE_ARGUMENT(derivative > 0, "derivative", "derivative must greater than zero.");
+			VALIDATE_ARGUMENT(derivative > 0, "derivative", "derivative must be greater than zero.");
 			VALIDATE_ARGUMENT_RANGE(minSpanIndexU, 0, maxSpanIndexU);
 			VALIDATE_ARGUMENT_RANGE(minSpanIndexV, 0, maxSpanIndexV);
 			VALIDATE_ARGUMENT_RANGE(uv.GetU(), knotVectorU[0], knotVectorU[knotVectorU.size() - 1]);
@@ -227,7 +278,7 @@ namespace LNLib
 			std::vector<double> knotVectorV = surface.KnotVectorV;
 			std::vector<std::vector<T>> controlPoints = surface.ControlPoints;
 
-			VALIDATE_ARGUMENT(derivative > 0, "derivative", "derivative must greater than zero.");
+			VALIDATE_ARGUMENT(derivative > 0, "derivative", "derivative must be greater than zero.");
 			VALIDATE_ARGUMENT_RANGE(uv.GetU(), knotVectorU[0], knotVectorU[knotVectorU.size() - 1]);
 			VALIDATE_ARGUMENT_RANGE(uv.GetV(), knotVectorV[0], knotVectorV[knotVectorV.size() - 1]);
 			

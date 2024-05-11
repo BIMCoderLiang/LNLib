@@ -37,7 +37,13 @@ namespace LNLib
 		/// Algorithm A4.4
 		/// Compute S(paramU,paramV) derivatives.
 		/// </summary>
-		static std::vector<std::vector<XYZ>> ComputeRationalSurfaceDerivatives(const LN_NurbsSurface& surface, int derivative, UV uv);
+		static std::vector<std::vector<XYZ>> ComputeRationalSurfaceDerivatives(const LN_NurbsSurface& surface, 
+			int derivative, UV uv);
+
+		/// <summary>
+		/// This is an optimized function of ComputeRationalSurfaceDerivatives, for order 1 case.
+		/// </summary>
+		static void ComputeRationalSurfaceFirstOrderDerivative(const LN_NurbsSurface& surface, UV uv, XYZ& S, XYZ& Su, XYZ& Sv);
 
 		static double Curvature(const LN_NurbsSurface& surface, SurfaceCurvature curvature, UV uv);
 
@@ -210,8 +216,8 @@ namespace LNLib
 		/// Create Gordon Surface.
 		/// Gordon Surface has a number of restrictions:
 		/// 1. All input curves must be NURBS or NURBS-like. Only non-rational curves are supported - i.e., without weights (or all weights equal).
-		/// 2. All U-curves must have “the same” direction; all V-curves must also have “the same” direction.
-		/// 3. There must be N curves along one direction, and M curves along another direction, which must exactly intersect at N x M points.
+		/// 2. All U-curves must be have “the same” direction; all V-curves must be also have “the same” direction.
+		/// 3. There must be N curves along one direction, and M curves along another direction, which must be exactly intersect at N x M points.
 		/// 4. Intersection points must be located evenly in parameter spaces of curves. 
 		/// 5. U-curves must be ordered along direction of V-curves, and vice versa. 
 		/// </summary>
@@ -251,4 +257,6 @@ namespace LNLib
 		/// </summary>
 		static LN_Mesh Triangulate(const LN_NurbsSurface& surface);
 	};
+
+	
 }

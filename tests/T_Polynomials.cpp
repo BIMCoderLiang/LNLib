@@ -35,7 +35,8 @@ TEST(Test_Polynomials, All)
 
 	knotVector = { 0,0,0,1,2,3,4,4,5,5,5 };
 	int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, 5.0 / 2);
-	std::vector<double> basis = Polynomials::BasisFunctions(spanIndex, degree, knotVector, 5.0 / 2);
+	double basis[Constants::NURBSMaxDegree + 1];
+	Polynomials::BasisFunctions(spanIndex, degree, knotVector, 5.0 / 2, basis);
 	std::vector<double> check = {1.0/8, 6.0/8, 1.0/8};
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(basis[0], check[0]) && MathUtils::IsAlmostEqualTo(basis[1], check[1]) && MathUtils::IsAlmostEqualTo(basis[2], check[2]));
 

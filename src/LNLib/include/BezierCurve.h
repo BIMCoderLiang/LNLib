@@ -31,8 +31,8 @@ namespace LNLib
 			int degree = curve.Degree;
 			std::vector<T> controlPoints = curve.ControlPoints;
 
-			VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
-			VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
+			VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must be greater than zero.");
+			VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contain one point at least.");
 			VALIDATE_ARGUMENT(ValidationUtils::IsValidBezier(degree, controlPoints.size()), "controlPoints", "ControlPoints count equals degree plus one.");
 		}
 

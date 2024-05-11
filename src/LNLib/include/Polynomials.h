@@ -11,6 +11,7 @@
 #pragma once
 
 #include "LNLibDefinitions.h"
+#include "Constants.h"
 #include <vector>
 
 namespace LNLib
@@ -75,14 +76,21 @@ namespace LNLib
 		/// Algorithm A2.2
 		/// Compute the nonvanishing basis functions.
 		/// </summary>
-		static std::vector<double> BasisFunctions(int spanIndex, int degree, const std::vector<double>& knotVector, double paramT);
+		static void BasisFunctions(int spanIndex, int degree, const std::vector<double>& knotVector, double paramT,
+			double* basisFunctions);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page72
 		/// Algorithm A2.3
 		/// Compute nonzero basis functions and their derivative.
 		/// </summary>
-		static std::vector<std::vector<double>> BasisFunctionsDerivatives(int spanIndex, int degree, int derivative, const std::vector<double>& knotVector, double paramT);
+		static std::vector<std::vector<double>> BasisFunctionsDerivatives(int spanIndex, int degree, 
+			int derivative, const std::vector<double>& knotVector, double paramT);
+
+		/// <summary>
+		/// This is an optimized function of BasisFunctionsDerivatives, for order 1 case.
+		/// </summary>
+		static void BasisFunctionsFirstOrderDerivative(int spanIndex, int degree, const std::vector<double>& knotVector, double paramT, double derivatives[2][Constants::NURBSMaxDegree + 1]);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page74

@@ -20,7 +20,7 @@ using namespace LNLib;
 
 int LNLib::KnotVectorUtils::GetContinuity(int degree, const std::vector<double>& knotVector, double knot)
 {
-	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must be greater than zero.");
 	int multi = Polynomials::GetKnotMultiplicity(knotVector, knot);
 	return degree - multi;
 }
@@ -42,8 +42,8 @@ std::vector<double> LNLib::KnotVectorUtils::Rescale(const std::vector<double>& k
 
 std::vector<double> LNLib::KnotVectorUtils::GetInsertedKnotElement(int degree, const std::vector<double>& knotVector, double startParam, double endParam)
 {
-	VALIDATE_ARGUMENT(degree >= 0, "degree", "Degree must greater than or equals zero.");
-	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(degree >= 0, "degree", "Degree must be greater than or equal zero.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must be greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
 
 	std::vector<double> result;

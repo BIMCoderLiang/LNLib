@@ -359,7 +359,7 @@ namespace LNLib
 		static double GetParamOnCurve(const LN_NurbsCurve& curve, double givenLength, IntegratorType type = IntegratorType::Chebyshev);
 
 		/// <summary>
-		/// Calculate parameters makes every segments length equal to given length.
+		/// Calculate parameters makes every segments length equals to given length.
 		/// </summary>
 		static std::vector<double> GetParamsOnCurve(const LN_NurbsCurve& curve, double givenLength, IntegratorType type = IntegratorType::Chebyshev);
 
