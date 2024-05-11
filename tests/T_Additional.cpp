@@ -29,6 +29,8 @@ TEST(Test_Additional, ApproximateLength)
 	LN_NurbsCurve curve;
 	bool createArc = NurbsCurve::CreateArc(center, xAxis, yAxis, 0, 2 * Constants::Pi, radius, radius, curve);
 	EXPECT_TRUE(createArc);
+	double curvature = NurbsCurve::Curvature(curve, curve.KnotVector[0]);
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(curvature, 1.0/radius));
 	EXPECT_TRUE(NurbsCurve::IsArc(curve, arcInfo));
 	EXPECT_FALSE(NurbsCurve::IsLinear(curve));
 	simpson = NurbsCurve::ApproximateLength(curve, IntegratorType::Simpson);

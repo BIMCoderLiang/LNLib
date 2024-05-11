@@ -106,19 +106,32 @@ namespace LNLib
 
 	void TessellateCore(const LN_NurbsCurve& curve, double start, double end, XYZ startPoint, XYZ endPoint, double standardParameter, std::vector<double>& parameters)
 	{
-		double mid = start + (end - start) * standardParameter;
-		XYZ midPoint = NurbsCurve::GetPointOnCurve(curve, mid);
-		XYZ segMidPoint = startPoint + (endPoint - startPoint) * standardParameter;
+		double param = start + (end - start) * standardParameter;
+		
+		XYZ paramPoint = NurbsCurve::GetPointOnCurve(curve, param);
+		XYZ segPoint = startPoint + (endPoint - startPoint) * standardParameter;
 
-		double distance = midPoint.Distance(segMidPoint);
-		if (MathUtils::IsLessThanOrEqual(distance, Constants::DistanceEpsilon))
+		double distance = paramPoint.Distance(segPoint);
+		bool condition1 = MathUtils::IsLessThanOrEqual(distance, Constants::DistanceEpsilon);
+
+		XYZ startTangent = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, start)[1];
+		XYZ endTangent = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, end)[1];
+		double angle = startTangent.AngleTo(endTangent);
+		bool condition2 = MathUtils::IsLessThanOrEqual(angle, Constants::AngleEpsilon);
+
+		double halfChordLength = startPoint.Distance(endPoint)/2.0;
+		double radius = 1.0/NurbsCurve::Curvature(curve, param);
+		double chordHeight = radius - std::sqrt(radius * radius - halfChordLength * halfChordLength);
+		bool condition3 = MathUtils::IsLessThanOrEqual(chordHeight, Constants::DistanceEpsilon);
+
+		if (condition1 && condition2 && condition3)
 		{
-			parameters.emplace_back(mid);
+			parameters.emplace_back(param);
 		}
 		else
 		{
-			TessellateCore(curve, start, mid, startPoint, midPoint, standardParameter, parameters);
-			TessellateCore(curve, mid, end, midPoint, endPoint, standardParameter, parameters);
+			TessellateCore(curve, start, param, startPoint, paramPoint, standardParameter, parameters);
+			TessellateCore(curve, param, end, paramPoint, endPoint, standardParameter, parameters);
 		}
 	}
 }
@@ -3594,9 +3607,7 @@ std::vector<LNLib::XYZ> LNLib::NurbsCurve::Tessellate(const LN_NurbsCurve& curve
 
 	std::vector<double> parameters;
 	parameters.emplace_back(start);
-	std::mt19937 gen(1);
-	std::uniform_real_distribution<> dis(0.0, 1.0);
-	double standardParamter = 0.5 + dis(gen) * 0.1;
+	double standardParamter = 0.5;
 	TessellateCore(curve, start, end, startPoint, endPoint, standardParamter, parameters);
 	parameters.emplace_back(end);
 
