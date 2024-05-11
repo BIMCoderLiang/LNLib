@@ -90,8 +90,7 @@ namespace LNLib
 		/// <summary>
 		/// This is an optimized function of BasisFunctionsDerivatives, for order 1 case.
 		/// </summary>
-		static void BasisFunctionsDerivatives_Order1(int spanIndex, int degree, 
-			const std::vector<double>& knotVector, double paramT, double derivatives[2][Constants::NURBSMaxDegree + 1]);
+		static void BasisFunctionsFirstOrderDerivative(int spanIndex, int degree, const std::vector<double>& knotVector, double paramT, double derivatives[2][Constants::NURBSMaxDegree + 1]);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page74

@@ -32,11 +32,11 @@ namespace LNLib
 			std::vector<double> knotVector = curve.KnotVector;
 			std::vector<T> controlPoints = curve.ControlPoints;
 
-			VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
-			VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+			VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must be greater than zero.");
+			VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must be greater than zero.");
 			VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
-			VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contains one point at least.");
-			VALIDATE_ARGUMENT(ValidationUtils::IsValidBspline(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must fit: m = n + p + 1");
+			VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contain one point at least.");
+			VALIDATE_ARGUMENT(ValidationUtils::IsValidBspline(degree, knotVector.size(), controlPoints.size()), "controlPoints", "Arguments must be fit: m = n + p + 1");
 		}
 
 		/// <summary>
@@ -77,7 +77,7 @@ namespace LNLib
 			std::vector<double> knotVector = curve.KnotVector;
 			std::vector<T> controlPoints = curve.ControlPoints;
 
-			VALIDATE_ARGUMENT(derivative > 0, "derivative", "derivative must greater than zero.");
+			VALIDATE_ARGUMENT(derivative > 0, "derivative", "derivative must be greater than zero.");
 			VALIDATE_ARGUMENT_RANGE(paramT, knotVector[0], knotVector[knotVector.size() - 1]);				
 			
 			std::vector<T> derivatives(derivative + 1);
@@ -105,7 +105,7 @@ namespace LNLib
 		template<typename T>
 		static std::vector<std::vector<T>> ComputeControlPointsOfDerivatives(const LN_BsplineCurve<T>& curve, int derivative, int minSpanIndex, int maxSpanIndex)
 		{
-			VALIDATE_ARGUMENT(derivative > 0, "derivative", "derivative must greater than zero.");
+			VALIDATE_ARGUMENT(derivative > 0, "derivative", "derivative must be greater than zero.");
 			VALIDATE_ARGUMENT_RANGE(minSpanIndex, 0, maxSpanIndex);
 
 			int degree = curve.Degree;
@@ -142,7 +142,7 @@ namespace LNLib
 			std::vector<double> knotVector = curve.KnotVector;
 			std::vector<T> controlPoints = curve.ControlPoints;
 
-			VALIDATE_ARGUMENT(derivative > 0, "derivative", "derivative must greater than zero.");
+			VALIDATE_ARGUMENT(derivative > 0, "derivative", "derivative must be greater than zero.");
 			VALIDATE_ARGUMENT_RANGE(paramT, knotVector[0], knotVector[knotVector.size() - 1]);
 
 			std::vector<T> derivatives(derivative + 1);
