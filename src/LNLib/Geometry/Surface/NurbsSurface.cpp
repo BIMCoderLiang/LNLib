@@ -119,26 +119,13 @@ LNLib::XYZ LNLib::NurbsSurface::GetPointOnSurface(const LN_NurbsSurface& surface
 
 std::vector<std::vector<LNLib::XYZ>> LNLib::NurbsSurface::ComputeRationalSurfaceDerivatives(const LN_NurbsSurface& surface, int derivative, UV uv)
 {
-	int degreeU = surface.DegreeU;
-	int degreeV = surface.DegreeV;
-	std::vector<double> knotVectorU = surface.KnotVectorU;
-	std::vector<double> knotVectorV = surface.KnotVectorV;
-	std::vector<std::vector<XYZW>> controlPoints = surface.ControlPoints;
-
 	VALIDATE_ARGUMENT(derivative > 0, "derivative", "derivative must greater than zero.");
-	VALIDATE_ARGUMENT_RANGE(uv.GetU(), knotVectorU[0], knotVectorU[knotVectorU.size() - 1]);
-	VALIDATE_ARGUMENT_RANGE(uv.GetV(), knotVectorV[0], knotVectorV[knotVectorV.size() - 1]);
+	VALIDATE_ARGUMENT_RANGE(uv.GetU(), surface.KnotVectorU[0], surface.KnotVectorU.back());
+	VALIDATE_ARGUMENT_RANGE(uv.GetV(), surface.KnotVectorV[0], surface.KnotVectorV.back());
 
 	std::vector<std::vector<XYZ>> derivatives(derivative + 1, std::vector<XYZ>(derivative + 1));
 
-	LN_BsplineSurface<XYZW> bsplineSurface;
-	bsplineSurface.DegreeU = degreeU;
-	bsplineSurface.DegreeV = degreeV;
-	bsplineSurface.KnotVectorU = knotVectorU;
-	bsplineSurface.KnotVectorV = knotVectorV;
-	bsplineSurface.ControlPoints = controlPoints;
-
-	std::vector<std::vector<XYZW>> ders = BsplineSurface::ComputeDerivatives(bsplineSurface, derivative, uv);
+	std::vector<std::vector<XYZW>> ders = BsplineSurface::ComputeDerivatives(surface, derivative, uv);
 	std::vector<std::vector<XYZ>> Aders(derivative + 1, std::vector<XYZ>(derivative + 1));
 	std::vector<std::vector<double>> wders(derivative + 1, std::vector<double>(derivative + 1));
 	for (int i = 0; i < ders.size(); i++)
@@ -2813,47 +2800,89 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 	{
 		case IntegratorType::Simpson:
 		{
-			double halfV = (startV + endV) / 2.0;
-			XYZ halfStart = GetPointOnSurface(reSurface, UV(startU, halfV));
-			XYZ halfEnd = GetPointOnSurface(reSurface, UV(endU, halfV));
-
-			double totalWidth = halfStart.Distance(halfEnd);
-			int num = 20;
-			double delta = totalWidth / (num - 1);
-
-			XYZ start1 = GetPointOnSurface(reSurface, UV(startU, startV));
-			XYZ start2 = GetPointOnSurface(reSurface, UV(startU, endV));
-			double startLength = start1.Distance(start2);
-
-			std::vector<double> odds;
-			std::vector<double> evens;
-
-			XYZ dir = (halfEnd - halfStart).Normalize();
-
-			for (int i = 1; i < num; i++)
+			struct fun
+			:public BinaryIntegrationFunction
 			{
-				XYZ current = halfStart + dir * delta * i;
-				UV uv = GetParamOnSurface(reSurface, current);
-				double u = uv.GetU();
-				XYZ point1 = GetPointOnSurface(reSurface, UV(u, startV));
-				XYZ point2 = GetPointOnSurface(reSurface, UV(u, endV));
-				double length = point1.Distance(point2);
-
-				if (i % 2 == 0)
+				virtual double operator()(double u, double v, void* customData)const override
 				{
-					evens.emplace_back(length);
+					auto surface = (LN_NurbsSurface*)customData;
+					auto der = NurbsSurface::ComputeRationalSurfaceDerivatives(*surface, 1, UV(u, v));
+					const XYZ& Su = der[1][0];
+					const XYZ& Sv = der[0][1];
+					double E = Su.DotProduct(Su);
+					double F = Su.DotProduct(Sv);
+					double G = Sv.DotProduct(Sv);
+					double ds = std::sqrt(E * G - F * F);
+					return ds;
+				}
+			}function;
+
+			// the initial search range
+			struct UVA
+			{
+				double u1, u2, v1, v2;
+				double area;
+			};
+			UVA init;
+			init.u1 = 0;
+			init.u2 = 1;
+			init.v1 = 0;
+			init.v2 = 1;
+			init.area = Integrator::Simpson(function, (void*)&reSurface, init.u1, init.u2, init.v1, init.v2);
+			std::vector<UVA> stack(1, init);
+
+			while(!stack.empty())
+			{
+				UVA uva = stack.back();
+				stack.pop_back();
+
+				// Bisect uv into 4 parts.
+				double du = uva.u2 - uva.u1;
+				double dv = uva.v2 - uva.v1;
+				double hdu = 0.5 * du;
+				double hdv = 0.5 * dv;
+				UVA uva1, uva2, uva3, uva4;
+				uva1.u1 = uva.u1;
+				uva1.u2 = uva.u1 + hdu;
+				uva1.v1 = uva.v1;
+				uva1.v2 = uva.v1 + hdv;
+				uva1.area = Integrator::Simpson(function, (void*)&reSurface, uva1.u1, uva1.u2, uva1.v1, uva1.v2);
+				uva2.u1 = uva.u1 + hdu;
+				uva2.u2 = uva.u2;
+				uva2.v1 = uva.v1;
+				uva2.v2 = uva.v1 + hdv;
+				uva2.area = Integrator::Simpson(function, (void*)&reSurface, uva2.u1, uva2.u2, uva2.v1, uva2.v2);
+				uva3.u1 = uva.u1;
+				uva3.u2 = uva.u1 + hdu;
+				uva3.v1 = uva.v1 + hdv;
+				uva3.v2 = uva.v2;
+				uva3.area = Integrator::Simpson(function, (void*)&reSurface, uva3.u1, uva3.u2, uva3.v1, uva3.v2);
+				uva4.u1 = uva.u1 + hdu;
+				uva4.u2 = uva.u2;
+				uva4.v1 = uva.v1 + hdv;
+				uva4.v2 = uva.v2;
+				uva4.area = Integrator::Simpson(function, (void*)&reSurface, uva4.u1, uva4.u2, uva4.v1, uva4.v2);
+
+				// sum area
+				double areaNew = uva1.area + uva2.area + uva3.area + uva4.area;
+
+				// The error is tolerated.
+				// fixMe: The tolerance can be a parameter, Gauss and Chebyshev should handle it too.
+				if(std::fabs(areaNew - uva.area) < 1e-4)
+				{
+					// Accumulate to the final area.
+					area += areaNew;
 				}
 				else
 				{
-					odds.emplace_back(length);
+					// Continue bisections.
+					stack.push_back(uva1);
+					stack.push_back(uva2);
+					stack.push_back(uva3);
+					stack.push_back(uva4);
 				}
 			}
 
-			XYZ end1 = GetPointOnSurface(reSurface, UV(endU, startV));
-			XYZ end2 = GetPointOnSurface(reSurface, UV(endU, endV));
-			double endLength = end1.Distance(end2);
-
-			area = Integrator::Simpson(startLength, endLength, odds, evens, delta);
 			break;
 		}
 		case IntegratorType::GaussLegendre:

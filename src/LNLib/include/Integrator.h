@@ -21,12 +21,19 @@ namespace LNLib
 		virtual double operator()(double parameter, void* customData) = 0;
 	};
 
+	class LNLIB_EXPORT BinaryIntegrationFunction
+	{
+	public:
+		virtual double operator()(double u, double v, void* customData)const = 0;
+	};
+
 	class LNLIB_EXPORT Integrator
 	{
 
 	public:
 		static double Simpson(IntegrationFunction& function, void* customData, double start, double end);
-		static double Simpson(double start, double end, std::vector<double> odds, std::vector<double> evens, double delta);
+		static double Simpson(BinaryIntegrationFunction& function, void* customData, 
+			double u1, double u2, double v1, double v2);
 
 		/// <summary>
 		/// According to https://github.com/Pomax/bezierjs
@@ -42,6 +49,7 @@ namespace LNLib
 		static double ClenshawCurtisQuadrature(IntegrationFunction& function, void* customData, double start, double end, std::vector<double>& series, double epsilon = Constants::DistanceEpsilon);
 		static double ClenshawCurtisQuadrature2(IntegrationFunction& function, void* customData, double start, double end, std::vector<double> series, double epsilon = Constants::DistanceEpsilon);
 	};
+	
 }
 
 
