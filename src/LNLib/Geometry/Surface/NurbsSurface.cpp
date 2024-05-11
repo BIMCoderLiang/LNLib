@@ -175,22 +175,26 @@ void LNLib::NurbsSurface::ComputeRationalSurfaceDerivatives_Order1(const LN_Nurb
 
 	XYZ Aders[2][2];
 	double wders[2][2];
-	for (int i = 0; i < 2; i++)
-	{
-		for (int j = 0; j < 2; j++)
-		{
-			Aders[i][j] = ders[i][j].ToXYZ(false);
-			wders[i][j] = ders[i][j].GetW();
-		}
-	}
 
-	S = Aders[0][0] / wders[0][0];
+	Aders[0][0] = ders[0][0].ToXYZ(false);
+	wders[0][0] = ders[0][0].GetW();
+	Aders[0][1] = ders[0][1].ToXYZ(false);
+	wders[0][1] = ders[0][1].GetW();
+
+	Aders[1][0] = ders[1][0].ToXYZ(false);
+	wders[1][0] = ders[1][0].GetW();
+	Aders[1][1] = ders[1][1].ToXYZ(false);
+	wders[1][1] = ders[1][1].GetW();
+	
+
+	double invW = 1. / wders[0][0];
+	S = Aders[0][0] * invW;
 	XYZ v = Aders[0][1];
 	v = v - wders[0][1] * S;
-	Sv = v / wders[0][0];
+	Sv = v * invW;
 	v = Aders[1][0];
 	v = v - wders[1][0] * S;
-	Su = v / wders[0][0];
+	Su = v * invW;
 }
 
 double LNLib::NurbsSurface::Curvature(const LN_NurbsSurface& surface, SurfaceCurvature curvature, UV uv)
