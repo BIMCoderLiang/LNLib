@@ -139,6 +139,56 @@ namespace LNLib
 		}
 
 		/// <summary>
+		/// This is an optimized function of ComputeDerivatives for order 1 case.
+		/// </summary>
+		template <typename T>
+		static void ComputeDerivatives_Order1(const LN_BsplineSurface<T>& surface, UV uv, 
+			T derivatives[2][2])
+		{
+			int degreeU = surface.DegreeU;
+			int degreeV = surface.DegreeV;
+			const std::vector<double>& knotVectorU = surface.KnotVectorU;
+			const std::vector<double>& knotVectorV = surface.KnotVectorV;
+			const std::vector<std::vector<T>>& controlPoints = surface.ControlPoints;
+
+			VALIDATE_ARGUMENT_RANGE(uv.GetU(), knotVectorU[0], knotVectorU[knotVectorU.size() - 1]);
+			VALIDATE_ARGUMENT_RANGE(uv.GetV(), knotVectorV[0], knotVectorV[knotVectorV.size() - 1]);		
+
+			int uSpanIndex = Polynomials::GetKnotSpanIndex(degreeU, knotVectorU, uv.GetU());
+			double Nu[2][Constants::NURBSMaxDegree + 1];
+			Polynomials::BasisFunctionsDerivatives_Order1(uSpanIndex, degreeU, knotVectorU, uv.GetU(), Nu);
+
+			int vSpanIndex = Polynomials::GetKnotSpanIndex(degreeV, knotVectorV, uv.GetV());
+			double Nv[2][Constants::NURBSMaxDegree + 1];
+			Polynomials::BasisFunctionsDerivatives_Order1(vSpanIndex, degreeV, knotVectorV, uv.GetV(), Nv);
+
+			int du = std::min(1, degreeU);
+			int dv = std::min(1, degreeV);
+
+			T temp[Constants::NURBSMaxDegree + 1];
+
+			for (int k = 0; k <= du; k++)
+			{
+				for (int s = 0; s <= degreeV; s++)
+				{
+					temp[s] = T();
+					for (int r = 0; r <= degreeU; r++)
+					{
+						temp[s] += Nu[k][r] * controlPoints[uSpanIndex - degreeU + r][vSpanIndex - degreeV + s];
+					}
+				}
+				int dd = std::min(1, dv);
+				for (int l = 0; l <= dd; l++)
+				{
+					for (int s = 0; s <= degreeV; s++)
+					{
+						derivatives[k][l] += Nv[l][s] * temp[s];
+					}
+				}
+			}
+		}
+
+		/// <summary>
 		/// The NURBS Book 2nd Edition Page114.
 		/// Algorithm A3.7
 		/// Compute control points of derivative surfaces.

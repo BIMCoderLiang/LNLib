@@ -164,6 +164,35 @@ std::vector<std::vector<LNLib::XYZ>> LNLib::NurbsSurface::ComputeRationalSurface
 	return derivatives;
 }
 
+void LNLib::NurbsSurface::ComputeRationalSurfaceDerivatives_Order1(const LN_NurbsSurface& surface, 
+			UV uv, XYZ& S, XYZ& Su, XYZ& Sv)
+{
+	VALIDATE_ARGUMENT_RANGE(uv.GetU(), surface.KnotVectorU[0], surface.KnotVectorU.back());
+	VALIDATE_ARGUMENT_RANGE(uv.GetV(), surface.KnotVectorV[0], surface.KnotVectorV.back());
+
+	XYZW ders[2][2];
+	BsplineSurface::ComputeDerivatives_Order1(surface, uv, ders);
+
+	XYZ Aders[2][2];
+	double wders[2][2];
+	for (int i = 0; i < 2; i++)
+	{
+		for (int j = 0; j < 2; j++)
+		{
+			Aders[i][j] = ders[i][j].ToXYZ(false);
+			wders[i][j] = ders[i][j].GetW();
+		}
+	}
+
+	S = Aders[0][0] / wders[0][0];
+	XYZ v = Aders[0][1];
+	v = v - wders[0][1] * S;
+	Sv = v / wders[0][0];
+	v = Aders[1][0];
+	v = v - wders[1][0] * S;
+	Su = v / wders[0][0];
+}
+
 double LNLib::NurbsSurface::Curvature(const LN_NurbsSurface& surface, SurfaceCurvature curvature, UV uv)
 {
 	int degreeU = surface.DegreeU;
@@ -2806,9 +2835,8 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 				virtual double operator()(double u, double v, void* customData)const override
 				{
 					auto surface = (LN_NurbsSurface*)customData;
-					auto der = NurbsSurface::ComputeRationalSurfaceDerivatives(*surface, 1, UV(u, v));
-					const XYZ& Su = der[1][0];
-					const XYZ& Sv = der[0][1];
+					XYZ S, Su, Sv;
+					NurbsSurface::ComputeRationalSurfaceDerivatives_Order1(*surface, UV(u, v), S, Su, Sv);
 					double E = Su.DotProduct(Su);
 					double F = Su.DotProduct(Sv);
 					double G = Sv.DotProduct(Sv);

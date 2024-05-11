@@ -37,7 +37,14 @@ namespace LNLib
 		/// Algorithm A4.4
 		/// Compute S(paramU,paramV) derivatives.
 		/// </summary>
-		static std::vector<std::vector<XYZ>> ComputeRationalSurfaceDerivatives(const LN_NurbsSurface& surface, int derivative, UV uv);
+		static std::vector<std::vector<XYZ>> ComputeRationalSurfaceDerivatives(const LN_NurbsSurface& surface, 
+			int derivative, UV uv);
+
+		/// <summary>
+		/// This is an optimized function of ComputeRationalSurfaceDerivatives, for order 1 case.
+		/// </summary>
+		static void ComputeRationalSurfaceDerivatives_Order1(const LN_NurbsSurface& surface, 
+			UV uv, XYZ& S, XYZ& Su, XYZ& Sv);
 
 		static double Curvature(const LN_NurbsSurface& surface, SurfaceCurvature curvature, UV uv);
 
@@ -251,4 +258,6 @@ namespace LNLib
 		/// </summary>
 		static LN_Mesh Triangulate(const LN_NurbsSurface& surface);
 	};
+
+	
 }

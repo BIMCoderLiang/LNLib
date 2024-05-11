@@ -298,6 +298,107 @@ std::vector<std::vector<double>> LNLib::Polynomials::BasisFunctionsDerivatives(i
 	return derivatives;
 }
 
+void LNLib::Polynomials::BasisFunctionsDerivatives_Order1(int spanIndex, int degree, 
+			const std::vector<double>& knotVector, double paramT, double derivatives[2][Constants::NURBSMaxDegree + 1])
+{
+	VALIDATE_ARGUMENT(spanIndex >= 0, "spanIndex", "SpanIndex must greater than or equals zero.");
+	VALIDATE_ARGUMENT(degree >= 0 && degree <= Constants::NURBSMaxDegree, "degree", 
+		"Degree must greater than or equals zero and not exceed the maximun degree.");
+	VALIDATE_ARGUMENT(1 <= degree, "derivative", "Derivative must not greater than degree.");
+	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT_RANGE(paramT, knotVector[0], knotVector[knotVector.size() - 1]);
+
+	double ndu[Constants::NURBSMaxDegree + 1][Constants::NURBSMaxDegree + 1];
+
+	ndu[0][0] = 1.0;
+
+	double left[Constants::NURBSMaxDegree + 1];
+	double right[Constants::NURBSMaxDegree + 1];
+
+	double saved = 0.0;
+	double temp = 0.0;
+
+	for (int j = 1; j <= degree; j++)
+	{
+		left[j] = paramT - knotVector[spanIndex + 1 - j];
+		right[j] = knotVector[spanIndex + j] - paramT;
+
+		saved = 0.0;
+		for (int r = 0; r < j; r++)
+		{
+			ndu[j][r] = right[r + 1] + left[j - r];
+			temp = ndu[r][j - 1] / ndu[j][r];
+
+			ndu[r][j] = saved + right[r + 1] * temp;
+			saved = left[j - r] * temp;
+		}
+		ndu[j][j] = saved;
+	}
+
+	for (int j = 0; j <= degree; j++)
+	{
+		derivatives[0][j] = ndu[j][degree];
+	}
+
+	double a[2][Constants::NURBSMaxDegree + 1];
+	for (int r = 0; r <= degree; r++)
+	{
+		int s1 = 0; 
+		int s2 = 1;
+		a[0][0] = 1.0;
+
+		const int k = 1;
+		{
+			double d = 0.0;
+			int rk = r - k;
+			int pk = degree - k;
+
+			if (r >= k)
+			{
+				a[s2][0] = a[s1][0] / ndu[pk + 1][rk];
+				d = a[s2][0] * ndu[rk][pk];
+			}
+
+			int j1 = 0;
+			int j2 = 0;
+
+			if (rk >= -1)
+				j1 = 1;
+			else
+				j1 = -rk;
+
+			if (r - 1 <= pk)
+				j2 = k - 1;
+			else
+				j2 = degree - r;
+
+			for (int j = j1; j <= j2; j++)
+			{
+				a[s2][j] = (a[s1][j] - a[s1][j - 1]) / ndu[pk + 1][rk + j];
+				d += a[s2][j] * ndu[rk + j][pk];
+			}
+			if (r <= pk)
+			{
+				a[s2][k] = -a[s1][k - 1] / ndu[pk + 1][r];
+				d += a[s2][k] * ndu[r][pk];
+			}
+			derivatives[k][r] = d;
+
+			int temp = s1; 
+			s1 = s2; 
+			s2 = temp;
+		}
+	}
+
+	int r = degree;
+
+	for (int j = 0; j <= degree; j++)
+	{
+		derivatives[1][j] *= r;
+	}
+}
+
 double LNLib::Polynomials::OneBasisFunction(int spanIndex, int degree, const std::vector<double>& knotVector, double paramT)
 {
 	VALIDATE_ARGUMENT(spanIndex >= 0, "spanIndex", "SpanIndex must greater than or equals zero.");
