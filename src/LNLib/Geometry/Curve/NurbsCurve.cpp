@@ -1735,7 +1735,8 @@ bool LNLib::NurbsCurve::CreateOpenConic(const XYZ& start, const XYZ& startTangen
 
 void LNLib::NurbsCurve::GlobalInterpolation(int degree, const std::vector<XYZ>& throughPoints, LN_NurbsCurve& curve, const std::vector<double>& params)
 {
-	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(degree >= 0 && degree <= Constants::NURBSMaxDegree, "degree", 
+		"Degree must greater than or equals zero and not exceed the maximun degree.");
 	VALIDATE_ARGUMENT(throughPoints.size() > degree, "throughPoints", "ThroughPoints size must greater than degree.");
 	int size = throughPoints.size();
 	int n = size - 1;
@@ -1756,7 +1757,8 @@ void LNLib::NurbsCurve::GlobalInterpolation(int degree, const std::vector<XYZ>& 
 	for (int i = 1; i < n; i++)
 	{
 		int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, uk[i]);
-		std::vector<double> basis = Polynomials::BasisFunctions(spanIndex, degree, knotVector, uk[i]);
+		double basis[Constants::NURBSMaxDegree + 1];
+		Polynomials::BasisFunctions(spanIndex, degree, knotVector, uk[i], basis);
 
 		for (int j = 0; j <= degree; j++)
 		{
@@ -1861,7 +1863,8 @@ void LNLib::NurbsCurve::GlobalInterpolation(int degree, const std::vector<XYZ>& 
 	for (int i = 1; i < size - 1; i++)
 	{
 		int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, uk[i]);
-		std::vector<double> basis = Polynomials::BasisFunctions(spanIndex, degree, knotVector, uk[i]);
+		double basis[Constants::NURBSMaxDegree + 1];
+		Polynomials::BasisFunctions(spanIndex, degree, knotVector, uk[i], basis);
 		std::vector<std::vector<double>> derBasis = Polynomials::BasisFunctionsDerivatives(spanIndex, degree, 1, knotVector, uk[i]);
 		for (int j = 0; j <= degree; j++)
 		{
@@ -1982,7 +1985,8 @@ bool LNLib::NurbsCurve::CubicLocalInterpolation(const std::vector<XYZ>& throughP
 
 bool LNLib::NurbsCurve::LeastSquaresApproximation(int degree, const std::vector<XYZ>& throughPoints, int controlPointsCount, LN_NurbsCurve& curve)
 {
-	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(degree >= 0 && degree <= Constants::NURBSMaxDegree, "degree", 
+		"Degree must greater than or equals zero and not exceed the maximun degree.");
 	VALIDATE_ARGUMENT(controlPointsCount > 0, "controlPointsCount", "controlPointsCount must greater than zero.");
 
 	int n = controlPointsCount;
@@ -2021,7 +2025,8 @@ bool LNLib::NurbsCurve::LeastSquaresApproximation(int degree, const std::vector<
 	for (int i = 0; i < m; i++)
 	{
 		int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, uk[i]);
-		std::vector<double> basis = Polynomials::BasisFunctions(spanIndex, degree, knotVector, uk[i]);
+		double basis[Constants::NURBSMaxDegree + 1];
+		Polynomials::BasisFunctions(spanIndex, degree, knotVector, uk[i], basis);
 		for (int j = 0; j <= degree; j++)
 		{
 			N[i][spanIndex - degree + j] = basis[j];
@@ -2840,7 +2845,9 @@ bool LNLib::NurbsCurve::ControlPointReposition(const LN_NurbsCurve& curve, doubl
 	VALIDATE_ARGUMENT(!MathUtils::IsAlmostEqualTo(moveDistance,0.0), "moveDistance", "MoveDistance must not be zero.")
 
 	int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, parameter);
-	double Rkp = Polynomials::BasisFunctions(spanIndex, degree, knotVector, parameter)[0];
+	double basis[Constants::NURBSMaxDegree + 1];
+	Polynomials::BasisFunctions(spanIndex, degree, knotVector, parameter, basis);
+	double Rkp = basis[0];
 	if (MathUtils::IsLessThan(Rkp, 0.0))
 	{
 		return false;
@@ -2871,7 +2878,9 @@ void LNLib::NurbsCurve::WeightModification(const LN_NurbsCurve& curve, double pa
 	XYZ movePoint = const_cast<XYZW&>(controlPoints[moveIndex]).ToXYZ(true);
 	double distance =  point.Distance(movePoint);
 	int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, parameter);
-	double Rkp = Polynomials::BasisFunctions(spanIndex, degree, knotVector, parameter)[0];
+	double basis[Constants::NURBSMaxDegree + 1];
+	Polynomials::BasisFunctions(spanIndex, degree, knotVector, parameter, basis);
+	double Rkp = basis[0];
 	double coefficient = 1 + moveDistance / (Rkp * (distance - moveDistance));
 	std::vector<XYZW> updatedControlPoints = controlPoints;
 	updatedControlPoints[moveIndex] = XYZW(movePoint, updatedControlPoints[moveIndex].GetW() * coefficient);

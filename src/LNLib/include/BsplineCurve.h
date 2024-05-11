@@ -55,7 +55,8 @@ namespace LNLib
 
 			T point;
 			int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, paramT);
-			std::vector<double> N = Polynomials::BasisFunctions(spanIndex, degree, knotVector, paramT);
+			double N[Constants::NURBSMaxDegree + 1]; 
+			Polynomials::BasisFunctions(spanIndex, degree, knotVector, paramT, N);
 
 			for (int i = 0; i <= degree; i++)
 			{

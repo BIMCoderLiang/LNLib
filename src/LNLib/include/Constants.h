@@ -24,7 +24,7 @@ namespace LNLib
 		static const double DistanceEpsilon;
 		static const double MaxDistance;
 		static const double Pi;
-
+		static const int NURBSMaxDegree = 7;
 	};
 }
 

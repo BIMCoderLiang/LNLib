@@ -75,7 +75,8 @@ namespace LNLib
 		/// Algorithm A2.2
 		/// Compute the nonvanishing basis functions.
 		/// </summary>
-		static std::vector<double> BasisFunctions(int spanIndex, int degree, const std::vector<double>& knotVector, double paramT);
+		static void BasisFunctions(int spanIndex, int degree, const std::vector<double>& knotVector, double paramT,
+			double* basisFunctions);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page72

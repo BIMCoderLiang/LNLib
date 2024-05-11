@@ -159,19 +159,20 @@ int LNLib::Polynomials::GetKnotSpanIndex(int degree, const std::vector<double>& 
 	return mid;
 }
 
-std::vector<double> LNLib::Polynomials::BasisFunctions(int spanIndex, int degree, const std::vector<double>& knotVector, double paramT)
+void LNLib::Polynomials::BasisFunctions(int spanIndex, int degree, 
+	const std::vector<double>& knotVector, double paramT, double* basisFunctions)
 {
 	VALIDATE_ARGUMENT(spanIndex >= 0, "spanIndex", "SpanIndex must greater than or equals zero.");
-	VALIDATE_ARGUMENT(degree >= 0, "degree", "Degree must greater than or equals zero.");
+	VALIDATE_ARGUMENT(degree >= 0 && degree <= Constants::NURBSMaxDegree, "degree", 
+		"Degree must greater than or equals zero and not exceed the maximun degree.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
 	VALIDATE_ARGUMENT_RANGE(paramT, knotVector[0], knotVector[knotVector.size() - 1]);
 
-	std::vector<double> basisFunctions(degree + 1);
 	basisFunctions[0] = 1.0;
 
-	std::vector<double> left(degree + 1);
-	std::vector<double> right(degree + 1);
+	double left[Constants::NURBSMaxDegree + 1];
+	double right[Constants::NURBSMaxDegree + 1];
 
 	for (int j = 1; j <= degree; j++)
 	{
@@ -188,13 +189,15 @@ std::vector<double> LNLib::Polynomials::BasisFunctions(int spanIndex, int degree
 		}
 		basisFunctions[j] = saved;
 	}
-	return basisFunctions;
+
 }
 
-std::vector<std::vector<double>> LNLib::Polynomials::BasisFunctionsDerivatives(int spanIndex, int degree,  int derivative, const std::vector<double>& knotVector, double paramT)
+std::vector<std::vector<double>> LNLib::Polynomials::BasisFunctionsDerivatives(int spanIndex, int degree,  
+	int derivative, const std::vector<double>& knotVector, double paramT)
 {
 	VALIDATE_ARGUMENT(spanIndex >= 0, "spanIndex", "SpanIndex must greater than or equals zero.");
-	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must greater than zero.");
+	VALIDATE_ARGUMENT(degree >= 0 && degree <= Constants::NURBSMaxDegree, "degree", 
+		"Degree must greater than or equals zero and not exceed the maximun degree.");
 	VALIDATE_ARGUMENT(derivative <= degree, "derivative", "Derivative must not greater than degree.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -205,8 +208,8 @@ std::vector<std::vector<double>> LNLib::Polynomials::BasisFunctionsDerivatives(i
 
 	ndu[0][0] = 1.0;
 
-	std::vector<double> left(degree + 1);
-	std::vector<double> right(degree + 1);
+	double left[Constants::NURBSMaxDegree + 1];
+	double right[Constants::NURBSMaxDegree + 1];
 
 	double saved = 0.0;
 	double temp = 0.0;
@@ -445,7 +448,8 @@ std::vector<double> LNLib::Polynomials::OneBasisFunctionDerivative(int spanIndex
 std::vector<std::vector<double>> LNLib::Polynomials::AllBasisFunctions(int spanIndex, int degree, const std::vector<double>& knotVector, double knot)
 {
 	VALIDATE_ARGUMENT(spanIndex >= 0, "spanIndex", "SpanIndex must greater than or equals zero.");
-	VALIDATE_ARGUMENT(degree >= 0, "degree", "Degree must greater than or equals zero.");
+	VALIDATE_ARGUMENT(degree >= 0 && degree <= Constants::NURBSMaxDegree, "degree", 
+		"Degree must greater than or equals zero and not exceed the maximun degree.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
 	VALIDATE_ARGUMENT_RANGE(knot, knotVector[0], knotVector[knotVector.size() - 1]);
@@ -453,7 +457,8 @@ std::vector<std::vector<double>> LNLib::Polynomials::AllBasisFunctions(int spanI
 	std::vector<std::vector<double>> result(degree + 1, std::vector<double>(degree + 1));
 	for (int i = 0; i <= degree; i++)
 	{
-		std::vector<double> basis = Polynomials::BasisFunctions(spanIndex, i, knotVector, knot);
+		std::vector<double> basis(Constants::NURBSMaxDegree + 1);
+		Polynomials::BasisFunctions(spanIndex, i, knotVector, knot, basis.data());
 		for (int j = 0; j <= i; j++)
 		{
 			result[j][i] = basis[j];

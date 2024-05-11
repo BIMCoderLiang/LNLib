@@ -64,10 +64,11 @@ namespace LNLib
 			VALIDATE_ARGUMENT_RANGE(uv.GetV(), knotVectorV[0], knotVectorV[knotVectorV.size() - 1]);			
 
 			int uSpanIndex = Polynomials::GetKnotSpanIndex(degreeU, knotVectorU, uv.GetU());
-			std::vector<double> Nu = Polynomials::BasisFunctions(uSpanIndex, degreeU, knotVectorU, uv.GetU());
-
+			double Nu[Constants::NURBSMaxDegree + 1];
+			Polynomials::BasisFunctions(uSpanIndex, degreeU, knotVectorU, uv.GetU(), Nu);
 			int vSpanIndex = Polynomials::GetKnotSpanIndex(degreeV, knotVectorV, uv.GetV());
-			std::vector<double> Nv = Polynomials::BasisFunctions(vSpanIndex, degreeV, knotVectorV, uv.GetV());
+			double Nv[Constants::NURBSMaxDegree + 1];
+			Polynomials::BasisFunctions(vSpanIndex, degreeV, knotVectorV, uv.GetV(), Nv);
 
 			int uind = uSpanIndex - degreeU;
 			T point;
