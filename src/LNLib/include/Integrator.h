@@ -32,8 +32,7 @@ namespace LNLib
 
 	public:
 		static double Simpson(IntegrationFunction& function, void* customData, double start, double end);
-		static double Simpson(BinaryIntegrationFunction& function, void* customData, 
-			double u1, double u2, double v1, double v2);
+		static double Simpson(BinaryIntegrationFunction& function, void* customData, double uStart, double uEnd, double vStart, double vEnd);
 
 		/// <summary>
 		/// According to https://github.com/Pomax/bezierjs

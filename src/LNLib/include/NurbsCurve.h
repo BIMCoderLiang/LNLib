@@ -346,22 +346,18 @@ namespace LNLib
 
 		/// <summary>
 		/// Calculate curve arc length.
-		/// 
-		/// Use Simpson integration for low accuracy.
-		/// Use Gauss-Legendre integration for medium accuracy.
-		/// Use Chebyshev integration for high accuracy.
 		/// </summary>
-		static double ApproximateLength(const LN_NurbsCurve& curve, IntegratorType type = IntegratorType::Chebyshev);
+		static double ApproximateLength(const LN_NurbsCurve& curve, IntegratorType type = IntegratorType::GaussLegendre);
 
 		/// <summary>
 		/// Calculate parameter makes first segment length equals to given length.
 		/// </summary>
-		static double GetParamOnCurve(const LN_NurbsCurve& curve, double givenLength, IntegratorType type = IntegratorType::Chebyshev);
+		static double GetParamOnCurve(const LN_NurbsCurve& curve, double givenLength, IntegratorType type = IntegratorType::GaussLegendre);
 
 		/// <summary>
 		/// Calculate parameters makes every segments length equals to given length.
 		/// </summary>
-		static std::vector<double> GetParamsOnCurve(const LN_NurbsCurve& curve, double givenLength, IntegratorType type = IntegratorType::Chebyshev);
+		static std::vector<double> GetParamsOnCurve(const LN_NurbsCurve& curve, double givenLength, IntegratorType type = IntegratorType::GaussLegendre);
 
 		/// <summary>
 		/// Tessellate nurbs curve.

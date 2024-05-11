@@ -21,6 +21,13 @@ namespace LNLib
 
 	public:
 
+		/// <summary>
+		/// According to https://referencesource.microsoft.com/#windowsbase/Shared/MS/Internal/DoubleUtil.cs,73bdd52106b3a9e3,references
+		/// 
+		/// Notice that Google Gtest EXPECT_NEAR is more restrict:
+		/// https://github.com/google/googletest/blob/fa6de7f4382f5c8fb8b9e32eea28a2eb44966c32/googletest/include/gtest/gtest.h#L2001
+		/// https://github.com/google/googletest/blob/fa6de7f4382f5c8fb8b9e32eea28a2eb44966c32/googletest/src/gtest.cc#L1661
+		/// </summary>
 		static bool IsAlmostEqualTo(double value1, double value2, double tolerance = Constants::DoubleEpsilon);
 
 		static bool IsGreaterThan(double value1, double value2, double tolerance = Constants::DoubleEpsilon);

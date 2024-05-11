@@ -244,12 +244,8 @@ namespace LNLib
 
 		/// <summary>
 		/// Calculate surface area.
-		/// 
-		/// Use Simpson integration for low accuracy.
-		/// Use Gauss-Legendre integration for medium accuracy.
-		/// Use Chebyshev integration for high accuracy.
 		/// </summary>
-		static double ApproximateArea(const LN_NurbsSurface& surface, IntegratorType type = IntegratorType::Chebyshev);
+		static double ApproximateArea(const LN_NurbsSurface& surface, IntegratorType type = IntegratorType::GaussLegendre);
 
 		/// <summary>
 		/// Triangulate nurbs surface.

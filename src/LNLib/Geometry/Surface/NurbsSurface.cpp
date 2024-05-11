@@ -2898,8 +2898,7 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 				double areaNew = uva1.area + uva2.area + uva3.area + uva4.area;
 
 				// The error is tolerated.
-				// fixMe: The tolerance can be a parameter, Gauss and Chebyshev should handle it too.
-				if(std::fabs(areaNew - uva.area) < 1e-4)
+				if(std::fabs(areaNew - uva.area) < Constants::DistanceEpsilon)
 				{
 					// Accumulate to the final area.
 					area += areaNew;

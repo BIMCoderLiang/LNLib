@@ -8,7 +8,7 @@
 
 using namespace LNLib;
 
-TEST(Test_Additional, All)
+TEST(Test_Additional, ApproximateLength)
 {
 	LN_NurbsCurve result;
 	NurbsCurve::CreateLine(XYZ(0, 0, 0), XYZ(100, 0, 0), result);
@@ -124,6 +124,7 @@ TEST(Test_Additional, Area_Simpson)
 	double standardArea;
 	NURBSSurfaceForAreaTest(surface, standardArea);
 	double area = NurbsSurface::ApproximateArea(surface, IntegratorType::Simpson);
+	//notice the abs_error
 	EXPECT_NEAR(area, standardArea, 1e-4);
 }
 
@@ -133,6 +134,7 @@ TEST(Test_Additional, Area_GaussLegendre)
 	double standardArea;
 	NURBSSurfaceForAreaTest(surface, standardArea);
 	double area = NurbsSurface::ApproximateArea(surface, IntegratorType::GaussLegendre);
+	//notice the abs_error
 	EXPECT_NEAR(area, standardArea, 7e-5);
 }
 
@@ -142,6 +144,7 @@ TEST(Test_Additional, Area_ChebyShev)
 	double standardArea;
 	NURBSSurfaceForAreaTest(surface, standardArea);
 	double area = NurbsSurface::ApproximateArea(surface, IntegratorType::Chebyshev);
+	//notice the abs_error
 	EXPECT_NEAR(area, standardArea, 2e-3);
 }
 

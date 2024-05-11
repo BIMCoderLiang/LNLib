@@ -25,29 +25,30 @@ namespace LNLib
         return result;
     }
 
-	double Integrator::Simpson(BinaryIntegrationFunction& function, void* customData, 
-				double u1, double u2, double v1, double v2)
+	double Integrator::Simpson(BinaryIntegrationFunction& function, void* customData, double uStart, double uEnd, double vStart, double vEnd)
 	{
-        double du = u2 - u1;
-        double dv = v2 - v1;
+        double du = uEnd - uStart;
+        double dv = vEnd - vStart;
         double hdu = 0.5 * du;
         double hdv = 0.5 * dv;
 		
         // Sample 9 points with weights
-        double uvw[] = {
-            u1,       v1,       1,
-            u1,       v1 + hdv, 4,
-            u1,       v2,       1,
-            u1 + hdu, v1,       4,
-            u1 + hdu, v1 + hdv, 16,
-            u1 + hdu, v2,       4,
-            u2,       v1,       1,
-            u2,       v1 + hdv, 4,
-            u2,       v2,       1,
+        int sampleNumber = 9;
+        int patches = 4;
+        double uvw[27] = {
+            uStart,         vStart,         1,
+            uStart,         vStart + hdv,   4,
+            uStart,         vEnd,           1,
+            uStart + hdu,   vStart,         4,
+            uStart + hdu,   vStart + hdv,   16,
+            uStart + hdu,   vEnd,           4,
+            uEnd,           vStart,         1,
+            uEnd,           vStart + hdv,   4,
+            uEnd,           vEnd,           1,
             };
         
         double sum = 0;
-        for(int i=0;i<9;++i)
+        for(int i=0; i < sampleNumber; ++i)
         {
             double* base = uvw + i*3;
             double u = base[0];
@@ -57,7 +58,7 @@ namespace LNLib
             sum += w * f;
         }
 
-        sum *= du * dv / 36;
+        sum *= du * dv / (sampleNumber * patches);
         return sum;
 	}
 
