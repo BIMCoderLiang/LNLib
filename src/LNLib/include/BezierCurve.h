@@ -33,7 +33,7 @@ namespace LNLib
 
 			VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must be greater than zero.");
 			VALIDATE_ARGUMENT(controlPoints.size() > 0, "controlPoints", "ControlPoints must contain one point at least.");
-			VALIDATE_ARGUMENT(ValidationUtils::IsValidBezier(degree, controlPoints.size()), "controlPoints", "ControlPoints count equal degree plus one.");
+			VALIDATE_ARGUMENT(ValidationUtils::IsValidBezier(degree, controlPoints.size()), "controlPoints", "ControlPoints count equals degree plus one.");
 		}
 
 		/// <summary>

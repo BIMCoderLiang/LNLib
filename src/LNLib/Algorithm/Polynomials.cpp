@@ -89,8 +89,8 @@ double Polynomials::Horner(int degreeU, int degreeV, const std::vector<std::vect
 	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "DegreeU must be greater than zero.");
 	VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "DegreeV must be greater than zero.");
 	VALIDATE_ARGUMENT(coefficients.size() > 0, "coefficients", "Coefficients size must be greater than zero.");
-	VALIDATE_ARGUMENT(ValidationUtils::IsValidBezier(degreeU, coefficients.size()), "degreeU", "Coefficients row size equal degreeU plus one.");
-	VALIDATE_ARGUMENT(ValidationUtils::IsValidBezier(degreeV, coefficients[0].size()), "degreeV", "Coefficients column size equal degreeV plus one.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidBezier(degreeU, coefficients.size()), "degreeU", "Coefficients row size equals degreeU plus one.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidBezier(degreeV, coefficients[0].size()), "degreeV", "Coefficients column size equals degreeV plus one.");
 	VALIDATE_ARGUMENT_RANGE(uv.GetU(), 0.0, 1.0);
 	VALIDATE_ARGUMENT_RANGE(uv.GetV(), 0.0, 1.0);
 
@@ -163,8 +163,7 @@ void LNLib::Polynomials::BasisFunctions(int spanIndex, int degree,
 	const std::vector<double>& knotVector, double paramT, double* basisFunctions)
 {
 	VALIDATE_ARGUMENT(spanIndex >= 0, "spanIndex", "SpanIndex must be greater than or equal zero.");
-	VALIDATE_ARGUMENT(degree >= 0 && degree <= Constants::NURBSMaxDegree, "degree", 
-		"Degree must be greater than or equal zero and not exceed the maximun degree.");
+	VALIDATE_ARGUMENT(degree >= 0 && degree <= Constants::NURBSMaxDegree, "degree", "Degree must be greater than or equal zero and not exceed the maximun degree.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must be greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
 	VALIDATE_ARGUMENT_RANGE(paramT, knotVector[0], knotVector[knotVector.size() - 1]);
@@ -196,8 +195,7 @@ std::vector<std::vector<double>> LNLib::Polynomials::BasisFunctionsDerivatives(i
 	int derivative, const std::vector<double>& knotVector, double paramT)
 {
 	VALIDATE_ARGUMENT(spanIndex >= 0, "spanIndex", "SpanIndex must be greater than or equal zero.");
-	VALIDATE_ARGUMENT(degree >= 0 && degree <= Constants::NURBSMaxDegree, "degree", 
-		"Degree must be greater than or equal zero and not exceed the maximun degree.");
+	VALIDATE_ARGUMENT(degree >= 0 && degree <= Constants::NURBSMaxDegree, "degree", "Degree must be greater than or equal zero and not exceed the maximun degree.");
 	VALIDATE_ARGUMENT(derivative <= degree, "derivative", "Derivative must not be greater than degree.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must be greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -301,8 +299,7 @@ std::vector<std::vector<double>> LNLib::Polynomials::BasisFunctionsDerivatives(i
 void LNLib::Polynomials::BasisFunctionsFirstOrderDerivative(int spanIndex, int degree, const std::vector<double>& knotVector, double paramT, double derivatives[2][Constants::NURBSMaxDegree + 1])
 {
 	VALIDATE_ARGUMENT(spanIndex >= 0, "spanIndex", "SpanIndex must be greater than or equal zero.");
-	VALIDATE_ARGUMENT(degree >= 0 && degree <= Constants::NURBSMaxDegree, "degree", 
-		"Degree must be greater than or equal zero and not exceed the maximun degree.");
+	VALIDATE_ARGUMENT(degree >= 0 && degree <= Constants::NURBSMaxDegree, "degree", "Degree must be greater than or equal zero and not exceed the maximun degree.");
 	VALIDATE_ARGUMENT(1 <= degree, "derivative", "Derivative must not be greater than degree.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must be greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
@@ -548,8 +545,7 @@ std::vector<double> LNLib::Polynomials::OneBasisFunctionDerivative(int spanIndex
 std::vector<std::vector<double>> LNLib::Polynomials::AllBasisFunctions(int spanIndex, int degree, const std::vector<double>& knotVector, double knot)
 {
 	VALIDATE_ARGUMENT(spanIndex >= 0, "spanIndex", "SpanIndex must be greater than or equal zero.");
-	VALIDATE_ARGUMENT(degree >= 0 && degree <= Constants::NURBSMaxDegree, "degree", 
-		"Degree must be greater than or equal zero and not exceed the maximun degree.");
+	VALIDATE_ARGUMENT(degree >= 0 && degree <= Constants::NURBSMaxDegree, "degree", "Degree must be greater than or equal zero and not exceed the maximun degree.");
 	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must be greater than zero.");
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
 	VALIDATE_ARGUMENT_RANGE(knot, knotVector[0], knotVector[knotVector.size() - 1]);

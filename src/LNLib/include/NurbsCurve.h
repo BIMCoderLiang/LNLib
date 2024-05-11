@@ -117,7 +117,7 @@ namespace LNLib
 
 		/// <summary>
 		/// Detemine curve is closed.
-		/// Close means end point equal start point or points overlap.
+		/// Close means end point equals start point or points overlap.
 		/// </summary>
 		static bool IsClosed(const LN_NurbsCurve& curve);
 
@@ -354,12 +354,12 @@ namespace LNLib
 		static double ApproximateLength(const LN_NurbsCurve& curve, IntegratorType type = IntegratorType::Chebyshev);
 
 		/// <summary>
-		/// Calculate parameter makes first segment length equal to given length.
+		/// Calculate parameter makes first segment length equals to given length.
 		/// </summary>
 		static double GetParamOnCurve(const LN_NurbsCurve& curve, double givenLength, IntegratorType type = IntegratorType::Chebyshev);
 
 		/// <summary>
-		/// Calculate parameters makes every segments length equal to given length.
+		/// Calculate parameters makes every segments length equals to given length.
 		/// </summary>
 		static std::vector<double> GetParamsOnCurve(const LN_NurbsCurve& curve, double givenLength, IntegratorType type = IntegratorType::Chebyshev);
 
