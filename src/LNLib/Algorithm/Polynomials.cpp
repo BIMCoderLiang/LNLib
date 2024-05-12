@@ -159,8 +159,7 @@ int LNLib::Polynomials::GetKnotSpanIndex(int degree, const std::vector<double>& 
 	return mid;
 }
 
-void LNLib::Polynomials::BasisFunctions(int spanIndex, int degree, 
-	const std::vector<double>& knotVector, double paramT, double* basisFunctions)
+void LNLib::Polynomials::BasisFunctions(int spanIndex, int degree, const std::vector<double>& knotVector, double paramT, double* basisFunctions)
 {
 	VALIDATE_ARGUMENT(spanIndex >= 0, "spanIndex", "SpanIndex must be greater than or equal zero.");
 	VALIDATE_ARGUMENT(degree >= 0 && degree <= Constants::NURBSMaxDegree, "degree", "Degree must be greater than or equal zero and not exceed the maximun degree.");

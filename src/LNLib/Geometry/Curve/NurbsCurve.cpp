@@ -104,14 +104,18 @@ namespace LNLib
 		return middle;
 	}
 
-	void TessellateCore(const LN_NurbsCurve& curve, double start, double end, XYZ startPoint, XYZ endPoint, double standardParameter, std::vector<double>& parameters)
+	void TessellateCore(const LN_NurbsCurve& curve, double start, double end, std::vector<double>& parameters)
 	{
-		double param = start + (end - start) * standardParameter;
+		double half = 0.5;
+		double mid = start + (end - start) * half;
 		
-		XYZ paramPoint = NurbsCurve::GetPointOnCurve(curve, param);
-		XYZ segPoint = startPoint + (endPoint - startPoint) * standardParameter;
+		XYZ startPoint = NurbsCurve::GetPointOnCurve(curve, start);
+		XYZ endPoint = NurbsCurve::GetPointOnCurve(curve, end);
 
-		double distance = paramPoint.Distance(segPoint);
+		XYZ midPoint = NurbsCurve::GetPointOnCurve(curve, mid);
+		XYZ segMidPoint = startPoint + (endPoint - startPoint) * half;
+
+		double distance = midPoint.Distance(segMidPoint);
 		bool condition1 = MathUtils::IsLessThanOrEqual(distance, Constants::DistanceEpsilon);
 
 		XYZ startTangent = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, start)[1];
@@ -119,19 +123,29 @@ namespace LNLib
 		double angle = startTangent.AngleTo(endTangent);
 		bool condition2 = MathUtils::IsLessThanOrEqual(angle, Constants::AngleEpsilon);
 
+		bool isIgnoreCondition3 = false;
+		bool condition3 = false;
 		double halfChordLength = startPoint.Distance(endPoint)/2.0;
-		double radius = 1.0/NurbsCurve::Curvature(curve, param);
-		double chordHeight = radius - std::sqrt(radius * radius - halfChordLength * halfChordLength);
-		bool condition3 = MathUtils::IsLessThanOrEqual(chordHeight, Constants::DistanceEpsilon);
-
-		if (condition1 && condition2 && condition3)
+		double curvature = NurbsCurve::Curvature(curve, mid);
+		if (MathUtils::IsAlmostEqualTo(curvature, 0.0))
 		{
-			parameters.emplace_back(param);
+			isIgnoreCondition3 = true;
 		}
 		else
 		{
-			TessellateCore(curve, start, param, startPoint, paramPoint, standardParameter, parameters);
-			TessellateCore(curve, param, end, paramPoint, endPoint, standardParameter, parameters);
+			double radius = 1.0 / NurbsCurve::Curvature(curve, mid);
+			double chordHeight = radius - std::sqrt(radius * radius - halfChordLength * halfChordLength);
+			condition3 = MathUtils::IsLessThanOrEqual(chordHeight, Constants::DistanceEpsilon);
+		}
+		bool condition = isIgnoreCondition3 ? (condition1 && condition2) : (condition1 && condition2 && condition3);
+		if (condition)
+		{
+			parameters.emplace_back(mid);
+		}
+		else
+		{
+			TessellateCore(curve, start, mid, parameters);
+			TessellateCore(curve, mid, end, parameters);
 		}
 	}
 }
@@ -3591,25 +3605,26 @@ std::vector<double> LNLib::NurbsCurve::GetParamsOnCurve(const LN_NurbsCurve& cur
 std::vector<LNLib::XYZ> LNLib::NurbsCurve::Tessellate(const LN_NurbsCurve& curve)
 {
 	int degree = curve.Degree;
-	std::vector<double> knotVector = curve.KnotVector;
-	std::vector<XYZW> controlPoints = curve.ControlPoints;
+	const std::vector<double>& knotVector = curve.KnotVector;
+	const std::vector<XYZW>& controlPoints = curve.ControlPoints;
 
 	if (degree == 1)
 	{
 		return ControlPointsUtils::ToXYZ(controlPoints);
 	}
 
-	double start = knotVector[0];
-	double end = knotVector[knotVector.size() - 1];
-
-	XYZ startPoint = controlPoints[0].ToXYZ(true);
-	XYZ endPoint = controlPoints[controlPoints.size() - 1].ToXYZ(true);
-
+	std::vector<double> unqiueKnotVector = knotVector;
+	unqiueKnotVector.erase(std::unique(unqiueKnotVector.begin(), unqiueKnotVector.end()), unqiueKnotVector.end());
+	
 	std::vector<double> parameters;
-	parameters.emplace_back(start);
-	double standardParamter = 0.5;
-	TessellateCore(curve, start, end, startPoint, endPoint, standardParamter, parameters);
-	parameters.emplace_back(end);
+	parameters.emplace_back(knotVector[0]);
+	for (int i = 0; i < unqiueKnotVector.size() - 1; i++)
+	{
+		double current = unqiueKnotVector[i];
+		double next = unqiueKnotVector[i+1];
+		TessellateCore(curve, current, next, parameters);
+	}
+	parameters.emplace_back(knotVector[knotVector.size()-1]);
 
 	std::vector<XYZ> points;
 	for (int i = 0; i < parameters.size(); i++)

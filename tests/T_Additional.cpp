@@ -13,6 +13,11 @@ TEST(Test_Additional, ApproximateLength)
 	LN_NurbsCurve result;
 	NurbsCurve::CreateLine(XYZ(0, 0, 0), XYZ(100, 0, 0), result);
 	EXPECT_TRUE(NurbsCurve::IsLinear(result));
+	std::vector<double> lineKnotVector = result.KnotVector;
+	double startLineKnot = lineKnotVector[0];
+	double endLineKnot = lineKnotVector[lineKnotVector.size() - 1];
+	double nonCurvature = NurbsCurve::Curvature(result, (startLineKnot + endLineKnot) / 2.0);
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(nonCurvature, 0.0));
 	LN_ArcInfo arcInfo;
 	EXPECT_FALSE(NurbsCurve::IsArc(result, arcInfo));
 	double simpson = NurbsCurve::ApproximateLength(result, IntegratorType::Simpson);
