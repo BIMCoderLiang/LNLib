@@ -158,8 +158,8 @@ TEST(Test_Additional, Area_ChebyShev)
 TEST(Test_Additional, MergeCurve)
 {
 	// Make line.
-	XYZ start(0, 0, 0);
-	XYZ end(5, 0, 0);
+	const XYZ start(0, 0, 0);
+	const XYZ end(5, 0, 0);
 	LN_NurbsCurve line;
 	NurbsCurve::CreateLine(start, end, line);
 
@@ -197,6 +197,13 @@ TEST(Test_Additional, MergeCurve)
 		auto& start = tessPoints[i];
 		auto& mid = tessPoints[i+1];
 		auto& end = tessPoints[i+2];
+
+		// Skip the line-arc adjoint point.
+		if(mid.IsAlmostEqualTo(end))
+		{
+			continue;
+		}
+
 		auto v1 = mid - start;
 		auto v2 = end - mid;
 		double angle = v1.AngleTo(v2);
