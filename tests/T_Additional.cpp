@@ -184,4 +184,22 @@ TEST(Test_Additional, MergeCurve)
 	double standard = lineLength + arcLength;
 	double mergedLength = NurbsCurve::ApproximateLength(merged, IntegratorType::GaussLegendre);
 	EXPECT_NEAR(standard, mergedLength, Constants::DistanceEpsilon);
+
+	// The line-arc merged curve is also a good case to test tessellation.
+	auto tessPoints = NurbsCurve::Tessellate(merged);
+	
+	// At least, 5 knot points.
+	EXPECT_GT(tessPoints.size(), 5);
+
+	// For each adjacent 3 points, verify angle deflection.
+	for(auto i=0;i<tessPoints.size()-2;++i)
+	{
+		auto& start = tessPoints[i];
+		auto& mid = tessPoints[i+1];
+		auto& end = tessPoints[i+2];
+		auto v1 = mid - start;
+		auto v2 = end - mid;
+		double angle = v1.AngleTo(v2);
+		EXPECT_LT(std::fabs(angle), Constants::AngleEpsilon);
+	}
 }
