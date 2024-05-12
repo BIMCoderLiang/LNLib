@@ -191,21 +191,28 @@ TEST(Test_Additional, MergeCurve)
 	// At least, 5 knot points.
 	EXPECT_GT(tessPoints.size(), 5);
 
-	// For each adjacent 3 points, verify angle deflection.
-	for(auto i=0;i<tessPoints.size()-2;++i)
+	// For each adjacent 2 points, verify angle deflection.
+	for(auto i=0;i<tessPoints.size()-1;++i)
 	{
-		auto& start = tessPoints[i];
-		auto& mid = tessPoints[i+1];
-		auto& end = tessPoints[i+2];
+		auto& pt1 = tessPoints[i];
+		auto& pt2 = tessPoints[i+1];
 
-		// Skip the line-arc adjoint point.
-		if(mid.IsAlmostEqualTo(end))
+		// Skip the line-arc joint point.
+		if(pt1.IsAlmostEqualTo(end) || pt2.IsAlmostEqualTo(end))
 		{
 			continue;
 		}
 
-		auto v1 = mid - start;
-		auto v2 = end - mid;
+		// Get parameters.
+		double t1 = NurbsCurve::GetParamOnCurve(merged, pt1);
+		double t2 = NurbsCurve::GetParamOnCurve(merged, pt2);
+		
+		// Compute tangent directions.
+		const int derOrder = 1;
+		XYZ v1 = NurbsCurve::ComputeRationalCurveDerivatives(merged, derOrder, t1)[1];
+		XYZ v2 = NurbsCurve::ComputeRationalCurveDerivatives(merged, derOrder, t2)[1];
+		
+		// Verify angle.
 		double angle = v1.AngleTo(v2);
 		EXPECT_LT(std::fabs(angle), Constants::AngleEpsilon);
 	}
