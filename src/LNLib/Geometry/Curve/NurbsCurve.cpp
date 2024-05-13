@@ -28,6 +28,7 @@
 #include "LNObject.h"
 
 #include <vector>
+#include <set>
 #include <random>
 #include <algorithm>
 #include <cmath>
@@ -115,37 +116,44 @@ namespace LNLib
 		XYZ midPoint = NurbsCurve::GetPointOnCurve(curve, mid);
 		XYZ segMidPoint = startPoint + (endPoint - startPoint) * half;
 
-		double distance = midPoint.Distance(segMidPoint);
-		bool condition1 = MathUtils::IsLessThanOrEqual(distance, Constants::DistanceEpsilon);
-
-		XYZ startTangent = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, start)[1];
-		XYZ endTangent = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, end)[1];
-		double angle = startTangent.AngleTo(endTangent);
-		bool condition2 = MathUtils::IsLessThanOrEqual(angle, Constants::AngleEpsilon);
-
-		bool isIgnoreCondition3 = false;
-		bool condition3 = false;
-		double halfChordLength = startPoint.Distance(endPoint)/2.0;
-		double curvature = NurbsCurve::Curvature(curve, mid);
-		if (MathUtils::IsAlmostEqualTo(curvature, 0.0))
-		{
-			isIgnoreCondition3 = true;
-		}
-		else
-		{
-			double radius = 1.0 / NurbsCurve::Curvature(curve, mid);
-			double chordHeight = radius - std::sqrt(radius * radius - halfChordLength * halfChordLength);
-			condition3 = MathUtils::IsLessThanOrEqual(chordHeight, Constants::DistanceEpsilon);
-		}
-		bool condition = isIgnoreCondition3 ? (condition1 && condition2) : (condition1 && condition2 && condition3);
-		if (condition)
+		if (MathUtils::IsLessThanOrEqual(midPoint.Distance(endPoint), Constants::DistanceEpsilon))
 		{
 			parameters.emplace_back(mid);
 		}
 		else
 		{
-			TessellateCore(curve, start, mid, parameters);
-			TessellateCore(curve, mid, end, parameters);
+			double distance = midPoint.Distance(segMidPoint);
+			bool condition1 = MathUtils::IsLessThanOrEqual(distance, Constants::DistanceEpsilon);
+
+			XYZ startTangent = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, start)[1];
+			XYZ endTangent = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, end)[1];
+			double angle = startTangent.AngleTo(endTangent);
+			bool condition2 = MathUtils::IsLessThanOrEqual(angle, Constants::AngleEpsilon);
+
+			bool isIgnoreCurvature = false;
+			bool condition3 = false;
+			double halfChordLength = startPoint.Distance(endPoint) / 2.0;
+			double curvature = NurbsCurve::Curvature(curve, mid);
+			if (MathUtils::IsAlmostEqualTo(curvature, 0.0))
+			{
+				isIgnoreCurvature = true;
+			}
+			else
+			{
+				double radius = 1.0 / NurbsCurve::Curvature(curve, mid);
+				double chordHeight = radius - std::sqrt(radius * radius - halfChordLength * halfChordLength);
+				condition3 = MathUtils::IsLessThanOrEqual(chordHeight, Constants::DistanceEpsilon);
+			}
+			bool condition = isIgnoreCurvature ? (condition1 && condition2) : (condition1 && condition2 && condition3);
+			if (condition)
+			{
+				parameters.emplace_back(mid);
+			}
+			else
+			{
+				TessellateCore(curve, start, mid, parameters);
+				TessellateCore(curve, mid, end, parameters);
+			}
 		}
 	}
 }
@@ -1316,6 +1324,60 @@ bool LNLib::NurbsCurve::SplitAt(const LN_NurbsCurve& curve, double parameter, LN
 	left.KnotVector.resize(spanIndex + degree + 1);
 
 	return true;
+}
+
+bool LNLib::NurbsCurve::Segment(const LN_NurbsCurve& curve, double startParameter, double endParameter, LN_NurbsCurve& segment)
+{
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
+	if (MathUtils::IsLessThanOrEqual(startParameter, knotVector[degree]))
+	{
+		if (MathUtils::IsGreaterThanOrEqual(endParameter, knotVector[knotVector.size() - degree - 1]))
+		{
+			segment = curve;
+			return true;
+		}
+		LN_NurbsCurve left;
+		LN_NurbsCurve right;
+		bool result = SplitAt(curve, endParameter, left, right);
+		if (result)
+		{
+			segment = left;
+			return true;
+		}
+	}
+	else
+	{
+		if (MathUtils::IsGreaterThanOrEqual(endParameter, knotVector[knotVector.size() - degree - 1]))
+		{
+			LN_NurbsCurve left;
+			LN_NurbsCurve right;
+			bool result = SplitAt(curve, startParameter, left, right);
+			if (result)
+			{
+				segment = right;
+				return true;
+			}
+		}
+		else
+		{
+			LN_NurbsCurve left;
+			LN_NurbsCurve right;
+			bool result = SplitAt(curve, startParameter, left, right);
+			if (result)
+			{
+				result = SplitAt(right, endParameter, left, right);
+				if (result)
+				{
+					segment = left;
+					return true;
+				}
+			}
+		}
+	}
+	return false;
 }
 
 bool LNLib::NurbsCurve::Merge(const LN_NurbsCurve& left, const LN_NurbsCurve& right, LN_NurbsCurve& result)
@@ -3398,7 +3460,7 @@ bool LNLib::NurbsCurve::IsLinear(const LN_NurbsCurve& curve)
 	{
 		XYZ current = controlPoints[i].ToXYZ(true);
 		XYZ next = controlPoints[i + 1].ToXYZ(true);
-		if (!(next - current).IsAlmostEqualTo(dir))
+		if (!((next - current).Normalize()).IsAlmostEqualTo(dir))
 		{
 			return false;
 		}
@@ -3621,15 +3683,32 @@ std::vector<LNLib::XYZ> LNLib::NurbsCurve::Tessellate(const LN_NurbsCurve& curve
 	for (int i = 0; i < unqiueKnotVector.size() - 1; i++)
 	{
 		double current = unqiueKnotVector[i];
-		double next = unqiueKnotVector[i+1];
-		TessellateCore(curve, current, next, parameters);
+		double next = unqiueKnotVector[i + 1];
+		LN_NurbsCurve segment;
+		bool isSeg = Segment(curve, current, next, segment);
+		if (isSeg)
+		{
+			bool isLinear = IsLinear(segment);
+			if (isLinear)
+			{
+				parameters.emplace_back(current);
+				parameters.emplace_back(next);
+				continue;
+			}
+		}
+		if (!MathUtils::IsLessThanOrEqual(std::abs(next - current), Constants::DoubleEpsilon))
+		{
+			TessellateCore(curve, current, next, parameters);
+		}
 	}
 	parameters.emplace_back(knotVector[knotVector.size()-1]);
-
+	std::set<double> st(parameters.begin(), parameters.end());
+		
 	std::vector<XYZ> points;
-	for (int i = 0; i < parameters.size(); i++)
+	std::set<double>::iterator it = st.begin();
+	for (it = st.begin(); it != st.end(); it++)
 	{
-		XYZ point = GetPointOnCurve(curve, parameters[i]);
+		XYZ point = GetPointOnCurve(curve, *it);
 		points.emplace_back(point);
 	}
 	return points;

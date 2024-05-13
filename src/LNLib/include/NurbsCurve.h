@@ -157,6 +157,11 @@ namespace LNLib
 		static bool SplitAt(const LN_NurbsCurve& curve, double parameter, LN_NurbsCurve& left, LN_NurbsCurve& right);
 
 		/// <summary>
+		/// Segment curve.
+		/// </summary>
+		static bool Segment(const LN_NurbsCurve& curve, double startParameter, double endParameter, LN_NurbsCurve& segment);
+
+		/// <summary>
 		/// Merge two connected curves to one curve.
 		/// </summary>
 		static bool Merge(const LN_NurbsCurve& left, const LN_NurbsCurve& right, LN_NurbsCurve& result);
