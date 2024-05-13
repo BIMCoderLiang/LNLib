@@ -48,8 +48,8 @@ namespace LNLib
 		static T GetPointOnCurve(const LN_BsplineCurve<T>& curve, double paramT)
 		{
 			int degree = curve.Degree;
-			std::vector<double> knotVector = curve.KnotVector;
-			std::vector<T> controlPoints = curve.ControlPoints;
+			const std::vector<double>& knotVector = curve.KnotVector;
+			const std::vector<T>& controlPoints = curve.ControlPoints;
 
 			VALIDATE_ARGUMENT_RANGE(paramT, knotVector[0], knotVector[knotVector.size() - 1]);
 
