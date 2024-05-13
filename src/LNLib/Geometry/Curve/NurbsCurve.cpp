@@ -3684,6 +3684,10 @@ std::vector<LNLib::XYZ> LNLib::NurbsCurve::Tessellate(const LN_NurbsCurve& curve
 	{
 		double current = unqiueKnotVector[i];
 		double next = unqiueKnotVector[i + 1];
+		if (MathUtils::IsLessThanOrEqual(std::abs(next - current), Constants::DoubleEpsilon))
+		{
+			continue;
+		}
 		LN_NurbsCurve segment;
 		bool isSeg = Segment(curve, current, next, segment);
 		if (isSeg)
@@ -3696,10 +3700,7 @@ std::vector<LNLib::XYZ> LNLib::NurbsCurve::Tessellate(const LN_NurbsCurve& curve
 				continue;
 			}
 		}
-		if (!MathUtils::IsLessThanOrEqual(std::abs(next - current), Constants::DoubleEpsilon))
-		{
-			TessellateCore(curve, current, next, parameters);
-		}
+		TessellateCore(curve, current, next, parameters);
 	}
 	parameters.emplace_back(knotVector[knotVector.size()-1]);
 	std::set<double> st(parameters.begin(), parameters.end());
