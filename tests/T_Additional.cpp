@@ -158,8 +158,8 @@ TEST(Test_Additional, Area_ChebyShev)
 TEST(Test_Additional, MergeCurve)
 {
 	// Make line.
-	XYZ start(0, 0, 0);
-	XYZ end(5, 0, 0);
+	const XYZ start(0, 0, 0);
+	const XYZ end(5, 0, 0);
 	LN_NurbsCurve line;
 	NurbsCurve::CreateLine(start, end, line);
 
@@ -184,4 +184,36 @@ TEST(Test_Additional, MergeCurve)
 	double standard = lineLength + arcLength;
 	double mergedLength = NurbsCurve::ApproximateLength(merged, IntegratorType::GaussLegendre);
 	EXPECT_NEAR(standard, mergedLength, Constants::DistanceEpsilon);
+
+	// The line-arc merged curve is also a good case to test tessellation.
+	auto tessPoints = NurbsCurve::Tessellate(merged);
+	
+	// At least, 5 knot points.
+	EXPECT_GT(tessPoints.size(), 5);
+
+	// For each adjacent 2 points, verify angle deflection.
+	for(auto i=0;i<tessPoints.size()-1;++i)
+	{
+		auto& pt1 = tessPoints[i];
+		auto& pt2 = tessPoints[i+1];
+
+		// Skip the line-arc joint point.
+		if(pt1.IsAlmostEqualTo(end) || pt2.IsAlmostEqualTo(end))
+		{
+			continue;
+		}
+
+		// Get parameters.
+		double t1 = NurbsCurve::GetParamOnCurve(merged, pt1);
+		double t2 = NurbsCurve::GetParamOnCurve(merged, pt2);
+		
+		// Compute tangent directions.
+		const int derOrder = 1;
+		XYZ v1 = NurbsCurve::ComputeRationalCurveDerivatives(merged, derOrder, t1)[1];
+		XYZ v2 = NurbsCurve::ComputeRationalCurveDerivatives(merged, derOrder, t2)[1];
+		
+		// Verify angle.
+		double angle = v1.AngleTo(v2);
+		EXPECT_LT(std::fabs(angle), Constants::AngleEpsilon);
+	}
 }

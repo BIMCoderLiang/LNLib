@@ -2208,8 +2208,8 @@ void LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_NurbsCurve>& se
 			current.KnotVector = tc.KnotVector;
 			current.ControlPoints = tc.ControlPoints;
 		}
-		curvesControlPoints.emplace_back(current.ControlPoints);
-		internals.emplace_back(current);
+		curvesControlPoints[k] = current.ControlPoints;
+		internals[k] = current;
 	}
 
 	int degreeU = degree_max;
@@ -2221,8 +2221,10 @@ void LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_NurbsCurve>& se
 	for (int k = 1; k <= size - 2; k++)
 	{
 		std::vector<XYZW> current = curvesControlPoints[k];
-
+		auto cps = ControlPointsUtils::ToXYZ(current);
+		
 		int tsize = current.size();
+
 		std::vector<XYZ> cps(tsize);
 		for (int i = 0; i < tsize; i++)
 		{
@@ -2236,7 +2238,7 @@ void LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_NurbsCurve>& se
 			double distance = curvesControlPoints[k][i].Distance(curvesControlPoints[k - 1][i]);
 			average += distance / length;
 		}
-		vl[k] = vl[k - 1] + 1.0 / (tsize + 1) * average;
+		vl[k] = vl[k - 1] + (1.0 / (tsize + 1)) * average;
 	}
 	std::vector<double> knotVectorV = Interpolation::AverageKnotVector(degreeV, vl);
 
