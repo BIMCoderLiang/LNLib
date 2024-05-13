@@ -45,7 +45,7 @@ Algorithms in ***The Nurbs Book***:
 Additional Algorithms:  
 - ***Basic Properties***:
     - Curve/Surface Curvature and Normal
-    - Curve Split/Merge/Offset
+    - Curve Split/Segment/Merge/Offset
     - Curve IsLinear/IsArc
     - Curve Approximate Length
     - Surface Approximate Area
