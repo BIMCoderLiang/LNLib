@@ -2225,12 +2225,6 @@ void LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_NurbsCurve>& se
 		
 		int tsize = current.size();
 
-		std::vector<XYZ> cps(tsize);
-		for (int i = 0; i < tsize; i++)
-		{
-			cps[i] = current[i].ToXYZ(true);
-		}
-
 		double average = 0.0;
 		double length = Interpolation::GetTotalChordLength(cps);
 		for (int i = 0; i < tsize; i++)
