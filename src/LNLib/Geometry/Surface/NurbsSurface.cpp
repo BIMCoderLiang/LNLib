@@ -2194,6 +2194,7 @@ void LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_NurbsCurve>& se
 	}
 
 	int size = sections.size();
+
 	std::vector<LN_NurbsCurve> internals(size);
 	std::vector<std::vector<XYZW>> curvesControlPoints(size);
 	for (int k = 0; k < size; k++)
@@ -2215,24 +2216,31 @@ void LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_NurbsCurve>& se
 	int degreeU = degree_max;
 	int degreeV = degree_max;
 
+	int K = size - 1;
 	std::vector<double> vl(size);
 	vl[0] = 0;
-	vl[size - 1] = 1;
-	for (int k = 1; k <= size - 2; k++)
+	vl[K] = 1;
+	for (int k = 1; k <= K - 1; k++)
 	{
-		std::vector<XYZW> current = curvesControlPoints[k];
-		auto cps = ControlPointsUtils::ToXYZ(current);
-		
-		int tsize = current.size();
 
-		double average = 0.0;
-		double length = Interpolation::GetTotalChordLength(cps);
-		for (int i = 0; i < tsize; i++)
+		std::vector<XYZW> current = curvesControlPoints[k];
+		int n = current.size() - 1;
+		double sum = 0.0;
+		for (int i = 0; i <= n; i++)
 		{
-			double distance = curvesControlPoints[k][i].Distance(curvesControlPoints[k - 1][i]);
-			average += distance / length;
+			double delta = curvesControlPoints[k][i].ToXYZ(true).Distance(curvesControlPoints[k - 1][i].ToXYZ(true));
+			
+			std::vector<XYZ> tempPoints(size);
+			for (int j = 0; j <= K; j++)
+			{
+				tempPoints[j] = curvesControlPoints[j][i].ToXYZ(true);
+			}
+
+			double di = Interpolation::GetTotalChordLength(tempPoints);
+			sum += delta / di;
 		}
-		vl[k] = vl[k - 1] + (1.0 / (tsize + 1)) * average;
+		
+		vl[k] = vl[k - 1] + (1.0 / (n + 1)) * sum;
 	}
 	std::vector<double> knotVectorV = Interpolation::AverageKnotVector(degreeV, vl);
 
