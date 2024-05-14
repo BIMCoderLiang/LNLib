@@ -174,38 +174,14 @@ void LNLib::NurbsCurve::Check(const LN_NurbsCurve& curve)
 
 LNLib::XYZ LNLib::NurbsCurve::GetPointOnCurve(const LN_NurbsCurve& curve, double paramT)
 {
-	int degree = curve.Degree;
-	std::vector<double> knotVector = curve.KnotVector;
-	std::vector<XYZW> controlPoints = curve.ControlPoints;
-
-	VALIDATE_ARGUMENT_RANGE(paramT, knotVector[0], knotVector[knotVector.size() - 1]);
-
-	LN_BsplineCurve<XYZW> bsplineCurve;
-	bsplineCurve.Degree = degree;
-	bsplineCurve.KnotVector = knotVector;
-	bsplineCurve.ControlPoints = controlPoints;
-
-	XYZW weightPoint = BsplineCurve::GetPointOnCurve(bsplineCurve, paramT);
+	XYZW weightPoint = BsplineCurve::GetPointOnCurve(curve, paramT);
 	return weightPoint.ToXYZ(true);
 }
 
 std::vector<LNLib::XYZ> LNLib::NurbsCurve::ComputeRationalCurveDerivatives(const LN_NurbsCurve& curve, int derivative, double paramT)
 {
-	int degree = curve.Degree;
-	std::vector<double> knotVector = curve.KnotVector;
-	std::vector<XYZW> controlPoints = curve.ControlPoints;
-
-	VALIDATE_ARGUMENT(derivative > 0, "derivative", "derivative must be greater than zero.");	
-	VALIDATE_ARGUMENT_RANGE(paramT, knotVector[0], knotVector[knotVector.size() - 1]);
-
 	std::vector<LNLib::XYZ> derivatives(derivative + 1);
-
-	LN_BsplineCurve<XYZW> bsplineCurve;
-	bsplineCurve.Degree = degree;
-	bsplineCurve.KnotVector = knotVector;
-	bsplineCurve.ControlPoints = controlPoints;
-
-	std::vector<XYZW> ders = BsplineCurve::ComputeDerivatives(bsplineCurve, derivative, paramT);
+	std::vector<XYZW> ders = BsplineCurve::ComputeDerivatives(curve, derivative, paramT);
 
 	std::vector<XYZ> Aders(derivative + 1);
 	for (int i = 0; i < ders.size(); i++)

@@ -2921,25 +2921,24 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 				std::vector<double> bKnotsU = bezierSurface.KnotVectorU;
 				double a = bKnotsU[0];
 				double b = bKnotsU[bKnotsU.size() - 1];
-				double coefficient1 = (b - a) / 2.0;
+				double coefficient1 = (b - a) * 0.5;
 
 				std::vector<double> bKnotsV = bezierSurface.KnotVectorV;
 				double c = bKnotsV[0];
 				double d = bKnotsV[bKnotsV.size() - 1];
-				double coefficient2 = (d - c) / 2.0;
+				double coefficient2 = (d - c) * 0.5;
 
 				double bArea = 0.0;
 				std::vector<double> abscissae = Integrator::GaussLegendreAbscissae;
 				int size = abscissae.size();
 				for (int i = 0; i < size; i++)
 				{
-					double u = coefficient1 * abscissae[i] + (a + b) / 2.0;
+					double u = coefficient1 * abscissae[i] + (a + b) * 0.5;
 					for (int j = 0; j < size; j++)
 					{
-						double v = coefficient2 * abscissae[j] + (c + d) / 2.0;
-						std::vector<std::vector<XYZ>> derivatives = ComputeRationalSurfaceDerivatives(bezierSurface, 1, UV(u,v));
-						XYZ Su = derivatives[1][0];
-						XYZ Sv = derivatives[0][1];
+						double v = coefficient2 * abscissae[j] + (c + d) * 0.5;
+						XYZ S, Su, Sv;
+						NurbsSurface::ComputeRationalSurfaceFirstOrderDerivative(bezierSurface, UV(u, v), S, Su, Sv);
 						double E = Su.DotProduct(Su);
 						double F = Su.DotProduct(Sv);
 						double G = Sv.DotProduct(Sv);
