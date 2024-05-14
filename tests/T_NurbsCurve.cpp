@@ -15,6 +15,9 @@ TEST(Test_NurbsCurve, All)
 	curve.KnotVector = kv;
 	curve.ControlPoints = cps;
 	
+	bool canDer = NurbsCurve::CanComputerDerivative(curve, 1.0);
+	EXPECT_TRUE(canDer);
+
 	XYZ result = NurbsCurve::GetPointOnCurve(curve, 1.0);
 	EXPECT_TRUE(result.IsAlmostEqualTo(XYZ(7.0/5,6.0/5,0)));
 

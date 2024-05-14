@@ -206,6 +206,22 @@ std::vector<LNLib::XYZ> LNLib::NurbsCurve::ComputeRationalCurveDerivatives(const
 	return derivatives;
 }
 
+bool LNLib::NurbsCurve::CanComputerDerivative(const LN_NurbsCurve& curve, double paramT)
+{
+	// Treat boundary parameters as derivable.
+	if(MathUtils::IsAlmostEqualTo(paramT, curve.KnotVector[0]) ||
+	   MathUtils::IsAlmostEqualTo(paramT, curve.KnotVector.back()))
+	{
+		return true;
+	}
+
+	auto pt = GetPointOnCurve(curve, paramT);
+	XYZ left = (GetPointOnCurve(curve, paramT - Constants::DoubleEpsilon) - pt) / -Constants::DoubleEpsilon;
+	XYZ right = (GetPointOnCurve(curve, paramT + Constants::DoubleEpsilon) - pt) / Constants::DoubleEpsilon;
+
+	return left.IsAlmostEqualTo(right);
+}
+
 double LNLib::NurbsCurve::Curvature(const LN_NurbsCurve& curve, double paramT)
 {
 	int degree = curve.Degree;

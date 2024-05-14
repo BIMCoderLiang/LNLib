@@ -40,9 +40,14 @@ namespace LNLib
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page127
 		/// Algorithm A4.2
-		/// Compute C(paramT) derivatives from Cw(paramT) deraivatives.
+		/// Compute C(paramT) derivatives from Cw(paramT) derivatives.
 		/// </summary>
 		static std::vector<XYZ> ComputeRationalCurveDerivatives(const LN_NurbsCurve& curve, int derivative, double paramT);
+
+		/// <summary>
+		/// Computer left and right hand derivatives.
+		/// </summary>
+		static bool CanComputerDerivative(const LN_NurbsCurve& curve, double paramT);
 
 		/// <summary>
 		/// Calculate curve curvature.
