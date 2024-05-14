@@ -18,8 +18,8 @@ set(EIGEN_BUILD_TESTING OFF)
 set(EIGEN_MPL2_ONLY ON)
 set(EIGEN_BUILD_PKGCONFIG OFF)
 set(EIGEN_BUILD_DOC OFF)
-FetchContent_MakeAvailable(Eigen)
-target_link_libraries(${TARGET_NAME} PRIVATE Eigen3::Eigen)
+
+target_include_directories(${TARGET_NAME} PRIVATE Eigen3::Eigen)
 
 file(GLOB rootfiles *.cpp *.h)
 source_group("" FILES ${rootfiles})
