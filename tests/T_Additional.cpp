@@ -177,6 +177,9 @@ TEST(Test_Additional, MergeCurve)
 	LN_NurbsCurve merged;
 	bool success = NurbsCurve::Merge(line, arc, merged);
 	EXPECT_TRUE(success);
+	// 1.0 is the second knot of merged curve.
+	bool canDer = NurbsCurve::CanComputerDerivative(merged, 1.0);
+	EXPECT_FALSE(canDer);
 
 	// Verify length.
 	double lineLength = NurbsCurve::ApproximateLength(line);

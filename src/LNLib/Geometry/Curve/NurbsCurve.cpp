@@ -206,6 +206,14 @@ std::vector<LNLib::XYZ> LNLib::NurbsCurve::ComputeRationalCurveDerivatives(const
 	return derivatives;
 }
 
+bool LNLib::NurbsCurve::CanComputerDerivative(const LN_NurbsCurve& curve, double paramT)
+{
+	XYZ left = (GetPointOnCurve(curve, paramT - Constants::DoubleEpsilon) - GetPointOnCurve(curve, paramT)) / -Constants::DoubleEpsilon;
+	XYZ right = (GetPointOnCurve(curve, paramT + Constants::DoubleEpsilon) - GetPointOnCurve(curve, paramT)) / Constants::DoubleEpsilon;
+
+	return left.IsAlmostEqualTo(right);
+}
+
 double LNLib::NurbsCurve::Curvature(const LN_NurbsCurve& curve, double paramT)
 {
 	int degree = curve.Degree;
