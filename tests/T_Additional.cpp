@@ -66,6 +66,52 @@ TEST(Test_Additional, ApproximateLength)
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(arcParameters[2], 0.75));
 }
 
+TEST(Test_Additional, Normal)
+{
+	XYZ center = XYZ(0, 0, 0);
+	XYZ xAxis = XYZ(1, 0, 0);
+	XYZ yAxis = XYZ(0, 1, 0);
+
+	LN_NurbsCurve curve;
+	bool result = NurbsCurve::CreateArc(center, xAxis, yAxis, 0, 2 * Constants::Pi, 10, 10, curve);
+
+	XYZ t0 = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, 0)[1].Normalize();
+	XYZ n0 = NurbsCurve::Normal(curve, CurveNormal::Normal, 0.0);
+	XYZ b0 = NurbsCurve::Normal(curve, CurveNormal::Binormal, 0.0);
+	EXPECT_TRUE(t0.IsAlmostEqualTo(XYZ(0, 1, 0)));
+	EXPECT_TRUE(n0.IsAlmostEqualTo(XYZ(-1,0, 0)));
+	EXPECT_TRUE(b0.IsAlmostEqualTo(XYZ(0, 0, 1)));
+
+	XYZ t1 = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, 0.25)[1].Normalize();
+	XYZ n1 = NurbsCurve::Normal(curve, CurveNormal::Normal, 0.25);
+	XYZ b1 = NurbsCurve::Normal(curve, CurveNormal::Binormal, 0.25);
+	EXPECT_TRUE(t1.IsAlmostEqualTo(XYZ(-1,0, 0)));
+	EXPECT_TRUE(n1.IsAlmostEqualTo(XYZ(0, -1, 0)));
+	EXPECT_TRUE(b1.IsAlmostEqualTo(XYZ(0, 0, 1)));
+
+	XYZ t2 = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, 0.5)[1].Normalize();
+	XYZ n2 = NurbsCurve::Normal(curve, CurveNormal::Normal, 0.5);
+	XYZ b2 = NurbsCurve::Normal(curve, CurveNormal::Binormal, 0.5);
+	EXPECT_TRUE(t2.IsAlmostEqualTo(XYZ(0, -1, 0)));
+	EXPECT_TRUE(n2.IsAlmostEqualTo(XYZ(1, 0,  0)));
+	EXPECT_TRUE(b2.IsAlmostEqualTo(XYZ(0, 0, 1)));
+
+	XYZ t3 = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, 0.75)[1].Normalize();
+	XYZ n3 = NurbsCurve::Normal(curve, CurveNormal::Normal, 0.75);
+	XYZ b3 = NurbsCurve::Normal(curve, CurveNormal::Binormal, 0.75);
+	EXPECT_TRUE(t3.IsAlmostEqualTo(XYZ(1, 0, 0)));
+	EXPECT_TRUE(n3.IsAlmostEqualTo(XYZ(0, 1, 0)));
+	EXPECT_TRUE(b3.IsAlmostEqualTo(XYZ(0, 0, 1)));
+
+	XYZ t4 = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, 1.0)[1].Normalize();
+	XYZ n4 = NurbsCurve::Normal(curve, CurveNormal::Normal, 1.0);
+	XYZ b4 = NurbsCurve::Normal(curve, CurveNormal::Binormal, 1.0);
+	EXPECT_TRUE(t4.IsAlmostEqualTo(XYZ(0, 1, 0)));
+	EXPECT_TRUE(n4.IsAlmostEqualTo(XYZ(-1, 0, 0)));
+	EXPECT_TRUE(b4.IsAlmostEqualTo(XYZ(0, 0, 1)));
+
+}
+
 static void NURBSSurfaceForAreaTest(LN_NurbsSurface& surface, double& standardArea)
 {
 	int degreeU = 3;
