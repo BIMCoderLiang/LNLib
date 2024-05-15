@@ -141,7 +141,7 @@ int LNLib::Polynomials::GetKnotSpanIndex(int degree, const std::vector<double>& 
 
 	int low = 0;
 	int high = n + 1;
-	int mid = static_cast<int>(floor((low + high) / 2.0));
+	int mid = (low + high) / 2;
 
 	while (paramT < knotVector[mid] || 
 		   paramT >= knotVector[mid + 1])
@@ -154,7 +154,7 @@ int LNLib::Polynomials::GetKnotSpanIndex(int degree, const std::vector<double>& 
 		{
 			low = mid;
 		}	
-		mid = static_cast<int>(floor((low + high) / 2.0));
+		mid = (low + high) / 2;
 	}
 	return mid;
 }
