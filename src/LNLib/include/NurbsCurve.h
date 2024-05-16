@@ -55,11 +55,6 @@ namespace LNLib
 		static double Curvature(const LN_NurbsCurve& curve, double paramT);
 
 		/// <summary>
-		/// Calculate curve normal direction.
-		/// </summary>
-		static XYZ Normal(const LN_NurbsCurve& curve, CurveNormal normalType, double paramT);
-
-		/// <summary>
 		/// Calculate curve torsion.
 		/// </summary>
 		static double Torsion(const LN_NurbsCurve& curve, double paramT);
@@ -280,6 +275,12 @@ namespace LNLib
 		/// Fit to tolerance with cubic segment.
 		/// </summary>
 		static bool FitWithCubic(const std::vector<XYZ>& throughPoints, int startPointIndex, int endPointIndex, const XYZ& startTangent, const XYZ& endTangent, double maxError, std::vector<XYZW>& middleControlPoints);
+
+		/// <summary>
+		/// The NURBS Book 2nd Edition Page479
+		/// Calculate curve normal direction.
+		/// </summary>
+		static XYZ Normal(const LN_NurbsCurve& curve, CurveNormal normalType, double paramT);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page511

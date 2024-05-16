@@ -250,7 +250,7 @@ LNLib::XYZ LNLib::NurbsCurve::Normal(const LN_NurbsCurve& curve, CurveNormal nor
 
 	VALIDATE_ARGUMENT_RANGE(paramT, knotVector[0], knotVector[knotVector.size() - 1]);
 
-	std::vector<XYZ> derivatives = ComputeRationalCurveDerivatives(curve, 1, paramT);
+	std::vector<XYZ> derivatives = ComputeRationalCurveDerivatives(curve, 2, paramT);
 	XYZ tangent = derivatives[1];
 	XYZ der2 = derivatives[2];
 	if (MathUtils::IsAlmostEqualTo(tangent.Length(), 1.0))
