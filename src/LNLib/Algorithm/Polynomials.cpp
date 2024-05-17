@@ -139,7 +139,7 @@ int LNLib::Polynomials::GetKnotSpanIndex(int degree, const std::vector<double>& 
 		return degree;
 	}
 
-	int low = 0;
+	int low = degree;
 	int high = n + 1;
 	int mid = (low + high) / 2;
 

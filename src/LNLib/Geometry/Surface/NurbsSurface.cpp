@@ -1310,7 +1310,7 @@ bool LNLib::NurbsSurface::GetUVTangent(const LN_NurbsSurface& surface, const UV 
 	return true;
 }
 
-void LNLib::NurbsSurface::CreateBilinearSurface(const XYZ& point00, const XYZ& point01, const XYZ& point10, const XYZ& point11, LN_NurbsSurface& surface)
+void LNLib::NurbsSurface::CreateBilinearSurface(const XYZ& topLeftPoint, const XYZ& topRightPoint, const XYZ& bottomLeftPoint, const XYZ& bottomRightPoint, LN_NurbsSurface& surface)
 {
 	int degree = 3;
 	surface.DegreeU = surface.DegreeV = degree;
@@ -1322,11 +1322,11 @@ void LNLib::NurbsSurface::CreateBilinearSurface(const XYZ& point00, const XYZ& p
 	for (int i = 0; i <= degree; i++)
 	{
 		std::vector<XYZW> row;
+		double l = 1.0 - i / (double)degree;
 		for (int j = 0; j <= degree; j++)
 		{
-			double l = 1.0 - i / (double)degree;
-			XYZ d1 = l * point01 + (1 - l) * point00;
-			XYZ d2 = l * point11 + (1 - l) * point10;
+			XYZ d1 = l * topLeftPoint  + (1 - l) * bottomLeftPoint;
+			XYZ d2 = l * topRightPoint + (1 - l) * bottomRightPoint;
 
 			XYZ res = d1 * (1 - j / (double)degree) + (j / (double)degree) * d2;
 			row.emplace_back(XYZW(res, 1.0));
@@ -2577,7 +2577,7 @@ void LNLib::NurbsSurface::CreateCoonsSurface(const LN_NurbsCurve& leftCurve, con
 	bool isP10 = NurbsCurve::GetPointOnCurve(nurbs[0], 1).IsAlmostEqualTo(NurbsCurve::GetPointOnCurve(nurbs[1], 0));
 	bool isP11 = NurbsCurve::GetPointOnCurve(nurbs[2], 1).IsAlmostEqualTo(NurbsCurve::GetPointOnCurve(nurbs[1], 1));
 
-	VALIDATE_ARGUMENT(isP00 & isP01 & isP10 & isP11, "Curves", "Four Curves must be a loop to make a surface.");
+	VALIDATE_ARGUMENT(isP00 & isP01 & isP10 & isP11, "Curves", "Four Corners must be connected.");
 
 
 	auto n0 = nurbs[0]; auto n2 = nurbs[2];

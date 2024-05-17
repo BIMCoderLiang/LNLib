@@ -129,9 +129,15 @@ namespace LNLib
 		
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page334
-		/// construct a bilinear surface.
+		/// Construct a bilinear surface.
+		/// 
+		/// ------- v direction
+		/// |
+		/// |
+		/// u direction
+		///   
 		/// </summary>
-		static void CreateBilinearSurface(const XYZ& point00, const XYZ& point01, const XYZ& point10, const XYZ& point11, LN_NurbsSurface& surface);
+		static void CreateBilinearSurface(const XYZ& topLeftPoint, const XYZ& topRightPoint, const XYZ& bottomLeftPoint, const XYZ& bottomRightPoint, LN_NurbsSurface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page336
@@ -228,15 +234,6 @@ namespace LNLib
 		/// Algorithm A10.4
 		/// Create Coons Surface.
 		/// The difference between Coons and Gordon is that Coons Surface is created by 4 anti-clock curves.
-		///		
-		///		top                 ------- v direction
-		/// _____________			|
-		///	|			|			|
-		///	| left		|right		u direction
-		///	|			|
-		/// _____________ 
-		///		bottom
-		/// 
 		/// The coons surface is the special case of Gordon Surface.
 		/// 
 		/// </summary>
