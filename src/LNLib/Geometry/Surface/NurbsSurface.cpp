@@ -562,8 +562,8 @@ void LNLib::NurbsSurface::RefineKnotVector(const LN_NurbsSurface& surface, std::
 		for (int i = 0; i < controlPoints.size(); i++)
 		{
 			LN_NurbsCurve tc;
-			tc.Degree = degreeU;
-			tc.KnotVector = knotVectorU;
+			tc.Degree = degreeV;
+			tc.KnotVector = knotVectorV;
 			tc.ControlPoints = controlPoints[i];
 
 			LN_NurbsCurve newtc;
@@ -819,8 +819,8 @@ void LNLib::NurbsSurface::RemoveKnot(const LN_NurbsSurface& surface, double remo
 		for (int i = 0; i < controlPoints.size(); i++)
 		{
 			LN_NurbsCurve tc;
-			tc.Degree = degreeU;
-			tc.KnotVector = knotVectorU;
+			tc.Degree = degreeV;
+			tc.KnotVector = knotVectorV;
 			tc.ControlPoints = controlPoints[i];
 
 			LN_NurbsCurve newtc;
@@ -878,8 +878,8 @@ void LNLib::NurbsSurface::ElevateDegree(const LN_NurbsSurface& surface, int time
 		for (int i = 0; i < controlPoints.size(); i++)
 		{
 			LN_NurbsCurve tc;
-			tc.Degree = degreeU;
-			tc.KnotVector = knotVectorU;
+			tc.Degree = degreeV;
+			tc.KnotVector = knotVectorV;
 			tc.ControlPoints = controlPoints[i];
 
 			LN_NurbsCurve newtc;
@@ -943,8 +943,8 @@ bool LNLib::NurbsSurface::ReduceDegree(const LN_NurbsSurface& surface, bool isUD
 		for (int i = 0; i < controlPoints.size(); i++)
 		{
 			LN_NurbsCurve tc;
-			tc.Degree = degreeU;
-			tc.KnotVector = knotVectorU;
+			tc.Degree = degreeV;
+			tc.KnotVector = knotVectorV;
 			tc.ControlPoints = controlPoints[i];
 
 			LN_NurbsCurve newtc;

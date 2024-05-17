@@ -22,6 +22,70 @@ TEST(Test_AdvancedSurface, KnotVector)
 	EXPECT_TRUE(result[1].size() == 3);
 }
 
+TEST(Test_AdvancedSurface, CoonsSurface)
+{
+	XYZ l1 = XYZ(0, 100, 10);
+	XYZ l2 = XYZ(0, 70, 20);
+	XYZ l3 = XYZ(0, 40, -10);
+	XYZ l4 = XYZ(0, 0, 0);
+
+	auto leftCps = {XYZW(l1,1),XYZW(l2,1),XYZW(l3,1),XYZW(l4,1)};
+
+	LN_NurbsCurve leftCurve;
+	leftCurve.Degree = 3;
+	leftCurve.ControlPoints = leftCps;
+	leftCurve.KnotVector = { 0,0,0,0,1,1,1,1 };
+
+	XYZ b1 = XYZ(0, 0, 0);
+	XYZ b2 = XYZ(20, 0, 10);
+	XYZ b3 = XYZ(40, 0, 30);
+	XYZ b4 = XYZ(60, 0, 50);
+
+	auto bottomCps = { XYZW(b1,1),XYZW(b2,1),XYZW(b3,1),XYZW(b4,1) };
+
+	LN_NurbsCurve bottomCurve;
+	bottomCurve.Degree = 3;
+	bottomCurve.ControlPoints = bottomCps;
+	bottomCurve.KnotVector = { 0,0,0,0,1,1,1,1 };
+
+	XYZ r1 = XYZ(60, 0,  50);
+	XYZ r2 = XYZ(60, 40, 10);
+	XYZ r3 = XYZ(60, 70, 50);
+	XYZ r4 = XYZ(60, 100,30);
+
+	auto rightCps = { XYZW(r1,1),XYZW(r2,1),XYZW(r3,1),XYZW(r4,1) };
+
+	LN_NurbsCurve rightCurve;
+	rightCurve.Degree = 3;
+	rightCurve.ControlPoints = rightCps;
+	rightCurve.KnotVector = { 0,0,0,0,1,1,1,1 };
+
+	XYZ t1 = XYZ(60, 100, 30);
+	XYZ t2 = XYZ(40, 100, 10);
+	XYZ t3 = XYZ(20, 100, 20);
+	XYZ t4 = XYZ(0, 100, 10);
+
+	auto topCps = { XYZW(t1,1),XYZW(t2,1),XYZW(t3,1),XYZW(t4,1) };
+
+	LN_NurbsCurve topCurve;
+	topCurve.Degree = 3;
+	topCurve.ControlPoints = topCps;
+	topCurve.KnotVector = { 0,0,0,0,1,1,1,1 };
+
+	LN_NurbsSurface coonsSurface;
+	NurbsSurface::CreateCoonsSurface(leftCurve, bottomCurve, rightCurve, topCurve, coonsSurface);
+
+	XYZ check0 = NurbsSurface::GetPointOnSurface(coonsSurface, UV(0, 0));
+	XYZ check1 = NurbsSurface::GetPointOnSurface(coonsSurface, UV(1, 0));
+	XYZ check2 = NurbsSurface::GetPointOnSurface(coonsSurface, UV(0, 1));
+	XYZ check3 = NurbsSurface::GetPointOnSurface(coonsSurface, UV(1, 1));
+
+	EXPECT_TRUE(check0.IsAlmostEqualTo(b1));
+	EXPECT_TRUE(check1.IsAlmostEqualTo(l1));
+	EXPECT_TRUE(check2.IsAlmostEqualTo(r1));
+	EXPECT_TRUE(check3.IsAlmostEqualTo(t1));
+}
+
 TEST(Test_AdvancedSurface, LoftSurface)
 {
 	//arc0
