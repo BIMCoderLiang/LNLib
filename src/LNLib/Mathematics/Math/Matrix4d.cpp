@@ -271,13 +271,16 @@ XYZ LNLib::Matrix4d::OfPoint(const XYZ& point)
 
 XYZW LNLib::Matrix4d::OfWeightedPoint(const XYZW& point)
 {
-	double x = m_matrix4d[0][0] * point[0] + m_matrix4d[0][1] * point[1] + m_matrix4d[0][2] * point[2] + m_matrix4d[0][3] * point[3];
-	double y = m_matrix4d[1][0] * point[0] + m_matrix4d[1][1] * point[1] + m_matrix4d[1][2] * point[2] + m_matrix4d[1][3] * point[3];
-	double z = m_matrix4d[2][0] * point[0] + m_matrix4d[2][1] * point[1] + m_matrix4d[2][2] * point[2] + m_matrix4d[2][3] * point[3];
+	double wx = point.GetWX();
+	double wy = point.GetWY();
+	double wz = point.GetWZ();
 
-	double w = m_matrix4d[3][0] * point[0] + m_matrix4d[3][1] * point[1] + m_matrix4d[3][2] * point[2] + m_matrix4d[3][3] * point[3];
+	double w = point.GetW();
 
-	return XYZW(XYZ(x,y,z),w);
+	XYZ current = XYZ(wx / w, wy / w, wz / w);
+	XYZ transformed = OfPoint(current);
+
+	return XYZW(transformed,w);
 }
 
 XYZ LNLib::Matrix4d::OfVector(const XYZ& vector)

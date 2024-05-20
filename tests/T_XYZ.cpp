@@ -124,3 +124,14 @@ TEST(Test_XYZ, OperatorOverride)
 				MathUtils::IsAlmostEqualTo(divide.GetY(), 2) &&
 				MathUtils::IsAlmostEqualTo(divide.GetZ(), 3));
 }
+
+TEST(Test_XYZ, Orthogonal)
+{
+	XYZ current = XYZ(3, 1, 2);
+	for (int i = 0; i < 100; i++)
+	{
+		XYZ orthogonal = XYZ::CreateRandomOrthogonal(current);
+		double result = orthogonal.DotProduct(current);
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(result, 0.0));
+	}
+}

@@ -2265,6 +2265,36 @@ void LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_NurbsCurve>& se
 	surface.ControlPoints = controlPoints;
 }
 
+void LNLib::NurbsSurface::CreateTranslationalSweepSurface(const LN_NurbsCurve& profile, const LN_NurbsCurve& trajectory, LN_NurbsSurface& surface)
+{
+	int degreeU = profile.Degree;
+	const std::vector<double>& knotVectorU = profile.KnotVector;
+	std::vector<XYZW> profileControlPoints = profile.ControlPoints;
+	int n = profileControlPoints.size() - 1;
+
+	int degreeV = trajectory.Degree;
+	const std::vector<double>& knotVectorV = trajectory.KnotVector;
+	std::vector<XYZW> trajectoryControlPoints = trajectory.ControlPoints;
+	int m = trajectoryControlPoints.size() - 1;
+
+	std::vector<std::vector<XYZW>> controlPoints(n + 1, std::vector<XYZW>(m + 1));
+	for (int i = 0; i <= n; i++)
+	{
+		for (int j = 0; j <= m; j++)
+		{
+			XYZ point = trajectoryControlPoints[j].ToXYZ(true) + profileControlPoints[i].ToXYZ(true);
+			double weight = profileControlPoints[i].GetW() * trajectoryControlPoints[j].GetW();
+			controlPoints[i][j] = XYZW(point, weight);
+		}
+	}
+
+	surface.DegreeU = degreeU;
+	surface.DegreeV = degreeV;
+	surface.KnotVectorU = knotVectorU;
+	surface.KnotVectorV = knotVectorV;
+	surface.ControlPoints = controlPoints;
+}
+
 void LNLib::NurbsSurface::CreateSweepSurface(const LN_NurbsCurve& path, const std::vector<LN_NurbsCurve>& profiles, LN_NurbsSurface& surface)
 {
 	int profilesSize = profiles.size();
