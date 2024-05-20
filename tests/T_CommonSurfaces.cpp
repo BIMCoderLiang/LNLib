@@ -111,3 +111,32 @@ TEST(Test_CommonSurfaces, CreateRevolvedSurface)
 	XYZ C0 = NurbsSurface::GetPointOnSurface(surface, UV(0.5, 0.5));
 	EXPECT_TRUE(C0.IsAlmostEqualTo(XYZ(sqrt(2) / 4.0, sqrt(2) / 4.0, 0.5)));
 }
+
+TEST(Test_CommonSurfaces, CreateTranslationalSweepSurface)
+{
+	// Make circular profile.
+	XYZ center(0, 0, 0);
+	XYZ xAxis(1, 0, 0);
+	XYZ yAxis(0, 1, 0);
+	double startRad = 0;
+	double endRad = Constants::Pi * 2;
+	double radius = 5;
+	LN_NurbsCurve profile;
+	NurbsCurve::CreateArc(center, xAxis, yAxis, startRad, endRad, radius, radius, profile);
+
+	// Make linear trajectory.
+	LN_NurbsCurve trajectory;
+	XYZ start(0, 0, 0);
+	double height = 7;
+	XYZ end(0, 0, height);
+	NurbsCurve::CreateLine(start, end, trajectory);
+
+	// Make translational swept surface.
+	LN_NurbsSurface surface;
+	NurbsSurface::CreateTranslationalSweepSurface(profile, trajectory, surface);
+
+	// Verify area.
+	double expectedArea = (endRad - startRad) * radius * height;
+	double area = NurbsSurface::ApproximateArea(surface);
+	EXPECT_NEAR(area, expectedArea, 1e-4);
+}
