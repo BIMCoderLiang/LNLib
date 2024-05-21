@@ -213,7 +213,7 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page472
 		/// Create Generalized Translational Sweep Surface.
 		/// </summary>
-		static void CreateTranslationalSweepSurface(const LN_NurbsCurve& profile, const LN_NurbsCurve& trajectory, LN_NurbsSurface& surface);
+		static void CreateGeneralizedTranslationalSweepSurface(const LN_NurbsCurve& profile, const LN_NurbsCurve& trajectory, LN_NurbsSurface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page472

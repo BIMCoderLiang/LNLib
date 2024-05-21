@@ -764,7 +764,18 @@ std::vector<LNLib::LN_NurbsSurface> LNLib::NurbsSurface::DecomposeToBeziers(cons
 			}
 		}
 	}
-	return bezierPatches;
+
+	std::vector<LN_NurbsSurface> result;
+	for (int i = bezierPatches.size() - 1; i >= 0; i--)
+	{
+		std::vector<std::vector<XYZW>> bezierCps = bezierPatches[i].ControlPoints;
+		bool isValid = ValidationUtils::IsValidSurface(bezierCps);
+		if (isValid)
+		{
+			result.emplace_back(bezierPatches[i]);
+		}
+	}
+	return result;
 }
 
 void LNLib::NurbsSurface::RemoveKnot(const LN_NurbsSurface& surface, double removeKnot, int times, bool isUDirection, LN_NurbsSurface& result)
@@ -2265,7 +2276,7 @@ void LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_NurbsCurve>& se
 	surface.ControlPoints = controlPoints;
 }
 
-void LNLib::NurbsSurface::CreateTranslationalSweepSurface(const LN_NurbsCurve& profile, const LN_NurbsCurve& trajectory, LN_NurbsSurface& surface)
+void LNLib::NurbsSurface::CreateGeneralizedTranslationalSweepSurface(const LN_NurbsCurve& profile, const LN_NurbsCurve& trajectory, LN_NurbsSurface& surface)
 {
 	int degreeU = profile.Degree;
 	const std::vector<double>& knotVectorU = profile.KnotVector;

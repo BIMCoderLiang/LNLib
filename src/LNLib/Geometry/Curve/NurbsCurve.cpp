@@ -326,9 +326,8 @@ std::vector<LNLib::XYZ> LNLib::NurbsCurve::ProjectNormal(const LN_NurbsCurve& cu
 
 		for (int i = m - 1; i >= 1; i--)
 		{
-			XYZ Ti = ComputeRationalCurveDerivatives(curve, 1, knotVector[i])[1].Normalize();
-			XYZ cross = Ti.CrossProduct(Baver[i + 1]);
-			XYZ bi = Baver[i + 1] - (Baver[i + 1].DotProduct(Ti)) * Ti;
+			XYZ Ti1 = ComputeRationalCurveDerivatives(curve, 1, knotVector[i + 1])[1].Normalize();
+			XYZ bi = Baver[i + 1] + Ti1;
 			Baver[i] = bi.Normalize();
 		}
 
