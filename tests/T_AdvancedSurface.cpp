@@ -135,7 +135,7 @@ TEST(Test_AdvancedSurface, LoftSurface)
 
 }
 
-TEST(Test_CommonSurfaces, CreateGeneralizedTranslationalSweepSurface)
+TEST(Test_AdvancedSurface, CreateGeneralizedTranslationalSweepSurface)
 {
 	// Make circular profile.
 	XYZ center(0, 0, 0);

@@ -36,7 +36,7 @@ namespace LNLib
 
 		static bool IsValidDegreeReduction(int degree);
 
-		static bool IsValidSurface(const std::vector<std::vector<XYZW>> surfaceControlPoints);
+		static bool IsValidSurface(const std::vector<std::vector<XYZW>>& surfaceControlPoints);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page185

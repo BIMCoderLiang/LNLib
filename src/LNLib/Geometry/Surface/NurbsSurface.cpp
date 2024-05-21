@@ -768,7 +768,7 @@ std::vector<LNLib::LN_NurbsSurface> LNLib::NurbsSurface::DecomposeToBeziers(cons
 	std::vector<LN_NurbsSurface> result;
 	for (int i = bezierPatches.size() - 1; i >= 0; i--)
 	{
-		std::vector<std::vector<XYZW>> bezierCps = bezierPatches[i].ControlPoints;
+		const std::vector<std::vector<XYZW>>& bezierCps = bezierPatches[i].ControlPoints;
 		bool isValid = ValidationUtils::IsValidSurface(bezierCps);
 		if (isValid)
 		{

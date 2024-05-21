@@ -40,16 +40,15 @@ bool LNLib::ValidationUtils::IsValidDegreeReduction(int degree)
 	return degree > 1;
 }
 
-bool LNLib::ValidationUtils::IsValidSurface(const std::vector<std::vector<XYZW>> surfaceControlPoints)
+bool LNLib::ValidationUtils::IsValidSurface(const std::vector<std::vector<XYZW>>& surfaceControlPoints)
 {
-	bool isAllZero = true;
 	int row = surfaceControlPoints.size();
 	int column = surfaceControlPoints[0].size();
 	for (int i = 0; i < row; i++)
 	{
 		for (int j = 0; j < column; j++)
 		{
-			XYZW wp = surfaceControlPoints[i][j];
+			const XYZW& wp = surfaceControlPoints[i][j];
 			XYZ p = wp.ToXYZ(true);
 			if (!p.IsAlmostEqualTo(XYZ(0, 0, 0)))
 			{
@@ -57,7 +56,7 @@ bool LNLib::ValidationUtils::IsValidSurface(const std::vector<std::vector<XYZW>>
 			}
 		}
 	}
-	return !isAllZero;
+	return false;
 }
 
 double LNLib::ValidationUtils::ComputeCurveModifyTolerance(const std::vector<XYZW>& controlPoints)
