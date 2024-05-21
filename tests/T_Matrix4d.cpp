@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 #include "Matrix4d.h"
 #include "XYZ.h"
+#include "XYZW.h"
 #include "MathUtils.h"
 using namespace LNLib;
 
@@ -51,6 +52,11 @@ TEST(Test_Matrix4d, Creation)
 	XYZ rt = XYZ(-1, 0, 1);
 	XYZ rted = rotation.OfPoint(rt);
 	EXPECT_TRUE(rted.IsAlmostEqualTo(XYZ(1, 0, 1)));
+
+	XYZW rtw = XYZW(rt, 100);
+	XYZW rtwed = rotation.OfWeightedPoint(rtw);
+	EXPECT_TRUE(rtwed.ToXYZ(true).IsAlmostEqualTo(XYZ(1, 0, 1)));
+
 	rotation = Matrix4d::CreateRotationAtPoint(XYZ(1,0,0), XYZ(0, 0, 1), Constants::Pi);
 	rted = rotation.OfPoint(rt);
 	EXPECT_TRUE(rted.IsAlmostEqualTo(XYZ(3, 0, 1)));

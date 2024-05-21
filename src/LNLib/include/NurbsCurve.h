@@ -283,6 +283,12 @@ namespace LNLib
 		static XYZ Normal(const LN_NurbsCurve& curve, CurveNormal normalType, double paramT);
 
 		/// <summary>
+		/// The NURBS Book 2nd Edition Page481
+		/// Projection normal method invented by Siltanen and Woodward.
+		/// </summary>
+		static std::vector<XYZ> ProjectNormal(const LN_NurbsCurve& curve);
+
+		/// <summary>
 		/// The NURBS Book 2nd Edition Page511
 		/// Reposition an arbitrary control point.
 		/// </summary>

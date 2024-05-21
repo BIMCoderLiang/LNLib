@@ -58,6 +58,9 @@ namespace LNLib
 		double Distance(const XYZ& another) const;
 
 	public:
+		static XYZ CreateRandomOrthogonal(const XYZ& xyz);
+
+	public:
 
 		XYZ& operator =(const XYZ& xyz);
 		double& operator[](int index);

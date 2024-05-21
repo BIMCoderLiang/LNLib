@@ -279,6 +279,66 @@ LNLib::XYZ LNLib::NurbsCurve::Normal(const LN_NurbsCurve& curve, CurveNormal nor
 	}
 }
 
+std::vector<LNLib::XYZ> LNLib::NurbsCurve::ProjectNormal(const LN_NurbsCurve& curve)
+{
+	const std::vector<double>& knotVector = curve.KnotVector;
+	int size = knotVector.size();
+	int m = size - 1;
+
+	double v0 = knotVector[0];
+	double vm = knotVector[m];
+
+	std::vector<XYZ> Blist(size);
+	XYZ T0 = ComputeRationalCurveDerivatives(curve, 1, v0)[1].Normalize();
+
+	bool flag = true;
+	while (flag)
+	{
+		bool needReCal = false;
+		Blist[0] = XYZ::CreateRandomOrthogonal(T0);
+
+		for (int i = 1; i <= m; i++)
+		{
+			XYZ Ti = ComputeRationalCurveDerivatives(curve, 1, knotVector[i])[1].Normalize();
+
+			needReCal = Ti.CrossProduct(Blist[i - 1]).IsZero();
+			if (needReCal)
+			{
+				break;
+			}
+
+			XYZ bi = Blist[i - 1] - (Blist[i - 1].DotProduct(Ti)) * Ti;
+			Blist[i] = bi.Normalize();
+		}
+		if (!needReCal)
+		{
+			flag = false;
+		}
+	}
+
+	bool isClosed = IsClosed(curve);
+	if (isClosed)
+	{
+		Blist[m] = Blist[0];
+
+		std::vector<XYZ> Baver(m);
+		Baver[m] = Blist[0];
+
+		for (int i = m - 1; i >= 1; i--)
+		{
+			XYZ Ti1 = ComputeRationalCurveDerivatives(curve, 1, knotVector[i + 1])[1].Normalize();
+			XYZ bi = Baver[i + 1] + Ti1;
+			Baver[i] = bi.Normalize();
+		}
+
+		for (int i = 1; i <= m - 1; i++)
+		{
+			Blist[i] = 0.5 * (Blist[i] + Baver[i]);
+		}
+	}
+	return Blist;
+}
+
 double LNLib::NurbsCurve::Torsion(const LN_NurbsCurve& curve, double paramT)
 {
 	int degree = curve.Degree;

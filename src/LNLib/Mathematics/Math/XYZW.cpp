@@ -94,7 +94,7 @@ double& XYZW::W()
 	return m_xyzw[3];
 }
 
-XYZ LNLib::XYZW::ToXYZ(bool divideWeight)
+XYZ LNLib::XYZW::ToXYZ(bool divideWeight)const
 {
 	if (divideWeight)
 	{

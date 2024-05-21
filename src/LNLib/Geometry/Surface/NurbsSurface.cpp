@@ -764,7 +764,18 @@ std::vector<LNLib::LN_NurbsSurface> LNLib::NurbsSurface::DecomposeToBeziers(cons
 			}
 		}
 	}
-	return bezierPatches;
+
+	std::vector<LN_NurbsSurface> result;
+	for (int i = bezierPatches.size() - 1; i >= 0; i--)
+	{
+		const std::vector<std::vector<XYZW>>& bezierCps = bezierPatches[i].ControlPoints;
+		bool isValid = ValidationUtils::IsValidSurface(bezierCps);
+		if (isValid)
+		{
+			result.emplace_back(bezierPatches[i]);
+		}
+	}
+	return result;
 }
 
 void LNLib::NurbsSurface::RemoveKnot(const LN_NurbsSurface& surface, double removeKnot, int times, bool isUDirection, LN_NurbsSurface& result)
@@ -2261,6 +2272,36 @@ void LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_NurbsCurve>& se
 	surface.DegreeU = degreeU;
 	surface.DegreeV = degreeV;
 	surface.KnotVectorU = internals[0].KnotVector;
+	surface.KnotVectorV = knotVectorV;
+	surface.ControlPoints = controlPoints;
+}
+
+void LNLib::NurbsSurface::CreateGeneralizedTranslationalSweepSurface(const LN_NurbsCurve& profile, const LN_NurbsCurve& trajectory, LN_NurbsSurface& surface)
+{
+	int degreeU = profile.Degree;
+	const std::vector<double>& knotVectorU = profile.KnotVector;
+	std::vector<XYZW> profileControlPoints = profile.ControlPoints;
+	int n = profileControlPoints.size() - 1;
+
+	int degreeV = trajectory.Degree;
+	const std::vector<double>& knotVectorV = trajectory.KnotVector;
+	std::vector<XYZW> trajectoryControlPoints = trajectory.ControlPoints;
+	int m = trajectoryControlPoints.size() - 1;
+
+	std::vector<std::vector<XYZW>> controlPoints(n + 1, std::vector<XYZW>(m + 1));
+	for (int i = 0; i <= n; i++)
+	{
+		for (int j = 0; j <= m; j++)
+		{
+			XYZ point = trajectoryControlPoints[j].ToXYZ(true) + profileControlPoints[i].ToXYZ(true);
+			double weight = profileControlPoints[i].GetW() * trajectoryControlPoints[j].GetW();
+			controlPoints[i][j] = XYZW(point, weight);
+		}
+	}
+
+	surface.DegreeU = degreeU;
+	surface.DegreeV = degreeV;
+	surface.KnotVectorU = knotVectorU;
 	surface.KnotVectorV = knotVectorV;
 	surface.ControlPoints = controlPoints;
 }

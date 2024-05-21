@@ -134,3 +134,32 @@ TEST(Test_AdvancedSurface, LoftSurface)
 	EXPECT_TRUE(point5.IsAlmostEqualTo(XYZ(0, 50, 50)));
 
 }
+
+TEST(Test_AdvancedSurface, CreateGeneralizedTranslationalSweepSurface)
+{
+	// Make circular profile.
+	XYZ center(0, 0, 0);
+	XYZ xAxis(1, 0, 0);
+	XYZ yAxis(0, 1, 0);
+	double startRad = 0;
+	double endRad = Constants::Pi * 2;
+	double radius = 5;
+	LN_NurbsCurve profile;
+	NurbsCurve::CreateArc(center, xAxis, yAxis, startRad, endRad, radius, radius, profile);
+
+	// Make linear trajectory.
+	LN_NurbsCurve trajectory;
+	XYZ start(0, 0, 0);
+	double height = 7;
+	XYZ end(0, 0, height);
+	NurbsCurve::CreateLine(start, end, trajectory);
+
+	// Make translational swept surface.
+	LN_NurbsSurface surface;
+	NurbsSurface::CreateGeneralizedTranslationalSweepSurface(profile, trajectory, surface);
+
+	// Verify area.
+	double expectedArea = (endRad - startRad) * radius * height;
+	double area = NurbsSurface::ApproximateArea(surface);
+	EXPECT_NEAR(area, expectedArea, 1e-4);
+}
