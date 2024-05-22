@@ -765,17 +765,16 @@ std::vector<LNLib::LN_NurbsSurface> LNLib::NurbsSurface::DecomposeToBeziers(cons
 		}
 	}
 
-	std::vector<LN_NurbsSurface> result;
-	for (int i = bezierPatches.size() - 1; i >= 0; i--)
+	int currentPatchesSize = bezierPatches.size();
+	int diff = currentPatchesSize - nb;
+	if (diff > 0)
 	{
-		const std::vector<std::vector<XYZW>>& bezierCps = bezierPatches[i].ControlPoints;
-		bool isValid = ValidationUtils::IsValidSurface(bezierCps);
-		if (isValid)
+		for (int d = 0; d < diff; d++)
 		{
-			result.emplace_back(bezierPatches[i]);
+			bezierPatches.pop_back();
 		}
 	}
-	return result;
+	return bezierPatches;
 }
 
 void LNLib::NurbsSurface::RemoveKnot(const LN_NurbsSurface& surface, double removeKnot, int times, bool isUDirection, LN_NurbsSurface& result)
@@ -2260,12 +2259,22 @@ void LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_NurbsCurve>& se
 	for (int c = 0; c < column; c++)
 	{
 		std::vector<XYZ> temp(size);
+		std::vector<double> weightCache(size);
 		for (int k = 0; k < size; k++)
 		{
-			temp[k] = curvesControlPoints[k][c].ToXYZ(true);
+			XYZW cp = curvesControlPoints[k][c];
+			double w = cp.GetW();
+			weightCache[k] = w;
+			temp[k] = XYZ(cp.GetWX() / w, cp.GetWY() / w, cp.GetWZ() / w);
 		}
 		LN_NurbsCurve tc;
 		NurbsCurve::GlobalInterpolation(degreeV, temp, tc, vl);
+		for (int i = 0; i < tc.ControlPoints.size(); i++)
+		{
+			XYZW cp = tc.ControlPoints[i];
+			double w = cp.GetW();
+			tc.ControlPoints[i] = XYZW(XYZ(cp.GetWX() / w, cp.GetWY() / w, cp.GetWZ() / w), weightCache[i]);
+		}
 		controlPoints.emplace_back(tc.ControlPoints);
 	}
 
