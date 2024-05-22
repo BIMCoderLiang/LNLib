@@ -5,6 +5,8 @@ set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 file(GLOB TEST_FILES ${SOURCE_DIR}/*.cpp)
 add_executable(${TARGET_NAME} ${TEST_FILES})
 
+option(INSTALL_GTEST OFF)
+
 include(FetchContent)
 FetchContent_Declare(
 	googletest

@@ -1,4 +1,4 @@
-set(TARGET_NAME LNLib)
+﻿set(TARGET_NAME LNLib)
 project(${TARGET_NAME} LANGUAGES CXX)
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 add_library(${TARGET_NAME} SHARED "")
@@ -18,8 +18,8 @@ set(EIGEN_BUILD_TESTING OFF)
 set(EIGEN_MPL2_ONLY ON)
 set(EIGEN_BUILD_PKGCONFIG OFF)
 set(EIGEN_BUILD_DOC OFF)
-FetchContent_MakeAvailable(Eigen)
-target_link_libraries(${TARGET_NAME} PRIVATE Eigen3::Eigen)
+FetchContent_Populate(Eigen)
+target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_BINARY_DIR}/_deps/eigen-src)
 
 file(GLOB rootfiles *.cpp *.h)
 source_group("" FILES ${rootfiles})
@@ -31,3 +31,8 @@ foreach(subdir ${SUBDIRS})
     source_group(${subdir} FILES ${subdirFiles})
     target_sources(${TARGET_NAME} PRIVATE ${subdirFiles})
 endforeach()
+
+install(TARGETS ${TARGET_NAME}
+        RUNTIME DESTINATION ${CMAKE_BINARY_DIR}/${TARGET_NAME}/bin/$<CONFIG>
+        ARCHIVE DESTINATION ${CMAKE_BINARY_DIR}/${TARGET_NAME}/lib/$<CONFIG>)
+install(DIRECTORY include DESTINATION ${CMAKE_BINARY_DIR}/${TARGET_NAME})
