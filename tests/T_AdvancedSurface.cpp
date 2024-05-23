@@ -86,6 +86,25 @@ TEST(Test_AdvancedSurface, CoonsSurface)
 	EXPECT_TRUE(check3.IsAlmostEqualTo(t1));
 }
 
+TEST(Test_AdvancedSurface, ProjectNormal)
+{
+	LN_NurbsCurve circle0;
+	XYZ center = XYZ(0, 0, 0);
+	XYZ xAxis = XYZ(1, 0, 0);
+	XYZ yAxis = XYZ(0, 1, 0);
+	NurbsCurve::CreateArc(center, xAxis, yAxis, 0, Constants::Pi, 50, 50, circle0);
+
+	auto blist = NurbsCurve::ProjectNormal(circle0);
+	std::vector<double> kv = circle0.KnotVector;
+	for (int i = 0; i < kv.size(); i++)
+	{
+		XYZ ti = NurbsCurve::ComputeRationalCurveDerivatives(circle0, 1, kv[i])[1].Normalize();
+		XYZ bi = blist[i];
+
+		EXPECT_TRUE(MathUtils::IsAlmostEqualTo(ti.DotProduct(bi), 0));
+	}
+}
+
 TEST(Test_AdvancedSurface, LoftSurface)
 {
 	//arc0
