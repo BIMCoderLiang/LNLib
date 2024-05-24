@@ -216,11 +216,11 @@ namespace LNLib
 		static void CreateGeneralizedTranslationalSweepSurface(const LN_NurbsCurve& profile, const LN_NurbsCurve& trajectory, LN_NurbsSurface& surface);
 
 		/// <summary>
-		/// The NURBS Book 2nd Edition Page472
-		/// Algorithm A10.2
-		/// Create Sweep Surface.
+		/// The NURBS Book 2nd Edition Page475
+		/// Algorithm A10.1
+		/// Create sweep surface by trajectory interpolated.
 		/// </summary>
-		static void CreateSweepSurface(const LN_NurbsCurve& path, const std::vector<LN_NurbsCurve>& profiles, LN_NurbsSurface& surface);
+		static void CreateSweepSurface(const LN_NurbsCurve& profile, const LN_NurbsCurve& trajectory, int minimumProfiles, LN_NurbsSurface& surface);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page494
@@ -241,7 +241,6 @@ namespace LNLib
 		/// Create Coons Surface.
 		/// The difference between Coons and Gordon is that Coons Surface is created by 4 anti-clock curves.
 		/// The coons surface is the special case of Gordon Surface.
-		/// 
 		/// </summary>
 		static void CreateCoonsSurface(const LN_NurbsCurve& leftCurve, const LN_NurbsCurve& bottomCurve, const LN_NurbsCurve& rightCurve, const LN_NurbsCurve& topCurve, LN_NurbsSurface& surface);
 

@@ -181,4 +181,9 @@ TEST(Test_AdvancedSurface, CreateGeneralizedTranslationalSweepSurface)
 	double expectedArea = (endRad - startRad) * radius * height;
 	double area = NurbsSurface::ApproximateArea(surface);
 	EXPECT_NEAR(area, expectedArea, 1e-4);
+
+
+	NurbsSurface::CreateSweepSurface(profile, trajectory, 2, surface);
+	area = NurbsSurface::ApproximateArea(surface);
+	EXPECT_NEAR(area, expectedArea, 1e-4);
 }

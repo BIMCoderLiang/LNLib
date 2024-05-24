@@ -90,6 +90,23 @@ namespace LNLib
 		}
 		return ind;
 	}
+
+	XYZ LocalToWorld(const XYZ& localOrigin, const XYZ& localXdir, const XYZ& localYdir, const XYZ& localZdir, const XYZ& worldPoint)
+	{
+		double x = localXdir.GetX() * worldPoint.GetX() + localYdir.GetX() * worldPoint.GetY() + localZdir.GetX() * worldPoint.GetZ();
+		double y = localXdir.GetY() * worldPoint.GetX() + localYdir.GetY() * worldPoint.GetY() + localZdir.GetY() * worldPoint.GetZ();
+		double z = localXdir.GetZ() * worldPoint.GetX() + localYdir.GetZ() * worldPoint.GetY() + localZdir.GetZ() * worldPoint.GetZ();
+		return XYZ(x, y, z) + localOrigin;
+	}
+
+	XYZ WorldToLocal(const XYZ& localOrigin, const XYZ& localXdir, const XYZ& localYdir, const XYZ& localZdir, const XYZ& worldPoint)
+	{
+		XYZ traslation = (worldPoint - localOrigin);
+		double x = localXdir.GetX() * traslation.GetX() + localXdir.GetY() * traslation.GetY() + localXdir.GetZ() * traslation.GetZ();
+		double y = localYdir.GetX() * traslation.GetX() + localYdir.GetY() * traslation.GetY() + localYdir.GetZ() * traslation.GetZ();
+		double z = localZdir.GetX() * traslation.GetX() + localZdir.GetY() * traslation.GetY() + localZdir.GetZ() * traslation.GetZ();
+		return XYZ(x, y, z);
+	}
 }
 
 void  LNLib::NurbsSurface::Check(const LN_NurbsSurface& surface)
@@ -2226,6 +2243,7 @@ void LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_NurbsCurve>& se
 	int degreeU = degree_max;
 	int degreeV = degree_max;
 
+
 	int K = size - 1;
 	std::vector<double> vl(size);
 	vl[0] = 0;
@@ -2239,7 +2257,7 @@ void LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_NurbsCurve>& se
 		for (int i = 0; i <= n; i++)
 		{
 			double delta = curvesControlPoints[k][i].ToXYZ(true).Distance(curvesControlPoints[k - 1][i].ToXYZ(true));
-			
+
 			std::vector<XYZ> tempPoints(size);
 			for (int j = 0; j <= K; j++)
 			{
@@ -2249,7 +2267,7 @@ void LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_NurbsCurve>& se
 			double di = Interpolation::GetTotalChordLength(tempPoints);
 			sum += delta / di;
 		}
-		
+
 		vl[k] = vl[k - 1] + (1.0 / (n + 1)) * sum;
 	}
 	std::vector<double> knotVectorV = Interpolation::AverageKnotVector(degreeV, vl);
@@ -2315,33 +2333,73 @@ void LNLib::NurbsSurface::CreateGeneralizedTranslationalSweepSurface(const LN_Nu
 	surface.ControlPoints = controlPoints;
 }
 
-void LNLib::NurbsSurface::CreateSweepSurface(const LN_NurbsCurve& path, const std::vector<LN_NurbsCurve>& profiles, LN_NurbsSurface& surface)
+void LNLib::NurbsSurface::CreateSweepSurface(const LN_NurbsCurve& profile, const LN_NurbsCurve& trajectory, int minimumProfiles, LN_NurbsSurface& surface)
 {
-	int profilesSize = profiles.size();
-	double path_min = path.KnotVector[0];
-	double path_max = path.KnotVector[path.KnotVector.size() - 1];
-	double delta = (path_max - path_min) / profilesSize;
+	int q = trajectory.Degree;
+	const std::vector<double>& trajectoryKnotVector = trajectory.KnotVector;
+	int ktv = trajectoryKnotVector.size();
+	int K = minimumProfiles;
+	int nsect = K + 1;
 
-	std::vector<LN_NurbsCurve> sections(profilesSize);
-	for (int i = 0; i < profilesSize; i++)
+	LN_NurbsCurve trajectoryCopy = trajectory;
+	if (ktv <= nsect + q)
 	{
-		double param = path_min + i * delta;
-		XYZ point = NurbsCurve::GetPointOnCurve(path, param);
-		std::vector<XYZ> ders = NurbsCurve::ComputeRationalCurveDerivatives(profiles[i], 1, param);
-		XYZ tangent = ders[1];
-		Matrix4d transform = Matrix4d::CreateTranslation(point);
-		if (!tangent.IsZero())
+		int m = nsect + q - ktv + 1;
+		std::vector<double> insertedElements = KnotVectorUtils::GetInsertedKnotElements(m, trajectoryKnotVector);
+		NurbsCurve::RefineKnotVector(trajectory, insertedElements, trajectoryCopy);
+	}
+	else
+	{
+		if (ktv > nsect + q + 1)
 		{
-			XYZ binormal = NurbsCurve::Normal(profiles[i], CurveNormal::Binormal, param);
-			double rad = binormal.AngleTo(tangent);
-			Matrix4d rotation = Matrix4d::CreateRotationAtPoint(point, binormal, rad);
-			transform = transform.Multiply(rotation);
+			nsect = ktv - q - 1;
 		}
-		LN_NurbsCurve newProfile;
-		NurbsCurve::CreateTransformed(profiles[i], transform, newProfile);
-		sections.emplace_back(newProfile);
+	}
+	std::vector<double> knotVectorV = trajectoryCopy.KnotVector;
+	auto minmax = std::minmax_element(knotVectorV.begin(), knotVectorV.end());
+
+	std::vector<double> vk(nsect);
+	vk[0] = *minmax.first;
+	vk[nsect - 1] = *minmax.second;
+
+	for (int k = 1; k < nsect - 1; k++)
+	{
+		double sum = 0.0;
+		for (int i = 1; i <= q; i++)
+		{
+			sum += knotVectorV[k + i];
+		}
+		vk[k] = sum / (double)q;
 	}
 
+	std::vector<XYZ> Bv =  NurbsCurve::ProjectNormal(trajectoryCopy);
+	const std::vector<XYZW>& profileControlPoints = profile.ControlPoints;
+	int profileCpSize = profileControlPoints.size();
+
+	std::vector<LN_NurbsCurve> sections(nsect);
+	for (int k = 0; k < nsect; k++)
+	{
+		XYZ zdir = NurbsCurve::ComputeRationalCurveDerivatives(trajectoryCopy, 1, vk[k])[1].Normalize();
+		int spanIndex = Polynomials::GetKnotSpanIndex(trajectoryCopy.Degree, trajectoryCopy.KnotVector, vk[k]);
+		XYZ xdir = Bv[spanIndex];
+		XYZ ydir = zdir.CrossProduct(xdir).Normalize();
+
+		std::vector<XYZW> transformedControlPoints(profileCpSize);
+		for (int i = 0; i < profileCpSize; i++)
+		{
+			XYZW wp = profileControlPoints[i];
+			double w = wp.GetW();
+			XYZ p = wp.ToXYZ(true);
+
+			XYZ transformed = WorldToLocal(NurbsCurve::GetPointOnCurve(trajectoryCopy, vk[k]), xdir, ydir, zdir, p);
+			transformedControlPoints[i] = XYZW(transformed, w);
+		}
+
+		LN_NurbsCurve section = profile;
+		section.ControlPoints = transformedControlPoints;
+		double a = NurbsCurve::ApproximateLength(section);
+		sections[k] = section;
+	}
 	CreateLoftSurface(sections, surface);
 }
 

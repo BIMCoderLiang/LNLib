@@ -61,6 +61,13 @@ namespace LNLib
 		static std::vector<std::vector<double>> GetInsertedKnotElements(const std::vector<std::vector<double>>& knotVectors);
 
 		/// <summary>
+		/// The NURBS Book 2nd Edition Page476
+		/// Insert [insertKnotsNumber] knots into [knotVector] 
+		/// by insert at the midpoint of the longest span will do.
+		/// </summary>
+		static std::vector<double> GetInsertedKnotElements(int insertKnotsNumber, const std::vector<double>& knotVector);
+
+		/// <summary>
 		/// The NURBS Book 2nd Edition Page572
 		/// </summary>
 		static bool IsUniform(const std::vector<double>& knotVector);

@@ -16,7 +16,36 @@
 #include "LNLibExceptions.h"
 #include <algorithm>
 
-using namespace LNLib;
+namespace LNLib
+{
+	void InsertMidKnotCore(std::vector<double>& unqiueKnotVector, std::vector<double>& insert, int limitNumber)
+	{
+		if (insert.size() == limitNumber)
+		{
+			return;
+		}
+		else
+		{
+			double standard = Constants::DoubleEpsilon;
+			int index = -1;
+			for (int i = 0; i < unqiueKnotVector.size() - 1; i++)
+			{
+				double delta = unqiueKnotVector[i + 1] - unqiueKnotVector[i];
+				if (MathUtils::IsGreaterThan(delta, standard))
+				{
+					standard = delta;
+					index = i;
+				}
+			}
+			double current = unqiueKnotVector[index] + standard / 2.0;
+			unqiueKnotVector.emplace_back(current);
+			std::sort(unqiueKnotVector.begin(), unqiueKnotVector.end());
+			insert.emplace_back(current);
+
+			InsertMidKnotCore(unqiueKnotVector, insert, limitNumber);
+		}
+	}
+}
 
 int LNLib::KnotVectorUtils::GetContinuity(int degree, const std::vector<double>& knotVector, double knot)
 {
@@ -216,6 +245,17 @@ std::vector<std::vector<double>> LNLib::KnotVectorUtils::GetInsertedKnotElements
 		result.emplace_back(insertElements);
 	}
 	return result;
+}
+
+std::vector<double> LNLib::KnotVectorUtils::GetInsertedKnotElements(int insertKnotsNumber, const std::vector<double>& knotVector)
+{
+	std::vector<double> unqiueKnotVector = knotVector;
+	unqiueKnotVector.erase(std::unique(unqiueKnotVector.begin(), unqiueKnotVector.end()), unqiueKnotVector.end());
+
+	std::vector<double> insert;
+	InsertMidKnotCore(unqiueKnotVector, insert, insertKnotsNumber);
+	std::sort(insert.begin(), insert.end());
+	return insert;
 }
 
 bool LNLib::KnotVectorUtils::IsUniform(const std::vector<double>& knotVector)
