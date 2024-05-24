@@ -2335,6 +2335,7 @@ void LNLib::NurbsSurface::CreateGeneralizedTranslationalSweepSurface(const LN_Nu
 
 void LNLib::NurbsSurface::CreateSweepSurface(const LN_NurbsCurve& profile, const LN_NurbsCurve& trajectory, int minimumProfiles, LN_NurbsSurface& surface)
 {
+	// Determine number of sections for lofting.
 	int q = trajectory.Degree;
 	const std::vector<double>& trajectoryKnotVector = trajectory.KnotVector;
 	int ktv = trajectoryKnotVector.size();
@@ -2344,6 +2345,8 @@ void LNLib::NurbsSurface::CreateSweepSurface(const LN_NurbsCurve& profile, const
 	LN_NurbsCurve trajectoryCopy = trajectory;
 	if (ktv <= nsect + q)
 	{
+		// Insert knots to widest spans 
+		// to reach the required minimum number of sections.
 		int m = nsect + q - ktv + 1;
 		std::vector<double> insertedElements = KnotVectorUtils::GetInsertedKnotElements(m, trajectoryKnotVector);
 		NurbsCurve::RefineKnotVector(trajectory, insertedElements, trajectoryCopy);
@@ -2355,6 +2358,8 @@ void LNLib::NurbsSurface::CreateSweepSurface(const LN_NurbsCurve& profile, const
 			nsect = ktv - q - 1;
 		}
 	}
+
+	// Determine lofting profile positions.
 	std::vector<double> knotVectorV = trajectoryCopy.KnotVector;
 	auto minmax = std::minmax_element(knotVectorV.begin(), knotVectorV.end());
 
@@ -2372,18 +2377,22 @@ void LNLib::NurbsSurface::CreateSweepSurface(const LN_NurbsCurve& profile, const
 		vk[k] = sum / (double)q;
 	}
 
+	// Compute trajectory normals.
 	std::vector<XYZ> Bv =  NurbsCurve::ProjectNormal(trajectoryCopy);
 	const std::vector<XYZW>& profileControlPoints = profile.ControlPoints;
 	int profileCpSize = profileControlPoints.size();
 
+	// for each lofting section
 	std::vector<LN_NurbsCurve> sections(nsect);
 	for (int k = 0; k < nsect; k++)
 	{
+		// Build local coordinate system for the section.
 		XYZ zdir = NurbsCurve::ComputeRationalCurveDerivatives(trajectoryCopy, 1, vk[k])[1].Normalize();
 		int spanIndex = Polynomials::GetKnotSpanIndex(trajectoryCopy.Degree, trajectoryCopy.KnotVector, vk[k]);
-		XYZ xdir = Bv[spanIndex];
+		const XYZ& xdir = Bv[spanIndex];
 		XYZ ydir = zdir.CrossProduct(xdir).Normalize();
 
+		// Transform the input profile to the lofting position.
 		std::vector<XYZW> transformedControlPoints(profileCpSize);
 		for (int i = 0; i < profileCpSize; i++)
 		{
@@ -2395,11 +2404,17 @@ void LNLib::NurbsSurface::CreateSweepSurface(const LN_NurbsCurve& profile, const
 			transformedControlPoints[i] = XYZW(transformed, w);
 		}
 
-		LN_NurbsCurve section = profile;
-		section.ControlPoints = transformedControlPoints;
-		double a = NurbsCurve::ApproximateLength(section);
+		// Make section curve.
+		LN_NurbsCurve section;
+		section.Degree = profile.Degree;
+		section.KnotVector = profile.KnotVector;
+		section.ControlPoints.swap(transformedControlPoints);
+		// note: std::vector::swap relinks pointers, which is faster than copying.
+
 		sections[k] = section;
 	}
+
+	// Do the lofting.
 	CreateLoftSurface(sections, surface);
 }
 
