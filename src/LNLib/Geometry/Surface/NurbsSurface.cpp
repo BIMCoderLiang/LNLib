@@ -2405,13 +2405,11 @@ void LNLib::NurbsSurface::CreateSweepSurface(const LN_NurbsCurve& profile, const
 		}
 
 		// Make section curve.
-		LN_NurbsCurve section;
+		// note: std::vector::swap relinks pointers, which is faster than copying.
+		LN_NurbsCurve& section = sections[k];
 		section.Degree = profile.Degree;
 		section.KnotVector = profile.KnotVector;
 		section.ControlPoints.swap(transformedControlPoints);
-		// note: std::vector::swap relinks pointers, which is faster than copying.
-
-		sections[k] = section;
 	}
 
 	// Do the lofting.
