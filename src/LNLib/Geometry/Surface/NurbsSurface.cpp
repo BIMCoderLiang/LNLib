@@ -2378,7 +2378,7 @@ void LNLib::NurbsSurface::CreateSweepSurface(const LN_NurbsCurve& profile, const
 	}
 
 	// Compute trajectory normals.
-	std::vector<XYZ> Bv = NurbsCurve::ProjectNormal(trajectoryCopy);
+	std::vector<XYZ> Bv =  NurbsCurve::ProjectNormal(trajectoryCopy);
 	const std::vector<XYZW>& profileControlPoints = profile.ControlPoints;
 	int profileCpSize = profileControlPoints.size();
 
