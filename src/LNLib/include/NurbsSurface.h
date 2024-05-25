@@ -224,6 +224,13 @@ namespace LNLib
 		static void CreateSweepSurface(const LN_NurbsCurve& profile, const LN_NurbsCurve& trajectory, int minimumProfiles, LN_NurbsSurface& surface);
 
 		/// <summary>
+		/// The NURBS Book 2nd Edition Page477
+		/// Algorithm A10.2
+		/// Create sweep surface by trajectory not interpolated.
+		/// </summary>
+		static void CreateSweepSurface(const LN_NurbsCurve& profile, const LN_NurbsCurve& trajectory, int minimumProfiles, int customTrajectoryDegree, LN_NurbsSurface& surface);
+
+		/// <summary>
 		/// The NURBS Book 2nd Edition Page494
 		/// Algorithm A10.3
 		/// Create Gordon Surface.

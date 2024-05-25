@@ -2416,6 +2416,11 @@ void LNLib::NurbsSurface::CreateSweepSurface(const LN_NurbsCurve& profile, const
 	CreateLoftSurface(sections, surface);
 }
 
+void LNLib::NurbsSurface::CreateSweepSurface(const LN_NurbsCurve& profile, const LN_NurbsCurve& trajectory, int minimumProfiles, int customTrajectoryDegree, LN_NurbsSurface& surface)
+{
+	// to do....
+}
+
 void LNLib::NurbsSurface::CreateGordonSurface(const std::vector<LN_NurbsCurve>& uCurves, const std::vector<LN_NurbsCurve>& vCurves, const std::vector<std::vector<XYZ>>& intersectionPoints, LN_NurbsSurface& surface)
 {
 	int degree_u_max = 0;
