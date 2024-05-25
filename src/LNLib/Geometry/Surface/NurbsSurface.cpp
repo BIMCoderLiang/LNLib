@@ -2208,7 +2208,7 @@ bool LNLib::NurbsSurface::CreateSwungSurface(const LN_NurbsCurve& profile, const
 	return true;
 }
 
-void LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_NurbsCurve>& sections, LN_NurbsSurface& surface)
+void LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_NurbsCurve>& sections, LN_NurbsSurface& surface, int customTrajectoryDegree, const std::vector<double>& customTrajectoryKnotVector)
 {
 	int degree_max = 0;
 	for (int k = 0; k < sections.size(); k++)
@@ -2243,35 +2243,41 @@ void LNLib::NurbsSurface::CreateLoftSurface(const std::vector<LN_NurbsCurve>& se
 	int degreeU = degree_max;
 	int degreeV = degree_max;
 
-
-	int K = size - 1;
 	std::vector<double> vl(size);
-	vl[0] = 0;
-	vl[K] = 1;
-	for (int k = 1; k <= K - 1; k++)
+	if (customTrajectoryKnotVector.size() == 0)
 	{
-
-		std::vector<XYZW> current = curvesControlPoints[k];
-		int n = current.size() - 1;
-		double sum = 0.0;
-		for (int i = 0; i <= n; i++)
+		int K = size - 1;
+		vl[0] = 0;
+		vl[K] = 1;
+		for (int k = 1; k <= K - 1; k++)
 		{
-			double delta = curvesControlPoints[k][i].ToXYZ(true).Distance(curvesControlPoints[k - 1][i].ToXYZ(true));
 
-			std::vector<XYZ> tempPoints(size);
-			for (int j = 0; j <= K; j++)
+			std::vector<XYZW> current = curvesControlPoints[k];
+			int n = current.size() - 1;
+			double sum = 0.0;
+			for (int i = 0; i <= n; i++)
 			{
-				tempPoints[j] = curvesControlPoints[j][i].ToXYZ(true);
+				double delta = curvesControlPoints[k][i].ToXYZ(true).Distance(curvesControlPoints[k - 1][i].ToXYZ(true));
+
+				std::vector<XYZ> tempPoints(size);
+				for (int j = 0; j <= K; j++)
+				{
+					tempPoints[j] = curvesControlPoints[j][i].ToXYZ(true);
+				}
+
+				double di = Interpolation::GetTotalChordLength(tempPoints);
+				sum += delta / di;
 			}
 
-			double di = Interpolation::GetTotalChordLength(tempPoints);
-			sum += delta / di;
+			vl[k] = vl[k - 1] + (1.0 / (n + 1)) * sum;
 		}
-
-		vl[k] = vl[k - 1] + (1.0 / (n + 1)) * sum;
+	}
+	else
+	{
+		degreeV = customTrajectoryDegree;
+		vl = customTrajectoryKnotVector;
 	}
 	std::vector<double> knotVectorV = Interpolation::AverageKnotVector(degreeV, vl);
-
 	std::vector<std::vector<XYZW>> controlPoints;
 	int column = curvesControlPoints[0].size();
 	for (int c = 0; c < column; c++)
@@ -2418,7 +2424,51 @@ void LNLib::NurbsSurface::CreateSweepSurface(const LN_NurbsCurve& profile, const
 
 void LNLib::NurbsSurface::CreateSweepSurface(const LN_NurbsCurve& profile, const LN_NurbsCurve& trajectory, int minimumProfiles, int customTrajectoryDegree, LN_NurbsSurface& surface)
 {
-	// to do....
+	int K = minimumProfiles;
+	int nsect = K + 1;
+	double trajectoryLength = NurbsCurve::ApproximateLength(trajectory);
+	double stepLength = trajectoryLength / (nsect - 1);
+	LN_NurbsCurve path;
+	NurbsCurve::Reparametrize(trajectory, 0, 1, path);
+
+	std::vector<double> segments(nsect);
+	segments[0] = 0.0;
+	std::vector<double> params = NurbsCurve::GetParamsOnCurve(path, stepLength);
+	for (int i = 0; i < params.size(); i++)
+	{
+		segments[i + 1] = params[i];
+	}
+
+	std::vector<XYZ> Bv = NurbsCurve::ProjectNormal(path);
+	const std::vector<XYZW>& profileControlPoints = profile.ControlPoints;
+	int profileCpSize = profileControlPoints.size();
+
+	std::vector<LN_NurbsCurve> sections(nsect);
+	for (int k = 0; k < nsect; k++)
+	{
+		XYZ zdir = NurbsCurve::ComputeRationalCurveDerivatives(path, 1, segments[k])[1].Normalize();
+		int spanIndex = Polynomials::GetKnotSpanIndex(path.Degree, path.KnotVector, segments[k]);
+		XYZ xdir = Bv[spanIndex];
+		XYZ ydir = zdir.CrossProduct(xdir).Normalize();
+
+		std::vector<XYZW> transformedControlPoints(profileCpSize);
+		for (int i = 0; i < profileCpSize; i++)
+		{
+			XYZW wp = profileControlPoints[i];
+			double w = wp.GetW();
+			XYZ p = wp.ToXYZ(true);
+
+			XYZ transformed = WorldToLocal(NurbsCurve::GetPointOnCurve(path, segments[k]), xdir, ydir, zdir, p);
+			transformedControlPoints[i] = XYZW(transformed, w);
+		}
+
+		LN_NurbsCurve& section = sections[k];
+		section.Degree = profile.Degree;
+		section.KnotVector = profile.KnotVector;
+		section.ControlPoints.swap(transformedControlPoints);
+	}
+
+	CreateLoftSurface(sections, surface, customTrajectoryDegree, segments);
 }
 
 void LNLib::NurbsSurface::CreateGordonSurface(const std::vector<LN_NurbsCurve>& uCurves, const std::vector<LN_NurbsCurve>& vCurves, const std::vector<std::vector<XYZ>>& intersectionPoints, LN_NurbsSurface& surface)

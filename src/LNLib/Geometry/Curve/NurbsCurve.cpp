@@ -95,12 +95,12 @@ namespace LNLib
 		else if (MathUtils::IsGreaterThan(length, givenLength, Constants::DistanceEpsilon))
 		{
 			end = middle;
-			GetParamByLength(curve, start, end, givenLength, type);
+			return GetParamByLength(curve, start, end, givenLength, type);
 		}
 		else if (MathUtils::IsLessThan(length, givenLength, Constants::DistanceEpsilon))
 		{
 			start = middle;
-			GetParamByLength(curve, start, end, givenLength, type);
+			return GetParamByLength(curve, start, end, givenLength, type);
 		}
 		return middle;
 	}

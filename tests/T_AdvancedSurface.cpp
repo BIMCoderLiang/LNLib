@@ -154,7 +154,7 @@ TEST(Test_AdvancedSurface, LoftSurface)
 
 }
 
-TEST(Test_AdvancedSurface, CreateGeneralizedTranslationalSweepSurface)
+TEST(Test_AdvancedSurface, CreateSweepSurface)
 {
 	// Make circular profile.
 	XYZ center(0, 0, 0);
@@ -182,8 +182,11 @@ TEST(Test_AdvancedSurface, CreateGeneralizedTranslationalSweepSurface)
 	double area = NurbsSurface::ApproximateArea(surface);
 	EXPECT_NEAR(area, expectedArea, 1e-4);
 
-
 	NurbsSurface::CreateSweepSurface(profile, trajectory, 5, surface);
 	area = NurbsSurface::ApproximateArea(surface);
 	EXPECT_NEAR(area, expectedArea, 1e-4);
+
+	NurbsSurface::CreateSweepSurface(profile, trajectory, 5, 2, surface);
+	area = NurbsSurface::ApproximateArea(surface);
+	EXPECT_NEAR(area, expectedArea, 1e-1);
 }
