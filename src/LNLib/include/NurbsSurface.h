@@ -219,6 +219,7 @@ namespace LNLib
 		/// The NURBS Book 2nd Edition Page475
 		/// Algorithm A10.1
 		/// Create sweep surface by trajectory interpolated.
+		/// Profile must lie on XOY plane.
 		/// </summary>
 		static void CreateSweepSurface(const LN_NurbsCurve& profile, const LN_NurbsCurve& trajectory, int minimumProfiles, LN_NurbsSurface& surface);
 
