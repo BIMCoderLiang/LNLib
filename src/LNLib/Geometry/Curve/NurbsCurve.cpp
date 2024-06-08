@@ -2317,9 +2317,9 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(int degre
 			//
 			// My question: 
 			// 
-			// N is mu2 rows, n+1 columns;
-			// funs is degree+1 rows;
-			// How to match data? Is controlPointsCount must equal degree + 1?
+			// N is (mu + 1) rows, (n + 1) columns;
+			// funs is 2 rows, (degree + 1) columns;
+			// How to match column data? Is controlPointsCount must equal degree + 1?
 			//
 			for (int z = 0; z < funs[0].size(); z++)
 			{
