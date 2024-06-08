@@ -180,47 +180,60 @@ TEST(Test_Fitting, Approximation)
 		
 	}
 	{
-		XYZ P0 = XYZ(20, 20, 0);
-		XYZ P1 = XYZ(20, 80, 0);
-		XYZ P2 = XYZ(20, 120, 0);
-		XYZ P3 = XYZ(20, 160, 0);
-		XYZ P4 = XYZ(80, 200, 0);
-		XYZ P5 = XYZ(120, 200, 0);
-		XYZ P6 = XYZ(160, 160, 0);
-		XYZ P7 = XYZ(160, 120, 0);
-		XYZ P8 = XYZ(120, 80, 0);
-		XYZ P9 = XYZ(80, 80, 0);
-		XYZ P10 = XYZ(60, 60, 0);
+		XYZ P0 = XYZ(0, 0, 0);
+		XYZ P1 = XYZ(10, 10, 0);
+		XYZ P2 = XYZ(20, 20, 0);
+		XYZ P3 = XYZ(30, 30, 0);
+		XYZ P4 = XYZ(40, 40, 0);
+		XYZ P5 = XYZ(50, 40, 0);
+		XYZ P6 = XYZ(60, 40, 0);
+		XYZ P7 = XYZ(70, 40, 0);
+		XYZ P8 = XYZ(80, 30, 0);
+		XYZ P9 = XYZ(90, 20, 0);
+		XYZ P10 = XYZ(100, 10, 0);
+		XYZ P11 = XYZ(110, 0, 0);
+		XYZ P12 = XYZ(120, -10, 0);
+		XYZ P13 = XYZ(130, -20, 0);
+		XYZ P14 = XYZ(140, -20, 0);
+		XYZ P15 = XYZ(150, -20, 0);
+		XYZ P16 = XYZ(160, -20, 0);
+		XYZ P17 = XYZ(170, -10, 0);
+		XYZ P18 = XYZ(180, 0, 0);
+		XYZ P19 = XYZ(190, 10, 0);
+		XYZ P20 = XYZ(200, 20, 0);
 
-		std::vector<XYZ> points = { P0,P1,P2,P3,P4,P5,P6,P7,P8,P9,P10 };
+		std::vector<XYZ> points = { P0,P1,P2,P3,P4,P5,P6,P7,P8,P9,P10,
+									P11,P12,P13,P14,P15,P16,P17,P18,P19,P20};
 		int m = points.size();
-		int mm = m - 1;
-		std::vector<int> Indices(2);
-		std::vector<XYZ> D(2);
-		std::vector<double> wd(2), wp(m);
-		wp[0] = wp[mm] = -1.0;
-		for (int i = 1; i < mm; i++)
-		{
-			wp[i] = 1.0;
-		}
-			
-		wd[0] = wd[1] = -1.0;
-		Indices[0] = 0;
-		Indices[1] = mm;
-		D[0] = XYZ(1,0,0);
-		D[1] = XYZ(0,1,0);
 
-		double length = 0;
-		for (int i = 1; i < m; i++)
+		std::vector<double> pointWeights(m);
+		for (int i = 0; i < m; i++)
 		{
-			length += points[i - 1].Distance(points[i]);
+			pointWeights[i] = 1;
 		}
+		pointWeights[0] = -1;
+		pointWeights[20] = -1;
 
-		D[0] = D[0].Normalize();
-		D[1] = D[1].Normalize();
+		std::vector<XYZ> tangents(4);
+		tangents[0] = XYZ(0, 1, 0);
+		tangents[1] = XYZ(1, -1, 0);
+		tangents[2] = XYZ(1, -1, 0);
+		tangents[3] = XYZ(0, 1, 0);
+
+		std::vector<int> indices(4);
+		indices[0] = 0;
+		indices[1] = 7;
+		indices[2] = 13;
+		indices[3] = m - 1;
+
+		std::vector<double> tangentWeights(4);
+		tangentWeights[0] = 1;
+		tangentWeights[1] = 1;
+		tangentWeights[2] = 1;
+		tangentWeights[3] = 1;
 
 		LN_NurbsCurve curve;
-		bool result = NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(3, points, wp, D, Indices, wd, 5, curve);
+		bool result = NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(3, points, pointWeights, tangents, indices, tangentWeights, 4, curve);
 		EXPECT_TRUE(result);
 		auto kv = curve.KnotVector;
 		auto cps = curve.ControlPoints;

@@ -239,7 +239,7 @@ namespace LNLib
 		/// Algorithm A9.6
 		/// Weighted and contrained least squares approximation.
 		/// </summary>
-		static bool WeightedAndContrainedLeastSquaresApproximation(int degree, const std::vector<XYZ>& throughPoints, const std::vector<double>& weights, const std::vector<XYZ>& tangents, const std::vector<int>& tangentIndices, const std::vector<double>& weightedTangents, int controlPointsCount, LN_NurbsCurve& curve);
+		static bool WeightedAndContrainedLeastSquaresApproximation(int degree, const std::vector<XYZ>& throughPoints, const std::vector<double>& throughPointWeights, const std::vector<XYZ>& tangents, const std::vector<int>& tangentIndices, const std::vector<double>& tangentWeights, int controlPointsCount, LN_NurbsCurve& curve);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page428
