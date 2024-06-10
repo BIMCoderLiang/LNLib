@@ -205,7 +205,7 @@ namespace LNLib
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page317
 		/// Algorithm A7.3
-		/// Construct open conic arc.
+		/// Create open conic arc.
 		/// </summary>
 		static bool CreateOpenConic(const XYZ& start, const XYZ& startTangent, const XYZ& end, const XYZ& endTangent, const XYZ& pointOnConic, LN_NurbsCurve& curve);
 
