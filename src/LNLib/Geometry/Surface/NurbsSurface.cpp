@@ -3412,6 +3412,9 @@ LNLib::LN_Mesh LNLib::NurbsSurface::Triangulate(const LN_NurbsSurface& surface)
 			std::uniform_real_distribution<> disU(currentU, nextU);
 			std::uniform_real_distribution<> disV(currentV, nextV);
 
+			newU.emplace_back(currentU);
+			newV.emplace_back(currentV);
+
 			for (int i = 0; i < ppf; i++)
 			{
 				newU.emplace_back(disU(gen));
@@ -3422,14 +3425,11 @@ LNLib::LN_Mesh LNLib::NurbsSurface::Triangulate(const LN_NurbsSurface& surface)
 
 #pragma region Delaunay Triangulation
 	std::vector<double> usList;
-	usList.insert(usList.end(), us.begin(), us.end());
 	usList.insert(usList.end(), newU.begin(), newU.end());
-	std::sort(usList.begin(), usList.end());
 
 	std::vector<double> vsList;
-	vsList.insert(vsList.end(), vs.begin(), vs.end());
 	vsList.insert(vsList.end(), newV.begin(), newV.end());
-	std::sort(vsList.begin(), vsList.end());
+
 
 	row = surfacePoints.size();
 	column = surfacePoints[0].size();
