@@ -57,7 +57,7 @@ Additional Algorithms:
 
 ## Visualization
 [LNLibViewer](https://github.com/BIMCoderLiang/LNLibViewer) based on [VTK](https://vtk.org/)
-![curve](data/curve.png){: width="200px" height="200px"}![surface](data/surface.png){: width="200px" height="200px"}
+<img src="data/curve.png" width=200 height=200><img src="data/surface.png" width=200 height=200>
 
 ## Contributing
 Welcome join this project including discussions in **Issues** and make **Pull requests**.
