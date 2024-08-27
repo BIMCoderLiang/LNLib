@@ -124,7 +124,23 @@ namespace LNLib
 		{
 			double distance = midPoint.Distance(segMidPoint);
 			bool condition1 = MathUtils::IsLessThanOrEqual(distance, Constants::DistanceEpsilon);
-
+			if (curve.Degree <= 3)
+			{
+				double left = start + (end - start) * 0.3;
+				XYZ leftPoint = NurbsCurve::GetPointOnCurve(curve, left);
+				XYZ segLeftPoint = startPoint + (endPoint - startPoint) * left;
+				bool conditionForDegree3 = MathUtils::IsLessThanOrEqual(leftPoint.Distance(segLeftPoint), Constants::DistanceEpsilon);
+				if (condition1 && conditionForDegree3)
+				{
+					parameters.emplace_back(mid);
+				}
+				else
+				{
+					TessellateCore(curve, start, mid, parameters);
+					TessellateCore(curve, mid, end, parameters);
+				}
+				return;
+			}
 			XYZ startTangent = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, start)[1];
 			XYZ endTangent = NurbsCurve::ComputeRationalCurveDerivatives(curve, 1, end)[1];
 			double angle = startTangent.AngleTo(endTangent);
