@@ -4,7 +4,7 @@
 <img src="image/LNLib.png" width=400 height=200>
 
 ## Run LNLib
-Please run build.bat first and it will construct solution by CMake.
+Please run build.bat first to construct C++ solution by CMake.
 
 ## Features
 Basic Elements:
@@ -15,47 +15,25 @@ Basic Elements:
 - LNObject
 
 Algorithms in ***The Nurbs Book***:
-- ***Chapter 1***:
-    - Basis Function Computation
-- ***Chapter 1,2,3,4***:
-    - Bezier/B-Spline/NURBS Curve and Surface
-- ***Chapter 5***:
-    - Curve and Surface Decomposition
-    - Knot Insertion/Refinement/Removal
-    - Degree Elevation and Reduction
-- ***Chapter 6***:
-    - Curve/Surface Point Inversion
-    - Surface Tangent Vector Inversion
-    - Curve/Surface Reparameterization
-    - Curve Transform and Reverse
-    - Surface Swap and Reverse
-- ***Chapter 7***:
-    - Create Arc/Conic Curve
-- ***Chapter 8***:
-    - Create Bilinear/Cylindrical/Ruled/Revolved/CornerFillet Surface
-- ***Chapter 9***:
-    - Global/Local Curve/Surface Interpolation and Approximation
-- ***Chapter 10***:
-    - Create Swung/Loft/Sweep/Gordon/Coons Surface
-- ***Chapter 11***:
-    - Curve Modification in Control Point Locations or Weight Values
-- ***Chapter 12***:
-    - Curve Clamp/UnClamp/IsClamp
-    - KnotVector IsUniform
-    - Curve IsClosed/IsPeriodic
+|Chapter|Content|
+|--|--|
+|***Chapter 1***  | Basis Function Computation |
+|***Chapter 1 to 4***  | Bezier/B-Spline/NURBS Curve and Surface |
+|***Chapter 5***  | Curve and Surface Decomposition</br>Knot Insertion/Refinement/Removal</br>Degree Elevation and Reduction |
+|***Chapter 6***  | Curve/Surface Point Inversion</br>Surface Tangent Vector Inversion</br>Curve/Surface Reparameterization</br>Curve Transform and Reverse</br> Surface Swap and Reverse|
+|***Chapter 7***  | Create Arc/Conic Curve |
+|***Chapter 8***  | Create Bilinear/Cylindrical/Ruled/Revolved/CornerFillet Surface |
+|***Chapter 9***  | Global/Local Curve/Surface Interpolation and Approximation |
+|***Chapter 10***  | Create Swung/Loft/Sweep/Gordon/Coons Surface |
+|***Chapter 11***  | Curve Modification in Control Point Locations or Weight Values |
+|***Chapter 12***  | Curve Clamp/UnClamp/IsClamp </br> KnotVector IsUniform </br> Curve IsClosed/IsPeriodic|
 
-Additional Algorithms:  
-- ***Basic Properties***:
-    - Curve/Surface Curvature and Normal
-    - Curve Split/Segment/Merge/Offset
-    - Curve IsLinear/IsArc
-    - Curve Approximate Length
-    - Surface Approximate Area
-- ***Curve Creation***
-    - Create Line/Cubic Hermite
-- ***Tessellation***:
-    - Curve Tessellation
-    - Surface Triangulation
+Additional Algorithms:
+|Description|Content|
+|--|--|  
+|***Basic Properties***  | Curve/Surface Curvature and Normal</br>Curve Split/Segment/Merge/Offset</br>Curve IsLinear/IsArc</br>Curve Approximate Length</br>Surface Approximate Area |
+|***Curve Creation***  | Create Line/Cubic Hermite |
+|***Tessellation***  | Curve Tessellation </br> Surface Triangulation|
 
 ## Visualization
 [LNLibViewer](https://github.com/BIMCoderLiang/LNLibViewer) based on [VTK](https://vtk.org/)
