@@ -47,7 +47,7 @@ Welcome join this project including discussions in **Issues** and make **Pull re
 LNLib is created by Yuqing Liang (BIMCoder Liang).
 
 - bim.frankliang@foxmail.com
-- 微信公众号：**BIMCoder梁老师**
+- 微信公众号：**BIMCoder**
 
 ## License
 The source code is published under [GNU General Public License v3.0](https://www.gnu.org/licenses/), the license is available [here](LICENSE).
