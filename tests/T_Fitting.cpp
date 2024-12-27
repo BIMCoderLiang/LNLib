@@ -488,9 +488,9 @@ TEST(Test_Fitting, offset)
 
 	// Verify a random proportional point.
 	double ratio = 0.345;
-	double t = curve.KnotVector[0] * (1 - t) + curve.KnotVector[curve.ControlPoints.size()] * t;
+	double t = curve.KnotVector[0] * (1 - ratio) + curve.KnotVector[curve.ControlPoints.size()] * ratio;
 	auto point = NurbsCurve::GetPointOnCurve(curve, t);
-	t = new_curve.KnotVector[0] * (1 - t) + new_curve.KnotVector[new_curve.ControlPoints.size()] * t;
+	t = new_curve.KnotVector[0] * (1 - ratio) + new_curve.KnotVector[new_curve.ControlPoints.size()] * ratio;
 	auto pointNew = NurbsCurve::GetPointOnCurve(new_curve, t);
 	double distance = point.Distance(pointNew);
 	EXPECT_NEAR(distance, offsetDist, Constants::DistanceEpsilon);
