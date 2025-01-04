@@ -1527,18 +1527,46 @@ void LNLib::NurbsCurve::Offset(const LN_NurbsCurve& curve, double offset, LN_Nur
 		return;
 	}
 
-	std::vector<XYZ> tessellatedPoints;
-	std::vector<double> correspondingKnots;
-	EquallyTessellate(curve, tessellatedPoints, correspondingKnots);
+	std::vector<XYZ> tempPoints;
 
-	std::vector<XYZ> newPoints(tessellatedPoints.size());
-	for (int i = 0; i < tessellatedPoints.size(); i++)
+	for (int i = 0; i < controlPoints.size() - 1; i++)
 	{
-		XYZ newPoint = tessellatedPoints[i] + offset * Normal(curve, CurveNormal::Normal, correspondingKnots[i]);
-		newPoints[i] = newPoint;
+		XYZ currentPoint0 = controlPoints[i].ToXYZ(true);
+		double param0 = GetParamOnCurve(curve, currentPoint0);
+		
+		XYZ currentPoint1 = controlPoints[i+1].ToXYZ(true);
+		double param1 = GetParamOnCurve(curve, currentPoint1);
+
+		XYZ newPoint0 = currentPoint0 + offset * Normal(curve, CurveNormal::Normal, param0);
+		XYZ newPoint1 = currentPoint1 + offset * Normal(curve, CurveNormal::Normal, param1);
+
+		tempPoints.emplace_back(newPoint0);
+		tempPoints.emplace_back(newPoint1);
 	}
 
-	GlobalInterpolation(3, newPoints, result);
+	std::vector<XYZW> newControlPoints;
+	newControlPoints.reserve(controlPoints.size());
+	newControlPoints.emplace_back(XYZW(tempPoints[0],1));
+
+	for (int i = 0; i < tempPoints.size() - 2; i = i + 2)
+	{
+		XYZ currentP0 = tempPoints[i];
+		XYZ currentP1 = tempPoints[i + 1];
+
+		XYZ nextP0 = tempPoints[i+2];
+		XYZ nextP1 = tempPoints[i+3];
+
+		double param0, param1;
+		XYZ result;
+		Intersection::ComputeRays(currentP0, currentP1 - currentP0, nextP1, nextP0 - nextP1, param0, param1, result);
+
+		newControlPoints.emplace_back(XYZW(result, 1));
+	}
+
+	newControlPoints.emplace_back(XYZW(tempPoints[tempPoints.size()-1], 1));
+
+	result = curve;
+	result.ControlPoints = newControlPoints;
 }
 
 void LNLib::NurbsCurve::CreateLine(const XYZ& start, const XYZ& end, LN_NurbsCurve& result)
