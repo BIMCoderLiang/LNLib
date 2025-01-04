@@ -294,13 +294,13 @@ TEST(Test_Fitting, offset)
 	double distance = point.Distance(pointNew);
 	double diff = abs(distance - offsetDist);
 	
-	// Use Tiller & Hason Algorithm to Offset.
+	// Use Tiller & Hanson Algorithm to Offset.
 	// Actually：
-	// 1. Tiller & Hason Algorithm should iterative use. 
-	//		When diff is larger than tolerance, should subdivision curve util less than tolerance.
+	// 1. Tiller & Hanson Algorithm should iterative use. 
+	//		When diff is larger than tolerance, should subdivide curve util less than tolerance.
 	//		Finally use Merge curve.
-	// 2. Tiller & Hason Algorithm is not good in negative offset.
-	// 3. Hope combine several algorithm to make Offset Funcion better.
+	// 2. Tiller & Hanson Algorithm is not good in negative offset.
+	// 3. Hope combine several algorithm to make Offset Function better.
 	double d = diff / offsetDist;
 	EXPECT_TRUE(MathUtils::IsLessThanOrEqual(d,0.1));
 }
