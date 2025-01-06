@@ -11,6 +11,7 @@
 #pragma once
 #include "Constants.h"
 #include <stdexcept>
+#include <string>
 
 #define VALIDATE_ARGUMENT(condition,arg,message)\
 	if(!(condition)){\
