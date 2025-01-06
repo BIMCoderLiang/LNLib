@@ -1558,8 +1558,11 @@ void LNLib::NurbsCurve::Offset(const LN_NurbsCurve& curve, double offset, LN_Nur
 
 		double param0, param1;
 		XYZ result;
-		Intersection::ComputeRays(currentP0, currentP1 - currentP0, nextP1, nextP0 - nextP1, param0, param1, result);
-
+		CurveCurveIntersectionType type = Intersection::ComputeRays(currentP0, currentP1 - currentP0, nextP1, nextP0 - nextP1, param0, param1, result);
+		if (type != CurveCurveIntersectionType::Intersecting)
+		{
+			return;
+		}
 		newControlPoints.emplace_back(XYZW(result, 1));
 	}
 
