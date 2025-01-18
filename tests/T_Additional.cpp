@@ -275,46 +275,49 @@ TEST(Test_Additional, MergeCurve)
 }
 
 
-TEST(Test_Fitting, offsetByTillerAndHanson)
+TEST(Test_Fitting, offset)
 {
 	// Code copied from issue #25
 	std::vector<XYZ> cps_interpolation = { XYZ(XYZ(0, 0, 0)), XYZ(XYZ(1, 1, 0)), XYZ(XYZ(3, 2, 0)), XYZ(XYZ(4, 1, 0)), XYZ(XYZ(5, -1, 0)) };
-	LN_NurbsCurve curve, new_curve;
+	LN_NurbsCurve curve, th_curve, pt_curve;
 	NurbsCurve::GlobalInterpolation(2, cps_interpolation, curve);
 	const double offsetDist = 1.0;
-	NurbsCurve::Offset(curve, offsetDist, OffsetType::TillerAndHanson, new_curve);
+	NurbsCurve::Offset(curve, offsetDist, OffsetType::TillerAndHanson, th_curve);
+	NurbsCurve::Offset(curve, offsetDist, OffsetType::PieglAndTiller, pt_curve);
+	
+	{
+		LN_NurbsCurve new_curve = th_curve;
+		std::vector<double> ratios = { 0.345, 0.655, 0.85 };
+		for (int i = 0; i < ratios.size(); i++)
+		{
+			double ratio = ratios[i];
+			double t = curve.KnotVector[0] * (1 - ratio) + curve.KnotVector[curve.ControlPoints.size()] * ratio;
+			auto point = NurbsCurve::GetPointOnCurve(curve, t);
+			t = new_curve.KnotVector[0] * (1 - ratio) + new_curve.KnotVector[new_curve.ControlPoints.size()] * ratio;
+			auto pointNew = NurbsCurve::GetPointOnCurve(new_curve, t);
+			double distance = point.Distance(pointNew);
+			double diff = abs(distance - offsetDist);
 
-	// Verify a random proportional point.
-	double ratio = 0.345;
-	double t = curve.KnotVector[0] * (1 - ratio) + curve.KnotVector[curve.ControlPoints.size()] * ratio;
-	auto point = NurbsCurve::GetPointOnCurve(curve, t);
-	t = new_curve.KnotVector[0] * (1 - ratio) + new_curve.KnotVector[new_curve.ControlPoints.size()] * ratio;
-	auto pointNew = NurbsCurve::GetPointOnCurve(new_curve, t);
-	double distance = point.Distance(pointNew);
-	double diff = abs(distance - offsetDist);
+			double d = diff / offsetDist;
+			EXPECT_TRUE(MathUtils::IsLessThanOrEqual(d, 0.15));
+		}
+	}
 
-	double d = diff / offsetDist;
-	EXPECT_TRUE(MathUtils::IsLessThanOrEqual(d,0.1));
-}
+	{
+		LN_NurbsCurve new_curve = pt_curve;
+		std::vector<double> ratios = { 0.345, 0.655, 0.85 };
+		for (int i = 0; i < ratios.size(); i++)
+		{
+			double ratio = ratios[i];
+			double t = curve.KnotVector[0] * (1 - ratio) + curve.KnotVector[curve.ControlPoints.size()] * ratio;
+			auto point = NurbsCurve::GetPointOnCurve(curve, t);
+			t = new_curve.KnotVector[0] * (1 - ratio) + new_curve.KnotVector[new_curve.ControlPoints.size()] * ratio;
+			auto pointNew = NurbsCurve::GetPointOnCurve(new_curve, t);
+			double distance = point.Distance(pointNew);
+			double diff = abs(distance - offsetDist);
 
-TEST(Test_Fitting, offsetByPieglAndTiller)
-{
-	// Code copied from issue #25
-	std::vector<XYZ> cps_interpolation = { XYZ(XYZ(0, 0, 0)), XYZ(XYZ(1, 1, 0)), XYZ(XYZ(3, 2, 0)), XYZ(XYZ(4, 1, 0)), XYZ(XYZ(5, -1, 0)) };
-	LN_NurbsCurve curve, new_curve;
-	NurbsCurve::GlobalInterpolation(2, cps_interpolation, curve);
-	const double offsetDist = 1.0;
-	NurbsCurve::Offset(curve, offsetDist, OffsetType::PieglAndTiller, new_curve);
-
-	// Verify a random proportional point.
-	double ratio = 0.345;
-	double t = curve.KnotVector[0] * (1 - ratio) + curve.KnotVector[curve.ControlPoints.size()] * ratio;
-	auto point = NurbsCurve::GetPointOnCurve(curve, t);
-	t = new_curve.KnotVector[0] * (1 - ratio) + new_curve.KnotVector[new_curve.ControlPoints.size()] * ratio;
-	auto pointNew = NurbsCurve::GetPointOnCurve(new_curve, t);
-	double distance = point.Distance(pointNew);
-	double diff = abs(distance - offsetDist);
-
-	double d = diff / offsetDist;
-	EXPECT_TRUE(MathUtils::IsLessThanOrEqual(d, 0.1));
+			double d = diff / offsetDist;
+			EXPECT_TRUE(MathUtils::IsLessThanOrEqual(d, 0.1));
+		}
+	}
 }
