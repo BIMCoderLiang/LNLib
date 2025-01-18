@@ -169,7 +169,7 @@ namespace LNLib
 		/// <summary>
 		/// Offset curve makes bigger or smaller.
 		/// </summary>
-		static void Offset(const LN_NurbsCurve& curve, double offset, LN_NurbsCurve& result);
+		static void Offset(const LN_NurbsCurve& curve, double offset, OffsetType type, LN_NurbsCurve& result);
 
 		/// <summary>
 		/// Create line represented by NURBS.

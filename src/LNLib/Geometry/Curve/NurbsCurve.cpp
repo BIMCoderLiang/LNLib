@@ -26,7 +26,6 @@
 #include "Integrator.h"
 #include "LNLibExceptions.h"
 #include "LNObject.h"
-
 #include <vector>
 #include <set>
 #include <random>
@@ -155,6 +154,94 @@ namespace LNLib
 				TessellateCore(curve, mid, end, parameters);
 			}
 		}
+	}
+
+	void OffsetByTillerAndHanson(const LN_NurbsCurve& curve, double offset, LN_NurbsCurve& result)
+	{
+		int degree = curve.Degree;
+		std::vector<double> knotVector = curve.KnotVector;
+		std::vector<XYZW> controlPoints = curve.ControlPoints;
+
+		if (MathUtils::IsAlmostEqualTo(offset, 0.0))
+		{
+			result = curve;
+			return;
+		}
+
+		std::vector<XYZ> tempPoints;
+
+		for (int i = 0; i < controlPoints.size() - 1; i++)
+		{
+			XYZ currentPoint0 = controlPoints[i].ToXYZ(true);
+			double param0 = NurbsCurve::GetParamOnCurve(curve, currentPoint0);
+
+			XYZ currentPoint1 = controlPoints[i + 1].ToXYZ(true);
+			double param1 = NurbsCurve::GetParamOnCurve(curve, currentPoint1);
+
+			XYZ newPoint0 = currentPoint0 + offset * NurbsCurve::Normal(curve, CurveNormal::Normal, param0);
+			XYZ newPoint1 = currentPoint1 + offset * NurbsCurve::Normal(curve, CurveNormal::Normal, param1);
+
+			tempPoints.emplace_back(newPoint0);
+			tempPoints.emplace_back(newPoint1);
+		}
+
+		std::vector<XYZW> newControlPoints;
+		newControlPoints.reserve(controlPoints.size());
+		newControlPoints.emplace_back(XYZW(tempPoints[0], 1));
+
+		for (int i = 0; i < tempPoints.size() - 2; i = i + 2)
+		{
+			XYZ currentP0 = tempPoints[i];
+			XYZ currentP1 = tempPoints[i + 1];
+
+			XYZ nextP0 = tempPoints[i + 2];
+			XYZ nextP1 = tempPoints[i + 3];
+
+			double param0, param1;
+			XYZ result;
+			CurveCurveIntersectionType type = Intersection::ComputeRays(currentP0, currentP1 - currentP0, nextP1, nextP0 - nextP1, param0, param1, result);
+			if (type != CurveCurveIntersectionType::Intersecting)
+			{
+				return;
+			}
+			newControlPoints.emplace_back(XYZW(result, 1));
+		}
+
+		newControlPoints.emplace_back(XYZW(tempPoints[tempPoints.size() - 1], 1));
+
+		result = curve;
+		result.ControlPoints = newControlPoints;
+	}
+
+	void OffsetByPieglAndTiller(const LN_NurbsCurve& curve, double offset, LN_NurbsCurve& result)
+	{
+		int degree = curve.Degree;
+		std::vector<double> knotVector = curve.KnotVector;
+		std::vector<XYZW> controlPoints = curve.ControlPoints;
+
+		if (MathUtils::IsAlmostEqualTo(offset, 0.0))
+		{
+			result = curve;
+			return;
+		}
+
+		double minParam = knotVector[0];
+		double maxParam = knotVector[knotVector.size() - 1];
+
+		int count = 2 * (degree + 1);
+		double step = (maxParam - minParam) / (double)(count - 1);
+
+		std::vector<XYZ> samplePoints;
+
+		for (int j = 0; j < count; j++)
+		{
+			double bparam = minParam + step * j;
+			XYZ point = NurbsCurve::GetPointOnCurve(curve, bparam);
+			XYZ newPoint = point + offset * NurbsCurve::Normal(curve, CurveNormal::Normal, bparam);
+			samplePoints.emplace_back(newPoint);
+		}
+
+		NurbsCurve::GlobalInterpolation(degree, samplePoints, result);
 	}
 }
 
@@ -1515,62 +1602,22 @@ bool LNLib::NurbsCurve::Merge(const LN_NurbsCurve& left, const LN_NurbsCurve& ri
 	return true;
 }
 
-void LNLib::NurbsCurve::Offset(const LN_NurbsCurve& curve, double offset, LN_NurbsCurve& result)
+void LNLib::NurbsCurve::Offset(const LN_NurbsCurve& curve, double offset, OffsetType type, LN_NurbsCurve& result)
 {
-	int degree = curve.Degree;
-	std::vector<double> knotVector = curve.KnotVector;
-	std::vector<XYZW> controlPoints = curve.ControlPoints;
-
-	if (MathUtils::IsAlmostEqualTo(offset, 0.0))
+	switch (type)
 	{
-		result = curve;
-		return;
-	}
+		case OffsetType::TillerAndHanson:
+			LNLib::OffsetByTillerAndHanson(curve, offset, result);
+			break;
 
-	std::vector<XYZ> tempPoints;
-
-	for (int i = 0; i < controlPoints.size() - 1; i++)
-	{
-		XYZ currentPoint0 = controlPoints[i].ToXYZ(true);
-		double param0 = GetParamOnCurve(curve, currentPoint0);
+		case OffsetType::PieglAndTiller:
+			LNLib::OffsetByPieglAndTiller(curve, offset, result);
 		
-		XYZ currentPoint1 = controlPoints[i+1].ToXYZ(true);
-		double param1 = GetParamOnCurve(curve, currentPoint1);
-
-		XYZ newPoint0 = currentPoint0 + offset * Normal(curve, CurveNormal::Normal, param0);
-		XYZ newPoint1 = currentPoint1 + offset * Normal(curve, CurveNormal::Normal, param1);
-
-		tempPoints.emplace_back(newPoint0);
-		tempPoints.emplace_back(newPoint1);
+		default:
+			break;
 	}
-
-	std::vector<XYZW> newControlPoints;
-	newControlPoints.reserve(controlPoints.size());
-	newControlPoints.emplace_back(XYZW(tempPoints[0],1));
-
-	for (int i = 0; i < tempPoints.size() - 2; i = i + 2)
-	{
-		XYZ currentP0 = tempPoints[i];
-		XYZ currentP1 = tempPoints[i + 1];
-
-		XYZ nextP0 = tempPoints[i+2];
-		XYZ nextP1 = tempPoints[i+3];
-
-		double param0, param1;
-		XYZ result;
-		CurveCurveIntersectionType type = Intersection::ComputeRays(currentP0, currentP1 - currentP0, nextP1, nextP0 - nextP1, param0, param1, result);
-		if (type != CurveCurveIntersectionType::Intersecting)
-		{
-			return;
-		}
-		newControlPoints.emplace_back(XYZW(result, 1));
-	}
-
-	newControlPoints.emplace_back(XYZW(tempPoints[tempPoints.size()-1], 1));
-
-	result = curve;
-	result.ControlPoints = newControlPoints;
 }
+
 
 void LNLib::NurbsCurve::CreateLine(const XYZ& start, const XYZ& end, LN_NurbsCurve& result)
 {
@@ -1909,6 +1956,7 @@ void LNLib::NurbsCurve::GlobalInterpolation(int degree, const std::vector<XYZ>& 
 {
 	VALIDATE_ARGUMENT(degree >= 0 && degree <= Constants::NURBSMaxDegree, "degree", "Degree must be greater than or equal zero and not exceed the maximun degree.");
 	VALIDATE_ARGUMENT(throughPoints.size() > degree, "throughPoints", "ThroughPoints size must be greater than degree.");
+	
 	int size = throughPoints.size();
 	int n = size - 1;
 
@@ -1919,7 +1967,7 @@ void LNLib::NurbsCurve::GlobalInterpolation(int degree, const std::vector<XYZ>& 
 	}
 	else
 	{
-		VALIDATE_ARGUMENT(params.size() == size , "params", "Params size must be equal to throughPoints size.");
+		VALIDATE_ARGUMENT(params.size() == size, "params", "Params size must be equal to throughPoints size.");
 		uk = params;
 	}
 	std::vector<double> knotVector = Interpolation::AverageKnotVector(degree, uk);
