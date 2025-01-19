@@ -96,6 +96,11 @@ namespace LNLib
 		static bool RemoveKnot(const LN_NurbsCurve& curve, double removeKnot, int times, LN_NurbsCurve& result);
 
 		/// <summary>
+		/// Remove excessive knots.
+		/// </summary>
+		static void RemoveExcessiveKnots(const LN_NurbsCurve& curve, LN_NurbsCurve& result);
+
+		/// <summary>
 		/// The NURBS Book 2nd Edition Page206
 		/// Algorithm A5.9
 		/// Degree elevate a curve t times.

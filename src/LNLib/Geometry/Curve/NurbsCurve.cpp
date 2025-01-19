@@ -229,10 +229,27 @@ namespace LNLib
 		double maxParam = knotVector[knotVector.size() - 1];
 
 		int count = 2 * (degree + 1);
+		int n = 0;
+		for (int i = 0; i < knotVector.size(); i++)
+		{
+			std::vector<XYZ> ders = NurbsCurve::ComputeRationalCurveDerivatives(curve, 2, knotVector[i]);
+			if (ders.size() > 2)
+			{
+				XYZ d2 = NurbsCurve::ComputeRationalCurveDerivatives(curve, 2, knotVector[i])[2];
+				int l = (int)(sqrt(1.0 / Constants::DistanceEpsilon) * sqrt(d2.Length() / 8.0));
+				if (l > n)
+				{
+					n = l;
+				}
+			}
+		}
+		if (n > count)
+		{
+			count = n;
+		}
 		double step = (maxParam - minParam) / (double)(count - 1);
-
 		std::vector<XYZ> samplePoints;
-
+		samplePoints.reserve(count);
 		for (int j = 0; j < count; j++)
 		{
 			double bparam = minParam + step * j;
@@ -241,7 +258,9 @@ namespace LNLib
 			samplePoints.emplace_back(newPoint);
 		}
 
-		NurbsCurve::GlobalInterpolation(degree, samplePoints, result);
+		LN_NurbsCurve temp;
+		NurbsCurve::GlobalInterpolation(degree, samplePoints, temp);
+		NurbsCurve::RemoveExcessiveKnots(temp, result);
 	}
 }
 
@@ -856,6 +875,28 @@ bool LNLib::NurbsCurve::RemoveKnot(const LN_NurbsCurve& curve, double removeKnot
 	result.KnotVector = restKnotVector;
 	result.ControlPoints = updatedControlPoints;
 	return true;
+}
+
+void LNLib::NurbsCurve::RemoveExcessiveKnots(const LN_NurbsCurve& curve, LN_NurbsCurve& result)
+{
+	result = curve;
+	auto map = KnotVectorUtils::GetInternalKnotMultiplicityMap(curve.KnotVector);
+	for (auto it = map.begin(); it != map.end(); it++)
+	{
+		double u = it->first;
+		int count = it->second;
+
+		LN_NurbsCurve tempResult;
+		bool canRemove = NurbsCurve::RemoveKnot(result, u, count, tempResult);
+		if (!canRemove)
+		{
+			continue;
+		}
+		else
+		{
+			result = tempResult;
+		}
+	}
 }
 
 void LNLib::NurbsCurve::ElevateDegree(const LN_NurbsCurve& curve, int times, LN_NurbsCurve& result)

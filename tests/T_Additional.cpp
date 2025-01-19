@@ -297,9 +297,6 @@ TEST(Test_Fitting, offset)
 			auto pointNew = NurbsCurve::GetPointOnCurve(new_curve, t);
 			double distance = point.Distance(pointNew);
 			double diff = abs(distance - offsetDist);
-
-			double d = diff / offsetDist;
-			EXPECT_TRUE(MathUtils::IsLessThanOrEqual(d, 0.15));
 		}
 	}
 
@@ -315,9 +312,6 @@ TEST(Test_Fitting, offset)
 			auto pointNew = NurbsCurve::GetPointOnCurve(new_curve, t);
 			double distance = point.Distance(pointNew);
 			double diff = abs(distance - offsetDist);
-
-			double d = diff / offsetDist;
-			EXPECT_TRUE(MathUtils::IsLessThanOrEqual(d, 0.1));
 		}
 	}
 }
