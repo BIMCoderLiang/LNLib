@@ -25,7 +25,7 @@ namespace LNLib
 
 		Matrix4d();
 
-		Matrix4d(XYZ basisX, XYZ basisY, XYZ basisZ, XYZ basisW);
+		Matrix4d(XYZ basisX, XYZ basisY, XYZ basisZ, XYZ origin);
 
 		Matrix4d(double a00, double a01, double a02, double a03,
 				 double a10, double a11, double a12, double a13,

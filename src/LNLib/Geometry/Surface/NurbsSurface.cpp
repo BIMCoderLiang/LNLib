@@ -90,23 +90,6 @@ namespace LNLib
 		}
 		return ind;
 	}
-
-	XYZ LocalToWorld(const XYZ& localOrigin, const XYZ& localXdir, const XYZ& localYdir, const XYZ& localZdir, const XYZ& worldPoint)
-	{
-		double x = localXdir.GetX() * worldPoint.GetX() + localYdir.GetX() * worldPoint.GetY() + localZdir.GetX() * worldPoint.GetZ();
-		double y = localXdir.GetY() * worldPoint.GetX() + localYdir.GetY() * worldPoint.GetY() + localZdir.GetY() * worldPoint.GetZ();
-		double z = localXdir.GetZ() * worldPoint.GetX() + localYdir.GetZ() * worldPoint.GetY() + localZdir.GetZ() * worldPoint.GetZ();
-		return XYZ(x, y, z) + localOrigin;
-	}
-
-	XYZ WorldToLocal(const XYZ& localOrigin, const XYZ& localXdir, const XYZ& localYdir, const XYZ& localZdir, const XYZ& worldPoint)
-	{
-		XYZ traslation = (worldPoint - localOrigin);
-		double x = localXdir.GetX() * traslation.GetX() + localXdir.GetY() * traslation.GetY() + localXdir.GetZ() * traslation.GetZ();
-		double y = localYdir.GetX() * traslation.GetX() + localYdir.GetY() * traslation.GetY() + localYdir.GetZ() * traslation.GetZ();
-		double z = localZdir.GetX() * traslation.GetX() + localZdir.GetY() * traslation.GetY() + localZdir.GetZ() * traslation.GetZ();
-		return XYZ(x, y, z);
-	}
 }
 
 void  LNLib::NurbsSurface::Check(const LN_NurbsSurface& surface)
@@ -2406,7 +2389,8 @@ void LNLib::NurbsSurface::CreateSweepSurface(const LN_NurbsCurve& profile, const
 			double w = wp.GetW();
 			XYZ p = wp.ToXYZ(true);
 
-			XYZ transformed = WorldToLocal(NurbsCurve::GetPointOnCurve(trajectoryCopy, vk[k]), xdir, ydir, zdir, p);
+			Matrix4d transform(xdir, ydir, zdir, NurbsCurve::GetPointOnCurve(trajectoryCopy, vk[k]));
+			XYZ transformed = transform.OfPoint(p);
 			transformedControlPoints[i] = XYZW(transformed, w);
 		}
 
@@ -2458,7 +2442,8 @@ void LNLib::NurbsSurface::CreateSweepSurface(const LN_NurbsCurve& profile, const
 			double w = wp.GetW();
 			XYZ p = wp.ToXYZ(true);
 
-			XYZ transformed = WorldToLocal(NurbsCurve::GetPointOnCurve(path, segments[k]), xdir, ydir, zdir, p);
+			Matrix4d transform(xdir, ydir, zdir, NurbsCurve::GetPointOnCurve(path, segments[k]));
+			XYZ transformed = transform.OfPoint(p);
 			transformedControlPoints[i] = XYZW(transformed, w);
 		}
 

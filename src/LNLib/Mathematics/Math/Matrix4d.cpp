@@ -27,7 +27,7 @@ LNLib::Matrix4d::Matrix4d()
 	}
 }
 
-LNLib::Matrix4d::Matrix4d(XYZ basisX, XYZ basisY, XYZ basisZ, XYZ basisW)
+LNLib::Matrix4d::Matrix4d(XYZ basisX, XYZ basisY, XYZ basisZ, XYZ origin)
 {
 	m_matrix4d[0][0] = basisX[0];
 	m_matrix4d[1][0] = basisX[1];
@@ -44,9 +44,9 @@ LNLib::Matrix4d::Matrix4d(XYZ basisX, XYZ basisY, XYZ basisZ, XYZ basisW)
 	m_matrix4d[2][2] = basisZ[2];
 	m_matrix4d[3][2] = 0;
 
-	m_matrix4d[0][3] = basisW[0];
-	m_matrix4d[1][3] = basisW[1];
-	m_matrix4d[2][3] = basisW[2];
+	m_matrix4d[0][3] = origin[0];
+	m_matrix4d[1][3] = origin[1];
+	m_matrix4d[2][3] = origin[2];
 	m_matrix4d[3][3] = 1;
 }
 
