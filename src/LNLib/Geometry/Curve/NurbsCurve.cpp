@@ -589,7 +589,7 @@ LNLib::XYZ LNLib::NurbsCurve::GetPointOnCurveByCornerCut(const LN_NurbsCurve& cu
 	return temp[0].ToXYZ(true);
 }
 
-void LNLib::NurbsCurve::RefineKnotVector(const LN_NurbsCurve& curve, std::vector<double>& insertKnotElements, LN_NurbsCurve& result)
+void LNLib::NurbsCurve::RefineKnotVector(const LN_NurbsCurve& curve, const std::vector<double>& insertKnotElements, LN_NurbsCurve& result)
 {
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;

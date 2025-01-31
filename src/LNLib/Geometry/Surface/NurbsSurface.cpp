@@ -519,7 +519,7 @@ void LNLib::NurbsSurface::InsertKnot(const LN_NurbsSurface& surface, double inse
 	}
 }
 
-void LNLib::NurbsSurface::RefineKnotVector(const LN_NurbsSurface& surface, std::vector<double>& insertKnotElements, bool isUDirection, LN_NurbsSurface& result)
+void LNLib::NurbsSurface::RefineKnotVector(const LN_NurbsSurface& surface, const std::vector<double>& insertKnotElements, bool isUDirection, LN_NurbsSurface& result)
 {
 	int degreeU = surface.DegreeU;
 	int degreeV = surface.DegreeV;

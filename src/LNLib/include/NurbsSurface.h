@@ -70,7 +70,7 @@ namespace LNLib
 		/// Algorithm A5.5
 		/// Refine surface knot vector.
 		/// </summary>
-		static void RefineKnotVector(const LN_NurbsSurface& surface, std::vector<double>& insertKnotElements, bool isUDirection, LN_NurbsSurface& result);
+		static void RefineKnotVector(const LN_NurbsSurface& surface, const std::vector<double>& insertKnotElements, bool isUDirection, LN_NurbsSurface& result);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page177
