@@ -40,6 +40,12 @@ Additional Algorithms:
 
 <img src="assets/curve.png" width=400 height=400><img src="assets/surface.png" width=400 height=400>
 
+## NURBS Fitting by Neural Network
+[ND-LNLib](https://github.com/BIMCoderLiang/NURBS-Diff-with-LNLib) based on [LibTorch](https://pytorch.org/cppdocs/installing.html) (PyTorch C++ version)
+
+<img src="assets/aicurve.jpg" width=800 height=400><img src="assets/aisurface.png" width=800 height=400>
+
+
 ## Contributing
 Welcome join this project including discussions in **Issues** and make **Pull requests**.
 
