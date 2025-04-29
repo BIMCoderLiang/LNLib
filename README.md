@@ -45,6 +45,8 @@ Additional Algorithms:
 
 <img src="assets/aicurve.jpg" width=800 height=400><img src="assets/aisurface.png" width=800 height=400>
 
+## Understand LNLib by LLM
+Welcome to use https://deepwiki.com/BIMCoderLiang/LNLib powered by Devin.
 
 ## Contributing
 Welcome join this project including discussions in **Issues** and make **Pull requests**.
