@@ -150,3 +150,29 @@ TEST(Test_AdvancedGeometric, Reparametrize)
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newCps[4].GetW(), 0.00975));
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newCps[5].GetW(), 0.008));
 }
+
+TEST(Test_AdvancedGeometric, CubicHermite)
+{
+    // sample points and tangents from circular arc
+    double radius = 5;
+    double start = M_PI / 8;
+    double end = start + M_PI_4;
+	const int nPt = 10;
+	std::vector<XYZ> pts(nPt);
+	std::vector<XYZ> tangents(nPt);
+	for(int i = 0; i < nPt; ++i)
+	{
+		double t = start + i * (end - start) / (nPt - 1);
+		pts[i] = XYZ(radius * cos(t), radius * sin(t), 0);
+		tangents[i] = XYZ(-sin(t), cos(t), 0);
+	}
+
+    // make hermite curve
+    LN_NurbsCurve hermite;
+	NurbsCurve::CreateCubicHermite(pts, tangents, hermite);
+
+    // verify the Hermite curve length is approximately the same as the arc
+	double hermiteLength = NurbsCurve::ApproximateLength(hermite);
+	double theoreticalLength = radius * (end - start);
+	EXPECT_NEAR(hermiteLength, theoreticalLength, 1e-2);
+}
