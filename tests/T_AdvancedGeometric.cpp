@@ -155,8 +155,8 @@ TEST(Test_AdvancedGeometric, CubicHermite)
 {
     // sample points and tangents from circular arc
     double radius = 5;
-    double start = M_PI / 8;
-    double end = start + M_PI_4;
+    double start = Constants::Pi / 8;
+    double end = start + Constants::Pi / 4;
 	const int nPt = 10;
 	std::vector<XYZ> pts(nPt);
 	std::vector<XYZ> tangents(nPt);
