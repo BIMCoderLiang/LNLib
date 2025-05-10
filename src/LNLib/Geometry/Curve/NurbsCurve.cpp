@@ -1686,7 +1686,7 @@ void LNLib::NurbsCurve::CreateCubicHermite(const std::vector<XYZ>& throughPoints
 	XYZ startPoint = throughPoints[0];
 	XYZ endPoint = throughPoints[throughPoints.size() - 1];
 
-	std::vector<double> uk = Interpolation::GetCentripetalParameterization(throughPoints);
+	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
 
 	bool isCyclePoint = startPoint.IsAlmostEqualTo(endPoint);
 	XYZ startTangent = tangents[0];
@@ -1720,13 +1720,14 @@ void LNLib::NurbsCurve::CreateCubicHermite(const std::vector<XYZ>& throughPoints
 	}
 
 	std::vector<XYZW> controlPoints(kn);
-	for (int j = 0; j < kn; j += 2)
+	for (int j = 0, coef = 0; j < kn; j += 2, coef ++)
 	{
 		double i1 = knotVector[j + 3] - knotVector[j + 1];
 		double i2 = knotVector[j + 4] - knotVector[j + 2];
 
-		controlPoints[j] = XYZW((throughPoints[j] - i1 * tangents[j] / 3.0),1);
-		controlPoints[j + 1] = XYZW((throughPoints[j + 1] + i2 * tangents[j + 1] / 3.0), 1);
+		controlPoints[j] = XYZW((throughPoints[coef] - i1 * tangents[coef] / 3.0),1);
+		controlPoints[j + 1] = XYZW((throughPoints[coef] + i2 * tangents[coef] / 3.0), 1);
+
 	}
 
 	curve.Degree = 3;
