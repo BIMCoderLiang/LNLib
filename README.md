@@ -51,6 +51,10 @@ Welcome to use https://deepwiki.com/BIMCoderLiang/LNLib powered by Devin.
 ## Contributing
 Welcome join this project including discussions in **Issues** and make **Pull requests**.
 
+<a href="https://contributors-img.web.app/image?repo=BIMCoderLiang/LNLib">
+  <img src="https://contributors-img.web.app/image?repo=BIMCoderLiang/LNLib" />
+</a>
+
 ## Author
 LNLib is created by Yuqing Liang (BIMCoder Liang).
 
@@ -58,7 +62,7 @@ LNLib is created by Yuqing Liang (BIMCoder Liang).
 - 微信公众号：**BIMCoder**
 
 ## License
-The source code is published under [GNU General Public License v3.0](https://www.gnu.org/licenses/), the license is available [here](LICENSE).
+The source code is published under [LGPL 2.1](https://www.gnu.org/licenses/), the license is available [here](LICENSE).
 
 ## Primary Reference
 [The NURBS Book 2nd Edition](https://link.springer.com/book/10.1007/978-3-642-97385-7) by **Les Piegl & Wayne Tiller**
