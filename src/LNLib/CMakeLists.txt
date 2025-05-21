@@ -18,7 +18,7 @@ set(EIGEN_BUILD_TESTING OFF)
 set(EIGEN_MPL2_ONLY ON)
 set(EIGEN_BUILD_PKGCONFIG OFF)
 set(EIGEN_BUILD_DOC OFF)
-FetchContent_Populate(Eigen)
+FetchContent_MakeAvailable(Eigen)
 target_include_directories(${TARGET_NAME} PRIVATE ${CMAKE_BINARY_DIR}/_deps/eigen-src)
 
 file(GLOB rootfiles *.cpp *.h)
