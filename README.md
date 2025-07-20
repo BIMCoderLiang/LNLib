@@ -38,14 +38,91 @@ Additional Algorithms:
 ## Visualization
 [LNLibViewer](https://github.com/BIMCoderLiang/LNLibViewer) based on [VTK](https://vtk.org/)
 
-<img src="assets/curve.png" width=400 height=400><img src="assets/surface.png" width=400 height=400>
+<img src="assets/curve.png" width=400 height=400>
+<img src="assets/surface.png" width=400 height=400>
 
 ## NURBS Fitting by Neural Network
 [ND-LNLib](https://github.com/BIMCoderLiang/NURBS-Diff-with-LNLib) based on [LibTorch](https://pytorch.org/cppdocs/installing.html) (PyTorch C++ version)
 
 <img src="assets/aicurve.jpg" width=800 height=400><img src="assets/aisurface.png" width=800 height=400>
 
-## Understand LNLib by LLM
+## Convert to OpenCascade NURBS surface
+```C++
+#include "LNObject.h"
+#include "XYZ.h"
+#include "XYZW.h"
+#include "NurbsSurface.h"
+#include "KnotVectorUtils.h"
+#include <Geom_BSplineSurface.hxx>
+
+void ConvertToOpenCascadeSurface(const LNLib::LN_NurbsSurface& surface, Handle(Geom_BSplineSurface)& internalSurface)
+{
+    LNLib::NurbsSurface::Check(surface);
+
+    std::vector<double> knotU = surface.KnotVectorU;
+    std::vector<double> knotV = surface.KnotVectorV;
+
+    const int numPolesU = static_cast<int>(surface.ControlPoints.size());
+    const int numPolesV = static_cast<int>(surface.ControlPoints[0].size());
+
+    TColgp_Array2OfPnt poles(1, numPolesU, 1, numPolesV);
+    TColStd_Array2OfReal weights(1, numPolesU, 1, numPolesV);
+
+    for (int i = 0; i < numPolesU; i++) {
+        for (int j = 0; j < numPolesV; j++) {
+            const LNLib::XYZW& wcp = surface.ControlPoints[i][j];
+            const LNLib::XYZ& cp = wcp.ToXYZ(true);
+            poles.SetValue(i+1, j+1, gp_Pnt(cp.GetX(), cp.GetY(), cp.GetZ()));
+            weights.SetValue(i+1, j+1, wcp.GetW());
+        }
+    }
+
+    std::map<double, int> mapU = LNLib::KnotVectorUtils::GetKnotMultiplicityMap(knotU);
+    TColStd_Array1OfReal knotsU(1, static_cast<int>(mapU.size()));
+    TColStd_Array1OfInteger multsU(1, static_cast<int>(mapU.size()));
+    
+    std::vector<double> Ukeys;
+    Ukeys.reserve(mapU.size());
+    std::vector<int> UMults;
+    UMults.reserve(mapU.size());
+    for (auto it = mapU.begin(); it != mapU.end(); ++it) {
+        Ukeys.emplace_back(it->first);
+        UMults.emplace_back(it->second);
+    }
+    for (int i = 0; i < Ukeys.size(); i++) {
+        knotsU.SetValue(i+1, Ukeys[i]);
+    }
+    for (int i = 0; i < UMults.size(); i++) {
+        multsU.SetValue(i+1, UMults[i]);
+    }
+
+    std::map<double, int> mapV = LNLib::KnotVectorUtils::GetKnotMultiplicityMap(knotV);
+    TColStd_Array1OfReal knotsV(1, static_cast<int>(mapV.size()));
+    TColStd_Array1OfInteger multsV(1, static_cast<int>(mapV.size()));
+
+    std::vector<double> Vkeys;
+    Vkeys.reserve(mapV.size());
+    std::vector<int> VMults;
+    VMults.reserve(mapV.size());
+    for (auto it = mapV.begin(); it != mapV.end(); ++it) {
+        Vkeys.emplace_back(it->first);
+        VMults.emplace_back(it->second);
+    }
+    for (int i = 0; i < Vkeys.size(); i++) {
+        knotsV.SetValue(i+1, Vkeys[i]);
+    }
+    for (int i = 0; i < VMults.size(); i++) {
+        multsV.SetValue(i+1, VMults[i]);
+    }
+
+    internalSurface = new Geom_BSplineSurface(
+        poles, weights, knotsU, knotsV,
+        multsU, multsV,
+        surface.DegreeU, surface.DegreeV);
+}
+```
+
+## Online Document
 Welcome to use https://deepwiki.com/BIMCoderLiang/LNLib powered by Devin.
 
 ## Contributing
