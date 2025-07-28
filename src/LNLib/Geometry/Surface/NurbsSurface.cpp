@@ -1741,7 +1741,7 @@ void LNLib::NurbsSurface::MakeCornerFilletSurface(const LN_NurbsCurve& arc, LN_N
 		}
 	}
 
-	std::vector<std::vector<XYZW>> b(4, std::vector<XYZW>(2));
+	std::vector<std::vector<XYZW>> b(5, std::vector<XYZW>(3));
 	b[0][0] = XYZW(0, 0, 0, 4 * radius2 * h[0][0]);
 	b[0][1] = XYZW(4 * radius2 * u[0][1] * h[0][0], 0, 0, 1);
 	b[0][2] = XYZW(0, 0, 2 * radius * pow(u[0][1], 2), pow(u[0][1], 2));
