@@ -1267,6 +1267,91 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const LN_NurbsSurface& surface,
 	return param;
 }
 
+LNLib::UV LNLib::NurbsSurface::GetParamOnSurfaceByGSA(const LN_NurbsSurface& surface, const XYZ& givenPoint)
+{
+	std::vector<double> knotVectorU = surface.KnotVectorU;
+	std::vector<double> knotVectorV = surface.KnotVectorV;
+	
+	double minU = knotVectorU[0];
+	double maxU = knotVectorU[knotVectorU.size() - 1];
+	double minV = knotVectorV[0];
+	double maxV = knotVectorV[knotVectorV.size() - 1];
+
+	double u0 = (maxU - minU) * 0.5;
+	double v0 = (maxV - minV) * 0.5;
+
+	int counter = 0;
+
+	while(counter < 1000)
+	{
+		LNLib::UV initialUV = UV(u0, v0);
+		XYZ p0 = GetPointOnSurface(surface, initialUV);
+		XYZ normal = Normal(surface, initialUV);
+
+		std::vector<std::vector<XYZ>> ders = ComputeRationalSurfaceDerivatives(surface, 2, initialUV);
+		XYZ Suu = ders[2][0];
+		XYZ Svv = ders[0][2];
+		XYZ Suv = ders[1][1];
+
+		XYZ Su = ders[1][0];
+		XYZ Sv = ders[0][1];
+
+		double L = Suu.DotProduct(normal);
+		double M = Suv.DotProduct(normal);
+		double N = Svv.DotProduct(normal);
+		double E = Su.DotProduct(Su);
+		double F = Su.DotProduct(Sv);
+		double G = Sv.DotProduct(Sv);
+		double denominator = E * G - F * F;
+
+		if (MathUtils::IsAlmostEqualTo(denominator, 0.0))
+		{
+			return UV(Constants::DoubleEpsilon, Constants::DoubleEpsilon);
+		}
+
+		double c1 = Su.DotProduct(normal);
+		double c2 = Sv.DotProduct(normal);
+		double c3 = 1;
+		double s1 = (givenPoint - p0).DotProduct(Su);
+		double s2 = (givenPoint - p0).DotProduct(Sv);
+		double s3 = (givenPoint - p0).DotProduct(normal);
+
+		double a1 = - (c1 * c2 * s2 - c1 * G * s3 - c2 * c2 * s1 + c2 * F * s3 - F * s2 + G * s1 )/(c1 * c1 * G - 2 * c1 * c2 * F + c2 * c2 * E - E * G + F * F);
+		double a2 = (c1 * c1 * s2 - c1 * c2 * s1 - c1 * F * s3 + c2 * E * s3 - E * s2 + F * s1)/(c1 * c1 * G - 2 * c1 * c2 * F + c2 * c2 * E - E * G + F * F);
+
+		double curvature = (L * a1 * a1 + 2 * M * a1* a2 + N * a2 * a2)/(E * a1 * a1 + 2 * F * a1 * a2 + G * a2 * a2);
+		double radius = 1 / abs(curvature);
+
+		XYZ m = p0 + radius * normal;
+		XYZ q = givenPoint + (m - givenPoint) * (1 - radius / (m.Distance(givenPoint)));
+
+		double c4 = (q - p0).DotProduct(Su);
+		double c5 = (q - p0).DotProduct(Sv);
+
+		double deltaU = (c4 * G - c5 * F) / denominator;
+		double deltaV = -(c4 * F - c5 * E) / denominator;
+
+		double ut = u0 + deltaU;
+		double vt = v0 + deltaV;
+
+		u0 = ut;
+		v0 = vt;
+
+		if (MathUtils::IsLessThanOrEqual(abs(deltaU), Constants::DoubleEpsilon) &&
+			MathUtils::IsLessThanOrEqual(abs(deltaV), Constants::DoubleEpsilon))
+		{
+			LNLib::UV newUV = UV(ut, vt);
+			XYZ newNormal = Normal(surface, newUV);
+			if (normal.IsAlmostEqualTo(newNormal))
+			{
+				break;
+			}
+		}
+		counter++;
+	}
+	return UV(u0, v0);
+}
+
 void LNLib::NurbsSurface::Reparametrize(const LN_NurbsSurface& surface, double minU, double maxU, double minV, double maxV, LN_NurbsSurface& result)
 {
 	std::vector<double> knotVectorU = surface.KnotVectorU;

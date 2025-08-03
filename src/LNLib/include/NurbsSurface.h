@@ -118,6 +118,13 @@ namespace LNLib
 		/// </summary>
 		static UV GetParamOnSurface(const LN_NurbsSurface& surface, const XYZ& givenPoint);
 
+		/// <summary>
+		/// Experimental:
+		/// According to https://jcst.ict.ac.cn/fileup/1000-9000/PDF/2019-6-9-9388.pdf
+		/// A Geometric Strategy Algorithm for Orthogonal Projection onto a Parametric Surface
+		/// </summary>
+		static UV GetParamOnSurfaceByGSA(const LN_NurbsSurface& surface, const XYZ& givenPoint);
+
 		static void Reparametrize(const LN_NurbsSurface& surface, double minU, double maxU, double minV, double maxV, LN_NurbsSurface& result);
 
 		/// <summary>

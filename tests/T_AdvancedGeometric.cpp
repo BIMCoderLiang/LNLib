@@ -101,7 +101,9 @@ TEST(Test_AdvancedGeometric, Surface_GetParamOrGetPoint)
 	surface.ControlPoints = cps;
 	XYZ result = NurbsSurface::GetPointOnSurface(surface, uv);
 	UV param = NurbsSurface::GetParamOnSurface(surface, result);
+	UV param1 = NurbsSurface::GetParamOnSurfaceByGSA(surface, result);
 	EXPECT_TRUE(param.IsAlmostEqualTo(uv));
+	EXPECT_TRUE(param1.IsAlmostEqualTo(uv));
 }
 
 TEST(Test_AdvancedGeometric, Reparametrize)
