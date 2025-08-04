@@ -1337,8 +1337,10 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurfaceByGSA(const LN_NurbsSurface& sur
 		u0 = ut;
 		v0 = vt;
 
-		if (MathUtils::IsLessThanOrEqual(abs(deltaU), Constants::DoubleEpsilon) &&
-			MathUtils::IsLessThanOrEqual(abs(deltaV), Constants::DoubleEpsilon))
+		bool condition1 = MathUtils::IsLessThanOrEqual(abs(deltaU), Constants::DoubleEpsilon) && MathUtils::IsLessThanOrEqual(abs(deltaV), Constants::DoubleEpsilon);
+		bool condition2 = MathUtils::IsLessThanOrEqual((abs(deltaU) * abs(deltaU) + abs(deltaV) * abs(deltaV)), Constants::DoubleEpsilon);
+
+		if (condition1 || condition2)
 		{
 			LNLib::UV newUV = UV(ut, vt);
 			XYZ newNormal = Normal(surface, newUV);
