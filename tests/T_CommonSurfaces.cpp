@@ -111,3 +111,31 @@ TEST(Test_CommonSurfaces, CreateRevolvedSurface)
 	XYZ C0 = NurbsSurface::GetPointOnSurface(surface, UV(0.5, 0.5));
 	EXPECT_TRUE(C0.IsAlmostEqualTo(XYZ(sqrt(2) / 4.0, sqrt(2) / 4.0, 0.5)));
 }
+
+TEST(Test_CommonSurfaces, RevolveArcToSphere)
+{
+	// make arc
+	LN_NurbsCurve arc;
+	XYZ center(0, 0, 0);
+	XYZ xAxis(1, 0, 0);
+	XYZ yAxis(0, 1, 0);
+	double startRad = 0.0;
+	double endRad = Constants::Pi;
+	double radius = 1.0;
+	bool created = NurbsCurve::CreateArc(center, xAxis, yAxis, startRad, endRad, 
+		radius, radius, arc);
+	EXPECT_TRUE(created);
+
+	// revolve arc to sphere
+	XYZ origin(0, 0, 0);
+	XYZ axis(1, 0, 0);
+	double angle = 2 * Constants::Pi;
+	LN_NurbsSurface sphere;
+	bool revolved = NurbsSurface::CreateRevolvedSurface(origin, axis, angle, 
+		arc, sphere);
+	EXPECT_TRUE(revolved);
+
+	// verify area
+	double area = NurbsSurface::ApproximateArea(sphere);
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(area, 4 * Constants::Pi * radius * radius));
+}
