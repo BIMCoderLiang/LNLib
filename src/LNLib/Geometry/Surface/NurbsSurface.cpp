@@ -3233,326 +3233,379 @@ double LNLib::NurbsSurface::ApproximateArea(const LN_NurbsSurface& surface, Inte
 	return area;
 }
 
-LNLib::LN_Mesh LNLib::NurbsSurface::Triangulate(const LN_NurbsSurface& surface)
+LNLib::LN_Mesh LNLib::NurbsSurface::Triangulate(const LN_NurbsSurface& surface, int resolutionU, int resolutionV, bool useDelaunay)
 {
-	int samplesU = 25;
-	int samplesV = 25;
+	if (useDelaunay)
+	{
+		int samplesU = resolutionU;
+		int samplesV = resolutionV;
 
-	int degreeU = surface.DegreeU;
-	int degreeV = surface.DegreeV;
-	std::vector<double> knotVectorU = surface.KnotVectorU;
-	std::vector<double> knotVectorV = surface.KnotVectorV;
-	std::vector<std::vector<XYZW>> controlPoints = surface.ControlPoints;
+		int degreeU = surface.DegreeU;
+		int degreeV = surface.DegreeV;
+		std::vector<double> knotVectorU = surface.KnotVectorU;
+		std::vector<double> knotVectorV = surface.KnotVectorV;
+		std::vector<std::vector<XYZW>> controlPoints = surface.ControlPoints;
 
-	double umin = knotVectorU[0];
-	double umax = knotVectorU[knotVectorU.size() - 1];
-	double vmin = knotVectorV[0];
-	double vmax = knotVectorV[knotVectorV.size() - 1];
+		double umin = knotVectorU[0];
+		double umax = knotVectorU[knotVectorU.size() - 1];
+		double vmin = knotVectorV[0];
+		double vmax = knotVectorV[knotVectorV.size() - 1];
 
-	std::vector<double> us(samplesU);
-	std::vector<double> vs(samplesV);
+		std::vector<double> us(samplesU);
+		std::vector<double> vs(samplesV);
 
 #pragma region Calculate Curvatures
-	std::vector<std::vector<double>> curvatures(samplesU, std::vector<double>(samplesV));
-	double uInterval = (umax - umin) / (samplesU - 1);
-	double vInterval = (vmax - vmin) / (samplesV - 1);
+		std::vector<std::vector<double>> curvatures(samplesU, std::vector<double>(samplesV));
+		double uInterval = (umax - umin) / (samplesU - 1);
+		double vInterval = (vmax - vmin) / (samplesV - 1);
 
-	for (int i = 0; i < samplesU; i++)
-	{
-		double u = umin + i * uInterval;
-		us[i] = u;
-	}
-	for (int j = 0; j < samplesV; j++)
-	{
-		double v = vmin + j * vInterval;
-		vs[j] = v;
-	}
-
-	for (int i = 0; i < us.size(); i++)
-	{
-		for (int j = 0; j < vs.size(); j++)
+		for (int i = 0; i < samplesU; i++)
 		{
-			curvatures[i][j] = Curvature(surface, SurfaceCurvature::Gauss, UV(us[i], vs[j]));
-		}		
-	}
-
-	std::vector<std::vector<double>> cur0(samplesU - 1, std::vector<double>(samplesV - 1));
-	std::vector<std::vector<double>> curdu(samplesU - 1, std::vector<double>(samplesV - 1));
-	std::vector<std::vector<double>> curdv(samplesU - 1, std::vector<double>(samplesV - 1));
-	std::vector<std::vector<double>> curdudv(samplesU - 1, std::vector<double>(samplesV - 1));
-
-	int row = curvatures.size();
-	int column = curvatures[0].size();
-	for (int i = 0; i < row - 1; i++)
-	{
-		for (int j = 0; j < column - 1; j++)
-		{
-			cur0[i][j] = curvatures[i][j];
+			double u = umin + i * uInterval;
+			us[i] = u;
 		}
-	}
-	for (int i = 1; i < row; i++)
-	{
-		for (int j = 0; j < column - 1; j++)
+		for (int j = 0; j < samplesV; j++)
 		{
-			curdu[i-1][j] = curvatures[i][j];
+			double v = vmin + j * vInterval;
+			vs[j] = v;
 		}
-	}
-	for (int i = 0; i < row - 1; i++)
-	{
-		for (int j = 1; j < column; j++)
-		{
-			curdv[i][j-1] = curvatures[i][j];
-		}
-	}
-	for (int i = 1; i < row; i++)
-	{
-		for (int j = 1; j < column; j++)
-		{
-			curdudv[i-1][j-1] = curvatures[i][j];
-		}
-	}
 
-	std::vector<std::vector<double>> maxCurvatures(samplesU - 1, std::vector<double>(samplesV - 1));
-	for (int i = 0; i < samplesU - 1; i++)
-	{
-		for (int j = 0; j < samplesV - 1; j++)
+		for (int i = 0; i < us.size(); i++)
 		{
-			double c = std::max({ cur0[i][j], curdu[i][j], curdv[i][j], curdudv[i][j]});
-			maxCurvatures[i][j] = std::isnan(c) ? 0.0 : c;
-		}
-	}
-
-	std::vector<std::vector<double>>::iterator iterMax = max_element(maxCurvatures.begin(), maxCurvatures.end());
-	double maxCurvature = *max_element(iterMax->begin(), iterMax->end());
-	std::vector<std::vector<double>>::iterator iterMin = min_element(maxCurvatures.begin(), maxCurvatures.end());
-	double minCurvature = *min_element(iterMin->begin(), iterMin->end());
-	double curvatureRange = maxCurvature - minCurvature;
-
-	if (MathUtils::IsAlmostEqualTo(curvatureRange, 0.0))
-	{
-		maxCurvatures = std::vector<std::vector<double>>(samplesU - 1, std::vector<double>(samplesV - 1, 0.0));
-	}
-	else
-	{
-		row = maxCurvatures.size();
-		column = maxCurvatures[0].size();
-		for (int i = 0; i < row; i++)
-		{
-			for (int j = 0; j < column; j++)
+			for (int j = 0; j < vs.size(); j++)
 			{
-				maxCurvatures[i][j] = (maxCurvatures[i][j] - minCurvature) / curvatureRange;
+				curvatures[i][j] = Curvature(surface, SurfaceCurvature::Gauss, UV(us[i], vs[j]));
 			}
 		}
-	}
-	
-#pragma endregion
 
-#pragma region Calculate Areas
-	std::vector<std::vector<XYZ>> surfacePoints(samplesU, std::vector<XYZ>(samplesV));
-	
-	for (int i = 0; i < us.size(); i++)
-	{
-		for (int j = 0; j < vs.size(); j++)
-		{
-			surfacePoints[i][j] = GetPointOnSurface(surface, UV(us[i], vs[j]));
-		}
-	}
+		std::vector<std::vector<double>> cur0(samplesU - 1, std::vector<double>(samplesV - 1));
+		std::vector<std::vector<double>> curdu(samplesU - 1, std::vector<double>(samplesV - 1));
+		std::vector<std::vector<double>> curdv(samplesU - 1, std::vector<double>(samplesV - 1));
+		std::vector<std::vector<double>> curdudv(samplesU - 1, std::vector<double>(samplesV - 1));
 
-	std::vector<std::vector<XYZ>> points0(samplesU - 1, std::vector<XYZ>(samplesV - 1));
-	std::vector<std::vector<XYZ>> pointsdu(samplesU - 1, std::vector<XYZ>(samplesV - 1));
-	std::vector<std::vector<XYZ>> pointsdv(samplesU - 1, std::vector<XYZ>(samplesV - 1));
-	std::vector<std::vector<XYZ>> pointsdudv(samplesU - 1, std::vector<XYZ>(samplesV - 1));
-
-	row = surfacePoints.size();
-	column = surfacePoints[0].size();
-
-	for (int i = 0; i < row - 1; i++)
-	{
-		for (int j = 0; j < column - 1; j++)
+		int row = curvatures.size();
+		int column = curvatures[0].size();
+		for (int i = 0; i < row - 1; i++)
 		{
-			points0[i][j] = surfacePoints[i][j];
-		}
-	}
-	for (int i = 1; i < row; i++)
-	{
-		for (int j = 0; j < column - 1; j++)
-		{
-			pointsdu[i-1][j] = surfacePoints[i][j];
-		}
-	}
-	for (int i = 0; i < row - 1; i++)
-	{
-		for (int j = 1; j < column; j++)
-		{
-			pointsdv[i][j-1] = surfacePoints[i][j];
-		}
-	}
-	for (int i = 1; i < row; i++)
-	{
-		for (int j = 1; j < column; j++)
-		{
-			pointsdudv[i-1][j-1] = surfacePoints[i][j];
-		}
-	}
-
-	std::vector<std::vector<double>> area(samplesU - 1, std::vector<double>(samplesV - 1));
-	for (int i = 0; i < samplesU - 1; i++)
-	{
-		for (int j = 0; j < samplesV - 1; j++)
-		{
-			double area1 = (pointsdudv[i][j] - points0[i][j]).CrossProduct((pointsdu[i][j] - points0[i][j])).Length() / 2.0;
-			double area2 = (pointsdv[i][j] - points0[i][j]).CrossProduct((pointsdudv[i][j] - points0[i][j])).Length() / 2.0;
-			area[i][j] = (area1 + area2)/(uInterval * vInterval);
-		}
-	}
-	
-	iterMax = max_element(area.begin(), area.end());
-	double maxArea = *max_element(iterMax->begin(), iterMax->end());
-	iterMin = min_element(area.begin(), area.end());
-	double minArea = *min_element(iterMin->begin(), iterMin->end());
-	double areaRange = maxArea - minArea;
-	if (MathUtils::IsAlmostEqualTo(curvatureRange, 0.0))
-	{
-		area = std::vector<std::vector<double>>(samplesU - 1, std::vector<double>(samplesV - 1, 0.0));
-	}
-	else
-	{
-		row = area.size();
-		column = area[0].size();
-		for (int i = 0; i < row; i++)
-		{
-			for (int j = 0; j < column; j++)
+			for (int j = 0; j < column - 1; j++)
 			{
-				area[i][j] = (area[i][j] - minArea) / areaRange;
+				cur0[i][j] = curvatures[i][j];
 			}
 		}
-	}
-	
-#pragma endregion
-
-#pragma region Calculate Factors
-	std::vector<std::vector<double>> factors(samplesU - 1, std::vector<double>(samplesV - 1));
-	for (int i = 0; i < samplesU - 1; i++)
-	{
-		for (int j = 0; j < samplesV - 1; j++)
+		for (int i = 1; i < row; i++)
 		{
-			factors[i][j] = (maxCurvatures[i][j] + area[i][j])/2.0;
+			for (int j = 0; j < column - 1; j++)
+			{
+				curdu[i - 1][j] = curvatures[i][j];
+			}
 		}
-	}
-	double factorRange = (curvatureRange + areaRange)/2.0;
-	iterMax = max_element(factors.begin(), factors.end());
-	double maxFactor = *max_element(iterMax->begin(), iterMax->end());
-	if (!MathUtils::IsAlmostEqualTo(maxFactor, 0.0))
-	{
+		for (int i = 0; i < row - 1; i++)
+		{
+			for (int j = 1; j < column; j++)
+			{
+				curdv[i][j - 1] = curvatures[i][j];
+			}
+		}
+		for (int i = 1; i < row; i++)
+		{
+			for (int j = 1; j < column; j++)
+			{
+				curdudv[i - 1][j - 1] = curvatures[i][j];
+			}
+		}
+
+		std::vector<std::vector<double>> maxCurvatures(samplesU - 1, std::vector<double>(samplesV - 1));
 		for (int i = 0; i < samplesU - 1; i++)
 		{
 			for (int j = 0; j < samplesV - 1; j++)
 			{
-				factors[i][j] = factors[i][j] / maxFactor;
+				double c = std::max({ cur0[i][j], curdu[i][j], curdv[i][j], curdudv[i][j] });
+				maxCurvatures[i][j] = std::isnan(c) ? 0.0 : c;
 			}
 		}
-	}
-#pragma endregion
-	double perMax = 5;
-	double perMin = 1;
-	double perRange = perMax - perMin;
-	std::vector<double> newU;
-	std::vector<double> newV;
 
-	std::mt19937 gen(1);
-	for (int i = 0; i < samplesU - 1; i++)
-	{
-		double currentU = us[i];
-		double nextU = us[i + 1];
-		for (int j = 0; j < samplesV - 1; j++)
+		std::vector<std::vector<double>>::iterator iterMax = max_element(maxCurvatures.begin(), maxCurvatures.end());
+		double maxCurvature = *max_element(iterMax->begin(), iterMax->end());
+		std::vector<std::vector<double>>::iterator iterMin = min_element(maxCurvatures.begin(), maxCurvatures.end());
+		double minCurvature = *min_element(iterMin->begin(), iterMin->end());
+		double curvatureRange = maxCurvature - minCurvature;
+
+		if (MathUtils::IsAlmostEqualTo(curvatureRange, 0.0))
 		{
-			double currentV = vs[j];
-			double nextV = vs[j + 1];
-
-			double f = factors[i][j];
-			double ppf = 0.0;
-			if (MathUtils::IsAlmostEqualTo(f, 0.0) || std::isnan(f))
+			maxCurvatures = std::vector<std::vector<double>>(samplesU - 1, std::vector<double>(samplesV - 1, 0.0));
+		}
+		else
+		{
+			row = maxCurvatures.size();
+			column = maxCurvatures[0].size();
+			for (int i = 0; i < row; i++)
 			{
-				ppf = (perMin + perMax) / 2.0;
-			}
-			else
-			{
-				ppf = perMin + perRange * f;
-			}
-			ppf = ceil(ppf);
-			
-			std::uniform_real_distribution<> disU(currentU, nextU);
-			std::uniform_real_distribution<> disV(currentV, nextV);
-
-			newU.emplace_back(currentU);
-			newV.emplace_back(currentV);
-
-			for (int i = 0; i < ppf; i++)
-			{
-				newU.emplace_back(disU(gen));
-				newV.emplace_back(disV(gen));
+				for (int j = 0; j < column; j++)
+				{
+					maxCurvatures[i][j] = (maxCurvatures[i][j] - minCurvature) / curvatureRange;
+				}
 			}
 		}
-	}
+
+#pragma endregion
+
+#pragma region Calculate Areas
+		std::vector<std::vector<XYZ>> surfacePoints(samplesU, std::vector<XYZ>(samplesV));
+
+		for (int i = 0; i < us.size(); i++)
+		{
+			for (int j = 0; j < vs.size(); j++)
+			{
+				surfacePoints[i][j] = GetPointOnSurface(surface, UV(us[i], vs[j]));
+			}
+		}
+
+		std::vector<std::vector<XYZ>> points0(samplesU - 1, std::vector<XYZ>(samplesV - 1));
+		std::vector<std::vector<XYZ>> pointsdu(samplesU - 1, std::vector<XYZ>(samplesV - 1));
+		std::vector<std::vector<XYZ>> pointsdv(samplesU - 1, std::vector<XYZ>(samplesV - 1));
+		std::vector<std::vector<XYZ>> pointsdudv(samplesU - 1, std::vector<XYZ>(samplesV - 1));
+
+		row = surfacePoints.size();
+		column = surfacePoints[0].size();
+
+		for (int i = 0; i < row - 1; i++)
+		{
+			for (int j = 0; j < column - 1; j++)
+			{
+				points0[i][j] = surfacePoints[i][j];
+			}
+		}
+		for (int i = 1; i < row; i++)
+		{
+			for (int j = 0; j < column - 1; j++)
+			{
+				pointsdu[i - 1][j] = surfacePoints[i][j];
+			}
+		}
+		for (int i = 0; i < row - 1; i++)
+		{
+			for (int j = 1; j < column; j++)
+			{
+				pointsdv[i][j - 1] = surfacePoints[i][j];
+			}
+		}
+		for (int i = 1; i < row; i++)
+		{
+			for (int j = 1; j < column; j++)
+			{
+				pointsdudv[i - 1][j - 1] = surfacePoints[i][j];
+			}
+		}
+
+		std::vector<std::vector<double>> area(samplesU - 1, std::vector<double>(samplesV - 1));
+		for (int i = 0; i < samplesU - 1; i++)
+		{
+			for (int j = 0; j < samplesV - 1; j++)
+			{
+				double area1 = (pointsdudv[i][j] - points0[i][j]).CrossProduct((pointsdu[i][j] - points0[i][j])).Length() / 2.0;
+				double area2 = (pointsdv[i][j] - points0[i][j]).CrossProduct((pointsdudv[i][j] - points0[i][j])).Length() / 2.0;
+				area[i][j] = (area1 + area2) / (uInterval * vInterval);
+			}
+		}
+
+		iterMax = max_element(area.begin(), area.end());
+		double maxArea = *max_element(iterMax->begin(), iterMax->end());
+		iterMin = min_element(area.begin(), area.end());
+		double minArea = *min_element(iterMin->begin(), iterMin->end());
+		double areaRange = maxArea - minArea;
+		if (MathUtils::IsAlmostEqualTo(curvatureRange, 0.0))
+		{
+			area = std::vector<std::vector<double>>(samplesU - 1, std::vector<double>(samplesV - 1, 0.0));
+		}
+		else
+		{
+			row = area.size();
+			column = area[0].size();
+			for (int i = 0; i < row; i++)
+			{
+				for (int j = 0; j < column; j++)
+				{
+					area[i][j] = (area[i][j] - minArea) / areaRange;
+				}
+			}
+		}
+
+#pragma endregion
+
+#pragma region Calculate Factors
+		std::vector<std::vector<double>> factors(samplesU - 1, std::vector<double>(samplesV - 1));
+		for (int i = 0; i < samplesU - 1; i++)
+		{
+			for (int j = 0; j < samplesV - 1; j++)
+			{
+				factors[i][j] = (maxCurvatures[i][j] + area[i][j]) / 2.0;
+			}
+		}
+		double factorRange = (curvatureRange + areaRange) / 2.0;
+		iterMax = max_element(factors.begin(), factors.end());
+		double maxFactor = *max_element(iterMax->begin(), iterMax->end());
+		if (!MathUtils::IsAlmostEqualTo(maxFactor, 0.0))
+		{
+			for (int i = 0; i < samplesU - 1; i++)
+			{
+				for (int j = 0; j < samplesV - 1; j++)
+				{
+					factors[i][j] = factors[i][j] / maxFactor;
+				}
+			}
+		}
+#pragma endregion
+		double perMax = 5;
+		double perMin = 1;
+		double perRange = perMax - perMin;
+		std::vector<double> newU;
+		std::vector<double> newV;
+
+		std::mt19937 gen(1);
+		for (int i = 0; i < samplesU - 1; i++)
+		{
+			double currentU = us[i];
+			double nextU = us[i + 1];
+			for (int j = 0; j < samplesV - 1; j++)
+			{
+				double currentV = vs[j];
+				double nextV = vs[j + 1];
+
+				double f = factors[i][j];
+				double ppf = 0.0;
+				if (MathUtils::IsAlmostEqualTo(f, 0.0) || std::isnan(f))
+				{
+					ppf = (perMin + perMax) / 2.0;
+				}
+				else
+				{
+					ppf = perMin + perRange * f;
+				}
+				ppf = ceil(ppf);
+
+				std::uniform_real_distribution<> disU(currentU, nextU);
+				std::uniform_real_distribution<> disV(currentV, nextV);
+
+				newU.emplace_back(currentU);
+				newV.emplace_back(currentV);
+
+				for (int i = 0; i < ppf; i++)
+				{
+					newU.emplace_back(disU(gen));
+					newV.emplace_back(disV(gen));
+				}
+			}
+		}
 
 #pragma region Delaunay Triangulation
-	std::vector<double> usList;
-	usList.insert(usList.end(), newU.begin(), newU.end());
+		std::vector<double> usList;
+		usList.insert(usList.end(), newU.begin(), newU.end());
 
-	std::vector<double> vsList;
-	vsList.insert(vsList.end(), newV.begin(), newV.end());
+		std::vector<double> vsList;
+		vsList.insert(vsList.end(), newV.begin(), newV.end());
 
 
-	row = surfacePoints.size();
-	column = surfacePoints[0].size();
+		row = surfacePoints.size();
+		column = surfacePoints[0].size();
 
-	double uLength0 = surfacePoints[0][0].Distance(surfacePoints[row - 1][0]);
-	double uLength1 = surfacePoints[0][column/2].Distance(surfacePoints[row - 1][column/2]);
-	double uLength2 = surfacePoints[0][column-1].Distance(surfacePoints[row - 1][column-1]);
-	double uLength = std::max({ uLength0, uLength1, uLength2});
+		double uLength0 = surfacePoints[0][0].Distance(surfacePoints[row - 1][0]);
+		double uLength1 = surfacePoints[0][column / 2].Distance(surfacePoints[row - 1][column / 2]);
+		double uLength2 = surfacePoints[0][column - 1].Distance(surfacePoints[row - 1][column - 1]);
+		double uLength = std::max({ uLength0, uLength1, uLength2 });
 
-	double vLength0 = surfacePoints[0][0].Distance(surfacePoints[0][column-1]);
-	double vLength1 = surfacePoints[row/2][0].Distance(surfacePoints[row/2][column-1]);
-	double vLength2 = surfacePoints[row-1][column-1].Distance(surfacePoints[row-1][column-1]);
-	double vLength = std::max({ vLength0, vLength1, vLength2 });
+		double vLength0 = surfacePoints[0][0].Distance(surfacePoints[0][column - 1]);
+		double vLength1 = surfacePoints[row / 2][0].Distance(surfacePoints[row / 2][column - 1]);
+		double vLength2 = surfacePoints[row - 1][column - 1].Distance(surfacePoints[row - 1][column - 1]);
+		double vLength = std::max({ vLength0, vLength1, vLength2 });
 
-	double uCoeff = uLength / (umax - umin);
-	double vCoeff = vLength / (vmax - vmin);
+		double uCoeff = uLength / (umax - umin);
+		double vCoeff = vLength / (vmax - vmin);
 
-	int uvSize = usList.size();
-	float* uValues = new float[uvSize];
-	float* vValues = new float[uvSize];
-	for (int i = 0; i < uvSize; i++)
-	{
-		uValues[i] = usList[i] * uCoeff;
-		vValues[i] = vsList[i] * vCoeff;
-	}
+		int uvSize = usList.size();
+		float* uValues = new float[uvSize];
+		float* vValues = new float[uvSize];
+		for (int i = 0; i < uvSize; i++)
+		{
+			uValues[i] = usList[i] * uCoeff;
+			vValues[i] = vsList[i] * vCoeff;
+		}
 
-	float uMin = usList[0] * uCoeff;
-	float uMax = usList[usList.size() - 1] * uCoeff;
-	float vMin = vsList[0] * vCoeff;
-	float vMax = vsList[vsList.size() - 1] * vCoeff;
+		float uMin = usList[0] * uCoeff;
+		float uMax = usList[usList.size() - 1] * uCoeff;
+		float vMin = vsList[0] * vCoeff;
+		float vMax = vsList[vsList.size() - 1] * vCoeff;
 
-	VoronoiDiagramGenerator vdg;
-	vdg.setGenerateVoronoi(true);
-	vdg.setGenerateDelaunay(true);
-	vdg.generateVoronoi(uValues, vValues, uvSize, uMin, uMax, vMin, vMax, Constants::DistanceEpsilon, true);
-	std::vector<std::vector<int>> triangles = vdg.getTriangles();
-	delete[] uValues;
-	uValues = nullptr;
-	delete[] vValues;
-	vValues = nullptr;
+		VoronoiDiagramGenerator vdg;
+		vdg.setGenerateVoronoi(true);
+		vdg.setGenerateDelaunay(true);
+		vdg.generateVoronoi(uValues, vValues, uvSize, uMin, uMax, vMin, vMax, Constants::DistanceEpsilon, true);
+		std::vector<std::vector<int>> triangles = vdg.getTriangles();
+		delete[] uValues;
+		uValues = nullptr;
+		delete[] vValues;
+		vValues = nullptr;
 #pragma endregion
-	LN_Mesh mesh;
-	std::vector<XYZ> vertices(uvSize);
-	for (int i = 0; i < uvSize; i++)
-	{
-		LNLib::XYZ point = GetPointOnSurface(surface, UV(usList[i], vsList[i]));
-		vertices[i] = point;
+		LN_Mesh mesh;
+		std::vector<XYZ> vertices(uvSize);
+		for (int i = 0; i < uvSize; i++)
+		{
+			LNLib::XYZ point = GetPointOnSurface(surface, UV(usList[i], vsList[i]));
+			vertices[i] = point;
+		}
+		mesh.Vertices = vertices;
+		mesh.Faces = triangles;
+		return mesh;
 	}
-	mesh.Vertices = vertices;
-	mesh.Faces = triangles;
-	return mesh;
+	else
+	{
+		LN_Mesh mesh;
+
+		std::vector<std::vector<XYZ>> points(resolutionU, std::vector<XYZ>(resolutionV));
+		std::vector<std::vector<UV>> uvs(resolutionU, std::vector<UV>(resolutionV));
+
+		for (int i = 0; i < resolutionU; ++i)
+		{
+			double u = (double)i / (resolutionU - 1);
+			for (int j = 0; j < resolutionV; ++j)
+			{
+				double v = (double)j / (resolutionV - 1);
+				points[i][j] = GetPointOnSurface(surface, UV(u, v));
+				uvs[i][j] = { u, v };
+			}
+		}
+
+		for (int i = 0; i < resolutionU; ++i)
+		{
+			for (int j = 0; j < resolutionV; ++j)
+			{
+				mesh.Vertices.push_back(points[i][j]);
+				mesh.UVs.push_back(uvs[i][j]);
+			}
+		}
+
+		for (int i = 0; i < resolutionU - 1; ++i)
+		{
+			for (int j = 0; j < resolutionV - 1; ++j)
+			{
+				int idx0 = i * resolutionV + j;
+				int idx1 = i * resolutionV + j + 1;
+				int idx2 = (i + 1) * resolutionV + j;
+				int idx3 = (i + 1) * resolutionV + j + 1;
+
+				mesh.Faces.push_back({ idx0, idx1, idx2 });
+				mesh.UVIndices.push_back(idx0);
+				mesh.UVIndices.push_back(idx1);
+				mesh.UVIndices.push_back(idx2);
+
+				mesh.Faces.push_back({ idx1, idx3, idx2 });
+				mesh.UVIndices.push_back(idx1);
+				mesh.UVIndices.push_back(idx3);
+				mesh.UVIndices.push_back(idx2);
+			}
+		}
+		return mesh;
+	}
 }
+
 
 
