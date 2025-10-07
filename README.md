@@ -121,6 +121,7 @@ void ConvertToOpenCascadeSurface(const LNLib::LN_NurbsSurface& surface, Handle(G
         surface.DegreeU, surface.DegreeV);
 }
 ```
+More Details could be found in [LNLibEx](https://github.com/BIMCoderLiang/LNLibEx) Library, which used for **export nurbs surfaces to STEP or IGES** format file.
 
 ## Online Document
 Welcome to use https://deepwiki.com/BIMCoderLiang/LNLib powered by Devin.
