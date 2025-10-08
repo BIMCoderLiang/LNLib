@@ -266,10 +266,9 @@ namespace LNLib
 
 		/// <summary>
 		/// Triangulate nurbs surface.
-		/// According to https://github.com/nortikin/sverchok/blob/master/utils/adaptive_surface.py
+		/// 1. if useDelaunay = true，it is more accurate but need more time. Algorithm according to https://github.com/nortikin/sverchok/blob/master/utils/adaptive_surface.py
+		/// 2. if useDelaunay = false, it is simple and run faster.
 		/// </summary>
-		static LN_Mesh Triangulate(const LN_NurbsSurface& surface);
+		static LN_Mesh Triangulate(const LN_NurbsSurface& surface, int resolutionU, int resolutionV, bool useDelaunay);
 	};
-
-	
 }
