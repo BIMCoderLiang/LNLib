@@ -33,21 +33,19 @@ double Polynomials::Horner(int degree, const std::vector<double>& coefficients, 
 
 double Polynomials::Bernstein(int index, int degree, double paramT)
 {
-	if (index < 0 || 
-		index > degree)
-	{
-		return 0.0;
-	}
-	if (index == 0 ||
-		index == degree)
-	{
-		return 1.0;
-	}
-
+	VALIDATE_ARGUMENT(index >= 0 && index <= degree, "index", "Index must between zero and degree.");
 	VALIDATE_ARGUMENT(degree >= 0, "degree", "Degree must be greater than or equal zero.");
 	VALIDATE_ARGUMENT_RANGE(paramT, 0.0, 1.0);
-	
-	std::vector<double> temp(degree + 1,0.0);
+
+	if (degree == 0) return 1.0;
+	if (index == 0) {
+		return std::pow(1.0 - paramT, degree);
+	}
+	if (index == degree) {
+		return std::pow(paramT, degree);
+	}
+
+	std::vector<double> temp(degree + 1, 0.0);
 	temp[degree - index] = 1.0;
 	double t1 = 1.0 - paramT;
 
@@ -63,11 +61,15 @@ double Polynomials::Bernstein(int index, int degree, double paramT)
 
 std::vector<double> Polynomials::AllBernstein(int degree, double paramT)
 {
-	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must be greater than zero.");
+	VALIDATE_ARGUMENT(degree >= 0, "degree", "Degree must be greater than zero or equal to zero.");
 	VALIDATE_ARGUMENT_RANGE(paramT, 0.0, 1.0);
 
-	std::vector<double> bernsteinArray(degree + 1);
+	std::vector<double> bernsteinArray(degree + 1, 0.0);
 	bernsteinArray[0] = 1.0;
+	if (degree == 0) {
+
+		return bernsteinArray;
+	}
 
 	double t1 = 1.0 - paramT;
 	for (int j = 1; j <= degree; j++)

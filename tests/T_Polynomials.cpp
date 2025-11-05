@@ -15,12 +15,12 @@ TEST(Test_Polynomials, All)
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(Polynomials::Horner(degree, coefficients, 0.5),2.75));
 	EXPECT_THROW(Polynomials::Horner(error_degree1, coefficients, 0.5),std::invalid_argument);
 
-	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(Polynomials::Bernstein(-1, degree, 0.5), 0));
-	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(Polynomials::Bernstein(degree + 1, degree, 0.5), 0));
+	ASSERT_THROW(Polynomials::Bernstein(-1, degree, 0.5), std::invalid_argument);
+	ASSERT_THROW(Polynomials::Bernstein(degree + 1, degree, 0.5), std::invalid_argument);
 	EXPECT_THROW(Polynomials::Bernstein(1, degree, 1.5), std::out_of_range);
 	EXPECT_THROW(Polynomials::Bernstein(1, degree, -2), std::out_of_range);
-	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(Polynomials::Bernstein(0, degree, 0.5),1));
-	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(Polynomials::Bernstein(degree, degree, 0.5), 1));
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(Polynomials::Bernstein(0, degree, 0.5), 0.25));
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(Polynomials::Bernstein(degree, degree, 0.5), 0.25));
 
 	EXPECT_THROW(Polynomials::AllBernstein(-1,0.5), std::invalid_argument);
 	EXPECT_THROW(Polynomials::AllBernstein(degree, 1.5), std::out_of_range);

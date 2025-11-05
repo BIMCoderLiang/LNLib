@@ -131,7 +131,9 @@ Welcome join this project including discussions in **Issues** and make **Pull re
 
 <a href="https://contributors-img.web.app/image?repo=BIMCoderLiang/LNLib">
   <img src="https://contributors-img.web.app/image?repo=BIMCoderLiang/LNLib" />
-</a>
+</a><br/>
+
+**Other Contributors:** [csulijunji](https://github.com/csulijunji)
 
 ## Author
 LNLib is created by Yuqing Liang (BIMCoder Liang).
