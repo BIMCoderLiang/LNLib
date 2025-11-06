@@ -551,17 +551,28 @@ std::vector<std::vector<double>> LNLib::Polynomials::AllBasisFunctions(int spanI
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
 	VALIDATE_ARGUMENT_RANGE(knot, knotVector[0], knotVector[knotVector.size() - 1]);
 
-	std::vector<std::vector<double>> result(degree + 1, std::vector<double>(degree + 1));
-	for (int i = 0; i <= degree; i++)
+	std::vector<std::vector<double>> bases(degree + 1, std::vector<double>(degree + 1));
+	bases[0][0] = 1.0;
+
+	std::vector<double> left(degree + 1, 0.0);
+	std::vector<double> right(degree + 1, 0.0);
+
+	for (int j = 1; j <= degree; j++)
 	{
-		std::vector<double> basis(Constants::NURBSMaxDegree + 1);
-		Polynomials::BasisFunctions(spanIndex, i, knotVector, knot, basis.data());
-		for (int j = 0; j <= i; j++)
+		left[j] = knot - knotVector[spanIndex + 1 - j];
+		right[j] = knotVector[spanIndex + j] - knot;
+		double saved = 0.0;
+		for (int r = 0; r < j; r++)
 		{
-			result[j][i] = basis[j];
+			bases[j][r] = right[r + 1] + left[j - r];
+			double temp = bases[r][j - 1] / bases[j][r];
+
+			bases[r][j] = saved + right[r + 1] * temp;
+			saved = left[j - r] * temp;
 		}
+		bases[j][j] = saved;
 	}
-	return result;
+	return bases;
 }
 
 std::vector<std::vector<double>> LNLib::Polynomials::BezierToPowerMatrix(int degree)
