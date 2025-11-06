@@ -67,9 +67,9 @@ namespace LNLib
 
 		double differ = left + right - simpson;
 		if (MathUtils::IsAlmostEqualTo(differ, 0.0) || 
-			MathUtils::IsLessThan(abs(differ) / 10.0, tolearance))
+			MathUtils::IsLessThan(abs(differ) / 15.0, tolearance))
 		{
-			length = left + right + differ / 10.0;
+			length = left + right + differ / 15.0;
 		}
 		else
 		{
@@ -664,6 +664,12 @@ std::vector<LNLib::LN_NurbsCurve> LNLib::NurbsCurve::DecomposeToBeziers(const LN
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
+	for (int i = 0; i < knotVector.size(); i++)
+	{
+		int multi = Polynomials::GetKnotMultiplicity(knotVector, knotVector[i]);
+		VALIDATE_ARGUMENT(multi <= degree + 1, "curve", "curve knot multiplicity must be less than or equals to degree + 1.");
+	}
 
 	int knotSize = 2 * (degree + 1);
 	std::vector<double> bezierKnots(knotSize);
@@ -1282,8 +1288,8 @@ double LNLib::NurbsCurve::GetParamOnCurve(const LN_NurbsCurve& curve, const XYZ&
 		XYZ currentPoint = tessellatedPoints[i];
 		XYZ nextPoint = tessellatedPoints[i + 1];
 
-		XYZ vector1 = currentPoint - givenPoint;
-		XYZ vector2 = nextPoint - currentPoint;
+		XYZ vector1 = (currentPoint - givenPoint).Normalize();
+		XYZ vector2 = (nextPoint - currentPoint).Normalize();
 		double dot = vector1.DotProduct(vector2);
 
 		XYZ projectPoint;
@@ -1294,7 +1300,7 @@ double LNLib::NurbsCurve::GetParamOnCurve(const LN_NurbsCurve& curve, const XYZ&
 			projectPoint = currentPoint;
 			projectU = currentU;
 		}
-		else if (dot > 1)
+		else if (dot == 1)
 		{
 			projectPoint = nextPoint;
 			projectU = nextU;
