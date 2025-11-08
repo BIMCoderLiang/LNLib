@@ -2254,100 +2254,144 @@ bool LNLib::NurbsCurve::LeastSquaresApproximation(int degree, const std::vector<
 {
 	VALIDATE_ARGUMENT(degree >= 0 && degree <= Constants::NURBSMaxDegree, "degree", "Degree must be greater than or equal zero and not exceed the maximun degree.");
 	VALIDATE_ARGUMENT(controlPointsCount > 0, "controlPointsCount", "controlPointsCount must be greater than zero.");
-
-	int n = controlPointsCount;
-	int m = throughPoints.size();
-	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
-	std::vector<double> knotVector(n + degree + 1, 1.0);
 	
-	double d = (double)m / (double)n;
+	int n = controlPointsCount - 1;
+	int m = throughPoints.size() - 1;
+	
+	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
+	std::vector<double> knotVector(n + degree + 2, 1.0);
+	double d = (double)(m + 1) / (double)(n - degree + 1);
 	for (int j = 0; j <= degree; j++)
 	{
 		knotVector[j] = 0.0;
 	}
-	for (int j = 1; j < n - degree; j++)
+	for (int j = 1; j <= n - degree; j++)
 	{
-		knotVector[degree + j] = 0.0;
-		for (int k = j; k < j + degree; k++)
-		{
-			int i1 = k * d;
-			double a = k * d - i1;
-			int i2 = ((k - 1) * d);
-			knotVector[degree + j] += a * uk[i2] + (1 - a) * uk[i1];
-		}
-		knotVector[degree + j] /= degree;
+		int i = (int)(j * d);
+		double a = j * d - i;
+		knotVector[degree + j] = (1 - a) * uk[i - 1] + a * uk[i];
 	}
 
-	std::vector<XYZW> controlPoints(n);
-	std::vector<XYZ> R(n);
-	std::vector<XYZ> rk(m);
-	std::vector<double> funs(degree + 1);
-	std::vector<std::vector<double>> N(m, std::vector<double>(n));
-	R[0] = throughPoints[0];
-	R[n - 1] = throughPoints[m - 1];
-	N[0][0] = 1.0;
-	N[m - 1][n - 1] = 1.0;
+	std::vector<int> start(n - 1);
+	std::vector<int> end(n - 1);
+	std::vector<int> index(m - 1);
 
-	for (int i = 0; i < m; i++)
-	{
-		int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, uk[i]);
-		double basis[Constants::NURBSMaxDegree + 1];
-		Polynomials::BasisFunctions(spanIndex, degree, knotVector, uk[i], basis);
-		for (int j = 0; j <= degree; j++)
-		{
-			N[i][spanIndex - degree + j] = basis[j];
-		}
-		rk[i] = throughPoints[i] - N[i][0] * throughPoints[0] - N[i][n - 1] * throughPoints[m - 1];
-	}
+	std::vector<std::vector<double>> B(m - 1, std::vector<double>(degree + 1, 0.0));
+	std::vector<double> N(degree + 1);
+	std::vector<std::vector<double>> NTN(n - 1,std::vector<double>(2 * degree + 1, 0.0));
 
-	for (int i = 0; i < n; i++) 
+	for (int i = 0; i <= std::min(degree - 1, n - 2); i++)
 	{
-		R[i] = XYZ();
-		for (int j = 0; j < m; j++)
-		{
-			R[i] += N[j][i] * rk[j];
-		}
-			
-		if (R[i].IsAlmostEqualTo(XYZ()))
-		{
-			return false;
-		}
+		start[i] = 0;
 	}
-	
-	if (n - 2 > 0) 
+	end[0] = -2;
+
+	int rj = degree;
+	int sj = degree - 1;
+	int ej = -2;
+
+	for (int i = 1; i <= m - 1; i++)
 	{
-		std::vector<std::vector<double>> X(n - 2, std::vector<double>(3));
-		std::vector<std::vector<double>> B(n - 2, std::vector<double>(3));
-		std::vector<std::vector<double>> Ns(m - 2, std::vector<double>(n-2));
-		for (int i = 0; i < n - 2; i++) 
+		int j = Polynomials::GetKnotSpanIndex(degree, knotVector, uk[i]);
+		Polynomials::BasisFunctions(j, degree, knotVector, uk[i], &N[0]);
+		
+		int l;
+		if (j == degree)
+			l = 1;
+		else
+			l = 0;
+
+		int hk;
+		if (j == degree || j == n)
+			hk = degree - 1;
+		else
+			hk = degree;
+
+		for (int k = 0; k <= hk; k++)
 		{
-			for (int j = 0; j < 3; j++)
+			B[i - 1][k] = N[l + k];
+		}
+
+		index[i - 1] = std::max(0, j - degree - 1);
+
+		if (j > rj)
+		{
+			for (int k = 1; k <= j - rj; k++)
 			{
-				B[i][j] = R[i + 1][j];
-			}	
+				sj++;  ej++;
+				if (sj <= n - 2)
+					start[sj] = i - 1;
+				if (ej >= 0)
+					end[ej] = i - 2;
+			}
+			rj = j;
 		}
-		for (int i = 1; i <= m - 2; i++)
+	}
+
+	if (sj < n - 2 || end[0] == -1)
+		return false;
+
+	for (int i = std::max(0, ej + 1); i <= n - 2; i++)
+	{
+		end[i] = m - 2;
+	}
+
+	for (int i = 0; i <= n - 2; i++)
+	{
+		int lj = std::max(0, i - degree);
+		int hj = std::min(n - 2, i + degree);
+		for (int j = lj; j <= hj; j++)
 		{
-			for (int j = 1; j <= n - 2; j++)
+			int lk = std::max(start[i], start[j]);
+			int hk = std::min(end[i], end[j]);
+			for (int k = lk; k <= hk; k++)
 			{
-				Ns[i - 1][j - 1] = N[i][j];
+				NTN[i][j - i + degree] += B[k][i - index[k]] * B[k][j - index[k]];
 			}
 		}
-		std::vector<std::vector<double>> NsT;
-		MathUtils::Transpose(Ns, NsT);
-		auto NsTNs = MathUtils::MatrixMultiply(NsT, Ns);
-		X = MathUtils::SolveLinearSystem(NsTNs, B);
+	}
 
-		for (int i = 0; i < n - 2; i++)
+	std::vector<XYZ> Rk(m - 1);
+	for (int k = 1; k <= m - 1; k++)
+	{
+		double n0 = Polynomials::OneBasisFunction(0, degree, knotVector, uk[k]);
+		double np = Polynomials::OneBasisFunction(n, degree, knotVector, uk[k]);
+		Rk[k - 1] = throughPoints[k] - n0 * throughPoints[0] - np * throughPoints[m];
+	}
+
+	std::vector<XYZ> R(n - 1);
+	for (int i = 1; i <= n - 1; i++)
+	{
+		R[i - 1] = LNLib::XYZ(0,0,0);
+		int lk = start[i - 1];
+		int hk = end[i - 1];
+		for (int k = lk; k <= hk; k++)
 		{
-			double x = X[i][0];
-			double y = X[i][1];
-			double z = X[i][2];
-			controlPoints[i+1] = XYZW(XYZ(x,y,z),1);
+			R[i - 1] += Rk[k] * B[k][i - index[k] - 1];
 		}
 	}
-	controlPoints[0] = XYZW(throughPoints[0],1);
-	controlPoints[n - 1] = XYZW(throughPoints[m - 1],1);
+
+	std::vector<std::vector<double>> right(n - 1, std::vector <double>(3));
+	for (int i = 0; i < R.size(); i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			right[i][j] = R[i][j];
+		}
+	}
+
+	std::vector<std::vector<double>> temp(n - 1, std::vector<double>(3));
+	bool solved = MathUtils::SolveLinearSystemBanded(n - 1, NTN, 2 * degree + 1, right, temp);
+	if (!solved) return false;
+
+	std::vector<XYZW> controlPoints(controlPointsCount);
+	for (int i = 1; i < n; i++)
+	{
+		std::vector <double> t = temp[i - 1];
+		controlPoints[i] = XYZW(XYZ(t[0],t[1],t[2]), 1);
+	}
+	controlPoints[0] = XYZW(throughPoints[0], 1);
+	controlPoints[n] = XYZW(throughPoints[m], 1);
 
 	curve.Degree = degree;
 	curve.KnotVector = knotVector;
