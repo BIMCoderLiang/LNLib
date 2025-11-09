@@ -98,6 +98,11 @@ namespace LNLib
 		/// matrix * result = right.
 		/// </summary>
 		static std::vector<std::vector<double>> SolveLinearSystem(const std::vector<std::vector<double>>& matrix, const std::vector<std::vector<double>>& right);
+
+		/// <summary>
+		/// matrix * result = right.
+		/// </summary>
+		static bool SolveLinearSystemBanded(int matrixDimension, const std::vector<std::vector<double>>& matrix, int bandwidth, const std::vector<std::vector<double>>& right, std::vector<std::vector<double>>& result);
 	};
 }
 

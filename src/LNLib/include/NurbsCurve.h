@@ -236,6 +236,9 @@ namespace LNLib
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page410
 		/// Least square curve approximation.
+		/// 
+		/// Referenced from https://github.com/iTwin/imodel-native (Bentley Software): 
+		///		MSBsplineCurve::GeneralLeastSquaresApproximation.
 		/// </summary>
 		static bool LeastSquaresApproximation(int degree, const std::vector<XYZ>& throughPoints, int controlPointsCount, LN_NurbsCurve& curve);
 

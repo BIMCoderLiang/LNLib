@@ -229,4 +229,59 @@ std::vector<std::vector<double>> LNLib::MathUtils::SolveLinearSystem(const std::
     return result;
 }
 
+bool LNLib::MathUtils::SolveLinearSystemBanded(int matrixDimension, const std::vector<std::vector<double>>& matrix, int bandwidth, const std::vector<std::vector<double>>& right, std::vector<std::vector<double>>& result)
+{
+    int sbw = bandwidth / 2;
+    int n = matrixDimension;
+
+    Eigen::SparseMatrix<double> A(n, n);
+    std::vector<Eigen::Triplet<double>> triplets;
+    triplets.reserve(n * bandwidth);
+
+    for (int i = 0; i < n; i++) 
+    {
+        for (int k = 0; k < bandwidth; k++) 
+        {
+            int j = i - sbw + k;
+            if (j >= 0 && j < n) 
+            {
+                double value = matrix[i][k];
+                if (value != 0.0)
+                {
+                    triplets.push_back(Eigen::Triplet<double>(i, j, value));
+                }
+            }
+        }
+    }
+    A.setFromTriplets(triplets.begin(), triplets.end());
+
+    Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
+    solver.analyzePattern(A);
+    solver.factorize(A);
+
+    if (solver.info() != Eigen::Success) {
+        return false;
+    }
+
+    for (int k = 0; k < right[0].size(); k++)
+    {
+        Eigen::VectorXd rhs(n), solution(n);
+        for (int i = 0; i < n; i++)
+        {
+            rhs(i) = right[i][k];
+        }
+        solution = solver.solve(rhs);
+        if (solver.info() != Eigen::Success)
+        {
+            return false;
+            break;
+        }
+        for (int i = 0; i < n; i++)
+        {
+            result[i][k] = solution(i);
+        }
+    }
+    return true;
+}
+
 
