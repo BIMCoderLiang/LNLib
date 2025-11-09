@@ -1307,7 +1307,7 @@ double LNLib::NurbsCurve::GetParamOnCurve(const LN_NurbsCurve& curve, const XYZ&
 		}
 		else
 		{
-			projectPoint = currentPoint + dot * vector1.Normalize();
+			projectPoint = currentPoint + dot * vector1;
 			projectU = currentU + (nextU - currentU) * dot;
 		}
 
