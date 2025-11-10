@@ -224,8 +224,8 @@ TEST(Test_Additional, MergeCurve)
 	bool success = NurbsCurve::Merge(line, arc, merged);
 	EXPECT_TRUE(success);
 	
-	// 1.0 is the joint knot of merged curve.
-	bool canDer = NurbsCurve::CanComputerDerivative(merged, 1.0);
+	// 0.5 is the joint knot of merged curve.
+	bool canDer = NurbsCurve::CanComputerDerivative(merged, 0.5);
 	EXPECT_FALSE(canDer);
 
 	// Test min and max parameters for CanComputerDerivative.

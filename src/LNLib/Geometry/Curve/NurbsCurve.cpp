@@ -1642,9 +1642,9 @@ bool LNLib::NurbsCurve::Merge(const LN_NurbsCurve& left, const LN_NurbsCurve& ri
 			knotVector[i] = kl + it->first;
 		}
 	}	
-
+	
 	result.Degree = degree;
-	result.KnotVector = knotVector;
+	result.KnotVector = KnotVectorUtils::Rescale(knotVector, 0.0, 1.0);
 	result.ControlPoints = controlPoints;
 	return true;
 }
