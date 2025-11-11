@@ -1587,7 +1587,9 @@ bool LNLib::NurbsCurve::Merge(const LN_NurbsCurve& left, const LN_NurbsCurve& ri
 	if (degree > degree_L)
 	{
 		int times = degree - degree_L;
-		ElevateDegree(left, times, tempL);
+		LN_NurbsCurve temp;
+		ElevateDegree(left, times, temp);
+		Reparametrize(temp, 0.0, 1.0, tempL);
 	}
 
 	LN_NurbsCurve tempR;
@@ -1595,7 +1597,9 @@ bool LNLib::NurbsCurve::Merge(const LN_NurbsCurve& left, const LN_NurbsCurve& ri
 	if (degree > degree_R)
 	{
 		int times = degree - degree_R;
-		ElevateDegree(right, times, tempR);
+		LN_NurbsCurve temp;
+		ElevateDegree(right, times, temp);
+		Reparametrize(temp, 0.0, 1.0, tempR);
 	}
 
 	int l = Polynomials::GetKnotMultiplicity(tempL.KnotVector, tempL.KnotVector[tempL.KnotVector.size() - 1]);
@@ -1606,42 +1610,31 @@ bool LNLib::NurbsCurve::Merge(const LN_NurbsCurve& left, const LN_NurbsCurve& ri
 		return false;
 	}
 
-	int size = tempL.ControlPoints.size() + tempR.ControlPoints.size() - 1;
-	std::vector<XYZW> controlPoints(size);
+	int size = tempL.ControlPoints.size() + tempR.ControlPoints.size();
+	std::vector<XYZW> controlPoints;
+	controlPoints.reserve(size);
 	int ksize = size + degree + 1;
-	std::vector<double> knotVector(ksize);
 
-	int i;
-	for (i = 0; i < tempL.ControlPoints.size(); i++)
+	for (int i = 0; i < tempL.ControlPoints.size(); i++)
 	{
-		controlPoints[i] = tempL.ControlPoints[i];
+		controlPoints.emplace_back(tempL.ControlPoints[i]);
 	}
-		
-	for (; i < size; i++)
+	for (int i = 0; i < tempR.ControlPoints.size(); i++)
 	{
-		controlPoints[i] = tempR.ControlPoints[i - tempL.ControlPoints.size() + 1];
+		controlPoints.emplace_back(tempR.ControlPoints[i]);
 	}
 
-	double kl = tempL.KnotVector[tempL.KnotVector.size() - 1];
-	for (i = 0; i < degree + 1; i++)
+	std::vector<double> knotVector;
+	knotVector.reserve(ksize);
+	for (int i = 0; i < tempL.KnotVector.size(); i++)
 	{
-		knotVector[i] = tempL.KnotVector[0];
-		knotVector[ksize - i - 1] = kl + tempR.KnotVector[tempR.KnotVector.size() - 1];
+		knotVector.emplace_back(tempL.KnotVector[i]);
 	}
-	
-	for (int j = 0; j < degree; j++, i++)
+	Reparametrize(tempR, 1.0, 2.0, tempR);
+	for (int i = degree + 1; i < tempR.KnotVector.size(); i++)
 	{
-		knotVector[i] = kl;
+		knotVector.emplace_back(tempR.KnotVector[i]);
 	}
-
-	auto map = KnotVectorUtils::GetInternalKnotMultiplicityMap(tempR.KnotVector);
-	for (auto it = map.begin(); it != map.end(); it++)
-	{
-		for (int j = 0; j < degree; j++, i++)
-		{
-			knotVector[i] = kl + it->first;
-		}
-	}	
 	
 	result.Degree = degree;
 	result.KnotVector = KnotVectorUtils::Rescale(knotVector, 0.0, 1.0);
