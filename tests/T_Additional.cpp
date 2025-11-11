@@ -298,7 +298,7 @@ TEST(Test_Additional, MergeCurve2)
 
 	LN_NurbsCurve merged;
 	bool success = NurbsCurve::Merge(curve, curve1, merged);
-
+	EXPECT_TRUE(success);
 }
 
 
