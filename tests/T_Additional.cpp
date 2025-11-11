@@ -275,6 +275,33 @@ TEST(Test_Additional, MergeCurve)
 }
 
 
+TEST(Test_Additional, MergeCurve2)
+{
+	int degree = 2;
+	std::vector<double> kv = { 0,0,0,1,2,3,3,3 };
+	std::vector<XYZW> cps = { XYZW(XYZ(0,0,0),1), XYZW(XYZ(1,1,0),4), XYZW(XYZ(3,2,0),1), XYZW(XYZ(4,1,0),1), XYZW(XYZ(5,-1,0),1) };
+
+	LN_NurbsCurve curve;
+	curve.Degree = degree;
+	curve.KnotVector = kv;
+	curve.ControlPoints = cps; 
+
+	int degree1 = 3;
+	std::vector<double> kv1 = { 5,5,5,5,6,6,9,9,10,10,10,10};
+	std::vector<XYZW> cps1 = { XYZW(XYZ(5,-1,0),1), XYZW(XYZ(6,2,0),1), XYZW(XYZ(7,1,0),1), XYZW(XYZ(8,-2,0),1), XYZW(XYZ(9,-1,0),1),
+								 XYZW(XYZ(10,-3,0),1), XYZW(XYZ(11,1,0),1), XYZW(XYZ(12,3,0),1)};
+
+	LN_NurbsCurve curve1;
+	curve1.Degree = degree1;
+	curve1.KnotVector = kv1;
+	curve1.ControlPoints = cps1;
+
+	LN_NurbsCurve merged;
+	bool success = NurbsCurve::Merge(curve, curve1, merged);
+
+}
+
+
 TEST(Test_Fitting, offset)
 {
 	// Code copied from issue #25
