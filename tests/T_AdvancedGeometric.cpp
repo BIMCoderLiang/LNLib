@@ -1,6 +1,7 @@
 ﻿#include "gtest/gtest.h"
 #include "NurbsCurve.h"
 #include "NurbsSurface.h"
+#include "KnotVectorUtils.h"
 #include "LNObject.h"
 #include "UV.h"
 #include "XYZ.h"
@@ -104,6 +105,21 @@ TEST(Test_AdvancedGeometric, Surface_GetParamOrGetPoint)
 	UV param1 = NurbsSurface::GetParamOnSurfaceByGSA(surface, result);
 	EXPECT_TRUE(param.IsAlmostEqualTo(uv));
 	EXPECT_TRUE(param1.IsAlmostEqualTo(uv));
+}
+TEST(Test_AdvancedGeometric, KnotVectorScale)
+{
+	std::vector<double> kv = { 5,5,5,10,10,15,15,20,20,20 };
+	std::vector<double> result = KnotVectorUtils::Rescale(kv, 0, 1);
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(result[0], 0));
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(result[1], 0));
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(result[2], 0));
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(result[3], 1.0/3));
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(result[4], 1.0 / 3));
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(result[5], 2.0 / 3));
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(result[6], 2.0 / 3));
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(result[7], 1));
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(result[8], 1));
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(result[9], 1));
 }
 
 TEST(Test_AdvancedGeometric, Reparametrize)

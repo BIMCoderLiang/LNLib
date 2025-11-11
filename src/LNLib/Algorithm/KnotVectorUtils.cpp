@@ -64,7 +64,7 @@ std::vector<double> LNLib::KnotVectorUtils::Rescale(const std::vector<double>& k
 	std::vector<double> result(size);
 	for (int i = 0; i < size; i++)
 	{
-		result[i] = (k * knotVector[i] - origintMin) + min;
+		result[i] = k * (knotVector[i] - origintMin) + min;
 	}
 	return result;
 }
