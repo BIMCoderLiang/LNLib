@@ -587,13 +587,20 @@ std::vector<std::vector<double>> LNLib::Polynomials::BezierToPowerMatrix(int deg
 	}
 
 	matrix[0][0] = matrix[degree][degree] = 1.0;
-	matrix[degree][0] = degree % 2 == 0 ? -1.0 : 1.0;
+	if (degree % 2)
+	{
+		matrix[degree][0] = -1.0;
+	}
+	else
+	{
+		matrix[degree][0] = 1.0;
+	}
 
 	double sign = -1.0;
 	for (int i = 1; i < degree; i++)
 	{
 		matrix[i][i] = MathUtils::Binomial(degree,i);
-		matrix[i][0] = matrix[degree][degree - 1] = sign * matrix[i][i];
+		matrix[i][0] = matrix[degree][degree - i] = sign * matrix[i][i];
 		sign = -sign;
 	}
 
