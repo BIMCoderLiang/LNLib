@@ -1288,26 +1288,26 @@ double LNLib::NurbsCurve::GetParamOnCurve(const LN_NurbsCurve& curve, const XYZ&
 		XYZ currentPoint = tessellatedPoints[i];
 		XYZ nextPoint = tessellatedPoints[i + 1];
 
-		XYZ vector1 = (currentPoint - givenPoint).Normalize();
+		XYZ vector1 = (givenPoint - currentPoint).Normalize();
 		XYZ vector2 = (nextPoint - currentPoint).Normalize();
 		double dot = vector1.DotProduct(vector2);
 
 		XYZ projectPoint;
 		double projectU;
 
-		if (dot < 0)
+		if (MathUtils::IsLessThan(dot, 0))
 		{
 			projectPoint = currentPoint;
 			projectU = currentU;
 		}
-		else if (dot == 1)
+		else if (MathUtils::IsGreaterThanOrEqual(dot, 1))
 		{
 			projectPoint = nextPoint;
 			projectU = nextU;
 		}
 		else
 		{
-			projectPoint = currentPoint + dot * vector1;
+			projectPoint = currentPoint + dot * (nextPoint - currentPoint);
 			projectU = currentU + (nextU - currentU) * dot;
 		}
 
