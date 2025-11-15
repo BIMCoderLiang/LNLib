@@ -62,15 +62,14 @@ namespace LNLib
 		// Tiller & Hanson Algorithm for C0 profile.
 		// 
 		// 1. Tiller & Hanson Algorithm should iterative use. 
-		// When diff is larger than tolerance, should subdivide curve util less than tolerance.
+		// When diff is larger than tolerance, should subdivide curve until less than tolerance.
 		// Finally use Merge curve.
 		// 
-		// 2. Tiller & Hanson Algorithm is not good in negative offset & hight degree curve.
+		// 2. Tiller & Hanson Algorithm is not good in negative offset & high degree curve.
 		TillerAndHanson = 0,
 
-		// Piegl & Tiller Algorithm for high degree profile.
-		// which had better controlled by error tolerance
-		// and yet self-intersection had not dealt with
+		// Piegl & Tiller Algorithm for high degree profile,
+		// which had better controlled by error tolerance and yet self-intersection had not dealt with.
 		PieglAndTiller = 1,
 	};
 }
