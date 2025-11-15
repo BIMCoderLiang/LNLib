@@ -341,4 +341,17 @@ TEST(Test_Fitting, offset)
 			double diff = abs(distance - offsetDist);
 		}
 	}
+
+	{
+		//Data from LNLib user.
+		curve.Degree = 3;
+		curve.KnotVector = { 0,0,0,0,11654.24065018259,11654.24065018259,11654.24065018259,11654.24065018259 };
+		curve.ControlPoints = { XYZW(XYZ(-7301.38030880309,2998.721042471042,0),1),
+									XYZW(XYZ(-4159.242719088118,8928.973122538283,0),1),
+										XYZW(XYZ(-858.5467752777151,-854.1208322903926,0),1),
+											XYZW(XYZ(3262.760617760618,3927.244208494208,0),1)};
+
+		LNLib::LN_NurbsCurve result;
+		NurbsCurve::Offset(curve, 50, OffsetType::TillerAndHanson, result);
+	}
 }

@@ -168,18 +168,30 @@ namespace LNLib
 			return;
 		}
 
-		std::vector<XYZ> tempPoints;
+		XYZ firstNormal = NurbsCurve::Normal(curve, CurveNormal::Normal, knotVector[0]);
 
+		std::vector<XYZ> tempPoints;
 		for (int i = 0; i < controlPoints.size() - 1; i++)
 		{
 			XYZ currentPoint0 = controlPoints[i].ToXYZ(true);
 			double param0 = NurbsCurve::GetParamOnCurve(curve, currentPoint0);
+			XYZ normal0 = NurbsCurve::Normal(curve, CurveNormal::Normal, param0);
+			double angle0 = firstNormal.AngleTo(normal0);
+			if (MathUtils::IsGreaterThan(angle0, Constants::Pi / 2.0, Constants::AngleEpsilon))
+			{
+				normal0 = normal0.Negative();
+			}
+			XYZ newPoint0 = currentPoint0 + offset * normal0;
 
 			XYZ currentPoint1 = controlPoints[i + 1].ToXYZ(true);
 			double param1 = NurbsCurve::GetParamOnCurve(curve, currentPoint1);
-
-			XYZ newPoint0 = currentPoint0 + offset * NurbsCurve::Normal(curve, CurveNormal::Normal, param0);
-			XYZ newPoint1 = currentPoint1 + offset * NurbsCurve::Normal(curve, CurveNormal::Normal, param1);
+			XYZ normal1 = NurbsCurve::Normal(curve, CurveNormal::Normal, param1);
+			double angle1 = firstNormal.AngleTo(normal1);
+			if (MathUtils::IsGreaterThan(angle1, Constants::Pi / 2.0, Constants::AngleEpsilon))
+			{
+				normal1 = normal1.Negative();
+			}
+			XYZ newPoint1 = currentPoint1 + offset * normal1;
 
 			tempPoints.emplace_back(newPoint0);
 			tempPoints.emplace_back(newPoint1);
@@ -250,6 +262,7 @@ namespace LNLib
 		double step = (maxParam - minParam) / (double)(count - 1);
 		std::vector<XYZ> samplePoints;
 		samplePoints.reserve(count);
+
 		for (int j = 0; j < count; j++)
 		{
 			double bparam = minParam + step * j;
@@ -1652,7 +1665,7 @@ void LNLib::NurbsCurve::Offset(const LN_NurbsCurve& curve, double offset, Offset
 
 		case OffsetType::PieglAndTiller:
 			LNLib::OffsetByPieglAndTiller(curve, offset, result);
-		
+
 		default:
 			break;
 	}

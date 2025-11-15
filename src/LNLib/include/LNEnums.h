@@ -69,6 +69,8 @@ namespace LNLib
 		TillerAndHanson = 0,
 
 		// Piegl & Tiller Algorithm for high degree profile.
+		// which had better controlled by error tolerance
+		// and yet self-intersection had not dealt with
 		PieglAndTiller = 1,
 	};
 }
