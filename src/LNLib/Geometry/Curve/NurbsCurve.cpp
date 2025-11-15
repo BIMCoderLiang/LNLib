@@ -2762,7 +2762,6 @@ void LNLib::NurbsCurve::RemoveKnotsByGivenBound(const LN_NurbsCurve& curve, cons
 		for (i = Rstart; i <= Rend; i++)
 		{
 			double a;
-			s = S[r];
 			if ((degree + s) % 2)
 			{
 				u = uk[i];
