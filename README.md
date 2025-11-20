@@ -1,10 +1,15 @@
 ## Introduction
 **LNLib is a C++ NURBS Algorithms Library.** <br/>These algorithms are primary referenced from [The NURBS Book 2nd Edition](https://link.springer.com/book/10.1007/978-3-642-97385-7). <br/>The APIs are re-designed to make it more friendly to users.
 
+## API Languages:
+- **C++** (Native)
+- **Javascript**  (WebAssembly by Emscripten)
+
 <img src="assets/LNLib.png" width=400 height=200>
 
-## Run LNLib
-Please run build.bat first to construct C++ solution by CMake.
+## Build Project
+- **LNLib**: Run **build.bat** first to construct Native C++ solution by CMake.
+- **LNLibjs**: WebAssembly version of LNLib, Run script in **emscripten** folder.
 
 ## Features
 Basic Elements:
