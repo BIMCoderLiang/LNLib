@@ -4,6 +4,7 @@
 ## API Languages:
 - **C++** (Native)
 - **Javascript**  (WebAssembly by Emscripten)
+- **Python**  (pybind11, ***work in progress***)
 
 <img src="assets/LNLib.png" width=400 height=200>
 
