@@ -13,7 +13,7 @@ set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMakePredefinedTargets")
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
 message(STATUS "Python include dirs: ${Python_INCLUDE_DIRS}")
 
-file(GLOB_RECURSE SRC_FILES src/*.cpp src/*.inl)
+file(GLOB_RECURSE SRC_FILES src/*.cpp src/*.h)
 add_library(${TARGET_NAME} SHARED ${SRC_FILES})
 
 target_include_directories(${TARGET_NAME} 

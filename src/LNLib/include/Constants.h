@@ -20,12 +20,12 @@ namespace LNLib
 
 	public:
 
-		static const double DoubleEpsilon;
-		static const double DistanceEpsilon;
-		static const double AngleEpsilon;
-		static const double MaxDistance;
-		static const double Pi;
-		static const int NURBSMaxDegree = 7;
+		static constexpr  double DoubleEpsilon = 1E-6;
+		static constexpr  double DistanceEpsilon = 1E-4;
+		static constexpr  double AngleEpsilon = 1E-2;
+		static constexpr  double MaxDistance = 1E9;
+		static constexpr  double Pi = 3.14159265358979323846;
+		static constexpr  int NURBSMaxDegree = 7;
 	};
 }
 

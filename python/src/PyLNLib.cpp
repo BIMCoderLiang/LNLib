@@ -10,20 +10,34 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include "PyLNLib.inl"
+#include "PyLNLib.h"
 
 namespace py = pybind11;
 
 void construct(py::module_ &);
 
-PYBIND11_MODULE(PyLNLib,m)
+PYBIND11_MODULE(PyLNLib, m)
 {
 	construct(m);
 }
 
-void construct(py::module_&)
+void construct(py::module_&m)
 {
-
+	cstrEnums( m);
+	cstrUV(m);
+	cstrXYZ(m);
+	cstrXYZW(m);
+	cstrMatrix4d(m);
+	cstrObject(m);
+	cstrPolynomials(m);
+	cstrValidationUtils(m);
+	cstrProjection(m);
+	cstrIntersection(m);
+	cstrKnotVectorUtils(m);
+	cstrBezierCurve(m);
+	cstrBezierSurface(m);
+	cstrNurbsCurve(m);
+	cstrNurbsSurface(m);
 }
 
 
