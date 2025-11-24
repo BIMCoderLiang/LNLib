@@ -27,10 +27,14 @@ macro(SUBDIRLIST result curdir)
 endmacro(SUBDIRLIST)
 
 option(ENABLE_UNIT_TESTS "Enable unit tests" ON)
-
 add_subdirectory(src/LNLib)
 if(ENABLE_UNIT_TESTS)
     set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT Tests)
     add_subdirectory(tests)
+endif()
+
+option(ENABLE_PYTHON_API "Enable python api" OFF)
+if(ENABLE_PYTHON_API)
+    add_subdirectory(python)
 endif()
 
