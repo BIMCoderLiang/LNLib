@@ -15,10 +15,14 @@
 
 #if defined(WIN64) || defined(_WIN64) || defined(__WIN64__) || defined(__CYGWIN__)
     #ifdef LNLIB_HOME
-        #define LNLIB_EXPORT DLL_EXPORT
+        #define LNLIB_EXPORT __declspec(dllexport)
     #else
-        #define LNLIB_EXPORT DLL_IMPORT
+        #define LNLIB_EXPORT __declspec(dllimport)
     #endif
 #else
-    #define LNLIB_EXPORT
+    #ifdef LNLIB_HOME
+        #define LNLIB_EXPORT __attribute__((visibility("default")))
+    #else
+        #define LNLIB_EXPORT
+    #endif
 #endif

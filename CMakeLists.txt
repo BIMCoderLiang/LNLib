@@ -33,8 +33,13 @@ if(ENABLE_UNIT_TESTS)
     add_subdirectory(tests)
 endif()
 
-option(ENABLE_PYTHON_API "Enable python api" OFF)
+option(ENABLE_PYTHON_API "Enable Python API" OFF)
 if(ENABLE_PYTHON_API)
     add_subdirectory(python)
+endif()
+
+option(ENABLE_DOTNET_API "Enable .NET API" OFF)
+if(ENABLE_DOTNET_API)
+    add_subdirectory(dotnet)
 endif()
 
