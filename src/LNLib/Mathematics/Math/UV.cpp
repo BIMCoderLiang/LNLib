@@ -92,11 +92,6 @@ double UV::SqrLength() const
 	return m_uv[0] * m_uv[0] + m_uv[1] * m_uv[1];
 }
 
-double LNLib::UV::AngleTo(const UV& another) const
-{
-	return 0.0;
-}
-
 UV UV::Normalize()
 {
 	double length = Length();

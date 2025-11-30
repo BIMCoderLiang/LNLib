@@ -40,6 +40,7 @@ endif()
 
 option(ENABLE_DOTNET_API "Enable .NET API" OFF)
 if(ENABLE_DOTNET_API)
-    add_subdirectory(dotnet)
+    add_subdirectory(dotnet/CAPI)
+    add_subdirectory(dotnet/PInvoke)
 endif()
 
