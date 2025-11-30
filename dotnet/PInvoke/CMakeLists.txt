@@ -7,7 +7,7 @@ if(NOT DOTNET_EXECUTABLE)
     message(FATAL_ERROR ".NET 8 SDK not found. Please install it.")
 endif()
 
-set(CS_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/*.cs")
+set(CS_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cs")
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set(DOTNET_RID "win-x64")
