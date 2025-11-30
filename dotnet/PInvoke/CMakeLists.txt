@@ -2,16 +2,13 @@ cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 set(TARGET_NAME LNLibSharp)
 project(${TARGET_NAME})
 
-# 检查 dotnet 是否可用
 find_program(DOTNET_EXECUTABLE dotnet)
 if(NOT DOTNET_EXECUTABLE)
-    message(FATAL_ERROR "dotnet CLI not found. Please install .NET SDK.")
+    message(FATAL_ERROR "Please install .NET SDK.")
 endif()
 
-# 根据 CMake 系统名称自动推断 .NET RID（仅支持主流本地平台）
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     set(DOTNET_RID "linux-x64")
-    # 可扩展：检测 ARM64
     if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64")
         set(DOTNET_RID "linux-arm64")
     endif()
