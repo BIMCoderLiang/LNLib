@@ -8,29 +8,33 @@
  * the LICENSE file.
  */
 
+using System;
+using System.Runtime.InteropServices;
+using static LNLibSharp.LNLibDefinitions;
+
 namespace LNLibSharp
 {
-public static partial class LNLibAPI
-{
-    [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl)]
-    public static extern XYZ bezier_curve_get_point_by_bernstein(
-        int degree,
-        IntPtr control_points,
-        int control_points_count,
-        double paramT);
+    public static partial class LNLibAPI
+    {
+        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern XYZ bezier_curve_get_point_by_bernstein(
+            int degree,
+            IntPtr control_points,
+            int control_points_count,
+            double paramT);
 
-    [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl)]
-    public static extern XYZ bezier_curve_get_point_by_de_casteljau(
-        int degree,
-        IntPtr control_points,
-        int control_points_count,
-        double paramT);
+        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern XYZ bezier_curve_get_point_by_de_casteljau(
+            int degree,
+            IntPtr control_points,
+            int control_points_count,
+            double paramT);
 
-    [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl)]
-    public static extern XYZW bezier_curve_get_point_by_bernstein_rational(
-        int degree,
-        IntPtr control_points,
-        int control_points_count,
-        double paramT);
+        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl)]
+        public static extern XYZW bezier_curve_get_point_by_bernstein_rational(
+            int degree,
+            IntPtr control_points,
+            int control_points_count,
+            double paramT);
+    }
 }
-} 

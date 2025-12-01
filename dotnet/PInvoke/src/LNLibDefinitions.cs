@@ -8,12 +8,10 @@
  * the LICENSE file.
  */
 
-using System.Runtime.InteropServices;
-
 namespace LNLibSharp
 {
-public static class LNLibDefinitions
-{
-    public const string LNLIB_CAPI_DLL = "CApi.dll";
-}
+    public static class LNLibDefinitions
+    {
+        public const string LNLIB_CAPI_DLL = "CApi.dll";
+    }
 }

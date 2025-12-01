@@ -5,7 +5,7 @@
 - **C++** (Native)
 - **Javascript**  (WebAssembly by Emscripten)
 - **Python**  (pybind11)
-- **.NET** ***(in progress)***
+- **.NET** (P/Invoke & .NET8.0)
 
 <img src="assets/LNLib.png" width=400 height=200>
 
@@ -13,6 +13,7 @@
 - **LNLib**: Run **build.bat** first to construct Native C++ solution by CMake.
 - **LNLibjs**: WebAssembly version of LNLib, Run script in **emscripten** folder.
 - **PyLNLib**: Python version of LNLib, switch `ENABLE_PYTHON_API` to `ON` in CMakeLists.txt and run **build.bat**.
+- **LNLibSharp**: .NET version of LNLib, switch `ENABLE_DOTNET_API` to `ON` in CMakeLists.txt and run **build.bat**.
 
 ## Features
 Basic Elements:
