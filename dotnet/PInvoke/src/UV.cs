@@ -22,60 +22,60 @@ namespace LNLibSharp
     public static partial class LNLibUV
     {
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_UVreate")]
-        public static extern UV LNLIB_UVreate(double u, double v);
+        public static extern UV Create(double u, double v);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_UV_get_u")]
-        public static extern double LNLIB_UV_get_u(UV uv);
+        public static extern double GetU(UV uv);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_UV_get_v")]
-        public static extern double LNLIB_UV_get_v(UV uv);
+        public static extern double GetV(UV uv);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_UV_set_u")]
-        public static extern UV LNLIB_UV_set_u(UV uv, double u);
+        public static extern UV SetU(UV uv, double u);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_UV_set_v")]
-        public static extern UV LNLIB_UV_set_v(UV uv, double v);
+        public static extern UV SetV(UV uv, double v);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_UV_is_zero")]
-        public static extern int LNLIB_UV_is_zero(UV uv, double epsilon);
+        public static extern int IsZero(UV uv, double epsilon);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_UV_is_unit")]
-        public static extern int LNLIB_UV_is_unit(UV uv, double epsilon);
+        public static extern int IsUnit(UV uv, double epsilon);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_UV_is_almost_equal")]
-        public static extern int LNLIB_UV_is_almost_equal(UV a, UV b, double epsilon);
+        public static extern int IsAlmostEqual(UV a, UV b, double epsilon);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_UV_length")]
-        public static extern double LNLIB_UV_length(UV uv);
+        public static extern double Length(UV uv);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_UV_sqr_length")]
-        public static extern double LNLIB_UV_sqr_length(UV uv);
+        public static extern double SqrLength(UV uv);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_UV_normalize")]
-        public static extern UV LNLIB_UV_normalize(UV uv);
+        public static extern UV Normalize(UV uv);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_UV_add")]
-        public static extern UV LNLIB_UV_add(UV a, UV b);
+        public static extern UV Add(UV a, UV b);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_UV_subtract")]
-        public static extern UV LNLIB_UV_subtract(UV a, UV b);
+        public static extern UV Subtract(UV a, UV b);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_UV_negative")]
-        public static extern UV LNLIB_UV_negative(UV uv);
+        public static extern UV Negative(UV uv);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_UV_dot_product")]
-        public static extern double LNLIB_UV_dot_product(UV a, UV b);
+        public static extern double DotProduct(UV a, UV b);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_UVross_product")]
-        public static extern double LNLIB_UVross_product(UV a, UV b);
+        public static extern double CrossProduct(UV a, UV b);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_UV_distance")]
-        public static extern double LNLIB_UV_distance(UV a, UV b);
+        public static extern double Distance(UV a, UV b);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_UV_scale")]
-        public static extern UV LNLIB_UV_scale(UV uv, double factor);
+        public static extern UV Scale(UV uv, double factor);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_UV_divide")]
-        public static extern UV LNLIB_UV_divide(UV uv, double divisor);
+        public static extern UV Divide(UV uv, double divisor);
     }
 }

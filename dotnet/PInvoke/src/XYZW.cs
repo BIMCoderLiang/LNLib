@@ -21,46 +21,46 @@ namespace LNLibSharp
 
     public static partial class LNLibXYZW
     {
-        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_XYZWreate")]
-        public static extern XYZW LNLIB_XYZWreate(double wx, double wy, double wz, double w);
+        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_XYZW_create")]
+        public static extern XYZW Create(double wx, double wy, double wz, double w);
 
-        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_XYZWreate_from_xyz")]
-        public static extern XYZW LNLIB_XYZWreate_from_xyz(XYZ xyz, double w);
+        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_XYZW_create_from_xyz")]
+        public static extern XYZW CreateFromXYZ(XYZ xyz, double w);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_XYZW_get_wx")]
-        public static extern double LNLIB_XYZW_get_wx(XYZW xyzw);
+        public static extern double GetWX(XYZW xyzw);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_XYZW_get_wy")]
-        public static extern double LNLIB_XYZW_get_wy(XYZW xyzw);
+        public static extern double GetWY(XYZW xyzw);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_XYZW_get_wz")]
-        public static extern double LNLIB_XYZW_get_wz(XYZW xyzw);
+        public static extern double GetWZ(XYZW xyzw);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_XYZW_get_w")]
-        public static extern double LNLIB_XYZW_get_w(XYZW xyzw);
+        public static extern double GetW(XYZW xyzw);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_XYZW_set_w")]
-        public static extern XYZW LNLIB_XYZW_set_w(XYZW xyzw, double w);
+        public static extern XYZW SetW(XYZW xyzw, double w);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_XYZW_to_xyz")]
-        public static extern XYZ LNLIB_XYZW_to_xyz(XYZW xyzw, int divideWeight);
+        public static extern XYZ ToXYZ(XYZW xyzw, int divideWeight);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_XYZW_is_almost_equal")]
-        public static extern int LNLIB_XYZW_is_almost_equal(XYZW a, XYZW b, double epsilon);
+        public static extern int IsAlmostEqual(XYZW a, XYZW b, double epsilon);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_XYZW_distance")]
-        public static extern double LNLIB_XYZW_distance(XYZW a, XYZW b);
+        public static extern double Distance(XYZW a, XYZW b);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_XYZW_add")]
-        public static extern XYZW LNLIB_XYZW_add(XYZW a, XYZW b);
+        public static extern XYZW Add(XYZW a, XYZW b);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_XYZW_subtract")]
-        public static extern XYZW LNLIB_XYZW_subtract(XYZW a, XYZW b);
+        public static extern XYZW Subtract(XYZW a, XYZW b);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_XYZW_multiply")]
-        public static extern XYZW LNLIB_XYZW_multiply(XYZW a, double scalar);
+        public static extern XYZW Multiply(XYZW a, double scalar);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_XYZW_divide")]
-        public static extern XYZW LNLIB_XYZW_divide(XYZW a, double scalar);
+        public static extern XYZW Divide(XYZW a, double scalar);
     }
 }

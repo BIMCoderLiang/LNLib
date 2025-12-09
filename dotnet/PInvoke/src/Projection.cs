@@ -16,20 +16,20 @@ namespace LNLibSharp
     public static partial class LNLibProjection
     {
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_PROJ_point_to_ray")]
-        public static extern XYZ LNLIB_PROJ_point_to_ray(
+        public static extern XYZ PointToRay(
         XYZ origin,
         XYZ direction,
         XYZ point);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_PROJ_point_to_line")]
-        public static extern int LNLIB_PROJ_point_to_line(
+        public static extern int PointToLine(
             XYZ start,
             XYZ end,
             XYZ point,
             out XYZ project_point);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_PROJ_stereographic")]
-        public static extern XYZ LNLIB_PROJ_stereographic(
+        public static extern XYZ Stereographic(
             XYZ point_on_sphere,
             double radius);
     }

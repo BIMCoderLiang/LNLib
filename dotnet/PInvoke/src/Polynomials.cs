@@ -17,26 +17,26 @@ namespace LNLibSharp
     public static partial class LNLibPolynomials
     {
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_POLY_horner")]
-        public static extern double LNLIB_POLY_horner(
+        public static extern double Horner(
         int degree,
         [In] double[] coefficients,
         int coeff_count,
         double param_t);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_POLY_bernstein")]
-        public static extern double LNLIB_POLY_bernstein(
+        public static extern double Bernstein(
             int index,
             int degree,
             double param_t);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_POLY_all_bernstein")]
-        public static extern void LNLIB_POLY_all_bernstein(
+        public static extern void AllBernstein(
             int degree,
             double param_t,
             [Out] double[] out_array);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_POLY_horner_uv")]
-        public static extern void LNLIB_POLY_horner_uv(
+        public static extern void HornerUV(
             int degree_u,
             int degree_v,
             [In] double[] coefficients,
@@ -44,20 +44,20 @@ namespace LNLibSharp
             [Out] double[] out_horner);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_POLY_get_knot_multiplicity")]
-        public static extern int LNLIB_POLY_get_knot_multiplicity(
+        public static extern int GetKnotMultiplicity(
             [In] double[] knot_vector,
             int knot_vector_count,
             double param_t);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_POLY_get_knot_span_index")]
-        public static extern int LNLIB_POLY_get_knot_span_index(
+        public static extern int GetKnotSpanIndex(
             int degree,
             [In] double[] knot_vector,
             int knot_vector_count,
             double param_t);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_POLY_basis_functions")]
-        public static extern void LNLIB_POLY_basis_functions(
+        public static extern void BasisFunctions(
             int span_index,
             int degree,
             [In] double[] knot_vector,
@@ -66,7 +66,7 @@ namespace LNLibSharp
             [Out] double[] out_basis_functions);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_POLY_basis_functions_derivatives")]
-        public static extern void LNLIB_POLY_basis_functions_derivatives(
+        public static extern void BasisFunctionsDerivatives(
             int span_index,
             int degree,
             int derivative,
@@ -78,7 +78,7 @@ namespace LNLibSharp
             out int out_cols);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_POLY_basis_functions_first_derivative")]
-        public static extern void LNLIB_POLY_basis_functions_first_derivative(
+        public static extern void BasisFunctionsFirstDerivative(
             int span_index,
             int degree,
             [In] double[] knot_vector,
@@ -87,7 +87,7 @@ namespace LNLibSharp
             [Out] double[] out_derivatives);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_POLY_one_basis_function")]
-        public static extern double LNLIB_POLY_one_basis_function(
+        public static extern double OneBasisFunction(
             int span_index,
             int degree,
             [In] double[] knot_vector,
@@ -95,7 +95,7 @@ namespace LNLibSharp
             double param_t);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_POLY_one_basis_function_derivative")]
-        public static extern void LNLIB_POLY_one_basis_function_derivative(
+        public static extern void OneBasisFunctionDerivative(
             int span_index,
             int degree,
             int derivative,
@@ -106,7 +106,7 @@ namespace LNLibSharp
             out int out_size);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_POLY_all_basis_functions")]
-        public static extern void LNLIB_POLY_all_basis_functions(
+        public static extern void AllBasisFunctions(
             int span_index,
             int degree,
             [In] double[] knot_vector,
@@ -117,14 +117,14 @@ namespace LNLibSharp
             out int out_cols);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_POLY_bezier_to_power_matrix")]
-        public static extern void LNLIB_POLY_bezier_to_power_matrix(
+        public static extern void BezierToPowerMatrix(
             int degree,
             out IntPtr out_matrix,
             out int out_rows,
             out int out_cols);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_POLY_power_to_bezier_matrix")]
-        public static extern void LNLIB_POLY_power_to_bezier_matrix(
+        public static extern void PowerToBezierMatrix(
             int degree,
             [In] double[] matrix,
             out IntPtr out_matrix,

@@ -31,19 +31,19 @@ namespace LNLibSharp
     public static partial class LNLibNurbsSurface
     {
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_get_point_on_surface")]
-        public static extern XYZ LNLIB_NURBSSUR_get_point_on_surface(
+        public static extern XYZ GetPointOnSurface(
         LN_NurbsSurface surface,
         UV uv);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_compute_rational_surface_derivatives")]
-        public static extern int LNLIB_NURBSSUR_compute_rational_surface_derivatives(
+        public static extern int ComputeRationalSurfaceDerivatives(
             LN_NurbsSurface surface,
             int derivative_order,
             UV uv,
             [Out] XYZ[] out_derivatives);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_compute_rational_surface_first_order_derivative")]
-        public static extern void LNLIB_NURBSSUR_compute_rational_surface_first_order_derivative(
+        public static extern void ComputeRationalSurfaceFirstOrderDerivative(
             LN_NurbsSurface surface,
             UV uv,
             out XYZ out_s,
@@ -51,29 +51,29 @@ namespace LNLibSharp
             out XYZ out_sv);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_curvature")]
-        public static extern double LNLIB_NURBSSUR_curvature(
+        public static extern double Curvature(
             LN_NurbsSurface surface,
             SurfaceCurvature curvature_type,
             UV uv);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_Normal")]
-        public static extern XYZ LNLIB_NURBSSUR_Normal(
+        public static extern XYZ Normal(
             LN_NurbsSurface surface,
             UV uv);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_swap")]
-        public static extern void LNLIB_NURBSSUR_swap(
+        public static extern void Swap(
             LN_NurbsSurface surface,
             out LN_NurbsSurface out_surface);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_reverse")]
-        public static extern void LNLIB_NURBSSUR_reverse(
+        public static extern void Reverse(
             LN_NurbsSurface surface,
             SurfaceDirection direction,
             out LN_NurbsSurface out_surface);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_insert_knot")]
-        public static extern void LNLIB_NURBSSUR_insert_knot(
+        public static extern void InsertKnot(
             LN_NurbsSurface surface,
             double knot,
             int times,
@@ -81,7 +81,7 @@ namespace LNLibSharp
             out LN_NurbsSurface out_surface);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_refine_knot_vector")]
-        public static extern void LNLIB_NURBSSUR_refine_knot_vector(
+        public static extern void RefineKnotVector(
             LN_NurbsSurface surface,
             [In] double[] insert_knots,
             int insert_count,
@@ -89,13 +89,13 @@ namespace LNLibSharp
             out LN_NurbsSurface out_surface);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_decompose_to_beziers")]
-        public static extern int LNLIB_NURBSSUR_decompose_to_beziers(
+        public static extern int DecomposeToBeziers(
             LN_NurbsSurface surface,
             [Out] LN_NurbsSurface[] out_patches,
             int max_patches);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_remove_knot")]
-        public static extern void LNLIB_NURBSSUR_remove_knot(
+        public static extern void RemoveKnot(
             LN_NurbsSurface surface,
             double knot,
             int times,
@@ -103,42 +103,42 @@ namespace LNLibSharp
             out LN_NurbsSurface out_surface);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_elevate_degree")]
-        public static extern void LNLIB_NURBSSUR_elevate_degree(
+        public static extern void ElevateDegree(
             LN_NurbsSurface surface,
             int times,
             int is_u_direction,
             out LN_NurbsSurface out_surface);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_reduce_degree")]
-        public static extern int LNLIB_NURBSSUR_reduce_degree(
+        public static extern int ReduceDegree(
             LN_NurbsSurface surface,
             int is_u_direction,
             out LN_NurbsSurface out_surface);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_equally_tessellate")]
-        public static extern void LNLIB_NURBSSUR_equally_tessellate(
+        public static extern void EquallyTessellate(
             LN_NurbsSurface surface,
             [Out] XYZ[] out_points,
             [Out] UV[] out_uvs,
             int max_count);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_is_closed")]
-        public static extern int LNLIB_NURBSSUR_is_closed(
+        public static extern int IsClosed(
             LN_NurbsSurface surface,
             int is_u_direction);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_get_param_on_surface")]
-        public static extern UV LNLIB_NURBSSUR_get_param_on_surface(
+        public static extern UV GetParamOnSurface(
             LN_NurbsSurface surface,
             XYZ given_point);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_get_param_on_surface_by_gsa")]
-        public static extern UV LNLIB_NURBSSUR_get_param_on_surface_by_gsa(
+        public static extern UV GetParamOnSurfaceByGSA(
             LN_NurbsSurface surface,
             XYZ given_point);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_reparametrize")]
-        public static extern void LNLIB_NURBSSUR_reparametrize(
+        public static extern void Reparametrize(
             LN_NurbsSurface surface,
             double min_u,
             double max_u,
@@ -147,14 +147,14 @@ namespace LNLibSharp
             out LN_NurbsSurface out_surface);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_get_uv_tangent")]
-        public static extern int LNLIB_NURBSSUR_get_uv_tangent(
+        public static extern int GetUVTangent(
             LN_NurbsSurface surface,
             UV param,
             XYZ tangent,
             out UV out_uv_tangent);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_create_bilinear_surface")]
-        public static extern void LNLIB_NURBSSUR_create_bilinear_surface(
+        public static extern void CreateBilinearSurface(
             XYZ top_left,
             XYZ top_right,
             XYZ bottom_left,
@@ -162,7 +162,7 @@ namespace LNLibSharp
             out LN_NurbsSurface out_surface);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_create_cylindrical_surface")]
-        public static extern int LNLIB_NURBSSUR_create_cylindrical_surface(
+        public static extern int CreateCylindricalSurface(
             XYZ origin,
             XYZ x_axis,
             XYZ y_axis,
@@ -173,13 +173,13 @@ namespace LNLibSharp
             out LN_NurbsSurface out_surface);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_create_ruled_surface")]
-        public static extern void LNLIB_NURBSSUR_create_ruled_surface(
+        public static extern void CreateRuledSurface(
             LN_NurbsCurve curve_0,
             LN_NurbsCurve curve_1,
             out LN_NurbsSurface out_surface);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_create_revolved_surface")]
-        public static extern int LNLIB_NURBSSUR_create_revolved_surface(
+        public static extern int CreateRevolvedSurface(
             XYZ origin,
             XYZ axis,
             double rad,
@@ -187,7 +187,7 @@ namespace LNLibSharp
             out LN_NurbsSurface out_surface);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_non_uniform_scaling_query_size")]
-        public static extern void LNLIB_NURBSSUR_non_uniform_scaling_query_size(
+        public static extern void NonUniformScalingQuerySize(
             [In] XYZW[] control_points,
             int rows,
             int cols,
@@ -200,12 +200,12 @@ namespace LNLibSharp
             out int out_cols);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_make_corner_fillet_surface")]
-        public static extern void LNLIB_NURBSSUR_make_corner_fillet_surface(
+        public static extern void MakeCornerFilletSurface(
             LN_NurbsCurve arc,
             out LN_NurbsSurface out_surface);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_global_interpolation")]
-        public static extern void LNLIB_NURBSSUR_global_interpolation(
+        public static extern void GlobalInterpolation(
             [In] XYZ[] points,
             int rows,
             int cols,
@@ -214,14 +214,14 @@ namespace LNLibSharp
             out LN_NurbsSurface out_surface);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_bicubic_local_interpolation")]
-        public static extern int LNLIB_NURBSSUR_bicubic_local_interpolation(
+        public static extern int BicubicLocalInterpolation(
             [In] XYZ[] points,
             int rows,
             int cols,
             out LN_NurbsSurface out_surface);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_global_approximation")]
-        public static extern int LNLIB_NURBSSUR_global_approximation(
+        public static extern int GlobalApproximation(
             [In] XYZ[] points,
             int rows,
             int cols,
@@ -232,14 +232,14 @@ namespace LNLibSharp
             out LN_NurbsSurface out_surface);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_create_swung_surface")]
-        public static extern int LNLIB_NURBSSUR_create_swung_surface(
+        public static extern int CreateSwungSurface(
             LN_NurbsCurve profile,
             LN_NurbsCurve trajectory,
             double scale,
             out LN_NurbsSurface out_surface);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_create_loft_surface")]
-        public static extern void LNLIB_NURBSSUR_create_loft_surface(
+        public static extern void CreateLoftSurface(
             [In] LN_NurbsCurve[] sections,
             int section_count,
             out LN_NurbsSurface out_surface,
@@ -248,20 +248,20 @@ namespace LNLibSharp
             int knot_vector_count);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_create_generalized_translational_sweep_surface")]
-        public static extern void LNLIB_NURBSSUR_create_generalized_translational_sweep_surface(
+        public static extern void CreateGeneralizedTranslationalSweepSurface(
             LN_NurbsCurve profile,
             LN_NurbsCurve trajectory,
             out LN_NurbsSurface out_surface);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_create_sweep_surface")]
-        public static extern void LNLIB_NURBSSUR_create_sweep_surface(
+        public static extern void CreateSweepSurface(
             LN_NurbsCurve profile,
             LN_NurbsCurve trajectory,
             int min_profiles,
             out LN_NurbsSurface out_surface);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_create_sweep_surface_by_trajectory_degree")]
-        public static extern void LNLIB_NURBSSUR_create_sweep_surface_by_trajectory_degree(
+        public static extern void CreateSweepSurfaceByTrajectoryDegree(
             LN_NurbsCurve profile,
             LN_NurbsCurve trajectory,
             int min_profiles,
@@ -269,7 +269,7 @@ namespace LNLibSharp
             out LN_NurbsSurface out_surface);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_create_gordon_surface")]
-        public static extern void LNLIB_NURBSSUR_create_gordon_surface(
+        public static extern void CreateGordonSurface(
             [In] LN_NurbsCurve[] u_curves,
             int u_count,
             [In] LN_NurbsCurve[] v_curves,
@@ -278,7 +278,7 @@ namespace LNLibSharp
             out LN_NurbsSurface out_surface);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_create_coons_surface")]
-        public static extern void LNLIB_NURBSSUR_create_coons_surface(
+        public static extern void CreateCoonsSurface(
             LN_NurbsCurve left,
             LN_NurbsCurve bottom,
             LN_NurbsCurve right,
@@ -286,12 +286,12 @@ namespace LNLibSharp
             out LN_NurbsSurface out_surface);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_approximate_area")]
-        public static extern double LNLIB_NURBSSUR_approximate_area(
+        public static extern double ApproximateArea(
             LN_NurbsSurface surface,
             IntegratorType integrator_type);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSSUR_triangulate")]
-        public static extern LN_Mesh LNLIB_NURBSSUR_triangulate(
+        public static extern LN_Mesh Triangulate(
             LN_NurbsSurface surface,
             int resolution_u,
             int resolution_v,
