@@ -14,27 +14,46 @@ using static LNLibSharp.LNLibDefinitions;
 
 namespace LNLibSharp
 {
-    public static partial class LNLibAPI
+    public static partial class LNLibBezierCurve
     {
-        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern XYZ bezier_curve_get_point_by_bernstein(
+        [DllImport(
+            LNLIB_CAPI_DLL, 
+            EntryPoint = "LNLIB_BEZIERCUR_get_point_on_curve_by_bernstein", 
+            CallingConvention = CallingConvention.Cdecl)]
+        public static extern XYZ GetPointOnCurveByBernstein(
             int degree,
-            IntPtr control_points,
-            int control_points_count,
+            IntPtr controlPoints,
+            int controlPointsCount,
             double paramT);
 
-        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern XYZ bezier_curve_get_point_by_de_casteljau(
+        [DllImport(
+            LNLIB_CAPI_DLL,
+            EntryPoint = "LNLIB_BEZIERCUR_get_rational_point_on_curve_by_bernstein",
+            CallingConvention = CallingConvention.Cdecl)]
+        public static extern XYZW GetRationalPointOnCurveByBernstein(
             int degree,
-            IntPtr control_points,
-            int control_points_count,
+            IntPtr controlPoints,
+            int controlPointsCount,
             double paramT);
 
-        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern XYZW bezier_curve_get_point_by_bernstein_rational(
+        [DllImport(
+            LNLIB_CAPI_DLL,
+            EntryPoint = "LNLIB_BEZIERCUR_get_point_on_curve_by_deCasteljau",
+            CallingConvention = CallingConvention.Cdecl)]
+        public static extern XYZ GetPointOnCurveByDeCasteljau(
             int degree,
-            IntPtr control_points,
-            int control_points_count,
+            IntPtr controlPoints,
+            int controlPointsCount,
+            double paramT);
+
+        [DllImport(
+            LNLIB_CAPI_DLL,
+            EntryPoint = "LNLIB_BEZIERCUR_get_rational_point_on_curve_by_deCasteljau",
+            CallingConvention = CallingConvention.Cdecl)]
+        public static extern XYZW GetRationalPoinGetRationalPointOnCurveByDeCasteljautOnCurveByBernstein(
+            int degree,
+            IntPtr controlPoints,
+            int controlPointsCount,
             double paramT);
     }
 }

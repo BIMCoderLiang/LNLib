@@ -225,13 +225,13 @@ TEST(Test_Additional, MergeCurve)
 	EXPECT_TRUE(success);
 	
 	// 0.5 is the joint knot of merged curve.
-	bool canDer = NurbsCurve::CanComputerDerivative(merged, 0.5);
+	bool canDer = NurbsCurve::CanComputeDerivative(merged, 0.5);
 	EXPECT_FALSE(canDer);
 
 	// Test min and max parameters for CanComputerDerivative.
-	canDer = NurbsCurve::CanComputerDerivative(merged, merged.KnotVector[0]);
+	canDer = NurbsCurve::CanComputeDerivative(merged, merged.KnotVector[0]);
 	EXPECT_TRUE(canDer);
-	canDer = NurbsCurve::CanComputerDerivative(merged, merged.KnotVector.back());
+	canDer = NurbsCurve::CanComputeDerivative(merged, merged.KnotVector.back());
 	EXPECT_TRUE(canDer);
 
 	// Verify length.

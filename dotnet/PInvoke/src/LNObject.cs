@@ -16,29 +16,29 @@ namespace LNLibSharp
     [StructLayout(LayoutKind.Sequential)]
     public struct LN_ArcInfo
     {
-        public double radius;
-        public XYZ center;
+        public double Radius;
+        public XYZ Center;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct LN_Mesh
     {
-        public IntPtr vertices;
-        public int vertices_count;
+        public IntPtr Vertices;
+        public int VerticesCount;
 
-        public IntPtr faces;
-        public int faces_data_count;
+        public IntPtr Facets;
+        public int FacetsCount;
 
-        public IntPtr uvs;
-        public int uvs_count;
+        public IntPtr UVs;
+        public int UVsCount;
 
-        public IntPtr uv_indices;
-        public int uv_indices_data_count;
+        public IntPtr UVIndices;
+        public int UVIndicesCount;
 
-        public IntPtr normals;
-        public int normals_count;
+        public IntPtr Normals;
+        public int NormalsCount;
 
-        public IntPtr normal_indices;
-        public int normal_indices_data_count;
+        public IntPtr NormalIndices;
+        public int NormalIndicesCount;
     }
 }

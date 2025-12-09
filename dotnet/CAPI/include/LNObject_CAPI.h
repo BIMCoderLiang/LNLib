@@ -20,27 +20,27 @@ extern "C" {
     typedef struct {
         double radius;
         XYZ_C center;
-    } LN_ArcInfo_C;
+    } LNLIB_ArcInfo_C;
 
     typedef struct {
         const XYZ_C* vertices;
         int vertices_count;
 
-        const int* faces;
-        int faces_data_count;
+        const int* facets;
+        int facets_count;
 
         const UV_C* uvs;
         int uvs_count;
 
         const int* uv_indices;
-        int uv_indices_data_count;
+        int uv_indices_count;
 
         const XYZ_C* normals;
         int normals_count;
 
         const int* normal_indices;
-        int normal_indices_data_count;
-    } LN_Mesh_C;
+        int normal_indices_count;
+    } LNLIB_Mesh_C;
 
 #ifdef __cplusplus
 }

@@ -13,54 +13,58 @@
 #include "LNObject.h"
 #include <vector>
 
-extern "C" {
+XYZ_C LNLIB_BEZIERCUR_get_point_on_curve_by_bernstein(
+	int degree,
+	const XYZ_C* control_points,
+	int control_points_count,
+	double param_t)
+{
+	std::vector<LNLib::XYZ> cps;
+	for (int i = 0; i < control_points_count; ++i) cps.push_back(ToXYZ(control_points[i]));
 
-	static LNLib::XYZ ToXYZ(XYZ_C c) { return LNLib::XYZ(c.x, c.y, c.z); }
-	static XYZ_C FromXYZ(const LNLib::XYZ& v) { return { v.GetX(), v.GetY(), v.GetZ() }; }
+	LNLib::LN_BezierCurve<LNLib::XYZ> curve{ degree, cps };
+	LNLib::XYZ pt = LNLib::BezierCurve::GetPointOnCurveByBernstein(curve, param_t);
+	return FromXYZ(pt);
+}
 
-	static LNLib::XYZW ToXYZW(XYZW_C c) { return LNLib::XYZW(c.wx, c.wy, c.wz, c.w); }
-	static XYZW_C FromXYZW(const LNLib::XYZW& v) { return { v.GetWX(), v.GetWY(), v.GetWZ(), v.GetW() }; }
+XYZW_C LNLIB_BEZIERCUR_get_rational_point_on_curve_by_bernstein(
+	int degree,
+	const XYZW_C* control_points,
+	int control_points_count,
+	double param_t)
+{
+	std::vector<LNLib::XYZW> cps;
+	for (int i = 0; i < control_points_count; ++i) cps.push_back(ToXYZW(control_points[i]));
 
-	LNLIB_EXPORT XYZ_C bezier_curve_get_point_by_bernstein(
-		int degree,
-		const XYZ_C* control_points,
-		int cp_count,
-		double paramT)
-	{
-		std::vector<LNLib::XYZ> cps;
-		for (int i = 0; i < cp_count; ++i) cps.push_back(ToXYZ(control_points[i]));
+	LNLib::LN_BezierCurve<LNLib::XYZW> curve{ degree, cps };
+	LNLib::XYZW pt = LNLib::BezierCurve::GetPointOnCurveByBernstein(curve, param_t);
+	return FromXYZW(pt);
+}
 
-		LNLib::LN_BezierCurve<LNLib::XYZ> curve{ degree, cps };
-		LNLib::XYZ pt = LNLib::BezierCurve::GetPointOnCurveByBernstein(curve, paramT);
-		return FromXYZ(pt);
-	}
+XYZ_C LNLIB_BEZIERCUR_get_point_on_curve_by_deCasteljau(
+	int degree,
+	const XYZ_C* control_points,
+	int control_points_count,
+	double param_t)
+{
+	std::vector<LNLib::XYZ> cps;
+	for (int i = 0; i < control_points_count; ++i) cps.push_back(ToXYZ(control_points[i]));
 
-	LNLIB_EXPORT XYZW_C bezier_curve_get_point_by_bernstein_rational(
-		int degree,
-		const XYZW_C* control_points,
-		int cp_count,
-		double paramT)
-	{
-		std::vector<LNLib::XYZW> cps;
-		for (int i = 0; i < cp_count; ++i) cps.push_back(ToXYZW(control_points[i]));
+	LNLib::LN_BezierCurve<LNLib::XYZ> curve{ degree, cps };
+	LNLib::XYZ pt = LNLib::BezierCurve::GetPointOnCurveByDeCasteljau(curve, param_t);
+	return FromXYZ(pt);
+}
 
-		LNLib::LN_BezierCurve<LNLib::XYZW> curve{ degree, cps };
-		LNLib::XYZW pt = LNLib::BezierCurve::GetPointOnCurveByBernstein(curve, paramT);
-		return FromXYZW(pt);
-	}
+XYZW_C LNLIB_BEZIERCUR_get_rational_point_on_curve_by_deCasteljau(
+	int degree,
+	const XYZW_C* control_points,
+	int control_points_count,
+	double param_t)
+{
+	std::vector<LNLib::XYZW> cps;
+	for (int i = 0; i < control_points_count; ++i) cps.push_back(ToXYZW(control_points[i]));
 
-	LNLIB_EXPORT XYZ_C bezier_curve_get_point_by_de_casteljau(
-		int degree,
-		const XYZ_C* control_points,
-		int cp_count,
-		double paramT)
-	{
-		std::vector<LNLib::XYZ> cps;
-		for (int i = 0; i < cp_count; ++i) cps.push_back(ToXYZ(control_points[i]));
-
-		LNLib::LN_BezierCurve<LNLib::XYZ> curve{ degree, cps };
-		LNLib::XYZ pt = LNLib::BezierCurve::GetPointOnCurveByDeCasteljau(curve, paramT);
-		return FromXYZ(pt);
-	}
-
+	LNLib::LN_BezierCurve<LNLib::XYZW> curve{ degree, cps };
+	LNLib::XYZW pt = LNLib::BezierCurve::GetPointOnCurveByDeCasteljau(curve, param_t);
+	return FromXYZW(pt);
 }

@@ -13,23 +13,23 @@ using static LNLibSharp.LNLibDefinitions;
 
 namespace LNLibSharp
 {
-    public static partial class LNLibAPI
+    public static partial class LNLibProjection
     {
-        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern XYZ projection_point_to_ray(
-            XYZ origin,
-            XYZ direction,
-            XYZ point);
+        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_PROJ_point_to_ray")]
+        public static extern XYZ LNLIB_PROJ_point_to_ray(
+        XYZ origin,
+        XYZ direction,
+        XYZ point);
 
-        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int projection_point_to_line(
+        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_PROJ_point_to_line")]
+        public static extern int LNLIB_PROJ_point_to_line(
             XYZ start,
             XYZ end,
             XYZ point,
-            out XYZ out_project_point);
+            out XYZ project_point);
 
-        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern XYZ projection_stereographic(
+        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_PROJ_stereographic")]
+        public static extern XYZ LNLIB_PROJ_stereographic(
             XYZ point_on_sphere,
             double radius);
     }

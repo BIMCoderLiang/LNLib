@@ -13,22 +13,28 @@ using static LNLibSharp.LNLibDefinitions;
 
 namespace LNLibSharp
 {
-    public static partial class LNLibAPI
+    public static partial class LNLibIntersection
     {
-        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern CurveCurveIntersectionType intersection_compute_rays(
+        [DllImport(
+            LNLIB_CAPI_DLL, 
+            EntryPoint = "LNLIB_INTERSECT_compute_rays",
+            CallingConvention = CallingConvention.Cdecl)]
+        public static extern CurveCurveIntersectionType ComputeRays(
             XYZ point0, XYZ vector0,
             XYZ point1, XYZ vector1,
-            out double out_param0,
-            out double out_param1,
-            out XYZ out_intersect_point);
+            out double param0,
+            out double param1,
+            out XYZ intersectPoint);
 
-        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern LinePlaneIntersectionType intersection_compute_line_and_plane(
-            XYZ plane_normal,
-            XYZ point_on_plane,
-            XYZ point_on_line,
-            XYZ line_direction,
-            out XYZ out_intersect_point);
+        [DllImport(
+           LNLIB_CAPI_DLL,
+           EntryPoint = "LNLIB_INTERSECT_compute_line_and_plane",
+           CallingConvention = CallingConvention.Cdecl)]
+        public static extern LinePlaneIntersectionType ComputeLineAndPlane(
+            XYZ normal,
+            XYZ pointOnPlane,
+            XYZ pointOnLine,
+            XYZ lineDirection,
+            out XYZ intersectPoint);
     }
 }

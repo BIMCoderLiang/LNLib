@@ -16,14 +16,14 @@
 extern "C" {
 #endif
 
-LNLIB_EXPORT int validation_utils_is_valid_knot_vector(const double* knot_vector, int count);
-LNLIB_EXPORT int validation_utils_is_valid_bezier(int degree, int control_points_count);
-LNLIB_EXPORT int validation_utils_is_valid_bspline(int degree, int knot_count, int cp_count);
-LNLIB_EXPORT int validation_utils_is_valid_nurbs(int degree, int knot_count, int weighted_cp_count);
+LNLIB_EXPORT int LNLIB_VALID_is_valid_knotVector(const double* knot_vector, int knot_vector_count);
+LNLIB_EXPORT int LNLIB_VALID_is_valid_bezier(int degree, int control_points_count);
+LNLIB_EXPORT int LNLIB_VALID_is_valid_bspline(int degree, int knot_vector_count, int control_points_count);
+LNLIB_EXPORT int LNLIB_VALID_is_valid_nurbs(int degree, int knot_vector_count, int control_points_count);
 
-LNLIB_EXPORT double validation_utils_compute_curve_modify_tolerance(
+LNLIB_EXPORT double LNLIB_VALID_compute_curve_modify_tolerance(
     const XYZW_C* control_points,
-    int count
+    int control_points_count
 );
 
 #ifdef __cplusplus

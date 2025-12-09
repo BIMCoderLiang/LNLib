@@ -16,20 +16,20 @@
 extern "C" {
 #endif
 
-LNLIB_EXPORT XYZ_C projection_point_to_ray(
+LNLIB_EXPORT XYZ_C LNLIB_PROJ_point_to_ray(
     XYZ_C origin,
     XYZ_C direction,
     XYZ_C point
 );
 
-LNLIB_EXPORT int projection_point_to_line(
+LNLIB_EXPORT int    LNLIB_PROJ_point_to_line(
     XYZ_C start,
     XYZ_C end,
     XYZ_C point,
-    XYZ_C* out_project_point
+    XYZ_C* project_point
 );
 
-LNLIB_EXPORT XYZ_C projection_stereographic(
+LNLIB_EXPORT XYZ_C LNLIB_PROJ_stereographic(
     XYZ_C point_on_sphere,
     double radius
 );

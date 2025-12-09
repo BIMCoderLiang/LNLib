@@ -325,7 +325,7 @@ std::vector<LNLib::XYZ> LNLib::NurbsCurve::ComputeRationalCurveDerivatives(const
 	return derivatives;
 }
 
-bool LNLib::NurbsCurve::CanComputerDerivative(const LN_NurbsCurve& curve, double paramT)
+bool LNLib::NurbsCurve::CanComputeDerivative(const LN_NurbsCurve& curve, double paramT)
 {
 	// Treat boundary parameters as derivable.
 	if(MathUtils::IsAlmostEqualTo(paramT, curve.KnotVector[0]) ||
@@ -2451,7 +2451,7 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(int degre
 	}
 
 	std::vector<double> uk = Interpolation::GetChordParameterization(throughPoints);
-	std::vector<double> knotVector = Interpolation::ComputeKnotVector(degree, size, controlPointsCount, uk);
+	std::vector<double> knotVector = Interpolation::ComputeKnotVector(degree, controlPointsCount, uk);
 	std::vector<XYZW> controlPoints(controlPointsCount);
 
 	int j = 0;

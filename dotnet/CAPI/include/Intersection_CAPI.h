@@ -17,20 +17,20 @@
 extern "C" {
 #endif
 
-LNLIB_EXPORT CurveCurveIntersectionType_C intersection_compute_rays(
-    XYZ_C point0, XYZ_C vector0,
-    XYZ_C point1, XYZ_C vector1,
-    double* out_param0,
-    double* out_param1,
-    XYZ_C* out_intersect_point);
+LNLIB_EXPORT LNLIB_ENUMS_CurveCurveIntersectionType_C LNLIB_INTERSECT_compute_rays(
+    XYZ_C point_0, XYZ_C vector_0,
+    XYZ_C point_1, XYZ_C vector_1,
+    double* param_0,
+    double* param_1,
+    XYZ_C* intersect_point);
 
 
-LNLIB_EXPORT LinePlaneIntersectionType_C intersection_compute_line_and_plane(
-    XYZ_C plane_normal,
+LNLIB_EXPORT LNLIB_ENUMS_LinePlaneIntersectionType_C LNLIB_INTERSECT_compute_line_and_plane(
+    XYZ_C normal,
     XYZ_C point_on_plane,
     XYZ_C point_on_line,
     XYZ_C line_direction,
-    XYZ_C* out_intersect_point);
+    XYZ_C* intersect_point);
 
 #ifdef __cplusplus
 }

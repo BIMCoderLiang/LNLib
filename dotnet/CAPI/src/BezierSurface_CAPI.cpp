@@ -11,31 +11,42 @@
 #include "BezierSurface_CAPI.h"
 #include "BezierSurface.h"
 #include "LNObject.h"
+#include "XYZ_CAPI.h"
 #include "XYZW_CAPI.h"
 #include <vector>
 
-extern "C" {
+XYZ_C LNLIB_BEZIERSURF_get_point_on_surface_by_deCasteljau(
+	int degree_u,
+	int degree_v,
+	const XYZ_C* control_points,
+	int cp_rows,
+	int cp_cols,
+	UV_C uv)
+{
+	std::vector<std::vector<LNLib::XYZ>> cps(cp_rows, std::vector<LNLib::XYZ>(cp_cols));
+	for (int i = 0; i < cp_rows; ++i)
+		for (int j = 0; j < cp_cols; ++j)
+			cps[i][j] = ToXYZ(control_points[i * cp_cols + j]);
 
-	static LNLib::XYZ ToXYZ(XYZ_C c) { return LNLib::XYZ(c.x, c.y, c.z); }
-	static XYZ_C FromXYZ(const LNLib::XYZ& v) { return { v.GetX(), v.GetY(), v.GetZ() }; }
+	LNLib::LN_BezierSurface<LNLib::XYZ> surf{ degree_u, degree_v, cps };
+	LNLib::XYZ pt = LNLib::BezierSurface::GetPointOnSurfaceByDeCasteljau(surf, LNLib::UV(uv.u, uv.v));
+	return FromXYZ(pt);
+}
 
-	static LNLib::XYZW ToXYZW(XYZW_C c) { return LNLib::XYZW(c.wx, c.wy, c.wz, c.w); }
-	static XYZW_C FromXYZW(const LNLib::XYZW& v) { return { v.GetWX(), v.GetWY(), v.GetWZ(), v.GetW() }; }
+XYZW_C LNLIB_BEZIERSURF_get_rational_point_on_surface_by_deCasteljau(
+	int degree_u,
+	int degree_v,
+	const XYZW_C* control_points,
+	int cp_rows,
+	int cp_cols,
+	UV_C uv)
+{
+	std::vector<std::vector<LNLib::XYZW>> cps(cp_rows, std::vector<LNLib::XYZW>(cp_cols));
+	for (int i = 0; i < cp_rows; ++i)
+		for (int j = 0; j < cp_cols; ++j)
+			cps[i][j] = ToXYZW(control_points[i * cp_cols + j]);
 
-	LNLIB_EXPORT XYZ_C bezier_surface_get_point_by_de_casteljau(
-		int degree_u, int degree_v,
-		const XYZ_C* control_points,
-		int rows, int cols,
-		UV_C uv)
-	{
-		std::vector<std::vector<LNLib::XYZ>> cps(rows, std::vector<LNLib::XYZ>(cols));
-		for (int i = 0; i < rows; ++i)
-			for (int j = 0; j < cols; ++j)
-				cps[i][j] = ToXYZ(control_points[i * cols + j]);
-
-		LNLib::LN_BezierSurface<LNLib::XYZ> surf{ degree_u, degree_v, cps };
-		LNLib::XYZ pt = LNLib::BezierSurface::GetPointOnSurfaceByDeCasteljau(surf, LNLib::UV(uv.u, uv.v));
-		return FromXYZ(pt);
-	}
-
+	LNLib::LN_BezierSurface<LNLib::XYZW> surf{ degree_u, degree_v, cps };
+	LNLib::XYZW pt = LNLib::BezierSurface::GetPointOnSurfaceByDeCasteljau(surf, LNLib::UV(uv.u, uv.v));
+	return FromXYZW(pt);
 }

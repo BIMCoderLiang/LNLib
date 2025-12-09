@@ -17,23 +17,29 @@
 extern "C" {
 #endif
 
-LNLIB_EXPORT XYZ_C bezier_curve_get_point_by_bernstein(
+LNLIB_EXPORT XYZ_C LNLIB_BEZIERCUR_get_point_on_curve_by_bernstein(
     int degree,
     const XYZ_C* control_points,
     int control_points_count,
-    double paramT);
+    double param_t);
 
-LNLIB_EXPORT XYZ_C bezier_curve_get_point_by_de_casteljau(
-    int degree,
-    const XYZ_C* control_points,
-    int control_points_count,
-    double paramT);
-
-LNLIB_EXPORT XYZW_C bezier_curve_get_point_by_bernstein_rational(
+LNLIB_EXPORT XYZW_C LNLIB_BEZIERCUR_get_rational_point_on_curve_by_bernstein(
     int degree,
     const XYZW_C* control_points,
     int control_points_count,
-    double paramT);
+    double param_t);
+
+LNLIB_EXPORT XYZ_C LNLIB_BEZIERCUR_get_point_on_curve_by_deCasteljau(
+    int degree,
+    const XYZ_C* control_points,
+    int control_points_count,
+    double param_t);
+
+LNLIB_EXPORT XYZW_C LNLIB_BEZIERCUR_get_rational_point_on_curve_by_deCasteljau(
+    int degree,
+    const XYZW_C* control_points,
+    int control_points_count,
+    double param_t);
 
 #ifdef __cplusplus
 }

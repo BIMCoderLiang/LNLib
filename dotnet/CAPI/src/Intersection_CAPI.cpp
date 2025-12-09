@@ -11,48 +11,41 @@
 #include "Intersection_CAPI.h"
 #include "Intersection.h"
 #include "LNEnums.h"
-#include "XYZ.h"
+#include "XYZ_CAPI.h"
 
-extern "C" {
+LNLIB_ENUMS_CurveCurveIntersectionType_C LNLIB_INTERSECT_compute_rays(
+	XYZ_C point_0, XYZ_C vector_0,
+	XYZ_C point_1, XYZ_C vector_1,
+	double* param_0,
+	double* param_1,
+	XYZ_C* intersect_point)
+{
+	double t0, t1;
+	LNLib::XYZ ip;
+	auto type = LNLib::Intersection::ComputeRays(
+		ToXYZ(point_0), ToXYZ(vector_0),
+		ToXYZ(point_1), ToXYZ(vector_1),
+		t0, t1, ip);
 
-	static LNLib::XYZ ToXYZ(XYZ_C c) { return LNLib::XYZ(c.x, c.y, c.z); }
-	static XYZ_C FromXYZ(const LNLib::XYZ& v) { return { v.GetX(), v.GetY(), v.GetZ() }; }
+	if (param_0) *param_0 = t0;
+	if (param_1) *param_1 = t1;
+	if (intersect_point) *intersect_point = FromXYZ(ip);
 
-	LNLIB_EXPORT CurveCurveIntersectionType_C intersection_compute_rays(
-		XYZ_C point0, XYZ_C vector0,
-		XYZ_C point1, XYZ_C vector1,
-		double* out_param0,
-		double* out_param1,
-		XYZ_C* out_intersect_point)
-	{
-		double t0, t1;
-		LNLib::XYZ ip;
-		auto type = LNLib::Intersection::ComputeRays(
-			ToXYZ(point0), ToXYZ(vector0),
-			ToXYZ(point1), ToXYZ(vector1),
-			t0, t1, ip);
+	return static_cast<LNLIB_ENUMS_CurveCurveIntersectionType_C>(static_cast<int>(type));
+}
 
-		if (out_param0) *out_param0 = t0;
-		if (out_param1) *out_param1 = t1;
-		if (out_intersect_point) *out_intersect_point = FromXYZ(ip);
+LNLIB_ENUMS_LinePlaneIntersectionType_C LNLIB_INTERSECT_compute_line_and_plane(
+	XYZ_C normal,
+	XYZ_C point_on_plane,
+	XYZ_C point_on_line,
+	XYZ_C line_direction,
+	XYZ_C* intersect_point)
+{
+	LNLib::XYZ ip;
+	auto type = LNLib::Intersection::ComputeLineAndPlane(
+		ToXYZ(normal), ToXYZ(point_on_plane),
+		ToXYZ(point_on_line), ToXYZ(line_direction), ip);
 
-		return static_cast<CurveCurveIntersectionType_C>(static_cast<int>(type));
-	}
-
-	LNLIB_EXPORT LinePlaneIntersectionType_C intersection_compute_line_and_plane(
-		XYZ_C plane_normal,
-		XYZ_C point_on_plane,
-		XYZ_C point_on_line,
-		XYZ_C line_direction,
-		XYZ_C* out_intersect_point)
-	{
-		LNLib::XYZ ip;
-		auto type = LNLib::Intersection::ComputeLineAndPlane(
-			ToXYZ(plane_normal), ToXYZ(point_on_plane),
-			ToXYZ(point_on_line), ToXYZ(line_direction), ip);
-
-		if (out_intersect_point) *out_intersect_point = FromXYZ(ip);
-		return static_cast<LinePlaneIntersectionType_C>(static_cast<int>(type));
-	}
-
+	if (intersect_point) *intersect_point = FromXYZ(ip);
+	return static_cast<LNLIB_ENUMS_LinePlaneIntersectionType_C>(static_cast<int>(type));
 }

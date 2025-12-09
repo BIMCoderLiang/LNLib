@@ -11,18 +11,27 @@
 #pragma once
 #include "LNLibDefinitions.h"
 #include "XYZ_CAPI.h"
+#include "XYZW_CAPI.h"
 #include "UV_CAPI.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-LNLIB_EXPORT XYZ_C bezier_surface_get_point_by_de_casteljau(
+LNLIB_EXPORT XYZ_C LNLIB_BEZIERSURF_get_point_on_surface_by_deCasteljau(
     int degree_u,
     int degree_v,
     const XYZ_C* control_points,
-    int num_u,
-    int num_v,
+    int cp_rows,
+    int cp_cols,
+    UV_C uv);
+
+LNLIB_EXPORT XYZW_C LNLIB_BEZIERSURF_get_rational_point_on_surface_by_deCasteljau(
+    int degree_u,
+    int degree_v,
+    const XYZW_C* control_points,
+    int cp_rows,
+    int cp_cols,
     UV_C uv);
 
 #ifdef __cplusplus

@@ -14,33 +14,33 @@ using static LNLibSharp.LNLibDefinitions;
 
 namespace LNLibSharp
 {
-    public static partial class LNLibAPI
+    public static partial class LNLibValidationUtils
     {
-        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int validation_utils_is_valid_knot_vector(
-            IntPtr knot_vector,
-            int count);
+        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_VALID_is_valid_knotVector")]
+        public static extern int LNLIB_VALID_is_valid_knotVector(
+        [In] double[] knot_vector,
+        int knot_vector_count);
 
-        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int validation_utils_is_valid_bezier(
+        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_VALID_is_valid_bezier")]
+        public static extern int LNLIB_VALID_is_valid_bezier(
             int degree,
             int control_points_count);
 
-        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int validation_utils_is_valid_bspline(
+        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_VALID_is_valid_bspline")]
+        public static extern int LNLIB_VALID_is_valid_bspline(
             int degree,
-            int knot_count,
-            int cp_count);
+            int knot_vector_count,
+            int control_points_count);
 
-        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int validation_utils_is_valid_nurbs(
+        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_VALID_is_valid_nurbs")]
+        public static extern int LNLIB_VALID_is_valid_nurbs(
             int degree,
-            int knot_count,
-            int weighted_cp_count);
+            int knot_vector_count,
+            int control_points_count);
 
-        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern double validation_utils_compute_curve_modify_tolerance(
-            IntPtr control_points,
-            int count);
+        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_VALID_compute_curve_modify_tolerance")]
+        public static extern double LNLIB_VALID_compute_curve_modify_tolerance(
+            [In] XYZW[] control_points,
+            int control_points_count);
     }
 }

@@ -14,15 +14,30 @@ using static LNLibSharp.LNLibDefinitions;
 
 namespace LNLibSharp
 {
-    public static partial class LNLibAPI
+    public static partial class LNLibBezierSurface
     {
-        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern XYZ bezier_surface_get_point_by_de_casteljau(
-            int degree_u,
-            int degree_v,
-            IntPtr control_points,
-            int num_u,
-            int num_v,
+        [DllImport(
+            LNLIB_CAPI_DLL, 
+            EntryPoint = "LNLIB_BEZIERSURF_get_point_on_surface_by_deCasteljau",
+            CallingConvention = CallingConvention.Cdecl)]
+        public static extern XYZ GetPointOnSurfaceByDeCasteljau(
+            int degreeU,
+            int degreeV,
+            [In] XYZ[] control_points,
+            int rows,
+            int cols,
+            UV uv);
+
+        [DllImport(
+           LNLIB_CAPI_DLL,
+           EntryPoint = "LNLIB_BEZIERSURF_get_rational_point_on_surface_by_deCasteljau",
+           CallingConvention = CallingConvention.Cdecl)]
+        public static extern XYZW GetRationalPointOnSurfaceByDeCasteljau(
+            int degreeU,
+            int degreeV,
+            [In] XYZW[] controlPoints,
+            int rows,
+            int cols,
             UV uv);
     }
 }

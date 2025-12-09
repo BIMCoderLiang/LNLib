@@ -13,38 +13,42 @@ using static LNLibSharp.LNLibDefinitions;
 
 namespace LNLibSharp
 {
-    public static partial class LNLibAPI
+    public static partial class LNLibKnotVectorUtils
     {
-        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int knot_vector_utils_get_continuity(
-            int degree,
-            IntPtr knot_vector,
-            int knot_vector_count,
-            double knot);
+        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_KV_get_continuity")]
+        public static extern int LNLIB_KV_get_continuity(
+        int degree,
+        [In] double[] knot_vector,
+        int knot_vector_count,
+        double knot);
 
-        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void knot_vector_utils_rescale(
-            IntPtr knot_vector,
+        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_KV_rescale")]
+        public static extern void LNLIB_KV_rescale(
+            [In] double[] knot_vector,
             int knot_vector_count,
-            double min_val,
-            double max_val,
-            double[] out_rescaled_knot_vector);
+            double min,
+            double max,
+            [Out] double[] result);
 
-        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int knot_vector_utils_is_uniform(
-            IntPtr knot_vector,
+        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_KV_is_uniform")]
+        public static extern int LNLIB_KV_is_uniform(
+            [In] double[] knot_vector,
             int knot_vector_count);
 
-        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int knot_vector_utils_get_knot_multiplicity_map_size(
-            IntPtr knot_vector,
-            int knot_vector_count);
-
-        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void knot_vector_utils_get_knot_multiplicity_map(
-            IntPtr knot_vector,
+        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_KV_get_knot_multiplicity_map")]
+        public static extern void LNLIB_KV_get_knot_multiplicity_map(
+            [In] double[] knot_vector,
             int knot_vector_count,
-            double[] out_unique_knots,
-            int[] out_multiplicities);
+            [In, Out] ref int out_size,
+            [Out] double[] out_keys,
+            [Out] int[] out_values);
+
+        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_KV_get_internal_knot_multiplicity_map")]
+        public static extern void LNLIB_KV_get_internal_knot_multiplicity_map(
+            [In] double[] knot_vector,
+            int knot_vector_count,
+            [In, Out] ref int out_size,
+            [Out] double[] out_keys,
+            [Out] int[] out_values);
     }
 }
