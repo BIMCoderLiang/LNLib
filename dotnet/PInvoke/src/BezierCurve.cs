@@ -22,7 +22,7 @@ namespace LNLibSharp
             CallingConvention = CallingConvention.Cdecl)]
         public static extern XYZ GetPointOnCurveByBernstein(
             int degree,
-            IntPtr controlPoints,
+            [In] XYZ[] controlPoints,
             int controlPointsCount,
             double paramT);
 
@@ -32,7 +32,7 @@ namespace LNLibSharp
             CallingConvention = CallingConvention.Cdecl)]
         public static extern XYZW GetRationalPointOnCurveByBernstein(
             int degree,
-            IntPtr controlPoints,
+            [In] XYZW[] controlPoints,
             int controlPointsCount,
             double paramT);
 
@@ -42,7 +42,7 @@ namespace LNLibSharp
             CallingConvention = CallingConvention.Cdecl)]
         public static extern XYZ GetPointOnCurveByDeCasteljau(
             int degree,
-            IntPtr controlPoints,
+            [In] XYZ[] controlPoints,
             int controlPointsCount,
             double paramT);
 
@@ -52,7 +52,7 @@ namespace LNLibSharp
             CallingConvention = CallingConvention.Cdecl)]
         public static extern XYZW GetRationalPoinGetRationalPointOnCurveByDeCasteljautOnCurveByBernstein(
             int degree,
-            IntPtr controlPoints,
+            [In] XYZW[] controlPoints,
             int controlPointsCount,
             double paramT);
     }
