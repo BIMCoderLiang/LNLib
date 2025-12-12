@@ -641,14 +641,14 @@ std::vector<std::vector<double>> LNLib::Polynomials::PowerToBezierMatrix(int deg
 
 	for (int k = 1; k < k1; k++)
 	{
-		for (int j = k + 1; j < pk; j++)
+		for (int j = k + 1; j <= pk; j++)
 		{
 			double d = 0.0;
 			for (int i = k; i < j; i++)
 			{
 				d = d - matrix[j][i] * inverseMatrix[i][k];
 			}
-			inverseMatrix[j][k] = d / (inverseMatrix[j][j]);
+			inverseMatrix[j][k] = d / (matrix[j][j]);
 			inverseMatrix[pk][degree - j] = inverseMatrix[j][k];
 		}
 		pk = pk - 1;
