@@ -82,7 +82,7 @@ double LNLib::MathUtils::AngleToRadians(double angle)
     return angle * Constants::Pi / 180.0;
 }
 
-int LNLib::MathUtils::Factorial(int number)
+double LNLib::MathUtils::Factorial(int number)
 {
     if (number == 0)
         return 1;
