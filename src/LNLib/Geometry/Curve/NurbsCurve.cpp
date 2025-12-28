@@ -122,7 +122,7 @@ namespace LNLib
 		double deviation = p1.Distance(chordMid);
 
 		if (LNLib::MathUtils::IsAlmostEqualTo(deviation,0.0)) {
-			parameters.push_back(mid);
+			parameters.emplace_back(mid);
 		}
 		else {
 			TessellateCore(curve, start, mid, parameters, depth + 1);
