@@ -50,7 +50,7 @@ namespace LNLibSharp
             LNLIB_CAPI_DLL,
             EntryPoint = "LNLIB_BEZIERCUR_get_rational_point_on_curve_by_deCasteljau",
             CallingConvention = CallingConvention.Cdecl)]
-        public static extern XYZW GetRationalPoinGetRationalPointOnCurveByDeCasteljautOnCurveByBernstein(
+        public static extern XYZW GetRationalPointOnCurveByDeCasteljau(
             int degree,
             [In] XYZW[] controlPoints,
             int controlPointsCount,
