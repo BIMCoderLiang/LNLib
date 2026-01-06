@@ -668,7 +668,18 @@ std::vector<LNLib::LN_NurbsCurve> LNLib::NurbsCurve::DecomposeToBeziers(const LN
 	{
 		bezierKnots[i] = 1;
 	}
-	int bezierSize = controlPoints.size() - degree;
+
+	int n = controlPoints.size() - 1;
+	int m = n + degree + 1;
+
+	int breaks = 0;
+	for (int i = 0; i <= m; ++i) {
+		if (i == 0 || !MathUtils::IsAlmostEqualTo(knotVector[i], knotVector[i - 1])) {
+			breaks++;
+		}
+	}
+
+	int bezierSize = breaks - 1;
 	std::vector<LNLib::LN_NurbsCurve> beziers(bezierSize);
 	for (int i = 0; i < bezierSize; i++)
 	{
@@ -676,9 +687,6 @@ std::vector<LNLib::LN_NurbsCurve> LNLib::NurbsCurve::DecomposeToBeziers(const LN
 		beziers[i].KnotVector = bezierKnots;
 		beziers[i].ControlPoints = std::vector<XYZW>(degree + 1);
 	}
-
-	int n = controlPoints.size() - 1;
-	int m = n + degree + 1;
 
 	int a = degree;
 	int b = degree + 1;
