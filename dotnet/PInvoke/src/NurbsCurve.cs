@@ -233,7 +233,7 @@ namespace LNLibSharp
             out LN_NurbsCurve out_curve);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSCUR_global_interpolation_with_tangents")]
-        public static extern void GlobalInterpolationWthTangents(
+        public static extern void GlobalInterpolationWithTangents(
             int degree,
             [In] XYZ[] points,
             [In] XYZ[] tangents,
