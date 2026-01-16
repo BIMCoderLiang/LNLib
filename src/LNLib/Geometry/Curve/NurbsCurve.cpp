@@ -3758,12 +3758,18 @@ bool LNLib::NurbsCurve::IsArc(const LN_NurbsCurve& curve, LN_ArcInfo& arcInfo)
 
 double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, IntegratorType type)
 {
-	if (IsLinear(curve))
+	bool isLinear = IsLinear(curve);
+	if (isLinear)
 	{
 		std::vector<XYZW> controlPoints = curve.ControlPoints;
 		XYZ startPoint = controlPoints[0].ToXYZ(true);
 		XYZ endPoint = controlPoints[controlPoints.size() - 1].ToXYZ(true);
 		return startPoint.Distance(endPoint);
+	}
+
+	if (curve.Degree == 1 && !isLinear)
+	{
+		VALIDATE_ARGUMENT(false, "curve", "Curve Degree is one but is not linear.");
 	}
 
 	LN_NurbsCurve reCurve;
