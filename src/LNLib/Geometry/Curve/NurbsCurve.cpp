@@ -453,7 +453,7 @@ double LNLib::NurbsCurve::Torsion(const LN_NurbsCurve& curve, double paramT)
 	else
 	{
 		double numerator = (tangent.CrossProduct(der2)).DotProduct(der3);
-		double denominator = (tangent.CrossProduct(der2).DotProduct(tangent.CrossProduct(der3)));
+		double denominator = (tangent.CrossProduct(der2).DotProduct(tangent.CrossProduct(der2)));
 		return numerator / denominator;
 	}
 }
