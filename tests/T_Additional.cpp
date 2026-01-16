@@ -66,6 +66,18 @@ TEST(Test_Additional, ApproximateLength)
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(arcParameters[2], 0.75));
 }
 
+TEST(Test_Additional, GetParamByLength)
+{
+	{
+		LN_NurbsCurve curve;
+		curve.Degree = 1;
+		curve.KnotVector = { 0,0,0.33333,0.666667,1.0,1.0 };
+		curve.ControlPoints = { {0,0,0,1},{5,1.438,0,1},{10,2.524,0,1},{15,2.992,0,1} };
+
+		ASSERT_THROW(NurbsCurve::GetParamOnCurve(curve, 14.4614, IntegratorType::GaussLegendre), std::invalid_argument);
+	}
+}
+
 TEST(Test_Additional, Normal)
 {
 	XYZ center = XYZ(0, 0, 0);
