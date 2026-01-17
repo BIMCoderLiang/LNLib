@@ -47,14 +47,14 @@ int LNLIB_NURBSCUR_create_arc(
 	return ok ? 1 : 0;
 }
 
-bool LNLIB_NURBSCUR_create_one_conic_arc(XYZ_C start, XYZ_C start_tangent, XYZ_C end, XYZ_C end_tangent, XYZ_C point_on_conic, XYZ_C* out_project_point, double* out_project_point_weight)
+int LNLIB_NURBSCUR_create_one_conic_arc(XYZ_C start, XYZ_C start_tangent, XYZ_C end, XYZ_C end_tangent, XYZ_C point_on_conic, XYZ_C* out_project_point, double* out_project_point_weight)
 {
 	XYZ point;
 	double weight;
 	bool ok = NurbsCurve::CreateOneConicArc(ToXYZ(start), ToXYZ(start_tangent), ToXYZ(end), ToXYZ(end_tangent), ToXYZ(point_on_conic), point, weight);
 	*out_project_point = FromXYZ(point);
 	*out_project_point_weight = weight;
-	return ok;
+	return ok ? 1 : 0;
 }
 
 void LNLIB_NURBSCUR_split_arc(XYZ_C start, XYZ_C project_point, double project_point_weight, XYZ_C end, XYZ_C* out_insert_point_at_start_side, XYZ_C* out_split_point, XYZ_C* out_insert_point_at_end_side, double* out_insert_weight)
@@ -196,6 +196,20 @@ void LNLIB_NURBSCUR_global_approximation_by_error_bound(
 	LN_NurbsCurve result;
 	NurbsCurve::GlobalApproximationByErrorBound(degree, pts, max_error, result);
 	*out_curve = ToCAPI(result);
+}
+
+int LNLIB_NURBSCUR_fit_with_conic(const XYZ_C* through_points, int through_points_count, int start_point_index, int end_point_index, XYZ_C start_tangent, XYZ_C end_tangent, double max_error, XYZW_C* middle_control_points, int* out_size)
+{
+	std::vector<XYZ> thps(through_points_count);
+	for (int i = 0; i < through_points_count; ++i) thps[i] = ToXYZ(through_points[i]);
+
+	std::vector<XYZW> mcps;
+	bool ok = NurbsCurve::FitWithConic(thps, start_point_index, end_point_index, ToXYZ(start_tangent), ToXYZ(end_tangent), max_error, mcps);
+	*out_size = static_cast<int>(mcps.size());
+	for (size_t i = 0; i < mcps.size(); ++i) {
+		middle_control_points[i] = { mcps[i].WX(),mcps[i].WY(),mcps[i].WZ(),mcps[i].W() };
+	}
+	return ok ? 1 : 0;
 }
 
 XYZ_C LNLIB_NURBSCUR_get_point_on_curve(LN_NurbsCurve_C curve, double param_t) {

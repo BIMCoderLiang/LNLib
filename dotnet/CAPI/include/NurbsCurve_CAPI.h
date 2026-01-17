@@ -114,7 +114,7 @@ extern "C" {
         double start_rad, double end_rad,
         double x_radius, double y_radius,
         LN_NurbsCurve_C* out_curve);
-    LNLIB_EXPORT bool LNLIB_NURBSCUR_create_one_conic_arc(XYZ_C start, XYZ_C start_tangent, XYZ_C end, XYZ_C end_tangent, XYZ_C point_on_conic, XYZ_C* out_project_point, double* out_project_point_weight);
+    LNLIB_EXPORT int LNLIB_NURBSCUR_create_one_conic_arc(XYZ_C start, XYZ_C start_tangent, XYZ_C end, XYZ_C end_tangent, XYZ_C point_on_conic, XYZ_C* out_project_point, double* out_project_point_weight);
     LNLIB_EXPORT void LNLIB_NURBSCUR_split_arc(XYZ_C start, XYZ_C project_point, double project_point_weight, XYZ_C end, XYZ_C* out_insert_point_at_start_side, XYZ_C* out_split_point, XYZ_C* out_insert_point_at_end_side, double* out_insert_weight);
     LNLIB_EXPORT int LNLIB_NURBSCUR_create_open_conic(
         XYZ_C start, XYZ_C start_tangent,
@@ -161,7 +161,7 @@ extern "C" {
         int point_count,
         double max_error,
         LN_NurbsCurve_C* out_curve);
-    LNLIB_EXPORT bool LNLIB_NURBSCUR_fit_with_conic(const XYZ_C* through_points, int through_points_count, int start_point_index, int end_point_index, XYZ_C start_tangent, XYZ_C end_tangent, double max_error, XYZW_C* middle_control_points, int* out_size);
+    LNLIB_EXPORT int LNLIB_NURBSCUR_fit_with_conic(const XYZ_C* through_points, int through_points_count, int start_point_index, int end_point_index, XYZ_C start_tangent, XYZ_C end_tangent, double max_error, XYZW_C* middle_control_points, int* out_size);
     LNLIB_EXPORT int LNLIB_NURBSCUR_fit_with_cubic(
         const XYZ_C* through_points,
         int through_points_count,
