@@ -29,7 +29,7 @@ endif()
 
 set_target_properties(
     gtest gtest_main gmock gmock_main
-    PROPERTIES FOLDER "gtest"
+    PROPERTIES FOLDER "Kernel/gtest"
 )
 
 target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/src/LNLib/include)
