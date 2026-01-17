@@ -1,5 +1,5 @@
 ## Introduction
-**LNLib is a C++ NURBS Algorithms Library.** <br/>These algorithms are primary referenced from [The NURBS Book 2nd Edition](https://link.springer.com/book/10.1007/978-3-642-97385-7). <br/>The APIs are re-designed to make it more friendly to users.
+**LNLib is a NURBS Algorithms Kernel Library.** <br/>These algorithms are primary referenced from [The NURBS Book 2nd Edition](https://link.springer.com/book/10.1007/978-3-642-97385-7). 
 
 <img src="assets/LNLib.png" width=400 height=200>
 
@@ -21,7 +21,7 @@ Basic Elements:
 - Matrix4d
 - LNObject
 
-Algorithms in ***The Nurbs Book***:
+Algorithms in ***The NURBS Book***:
 |Chapter|Content|
 |--|--|
 |***Chapter 1***  | Basis Function Computation |
@@ -135,18 +135,19 @@ Welcome to use https://deepwiki.com/BIMCoderLiang/LNLib powered by Devin.
 
 ## Contributing
 Welcome join this project including discussions in **Issues** and make **Pull requests**.
-
+- Contributors:
 <a href="https://contributors-img.web.app/image?repo=BIMCoderLiang/LNLib">
   <img src="https://contributors-img.web.app/image?repo=BIMCoderLiang/LNLib" />
 </a><br/>
 
-**Other Contributors:** [csulijunji](https://github.com/csulijunji)
+- Algorithm Adviser: 
+[csulijunji](https://github.com/csulijunji)
 
-## Author
+## Contact
 LNLib is created by Yuqing Liang (BIMCoder Liang).
 
-- bim.frankliang@foxmail.com
-- 微信公众号：**BIMCoder**
+- email: bim.frankliang@foxmail.com
+- Weixin Official Account (微信公众号)：**BIMCoder**
 
 ## License
 The source code is published under [LGPL 2.1](https://www.gnu.org/licenses/), the license is available [here](LICENSE).
