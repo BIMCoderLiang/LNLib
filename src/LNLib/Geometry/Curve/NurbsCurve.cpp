@@ -627,14 +627,15 @@ void LNLib::NurbsCurve::RefineKnotVector(const LN_NurbsCurve& curve, const std::
 		for (int l = 1; l <= degree; l++)
 		{
 			int ind = k - degree + l;
-			double alpha = insertedKnotVector[k + l] - insertKnotElements[j];
-			if (MathUtils::IsAlmostEqualTo(abs(alpha), 0.0))
-			{
+			double num = insertedKnotVector[k + l] - insertKnotElements[j];
+			double denom = insertedKnotVector[k + l] - knotVector[i - degree + l];
+
+			if (MathUtils::IsAlmostEqualTo(num,0.0) || 
+				MathUtils::IsAlmostEqualTo(denom, 0.0)) {
 				updatedControlPoints[ind - 1] = updatedControlPoints[ind];
 			}
-			else
-			{
-				alpha = alpha / (insertedKnotVector[k + l] - knotVector[i - degree + l]);
+			else {
+				double alpha = num / denom;
 				updatedControlPoints[ind - 1] = alpha * updatedControlPoints[ind - 1] + (1.0 - alpha) * updatedControlPoints[ind];
 			}
 		}
