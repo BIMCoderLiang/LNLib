@@ -31,6 +31,7 @@
 #include <random>
 #include <algorithm>
 #include <cmath>
+#include <numeric>
 
 namespace LNLib
 {
@@ -1645,10 +1646,9 @@ void LNLib::NurbsCurve::Offset(const LN_NurbsCurve& curve, double offset, Offset
 		case OffsetType::TillerAndHanson:
 			LNLib::OffsetByTillerAndHanson(curve, offset, result);
 			break;
-
 		case OffsetType::PieglAndTiller:
 			LNLib::OffsetByPieglAndTiller(curve, offset, result);
-
+			break;
 		default:
 			break;
 	}
@@ -2388,48 +2388,50 @@ bool LNLib::NurbsCurve::LeastSquaresApproximation(int degree, const std::vector<
 	return true;
 }
 
-bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(int degree, const std::vector<XYZ>& throughPoints, const std::vector<double>& throughPointWeights, const std::vector<XYZ>& tangents, const std::vector<int>& tangentIndices, const std::vector<double>& tangentWeights, int controlPointsCount, LN_NurbsCurve& curve)
+bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(
+	int degree,
+	const std::vector<XYZ>& throughPoints,
+	const std::vector<double>& throughPointWeights,
+	const std::vector<XYZ>& tangents,
+	const std::vector<int>& tangentIndices,
+	const std::vector<double>& tangentWeights,
+	int controlPointsCount,
+	LN_NurbsCurve& curve)
 {
 	VALIDATE_ARGUMENT(degree > 0, "degree", "Degree must be greater than zero.");
-	int size = throughPoints.size();
+	int size = static_cast<int>(throughPoints.size());
 	VALIDATE_ARGUMENT(size > degree, "throughPoints", "ThroughPoints size must be greater than degree.");
-	VALIDATE_ARGUMENT(throughPointWeights.size() == size, "weights", "Weights size must be equal to throughPoints size.");
+	VALIDATE_ARGUMENT(throughPointWeights.size() == size, "throughPointWeights", "Weights size must equal throughPoints size.");
 
-	
-	int ru = -1;
-	int rc = -1;
-	int r = size - 1;
-	for (int i = 0; i <= r; i++)
-	{
-		if (MathUtils::IsGreaterThan(throughPointWeights[i], 0.0))
-		{
-			ru++;
-		}
-		else
-		{
-			rc++;
-		}
-	}
-	int su = -1;
-	int sc = -1;
-	int s = tangents.size() - 1;
-	for (int j = 0; j <= s; j++)
-	{
-		if (MathUtils::IsGreaterThan(tangentWeights[j], 0.0))
-		{
-			su++;
-		}
-		else
-		{
-			sc++;
-		}
-	}
-	int mu = ru + su + 1;
-	int mc = rc + sc + 1;
+	int numTangents = static_cast<int>(tangents.size());
+	VALIDATE_ARGUMENT(tangentIndices.size() == numTangents, "tangentIndices", "TangentIndices size must equal tangents size.");
+	VALIDATE_ARGUMENT(tangentWeights.size() == numTangents, "tangentWeights", "TangentWeights size must equal tangents size.");
 
+	for (int idx : tangentIndices) {
+		VALIDATE_ARGUMENT(idx >= 0 && idx < size, "tangentIndices", "Each index must be in [0, throughPoints.size()).");
+	}
+
+	std::vector<int> sortedTangentOrder(numTangents);
+	std::iota(sortedTangentOrder.begin(), sortedTangentOrder.end(), 0);
+	std::sort(sortedTangentOrder.begin(), sortedTangentOrder.end(),
+		[&](int a, int b) { return tangentIndices[a] < tangentIndices[b]; });
+
+	int ru = 0, rc = 0;
+	for (double w : throughPointWeights) {
+		if (MathUtils::IsGreaterThan(w, 0.0)) ru++;
+		else if (MathUtils::IsLessThan(w, 0.0)) rc++;
+	}
+	int su = 0, sc = 0;
+	for (double w : tangentWeights) {
+		if (MathUtils::IsGreaterThan(w, 0.0)) su++;
+		else if (MathUtils::IsLessThan(w, 0.0)) sc++;
+	}
+
+	int mu = ru + su;
+	int mc = rc + sc;
 	int n = controlPointsCount - 1;
-	if (mc >= n || mc + n >= mu + 1)
-	{
+
+	if (mu == 0 || mc > n) {
 		return false;
 	}
 
@@ -2437,169 +2439,149 @@ bool LNLib::NurbsCurve::WeightedAndContrainedLeastSquaresApproximation(int degre
 	std::vector<double> knotVector = Interpolation::ComputeKnotVector(degree, controlPointsCount, uk);
 	std::vector<XYZW> controlPoints(controlPointsCount);
 
-	int j = 0;
-	int mu2 = 0;
-	int mc2 = 0;
+	std::vector<std::vector<double>> N(mu, std::vector<double>(controlPointsCount, 0.0));
+	std::vector<std::vector<double>> M(mc, std::vector<double>(controlPointsCount, 0.0));
+	std::vector<XYZ> S(mu);
+	std::vector<XYZ> T(mc);
+	std::vector<double> W_vec(mu);
 
-	std::vector<std::vector<double>> N(mu + 1, std::vector<double>(n + 1));
-	std::vector<std::vector<double>> M(mc + 1, std::vector<double>(n + 1));
-	std::vector<XYZ> S(mu + 1);
-	std::vector<XYZ> T(mc + 1);
+	int mu_idx = 0, mc_idx = 0;
+	int tan_order_idx = 0;
 
-	std::vector<double> W(mu + 1);
-	std::vector<std::vector<double>> funs(2, std::vector<double>(degree + 1));
+	for (int i = 0; i < size; ++i) {
+		bool hasTangent = (tan_order_idx < numTangents &&
+			tangentIndices[sortedTangentOrder[tan_order_idx]] == i);
 
-	for (int i = 0; i <= r; i++)
-	{
-		int spanIndex = Polynomials::GetKnotSpanIndex(degree, knotVector, uk[i]);
-		
-		bool dflag = false;
-		if (j <= s)
-		{
-			if (i == tangentIndices[j])
-			{
-				dflag = true;
-			}
-		}
-		if (!dflag)
-		{
-			std::vector<double> temp(degree + 1);
-			Polynomials::BasisFunctions(spanIndex, degree, knotVector, uk[i], temp.data());
-			funs[0] = temp;
-		}
-		else
-		{
-			funs = Polynomials::BasisFunctionsDerivatives(spanIndex, degree, 1, knotVector, uk[i]);
-		}
-		if (MathUtils::IsGreaterThan(throughPointWeights[i], 0.0))
-		{
-			W[mu2] = throughPointWeights[i];
-			//
-			// My question: 
-			// 
-			// N is (mu + 1) rows, (n + 1) columns;
-			// funs is 2 rows, (degree + 1) columns;
-			// How to match column data? Is controlPointsCount must equal degree + 1?
-			//
-			for (int z = 0; z < funs[0].size(); z++)
-			{
-				N[mu2][z] = funs[0][z];
-			}
-			S[mu2] = W[mu2] * throughPoints[i];
-			mu2++;
-		}
-		else
-		{
-			for (int z = 0; z < funs[0].size(); z++)
-			{
-				M[mc2][z] = funs[0][z];
-			}
-			T[mc2] = throughPoints[i];
-			mc2++;
-		}
-		if (dflag)
-		{
-			if (MathUtils::IsGreaterThan(tangentWeights[j], 0.0))
-			{
-				W[mu2] = tangentWeights[j];
-				for (int z = 0; z < funs[1].size(); z++)
-				{
-					N[mu2][z] = funs[1][z];
+		int span = Polynomials::GetKnotSpanIndex(degree, knotVector, uk[i]);
+		int start = span - degree;
+
+		double wp = throughPointWeights[i];
+		if (MathUtils::IsGreaterThan(wp, 0.0)) {
+			std::vector<double> basis(degree + 1);
+			Polynomials::BasisFunctions(span, degree, knotVector, uk[i], basis.data());
+			for (int k = 0; k <= degree; ++k) {
+				int col = start + k;
+				if (col >= 0 && col < controlPointsCount) {
+					N[mu_idx][col] = basis[k];
 				}
-				S[mu2] = W[mu2] * tangents[j];
-				mu2++;
 			}
-			else
-			{
-				for (int z = 0; z < funs[1].size(); z++)
-				{
-					M[mc2][z] = funs[1][z];
+			W_vec[mu_idx] = wp;
+			S[mu_idx] = wp * throughPoints[i];
+			mu_idx++;
+		}
+		else if (MathUtils::IsLessThan(wp, 0.0)) {
+			std::vector<double> basis(degree + 1);
+			Polynomials::BasisFunctions(span, degree, knotVector, uk[i], basis.data());
+			for (int k = 0; k <= degree; ++k) {
+				int col = start + k;
+				if (col >= 0 && col < controlPointsCount) {
+					M[mc_idx][col] = basis[k];
 				}
-				T[mc2] = tangents[j];
-				mc2++;
 			}
-			j++;
+			T[mc_idx] = throughPoints[i];
+			mc_idx++;
+		}
+
+		if (hasTangent) {
+			int orig_idx = sortedTangentOrder[tan_order_idx];
+			XYZ tangentVec = tangents[orig_idx];
+			double wt = tangentWeights[orig_idx];
+
+			auto derivatives = Polynomials::BasisFunctionsDerivatives(span, degree, 1, knotVector, uk[i]);
+			if (derivatives.size() < 2) return false;
+
+			if (MathUtils::IsGreaterThan(wt, 0.0)) {
+				for (int k = 0; k <= degree; ++k) {
+					int col = start + k;
+					if (col >= 0 && col < controlPointsCount) {
+						N[mu_idx][col] = derivatives[1][k];
+					}
+				}
+				W_vec[mu_idx] = wt;
+				S[mu_idx] = wt * tangentVec;
+				mu_idx++;
+			}
+			else if (MathUtils::IsLessThan(wt, 0.0)) {
+				for (int k = 0; k <= degree; ++k) {
+					int col = start + k;
+					if (col >= 0 && col < controlPointsCount) {
+						M[mc_idx][col] = derivatives[1][k];
+					}
+				}
+				T[mc_idx] = tangentVec;
+				mc_idx++;
+			}
+			tan_order_idx++;
 		}
 	}
-	
+
+	if (mu_idx != mu || mc_idx != mc) return false;
+
+	std::vector<std::vector<double>> W = MathUtils::CreateMatrix(mu, mu);
+	for (int i = 0; i < mu; ++i) {
+		W[i][i] = W_vec[i];
+	}
+
 	std::vector<std::vector<double>> tN;
 	MathUtils::Transpose(N, tN);
+	auto tNW = MathUtils::MatrixMultiply(tN, W);
+	auto tNWN = MathUtils::MatrixMultiply(tNW, N);
 
-	std::vector<std::vector<double>> W_ = MathUtils::MakeDiagonal(W.size());
-	std::vector<std::vector<double>> tNW = MathUtils::MatrixMultiply(tN, W_);
-	std::vector<std::vector<double>> tNWN = MathUtils::MatrixMultiply(tNW, N);
+	std::vector<std::vector<double>> S_mat(mu, std::vector<double>(3));
+	for (int i = 0; i < mu; ++i) {
+		S_mat[i][0] = S[i].X();
+		S_mat[i][1] = S[i].Y();
+		S_mat[i][2] = S[i].Z();
+	}
+	auto tNWS = MathUtils::MatrixMultiply(tNW, S_mat);
 
-	std::vector<std::vector<double>> S_(S.size(), std::vector<double>(3));
-	for (int i = 0; i < S.size(); i++)
-	{
-		for (int j = 0; j < 3; j++)
-		{
-			S_[i][j] = S[i][j];
+	if (mc == 0) {
+		auto result = MathUtils::SolveLinearSystem(tNWN, tNWS);
+		for (int i = 0; i < controlPointsCount; ++i) {
+			controlPoints[i] = XYZW(XYZ(result[i][0], result[i][1], result[i][2]), 1.0);
 		}
 	}
-	std::vector<std::vector<double>> tNWS = MathUtils::MatrixMultiply(tNW, S_);
-	
-	if (mc < 0)
-	{
-		std::vector<std::vector<double>> result = MathUtils::SolveLinearSystem(tNWN, tNWS);
-		for (int i = 0; i < result.size(); i++)
-		{
-			XYZ temp = XYZ(0, 0, 0);
-			for (int j = 0; j < 3; j++)
-			{
-				temp[j] = result[i][j];
-			}
-			controlPoints[i] = XYZW(temp, 1.0);
-		}
-	}
-	else
-	{
-		std::vector<std::vector<double>> inv_tNWN;
-		bool canInverse = MathUtils::MakeInverse(tNWN, inv_tNWN);
-		if (!canInverse) return false;
+	else {
 
 		std::vector<std::vector<double>> tM;
 		MathUtils::Transpose(M, tM);
 
-		std::vector<std::vector<double>> Minv_tNWN = MathUtils::MatrixMultiply(M, inv_tNWN);
-		std::vector<std::vector<double>> Minv_tNWN_tM = MathUtils::MatrixMultiply(Minv_tNWN, tM);
+		int totalSize = controlPointsCount + mc;
+		std::vector<std::vector<double>> A = MathUtils::CreateMatrix(totalSize, totalSize);
+		std::vector<std::vector<double>> B = MathUtils::CreateMatrix(totalSize, 3);
 
-		std::vector<std::vector<double>> Minv_tNWN_tNWS = MathUtils::MatrixMultiply(Minv_tNWN, tNWS);
-		std::vector<std::vector<double>> Minv_tNWN_tNWS_T(T.size(), std::vector<double>(3));
-		for (int i = 0; i < T.size(); i++)
-		{
-			for (int j = 0; j < 3; j++)
-			{
-				Minv_tNWN_tNWS_T[i][j] = Minv_tNWN_tNWS[i][j] - T[i][j];
-			}
+		for (int i = 0; i < controlPointsCount; ++i)
+			for (int j = 0; j < controlPointsCount; ++j)
+				A[i][j] = tNWN[i][j];
+
+		for (int i = 0; i < controlPointsCount; ++i)
+			for (int j = 0; j < mc; ++j)
+				A[i][controlPointsCount + j] = tM[i][j];
+
+		for (int i = 0; i < mc; ++i)
+			for (int j = 0; j < controlPointsCount; ++j)
+				A[controlPointsCount + i][j] = M[i][j];
+
+		for (int i = 0; i < controlPointsCount; ++i) {
+			B[i][0] = tNWS[i][0];
+			B[i][1] = tNWS[i][1];
+			B[i][2] = tNWS[i][2];
+		}
+		for (int i = 0; i < mc; ++i) {
+			B[controlPointsCount + i][0] = T[i].X();
+			B[controlPointsCount + i][1] = T[i].Y();
+			B[controlPointsCount + i][2] = T[i].Z();
 		}
 
-		std::vector<std::vector<double>> A = MathUtils::SolveLinearSystem(Minv_tNWN_tM, Minv_tNWN_tNWS_T);
-		std::vector<std::vector<double>> tMA = MathUtils::MatrixMultiply(tM, A);
-		std::vector<std::vector<double>> tNWS_tMA(tNWS.size(), std::vector<double>(3));
-		for (int i = 0; i < tNWS.size(); i++)
-		{
-			for (int j = 0; j < 3; j++)
-			{
-				tNWS_tMA[i][j] = tNWS[i][j] - tMA[i][j];
-			}
-		}
-		std::vector<std::vector<double>> result = MathUtils::MatrixMultiply(inv_tNWN, tNWS_tMA);
-		for (int i = 0; i < result.size(); i++)
-		{
-			XYZ temp = XYZ(0, 0, 0);
-			for (int j = 0; j < 3; j++)
-			{
-				temp[j] = result[i][j];
-			}
-			controlPoints[i] = XYZW(temp, 1.0);
+		auto solution = MathUtils::SolveLinearSystem(A, B);
+		for (int i = 0; i < controlPointsCount; ++i) {
+			controlPoints[i] = XYZW(XYZ(solution[i][0], solution[i][1], solution[i][2]), 1.0);
 		}
 	}
 
 	curve.Degree = degree;
 	curve.KnotVector = knotVector;
 	curve.ControlPoints = controlPoints;
-
 	return true;
 }
 
