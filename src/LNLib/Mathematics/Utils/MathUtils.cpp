@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Author:
  * 2023/06/08 - Yuqing Liang (BIMCoder Liang)
  * bim.frankliang@foxmail.com
@@ -202,33 +202,38 @@ bool LNLib::MathUtils::MakeInverse(const std::vector<std::vector<double>>& matri
     return true;
 }
 
-std::vector<std::vector<double>> LNLib::MathUtils::SolveLinearSystem(const std::vector<std::vector<double>>& matrix, const std::vector<std::vector<double>>& right)
+std::vector<std::vector<double>> LNLib::MathUtils::SolveLinearSystem(
+    const std::vector<std::vector<double>>& matrix,
+    const std::vector<std::vector<double>>& right)
 {
-    std::vector<std::vector<double>> result(matrix.size(), std::vector<double>(right[0].size()));
-
-    Eigen::MatrixXd m(matrix.size(), matrix[0].size());
-    for (int i = 0; i < matrix.size(); i++)
-    {
-        m.row(i) = Eigen::VectorXd::Map(&matrix[i][0], matrix[i].size());
-    }
-        
-    Eigen::MatrixXd r(right.size(),  right[0].size());
-    for (int i = 0; i < right.size(); i++)
-    {
-        r.row(i) = Eigen::VectorXd::Map(&right[i][0], right[i].size());
+    if (matrix.empty() || right.empty() || matrix[0].empty() || right[0].empty()) {
+        return {};
     }
 
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> solve = m.lu().solve(r);
-    for (int col = 0; col < solve.cols(); ++col)
-    {
-        for (int row = 0; row < solve.rows(); ++row)
-        {
-            result[row][col] = solve(row, col);
+    int rows = static_cast<int>(matrix.size());
+    int cols = static_cast<int>(matrix[0].size());
+    int rhsCols = static_cast<int>(right[0].size());
+
+    Eigen::MatrixXd A(rows, cols);
+    for (int i = 0; i < rows; ++i) {
+        A.row(i) = Eigen::VectorXd::Map(&matrix[i][0], matrix[i].size());
+    }
+
+    Eigen::MatrixXd B(right.size(), rhsCols);
+    for (int i = 0; i < right.size(); ++i) {
+        B.row(i) = Eigen::VectorXd::Map(&right[i][0], right[i].size());
+    }
+
+    Eigen::MatrixXd X = A.colPivHouseholderQr().solve(B);
+
+    std::vector<std::vector<double>> result(cols, std::vector<double>(rhsCols));
+    for (int j = 0; j < rhsCols; ++j) {
+        for (int i = 0; i < cols; ++i) {
+            result[i][j] = X(i, j);
         }
     }
     return result;
 }
-
 bool LNLib::MathUtils::SolveLinearSystemBanded(int matrixDimension, const std::vector<std::vector<double>>& matrix, int bandwidth, const std::vector<std::vector<double>>& right, std::vector<std::vector<double>>& result)
 {
     int sbw = bandwidth / 2;
