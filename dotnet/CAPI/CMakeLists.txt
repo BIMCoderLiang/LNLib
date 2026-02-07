@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
-set(TARGET_NAME CApi)
+set(TARGET_NAME LNLibCApi)
 project(${TARGET_NAME})
 
 file(GLOB_RECURSE SRC_FILES

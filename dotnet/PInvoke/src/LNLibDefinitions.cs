@@ -12,6 +12,6 @@ namespace LNLibSharp
 {
     public static class LNLibDefinitions
     {
-        public const string LNLIB_CAPI_DLL = "CApi.dll";
+        public const string LNLIB_CAPI_DLL = "LNLibCApi.dll";
     }
 }
