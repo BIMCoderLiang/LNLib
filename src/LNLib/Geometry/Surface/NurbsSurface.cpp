@@ -1862,54 +1862,89 @@ void LNLib::NurbsSurface::MakeCornerFilletSurface(const LN_NurbsCurve& arc, LN_N
 	surface.ControlPoints = controlPoints;
 }
 
-void LNLib::NurbsSurface::GlobalInterpolation(const std::vector<std::vector<XYZ>>& throughPoints, int degreeU, int degreeV, LN_NurbsSurface& surface)
+void LNLib::NurbsSurface::GlobalInterpolation(
+	const std::vector<std::vector<XYZ>>& throughPoints,
+	int degreeU,
+	int degreeV,
+	LN_NurbsSurface& surface)
 {
 	VALIDATE_ARGUMENT(throughPoints.size() > 0, "throughPoints", "ThroughPoints row size must be greater than zero.");
 	VALIDATE_ARGUMENT(throughPoints[0].size() > 0, "throughPoints", "ThroughPoints column size must be greater than zero.");
-	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "DegreeU must be greater than zero.");
-	VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "DegreeV must be greater than zero.");
+	VALIDATE_ARGUMENT(degreeU >= 0 && degreeU <= Constants::NURBSMaxDegree, "degreeU", "DegreeU out of range.");
+	VALIDATE_ARGUMENT(degreeV >= 0 && degreeV <= Constants::NURBSMaxDegree, "degreeV", "DegreeV out of range.");
 
-	std::vector<double> uk;
-	std::vector<double> vl;
+	int rows = static_cast<int>(throughPoints.size());
+	int cols = static_cast<int>(throughPoints[0].size());
 
+	VALIDATE_ARGUMENT(cols > degreeU, "throughPoints", "Column size must be greater than degreeU.");
+	VALIDATE_ARGUMENT(rows > degreeV, "throughPoints", "Row size must be greater than degreeV.");
+
+	std::vector<double> uk, vl;
 	Interpolation::GetSurfaceMeshParameterization(throughPoints, uk, vl);
 
-	int rows = throughPoints.size();
-	int cols = throughPoints[0].size();
-
-	std::vector<std::vector<XYZW>> controlPoints(rows, std::vector<XYZW>(cols));
 	std::vector<double> knotVectorU = Interpolation::AverageKnotVector(degreeU, uk);
 	std::vector<double> knotVectorV = Interpolation::AverageKnotVector(degreeV, vl);
 
-	for (int j = 0; j < cols; j++)
-	{
-		std::vector<XYZ> temp(rows);
-		for (int i = 0; i < rows; i++)
-		{
-			temp[i] = throughPoints[i][j];
-		}
-		LN_NurbsCurve tc;
-		NurbsCurve::GlobalInterpolation(degreeU, temp, tc);
-		for (int i = 0; i < rows; i++)
-		{
-			controlPoints[i][j] = tc.ControlPoints[i];
+	int total = rows * cols;
+	std::vector<std::vector<double>> A(total, std::vector<double>(total, 0.0));
+
+	for (int i = 0; i < rows; ++i) {
+		for (int j = 0; j < cols; ++j) {
+			int eqIdx = i * cols + j;
+
+			if ((i == 0 || i == rows - 1) && (j == 0 || j == cols - 1)) {
+				int ctrlIdx = eqIdx;
+				A[eqIdx][ctrlIdx] = 1.0;
+			}
+			else {
+				double u = uk[j];
+				double v = vl[i];
+
+				int spanU = Polynomials::GetKnotSpanIndex(degreeU, knotVectorU, u);
+				int spanV = Polynomials::GetKnotSpanIndex(degreeV, knotVectorV, v);
+
+				double basisU[Constants::NURBSMaxDegree + 1];
+				double basisV[Constants::NURBSMaxDegree + 1];
+
+				Polynomials::BasisFunctions(spanU, degreeU, knotVectorU, u, basisU);
+				Polynomials::BasisFunctions(spanV, degreeV, knotVectorV, v, basisV);
+
+				for (int l = 0; l <= degreeV; ++l) {
+					int ctrlRow = spanV - degreeV + l;
+					if (ctrlRow < 0 || ctrlRow >= rows) continue;
+
+					for (int k = 0; k <= degreeU; ++k) {
+						int ctrlCol = spanU - degreeU + k;
+						if (ctrlCol < 0 || ctrlCol >= cols) continue;
+
+						int ctrlIdx = ctrlRow * cols + ctrlCol;
+						A[eqIdx][ctrlIdx] = basisV[l] * basisU[k];
+					}
+				}
+			}
 		}
 	}
 
-	for (int i = 0; i < rows; i++)
-	{
-		std::vector<XYZ> temp(cols);
-		for (int j = 0; j < cols; j++)
-		{
-			temp[j] = throughPoints[i][j];
-		}
-		LN_NurbsCurve tc;
-		NurbsCurve::GlobalInterpolation(degreeV, temp, tc);
-		for (int j = 0; j < cols; j++)
-		{
-			controlPoints[i][j] = tc.ControlPoints[j];
+	std::vector<std::vector<double>> right(total, std::vector<double>(3));
+	for (int i = 0; i < rows; ++i) {
+		for (int j = 0; j < cols; ++j) {
+			int idx = i * cols + j;
+			right[idx][0] = throughPoints[i][j].X();
+			right[idx][1] = throughPoints[i][j].Y();
+			right[idx][2] = throughPoints[i][j].Z();
 		}
 	}
+
+	auto result = MathUtils::SolveLinearSystem(A, right);
+	std::vector<std::vector<XYZW>> controlPoints(rows, std::vector<XYZW>(cols));
+	for (int i = 0; i < rows; ++i) {
+		for (int j = 0; j < cols; ++j) {
+			int idx = i * cols + j;
+			XYZ pt(result[idx][0], result[idx][1], result[idx][2]);
+			controlPoints[i][j] = XYZW(pt, 1.0);
+		}
+	}
+
 	surface.DegreeU = degreeU;
 	surface.DegreeV = degreeV;
 	surface.KnotVectorU = knotVectorU;
@@ -2128,53 +2163,67 @@ bool LNLib::NurbsSurface::BicubicLocalInterpolation(const std::vector<std::vecto
 	return true;
 }
 
-bool LNLib::NurbsSurface::GlobalApproximation(const std::vector<std::vector<XYZ>>& throughPoints, int degreeU, int degreeV, int controlPointsRows, int controlPointsColumns, LN_NurbsSurface& surface)
+bool LNLib::NurbsSurface::GlobalApproximation(
+	const std::vector<std::vector<XYZ>>& throughPoints,
+	int degreeU,
+	int degreeV,
+	int controlPointsRows,
+	int controlPointsColumns,
+	LN_NurbsSurface& surface)
 {
 	VALIDATE_ARGUMENT(throughPoints.size() > 0, "throughPoints", "ThroughPoints row size must be greater than zero.");
 	VALIDATE_ARGUMENT(throughPoints[0].size() > 0, "throughPoints", "ThroughPoints column size must be greater than zero.");
-	VALIDATE_ARGUMENT(degreeU > 0, "degreeU", "DegreeU must be greater than zero.");
-	VALIDATE_ARGUMENT(degreeV > 0, "degreeV", "DegreeV must be greater than zero.");
+	VALIDATE_ARGUMENT(degreeU > 0 && degreeU <= Constants::NURBSMaxDegree, "degreeU", "Invalid degreeU.");
+	VALIDATE_ARGUMENT(degreeV > 0 && degreeV <= Constants::NURBSMaxDegree, "degreeV", "Invalid degreeV.");
+	VALIDATE_ARGUMENT(controlPointsRows > degreeV, "controlPointsRows", "Control points rows must be > degreeV.");
+	VALIDATE_ARGUMENT(controlPointsColumns > degreeU, "controlPointsColumns", "Control points columns must be > degreeU.");
 
-	int rows = controlPointsRows;
-	int n = rows - 1;
-	int columns = controlPointsColumns;
-	int m = columns - 1;
-
-	std::vector<double> knotVectorU;
-	std::vector<double> knotVectorV;
-	std::vector<std::vector<XYZW>> controlPoints;
+	int dataRows = static_cast<int>(throughPoints.size());
+	int dataCols = static_cast<int>(throughPoints[0].size());
 
 	std::vector<std::vector<XYZ>> tempControlPoints;
-	for (int i = 0; i < rows; i++)
-	{
-		LN_NurbsCurve tc;
-		bool result = NurbsCurve::LeastSquaresApproximation(degreeU, throughPoints[i], rows, tc);
-		if (!result) return false;
-		std::vector<XYZ> points = ControlPointsUtils::ToXYZ(tc.ControlPoints);
-		tempControlPoints.emplace_back(points);
-		knotVectorU = tc.KnotVector;
+	std::vector<double> knotVectorU;
+
+	for (int i = 0; i < dataRows; ++i) {
+		LN_NurbsCurve curve;
+		bool success = NurbsCurve::LeastSquaresApproximation(degreeU, throughPoints[i], controlPointsColumns, curve);
+		if (!success) return false;
+
+		auto xyzPoints = ControlPointsUtils::ToXYZ(curve.ControlPoints);
+		tempControlPoints.push_back(xyzPoints);
+
+		if (i == 0) {
+			knotVectorU = curve.KnotVector;
+		}
 	}
 
-	std::vector<std::vector<XYZ>> preControlPoints;
-	std::vector<std::vector<XYZ>> tPoints;
-	for (int i = 0; i < columns; i++)
-	{
-		std::vector<XYZ> c = MathUtils::GetColumn(tempControlPoints, i);
-		LN_NurbsCurve tc;
-		bool result = NurbsCurve::LeastSquaresApproximation(degreeV, c, columns, tc);
-		if (!result) return false;
-		std::vector<XYZ> points = ControlPointsUtils::ToXYZ(tc.ControlPoints);
-		tPoints.emplace_back(points);
-		knotVectorV = tc.KnotVector;
+	std::vector<std::vector<XYZ>> transposed;
+	MathUtils::Transpose(tempControlPoints, transposed);
+
+	std::vector<std::vector<XYZ>> finalControlPoints;
+	std::vector<double> knotVectorV;
+
+	for (int j = 0; j < static_cast<int>(transposed.size()); ++j) {
+		LN_NurbsCurve curve;
+		bool success = NurbsCurve::LeastSquaresApproximation(degreeV, transposed[j], controlPointsRows, curve);
+		if (!success) return false;
+
+		auto xyzPoints = ControlPointsUtils::ToXYZ(curve.ControlPoints);
+		finalControlPoints.push_back(xyzPoints);
+
+		if (j == 0) {
+			knotVectorV = curve.KnotVector;
+		}
 	}
-	MathUtils::Transpose(tPoints, preControlPoints);
-	controlPoints = ControlPointsUtils::ToXYZW(preControlPoints);
+
+	std::vector<std::vector<XYZ>> surfaceControlPoints;
+	MathUtils::Transpose(finalControlPoints, surfaceControlPoints);
 
 	surface.DegreeU = degreeU;
 	surface.DegreeV = degreeV;
 	surface.KnotVectorU = knotVectorU;
 	surface.KnotVectorV = knotVectorV;
-	surface.ControlPoints = controlPoints;
+	surface.ControlPoints = ControlPointsUtils::ToXYZW(surfaceControlPoints);
 	return true;
 }
 
