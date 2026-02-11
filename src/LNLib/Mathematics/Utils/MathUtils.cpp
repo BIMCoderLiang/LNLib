@@ -23,53 +23,64 @@
 #include <cmath>
 #include <limits>
 
-bool LNLib::MathUtils::IsAlmostEqualTo(double value1, double value2, double tolerance)
-{
-    if (IsNaN(value1) || IsNaN(value2))
-        return false;
-    double eps = (std::abs(value1) + std::abs(value2) + 10) * tolerance;
-    double delta = value1 - value2;
-    return (-eps < delta) && (eps > delta);
+namespace LNLib {
+
+    static const std::vector<std::vector<double>> pascal = [] {
+        std::vector<std::vector<double>> table(21, std::vector<double>(21, 0.0));
+        for (int i = 0; i <= 20; ++i) {
+            table[i][0] = table[i][i] = 1.0;
+            for (int j = 1; j < i; ++j) {
+                table[i][j] = table[i - 1][j - 1] + table[i - 1][j];
+            }
+        }
+        return table;
+        }();
 }
 
-bool LNLib::MathUtils::IsGreaterThan(double value1, double value2, double tolerance)
+bool LNLib::MathUtils::IsAlmostEqualTo(double a, double b, double tolerance)
 {
-    if (IsNaN(value1) || IsNaN(value2))
-        return false;
-    return value1 > value2 && !IsAlmostEqualTo(value1, value2, tolerance);
+    if (IsNaN(a) || IsNaN(b)) return false;
+    if (IsInfinite(a) || IsInfinite(b)) return a == b;
+
+    double diff = std::abs(a - b);
+    double absMax = std::max(std::abs(a), std::abs(b));
+    return diff <= tolerance * (1.0 + absMax);
 }
 
-bool LNLib::MathUtils::IsGreaterThanOrEqual(double value1, double value2, double tolerance)
+bool LNLib::MathUtils::IsGreaterThan(double a, double b, double tolerance)
 {
-    if (IsNaN(value1) || IsNaN(value2))
-        return false;
-    return (value1 - value2 > tolerance) || IsAlmostEqualTo(value1, value2, tolerance);
+    if (IsNaN(a) || IsNaN(b)) return false;
+    return (a - b) > tolerance * (1.0 + std::max(std::abs(a), std::abs(b)));
 }
 
-bool LNLib::MathUtils::IsLessThan(double value1, double value2, double tolerance)
+bool LNLib::MathUtils::IsGreaterThanOrEqual(double a, double b, double tolerance)
 {
-    if (IsNaN(value1) || IsNaN(value2))
-        return false;
-    return value1 < value2 && !IsAlmostEqualTo(value1, value2, tolerance);
+    if (IsNaN(a) || IsNaN(b)) return false;
+    double eps = tolerance * (1.0 + std::max(std::abs(a), std::abs(b)));
+    return (a - b) >= -eps;
 }
 
-bool LNLib::MathUtils::IsLessThanOrEqual(double value1, double value2, double tolerance)
+bool LNLib::MathUtils::IsLessThan(double a, double b, double tolerance)
 {
-    if (IsNaN(value1) || IsNaN(value2))
-        return false;
-    return value1 < value2 || IsAlmostEqualTo(value1, value2, tolerance);
+    if (IsNaN(a) || IsNaN(b)) return false;
+    return (b - a) > tolerance * (1.0 + std::max(std::abs(a), std::abs(b)));
+}
+
+bool LNLib::MathUtils::IsLessThanOrEqual(double a, double b, double tolerance)
+{
+    if (IsNaN(a) || IsNaN(b)) return false;
+    double eps = tolerance * (1.0 + std::max(std::abs(a), std::abs(b)));
+    return (a - b) <= eps;
 }
 
 bool LNLib::MathUtils::IsInfinite(double value)
 {
-    constexpr double maxValue = (std::numeric_limits<double>::max)();
-    double minValue = -maxValue;
-    return !(minValue <= value && value <= maxValue);
+    return std::isinf(value);
 }
 
 bool LNLib::MathUtils::IsNaN(double value)
 {
-    return value != value;
+    return std::isnan(value);
 }
 
 double LNLib::MathUtils::RadiansToAngle(double radians)
@@ -82,17 +93,29 @@ double LNLib::MathUtils::AngleToRadians(double angle)
     return angle * Constants::Pi / 180.0;
 }
 
-int LNLib::MathUtils::Factorial(int number)
+long long LNLib::MathUtils::Factorial(int n)
 {
-    if (number == 0)
-        return 1;
-    else
-        return number * Factorial(number - 1);
+    if (n < 0) return -1;
+    if (n > 20) {
+        throw std::invalid_argument("Factorial overflow for n > 20");
+    }
+    long long result = 1;
+    for (int i = 2; i <= n; ++i) {
+        result *= i;
+    }
+    return result;
 }
 
 double LNLib::MathUtils::Binomial(int number, int i)
 {
-    return static_cast<double>(Factorial(number)) / (static_cast<double>(Factorial(i)) * Factorial(number - i));
+    if (number < 0 || i < 0 || i > number) return 0.0;
+    if (number <= 20) return pascal[number][i];
+
+    i = std::min(i, number - i);
+    double res = 1.0;
+    for (int j = 1; j <= i; ++j)
+        res = res * (number - i + j) / j;
+    return res;
 }
 
 double LNLib::MathUtils::ComputerCubicEquationsWithOneVariable(double cubic, double quadratic, double linear, double constant)

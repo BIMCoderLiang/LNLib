@@ -18,7 +18,7 @@ namespace LNLib
 	class LNLIB_EXPORT Projection
 	{
 	public:
-		static XYZ PointToRay(const XYZ& origin, const XYZ& vector, const XYZ& Point);
+		static XYZ PointToRay(const XYZ& origin, const XYZ& vector, const XYZ& point);
 		static bool PointToLine(const XYZ& start, const XYZ& end, const XYZ& point, XYZ& projectPoint);
 		static XYZ Stereographic(const XYZ& pointOnSphere, double radius);
 	};

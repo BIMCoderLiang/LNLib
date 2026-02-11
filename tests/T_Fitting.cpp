@@ -50,7 +50,7 @@ TEST(Test_Fitting, Interpolation)
 		NurbsCurve::Check(curve);
 	}
 	{
-		int degree = 2;
+		int degree = 3;
 		std::vector<XYZ> Q = { XYZ(100,0,0),XYZ(0,100,0),XYZ(-100,0,0),XYZ(0,-100,0)};
 		std::vector<XYZ> T = { XYZ(0,1,0),XYZ(-1,0,0),XYZ(0,-1,0),XYZ(1,0,0)};
 

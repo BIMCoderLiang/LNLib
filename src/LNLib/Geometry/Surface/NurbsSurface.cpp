@@ -76,17 +76,11 @@ namespace LNLib
 
 	std::vector<int> GetIndex(int size)
 	{
-		std::vector<int> ind(2 * (size - 1) + 2);
-		ind[0] = 0;
-		ind[ind.size() - 1] = 3 * size - 3;
-		int ii = 1;
-		int jj = 1;
-		for (int i = 0; i < size - 1; i++)
+		std::vector<int> ind;
+		ind.reserve(size);
+		for (int i = 0; i < size; ++i)
 		{
-			ind[ii] = jj;
-			ind[ii + 1] = jj + 1;
-			ii = ii + 2;
-			jj = jj + 3;
+			ind.push_back(3 * i);
 		}
 		return ind;
 	}

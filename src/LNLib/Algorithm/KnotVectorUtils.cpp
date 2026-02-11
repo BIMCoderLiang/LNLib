@@ -56,41 +56,63 @@ int LNLib::KnotVectorUtils::GetContinuity(int degree, const std::vector<double>&
 
 std::vector<double> LNLib::KnotVectorUtils::Rescale(const std::vector<double>& knotVector, double min, double max)
 {
-	double origintMin = knotVector[0];
-	double origintMax = knotVector[knotVector.size() - 1];
-	double k = (max - min) / (origintMax - origintMin);
+	double originMin = knotVector[0];
+	double originMax = knotVector[knotVector.size() - 1];
+	double k = (max - min) / (originMax - originMin);
 
 	int size = knotVector.size();
 	std::vector<double> result(size);
 	for (int i = 0; i < size; i++)
 	{
-		result[i] = k * (knotVector[i] - origintMin) + min;
+		result[i] = k * (knotVector[i] - originMin) + min;
 	}
 	return result;
 }
 
-std::vector<double> LNLib::KnotVectorUtils::GetInsertedKnotElement(int degree, const std::vector<double>& knotVector, double startParam, double endParam)
+std::vector<double> LNLib::KnotVectorUtils::GetInsertedKnotElement(
+	int degree,
+	const std::vector<double>& knotVector,
+	double startParam,
+	double endParam)
 {
-	VALIDATE_ARGUMENT(degree >= 0, "degree", "Degree must be greater than or equal zero.");
-	VALIDATE_ARGUMENT(knotVector.size() > 0, "knotVector", "KnotVector size must be greater than zero.");
-	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "KnotVector must be a nondecreasing sequence of real numbers.");
+	VALIDATE_ARGUMENT(degree >= 0, "degree", "Degree must be >= 0.");
+	VALIDATE_ARGUMENT(!knotVector.empty(), "knotVector", "KnotVector must not be empty.");
+	VALIDATE_ARGUMENT(startParam <= endParam, "startParam/endParam", "startParam must <= endParam.");
+	VALIDATE_ARGUMENT(ValidationUtils::IsValidKnotVector(knotVector), "knotVector", "Must be non-decreasing.");
 
 	std::vector<double> result;
-	int startMulti = Polynomials::GetKnotMultiplicity(knotVector, startParam);
-	if (startMulti < degree)
-	{
-		for (int i = 0; i < degree - startMulti; i++)
-		{
-			result.emplace_back(startParam);
+
+	int startMulti = 0;
+	for (double k : knotVector) {
+		if (MathUtils::IsAlmostEqualTo(k, startParam)) {
+			++startMulti;
+		}
+		else {
+			break; 
 		}
 	}
 
-	int endMulti = Polynomials::GetKnotMultiplicity(knotVector, endParam);
-	if (endMulti < degree)
-	{
-		for (int i = 0; i < degree - endMulti; i++)
-		{
-			result.emplace_back(endParam);
+	if (startMulti < degree + 1) { 
+		int need = (degree + 1) - startMulti;
+		for (int i = 0; i < need; ++i) {
+			result.push_back(startParam);
+		}
+	}
+
+	int endMulti = 0;
+	for (auto it = knotVector.rbegin(); it != knotVector.rend(); ++it) {
+		if (MathUtils::IsAlmostEqualTo(*it, endParam)) {
+			++endMulti;
+		}
+		else {
+			break;
+		}
+	}
+
+	if (endMulti < degree + 1) {
+		int need = (degree + 1) - endMulti;
+		for (int i = 0; i < need; ++i) {
+			result.push_back(endParam);
 		}
 	}
 
@@ -101,16 +123,11 @@ std::map<double, int> LNLib::KnotVectorUtils::GetKnotMultiplicityMap(const std::
 {
 	std::map<double, int> result;
 
-	for (int i = 0; i < knotVector.size(); i++)
-	{
-		double knot = knotVector[i];
-		auto got = result.find(knot);
-		if (got == result.end())
-		{
-			int multi = Polynomials::GetKnotMultiplicity(knotVector, knotVector[i]);
-			result.insert(std::make_pair(knotVector[i], multi));
-		}
+	for (double knot : knotVector) {
+
+		++result[knot];
 	}
+
 	return result;
 }
 

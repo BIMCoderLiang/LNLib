@@ -162,10 +162,10 @@ TEST(Test_AdvancedGeometric, Reparametrize)
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newKv[9], 0.6));
 
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newCps[0].GetW(), 0.125));
-	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newCps[1].GetW(), 0.0862));
-	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newCps[2].GetW(), 0.04205));
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newCps[1].GetW(), 0.0862068));
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newCps[2].GetW(), 0.042052144));
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newCps[3].GetW(), 0.01682));
-	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newCps[4].GetW(), 0.00975));
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newCps[4].GetW(), 0.0097560));
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(newCps[5].GetW(), 0.008));
 }
 

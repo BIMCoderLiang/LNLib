@@ -15,79 +15,85 @@
 
 using namespace LNLib;
 
-CurveCurveIntersectionType Intersection::ComputeRays(const XYZ& point0, const XYZ& vector0, const XYZ& point1, const XYZ& vector1, double& param0, double& param1, XYZ& intersectPoint)
+CurveCurveIntersectionType Intersection::ComputeRays(
+    const XYZ& point0, const XYZ& vector0,
+    const XYZ& point1, const XYZ& vector1,
+    double& param0, double& param1, XYZ& intersectPoint)
 {
-	if (vector0.IsAlmostEqualTo(vector1))
-	{
-		if (point0.IsAlmostEqualTo(point1))
-		{
-			intersectPoint = point0;
-			param0 = param1 = 0;
-			return CurveCurveIntersectionType::Intersecting;
-		}
-	}
+    if (vector0.IsAlmostEqualTo(vector1))
+    {
+        if (point0.IsAlmostEqualTo(point1))
+        {
+            intersectPoint = point0;
+            param0 = param1 = 0;
+            return CurveCurveIntersectionType::Intersecting;
+        }
+    }
 
-	VALIDATE_ARGUMENT(!vector0.IsZero(), "vector0", "Vector0 must not be zero vector.");
-	VALIDATE_ARGUMENT(!vector1.IsZero(), "vector1", "Vector1 must not be zero vector.")
+    VALIDATE_ARGUMENT(!vector0.IsZero(), "vector0", "Vector0 must not be zero.");
+    VALIDATE_ARGUMENT(!vector1.IsZero(), "vector1", "Vector1 must not be zero.");
 
-	XYZ v0 = const_cast<XYZ&>(vector0);
-	XYZ v1 = const_cast<XYZ&>(vector1);
+    XYZ diff = point0 - point1;
 
-	XYZ cross = v0.CrossProduct(v1);
-	XYZ diff = point1 - point0;
-	XYZ coinCross = diff.CrossProduct(v1);
+    double a = vector0.DotProduct(vector0);
+    double b = vector0.DotProduct(vector1);
+    double c = vector1.DotProduct(vector1);
+    double d = vector0.DotProduct(diff);
+    double e = vector1.DotProduct(diff);
 
-	if (cross.IsZero())
-	{
-		if (coinCross.IsZero())
-		{
-			return CurveCurveIntersectionType::Coincident;
-		}
-		else
-		{
-			return CurveCurveIntersectionType::Parallel;
-		}
-	}
+    double denom = a * c - b * b;
 
-	double crossLength = cross.Length();
-	double squareLength = crossLength * crossLength;
+    if (MathUtils::IsAlmostEqualTo(std::abs(denom), 0.0)) {
+        XYZ w = point1 - point0;
+        if (MathUtils::IsAlmostEqualTo(w.CrossProduct(vector0).Length(), 0.0)) {
+            param0 = param1 = 0.0;
+            intersectPoint = point0;
+            return CurveCurveIntersectionType::Coincident;
+        }
+        else {
+            return CurveCurveIntersectionType::Parallel;
+        }
+    }
 
-	XYZ pd1Cross = diff.CrossProduct(vector1);
-	double pd1Dot = pd1Cross.DotProduct(cross);
-	param0 = pd1Dot / squareLength;
+    param0 = (b * e - c * d) / denom;
+    param1 = (a * e - b * d) / denom;
 
-	XYZ pd2Cross = diff.CrossProduct(vector0);
-	double pd2Dot = pd2Cross.DotProduct(cross);
-	param1 = pd2Dot / squareLength;
+    XYZ p0 = point0 + vector0 * param0;
+    XYZ p1 = point1 + vector1 * param1;
 
-	XYZ rayP0 = point0 + vector0 * param0;
-	XYZ rayP1 = point1 + vector1 * param1;
-
-	if (rayP0.IsAlmostEqualTo(rayP1))
-	{
-		intersectPoint = rayP0;
-		return CurveCurveIntersectionType::Intersecting;
-	}
-	return CurveCurveIntersectionType::Skew;
+    if (MathUtils::IsAlmostEqualTo(p0.Distance(p1),0.0)) {
+        intersectPoint = (p0 + p1) * 0.5;
+        return CurveCurveIntersectionType::Intersecting;
+    }
+    else {
+        intersectPoint = p0; 
+        return CurveCurveIntersectionType::Skew;
+    }
 }
 
-LinePlaneIntersectionType LNLib::Intersection::ComputeLineAndPlane(const XYZ& normal, const XYZ& pointOnPlane, const XYZ& pointOnLine, const XYZ& lineDirection, XYZ& intersectPoint)
+LinePlaneIntersectionType LNLib::Intersection::ComputeLineAndPlane(
+	const XYZ& normal,
+	const XYZ& pointOnPlane,
+	const XYZ& pointOnLine,
+	const XYZ& lineDirection,
+	XYZ& intersectPoint)
 {
-	XYZ planeNormal = const_cast<XYZ&>(normal).Normalize();
-	XYZ lineDirectionNormal = const_cast<XYZ&>(lineDirection).Normalize();
-	XYZ P2L = pointOnLine - pointOnPlane;
-	XYZ P2LNormal = P2L.Normalize();
-	double dot = P2LNormal.DotProduct(planeNormal);
-	if (MathUtils::IsAlmostEqualTo(dot, 0.0))
-	{
-		return LinePlaneIntersectionType::On;
+	double denom = lineDirection.DotProduct(normal);
+
+	XYZ P0Q = pointOnLine - pointOnPlane;
+	double numer = -P0Q.DotProduct(normal);
+
+	if (MathUtils::IsAlmostEqualTo(std::abs(denom),0.0)) {
+		if (MathUtils::IsAlmostEqualTo(std::abs(numer), 0.0)) {
+			intersectPoint = pointOnLine;
+			return LinePlaneIntersectionType::On;
+		}
+		else {
+			return LinePlaneIntersectionType::Parallel;
+		}
 	}
-	double angle = planeNormal.AngleTo(lineDirectionNormal);
-	if (MathUtils::IsAlmostEqualTo(angle, Constants::Pi / 2))
-	{
-		return LinePlaneIntersectionType::Parallel;
-	}
-	double d = -P2L.DotProduct(planeNormal) / lineDirection.DotProduct(planeNormal);
-	intersectPoint = d * lineDirectionNormal + pointOnLine;
+
+	double t = numer / denom;
+	intersectPoint = pointOnLine + t * lineDirection;
 	return LinePlaneIntersectionType::Intersecting;
 }

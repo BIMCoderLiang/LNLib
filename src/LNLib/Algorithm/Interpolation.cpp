@@ -2,7 +2,7 @@
  * Author:
  * 2023/07/04 - Yuqing Liang (BIMCoder Liang)
  * bim.frankliang@foxmail.com
- * 
+ *
  *
  * Use of this source code is governed by a LGPL-2.1 license that can be found in
  * the LICENSE file.
@@ -49,72 +49,134 @@ double LNLib::Interpolation::GetTotalChordLength(const std::vector<XYZ>& through
 
 std::vector<double> LNLib::Interpolation::GetChordParameterization(const std::vector<XYZ>& throughPoints)
 {
-	int size = throughPoints.size();
-	int n = size - 1;
+	size_t size = throughPoints.size();
 
-	std::vector<double> uk(size,0.0);
-	uk[n] = 1.0;
-
-	double d = GetTotalChordLength(throughPoints);
-	for (int i = 1; i <= n - 1; i++)
-	{
-		uk[i] = uk[i - 1] + (throughPoints[i].Distance(throughPoints[i - 1])) / d;
+	if (size == 0) {
+		return {};
 	}
+	if (size == 1) {
+		return { 0.0 };
+	}
+	if (size == 2) {
+		return { 0.0, 1.0 };
+	}
+
+	std::vector<double> segmentLengths;
+	segmentLengths.reserve(size - 1);
+	double totalLength = 0.0;
+
+	for (size_t i = 1; i < size; ++i) {
+		double segLen = throughPoints[i].Distance(throughPoints[i - 1]);
+		segmentLengths.push_back(segLen);
+		totalLength += segLen;
+	}
+
+	if (MathUtils::IsAlmostEqualTo(totalLength, 0.0)) {
+		std::vector<double> uk(size);
+		for (size_t i = 0; i < size; ++i) {
+			uk[i] = static_cast<double>(i) / static_cast<double>(size - 1);
+		}
+		return uk;
+	}
+
+	std::vector<double> uk(size);
+	uk[0] = 0.0;
+	uk[size - 1] = 1.0;
+
+	double accumulated = 0.0;
+	for (size_t i = 1; i < size - 1; ++i) {
+		accumulated += segmentLengths[i - 1];
+		uk[i] = accumulated / totalLength;
+	}
+
 	return uk;
 }
 
 double LNLib::Interpolation::GetCentripetalLength(const std::vector<XYZ>& throughPoints)
 {
-	int size = throughPoints.size();
-	int n = size - 1;
+	if (throughPoints.size() < 2)
+		return 0.0;
 
 	double length = 0.0;
-	for (int i = 1; i <= n; i++)
-	{
-		length += std::sqrt(throughPoints[i].Distance(throughPoints[i - 1]));
+	for (size_t i = 1; i < throughPoints.size(); ++i) {
+		double dist = throughPoints[i].Distance(throughPoints[i - 1]);
+		length += std::sqrt(dist);
 	}
 	return length;
 }
 
 std::vector<double> LNLib::Interpolation::GetCentripetalParameterization(const std::vector<XYZ>& throughPoints)
 {
-	int size = throughPoints.size();
-	int n = size - 1;
+	const size_t size = throughPoints.size();
 
-	std::vector<double> uk(size, 0.0);
-	uk[n] = 1.0;
-
-	double d = GetCentripetalLength(throughPoints);
-	for (int i = 1; i <= n - 1; i++)
-	{
-		uk[i] = uk[i - 1] + std::sqrt(throughPoints[i].Distance(throughPoints[i - 1])) / d;
+	if (size == 0) {
+		return {};
 	}
+	if (size == 1) {
+		return { 0.0 };
+	}
+	if (size == 2) {
+		return { 0.0, 1.0 };
+	}
+
+	std::vector<double> segmentLengths;
+	segmentLengths.reserve(size - 1);
+	double totalLength = 0.0;
+
+	for (size_t i = 1; i < size; ++i) {
+		double euclideanDist = throughPoints[i].Distance(throughPoints[i - 1]);
+		double centripetalSeg = std::sqrt(euclideanDist);
+		segmentLengths.push_back(centripetalSeg);
+		totalLength += centripetalSeg;
+	}
+
+	if (MathUtils::IsAlmostEqualTo(totalLength, 0.0)) {
+		std::vector<double> uk(size);
+		for (size_t i = 0; i < size; ++i) {
+			uk[i] = static_cast<double>(i) / static_cast<double>(size - 1);
+		}
+		return uk;
+	}
+
+	std::vector<double> uk(size);
+	uk[0] = 0.0;
+	uk[size - 1] = 1.0;
+
+	double accumulated = 0.0;
+	for (size_t i = 1; i < size - 1; ++i) {
+		accumulated += segmentLengths[i - 1];
+		uk[i] = accumulated / totalLength;
+	}
+
 	return uk;
 }
 
 std::vector<double> LNLib::Interpolation::AverageKnotVector(int degree, const std::vector<double>& params)
 {
-	
-	std::vector<double> uk = params;
-	int size = params.size();
-	int n = size - 1;
+	int n = static_cast<int>(params.size()) - 1;
 	int m = n + degree + 1;
-
 	std::vector<double> knotVector(m + 1, 0.0);
-	for (int i = m - degree; i <= m; i++)
-	{
+
+	for (int i = m - degree; i <= m; ++i) {
 		knotVector[i] = 1.0;
 	}
 
-	for (int j = 1; j <= n - degree; j++)
-	{
-		double sum = 0.0;
-		for (int i = j; i <= j + degree - 1; i++)
-		{
-			sum += uk[i];
-		}
-		knotVector[j + degree] = (1.0 / degree) * sum;
+	if (n <= degree) {
+		return knotVector;
 	}
+
+	double windowSum = 0.0;
+	for (int i = 1; i <= degree; ++i) {
+		windowSum += params[i];
+	}
+	knotVector[degree + 1] = windowSum / static_cast<double>(degree);
+
+	for (int j = 2; j <= n - degree; ++j) {
+		windowSum -= params[j - 1];
+		windowSum += params[j + degree - 1];
+		knotVector[degree + j] = windowSum / static_cast<double>(degree);
+	}
+
 	return knotVector;
 }
 
@@ -124,7 +186,7 @@ std::vector<double> LNLib::Interpolation::ComputeKnotVector(int degree, int cont
 	int n = controlPointsCount - 1;
 	int nn = n + degree + 2;
 
-	std::vector<double>  knotVector(nn,0.0);
+	std::vector<double>  knotVector(nn, 0.0);
 	double d = (double)(m + 1) / (double)(n - degree + 1);
 	for (int j = 1; j <= n - degree; j++)
 	{
@@ -205,12 +267,12 @@ bool LNLib::Interpolation::GetSurfaceMeshParameterization(const std::vector<std:
 	int n = throughPoints.size();
 	int m = throughPoints[0].size();
 
-	std::vector<double> cds(std::max(n, m),0.0);
-	paramsU.resize(n,0.0);
-	paramsV.resize(m,0.0);
+	std::vector<double> cds(std::max(n, m), 0.0);
+	paramsU.resize(n, 0.0);
+	paramsV.resize(m, 0.0);
 
 	int num = m;
-	
+
 	for (int l = 0; l < m; l++)
 	{
 		double total = 0.0;
@@ -247,22 +309,22 @@ bool LNLib::Interpolation::GetSurfaceMeshParameterization(const std::vector<std:
 
 	num = n;
 
-	for (int k = 0; k < n; k++) 
+	for (int k = 0; k < n; k++)
 	{
 		double total = 0.0;
-		for (int l = 1; l < m; l++) 
+		for (int l = 1; l < m; l++)
 		{
-			cds[l] = throughPoints[k][l].Distance(throughPoints[k][l-1]);
+			cds[l] = throughPoints[k][l].Distance(throughPoints[k][l - 1]);
 			total += cds[l];
 		}
 		if (MathUtils::IsAlmostEqualTo(total, 0.0))
 		{
 			num--;
-		}	
-		else 
+		}
+		else
 		{
 			double d = 0.0;
-			for (int l = 1; l < m; l++) 
+			for (int l = 1; l < m; l++)
 			{
 				d += cds[l];
 				paramsV[l] += d / total;
@@ -289,50 +351,87 @@ bool LNLib::Interpolation::ComputeTangent(const std::vector<XYZ>& throughPoints,
 	if (size < 5) return false;
 
 	tangents.resize(size);
-	for (int k = 2; k < size - 2 ; k++)
+	for (int k = 2; k < size - 2; k++)
 	{
 		LNLib::XYZ qk_1 = Getqk(throughPoints, k - 1);
 		LNLib::XYZ qk = Getqk(throughPoints, k);
-		LNLib::XYZ qk1 = Getqk(throughPoints, k+1);
-		LNLib::XYZ qk2 = Getqk(throughPoints, k+2);
+		LNLib::XYZ qk1 = Getqk(throughPoints, k + 1);
+		LNLib::XYZ qk2 = Getqk(throughPoints, k + 2);
 
 		tangents[k] = GetTk(qk_1, qk, qk1, qk2);
 	}
 
 	int n = size - 1;
-	LNLib::XYZ q0 = 2* Getqk(throughPoints, 1) - Getqk(throughPoints, 2);
+	LNLib::XYZ q0 = 2 * Getqk(throughPoints, 1) - Getqk(throughPoints, 2);
 	LNLib::XYZ q_1 = 2 * q0 - Getqk(throughPoints, 1);
-	LNLib::XYZ qn1 = 2 * Getqk(throughPoints, n) - Getqk(throughPoints, n-1);
+	LNLib::XYZ qn1 = 2 * Getqk(throughPoints, n) - Getqk(throughPoints, n - 1);
 	LNLib::XYZ qn2 = 2 * qn1 - Getqk(throughPoints, n);
 
 	tangents[0] = GetTk(q_1, q0, Getqk(throughPoints, 1), Getqk(throughPoints, 2));
 	tangents[1] = GetTk(q0, Getqk(throughPoints, 1), Getqk(throughPoints, 2), Getqk(throughPoints, 3));
-	tangents[n-1] = GetTk(Getqk(throughPoints, n - 2), Getqk(throughPoints, n-1), Getqk(throughPoints, n),qn1);
-	tangents[n] = GetTk(Getqk(throughPoints, n-1), Getqk(throughPoints, n),qn1,qn2);
+	tangents[n - 1] = GetTk(Getqk(throughPoints, n - 2), Getqk(throughPoints, n - 1), Getqk(throughPoints, n), qn1);
+	tangents[n] = GetTk(Getqk(throughPoints, n - 1), Getqk(throughPoints, n), qn1, qn2);
 
 	return true;
 }
 
 std::vector<LNLib::XYZ> LNLib::Interpolation::ComputeTangent(const std::vector<XYZ>& throughPoints)
 {
-	int size = throughPoints.size();
-	std::vector<XYZ> tangents(size, XYZ(0, 0, 0));
-	std::vector<XYZ> qq(size, XYZ(0, 0, 0));
-	std::vector<double> delta(size, 0.0);
+	size_t size = throughPoints.size();
+
+	if (size == 0) return {};
+	if (size == 1) return { XYZ(0, 0, 0) };
+	if (size == 2) {
+		XYZ dir = throughPoints[1] - throughPoints[0];
+		return { dir, dir };
+	}
 
 	auto params = GetChordParameterization(throughPoints);
-	for (int i = 1; i < size; i++)
-	{
-		delta[i] = params[i] - params[i - 1];
-		qq[i] = throughPoints[i] - throughPoints[i - 1];
-	}
-	for (int i = 1; i < size - 1; i++)
-	{
-		double a = delta[i] / (delta[i] + delta[i + 1]);
-		tangents[i] = ((1 - a) * qq[i] + a * qq[i + 1]).Normalize();
+
+	std::vector<double> du(size - 1);
+	std::vector<XYZ> dP(size - 1);
+	for (size_t i = 0; i < size - 1; ++i) {
+		du[i] = params[i + 1] - params[i];
+		dP[i] = throughPoints[i + 1] - throughPoints[i];
 	}
 
-	tangents[0] = (2 * qq[1] / delta[1] - tangents[1]).Normalize();
-	tangents[tangents.size() - 1] = (2 * qq[qq.size() - 1] / delta[delta.size() - 1] - tangents[tangents.size() - 2]).Normalize();
+	std::vector<XYZ> tangents(size);
+
+	for (size_t i = 1; i < size - 1; ++i) {
+		double w1 = du[i];
+		double w2 = du[i - 1];
+		if (MathUtils::IsAlmostEqualTo(w1, 0.0) &&
+			MathUtils::IsAlmostEqualTo(w2, 0.0)) {
+			tangents[i] = XYZ(0, 0, 0);
+		}
+		else if (MathUtils::IsAlmostEqualTo(w1, 0.0)) {
+			tangents[i] = dP[i] / du[i];
+		}
+		else if (MathUtils::IsAlmostEqualTo(w2, 0.0)) {
+			tangents[i] = dP[i - 1] / du[i - 1];
+		}
+		else {
+			double a = w2 / (w1 + w2);
+			tangents[i] = a * (dP[i - 1] / du[i - 1]) + (1 - a) * (dP[i] / du[i]);
+		}
+	}
+
+	if (MathUtils::IsGreaterThan(du[0], 0.0)) {
+		XYZ deriv1 = dP[0] / du[0];
+		tangents[0] = 2.0 * deriv1 - tangents[1];
+	}
+	else {
+		tangents[0] = tangents[1];
+	}
+
+	size_t last = size - 1;
+	if (MathUtils::IsGreaterThan(du[last - 1], 0.0)) {
+		XYZ derivN = dP[last - 1] / du[last - 1];
+		tangents[last] = 2.0 * derivN - tangents[last - 1];
+	}
+	else {
+		tangents[last] = tangents[last - 1];
+	}
+
 	return tangents;
 }

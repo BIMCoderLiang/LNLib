@@ -46,7 +46,7 @@ namespace LNLib
 
 		static double AngleToRadians(double angle);
 
-		static int Factorial(int number);
+		static long long LNLib::MathUtils::Factorial(int n);
 
 		static double Binomial(int number, int i);
 
