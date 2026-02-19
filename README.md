@@ -45,13 +45,14 @@ Additional Algorithms:
 ## Visualization
 [LNLibViewer](https://github.com/BIMCoderLiang/LNLibViewer) based on [VTK](https://vtk.org/)
 
-<img src="assets/curve.png" width=400 height=400>
-<img src="assets/surface.png" width=400 height=400>
+<img src="assets/curve.png" width=500 height=400>
+<img src="assets/surface.png" width=500 height=400>
 
 ## NURBS Fitting by Neural Network
 [ND-LNLib](https://github.com/BIMCoderLiang/NURBS-Diff-with-LNLib) based on [LibTorch](https://pytorch.org/cppdocs/installing.html) (PyTorch C++ version)
 
-<img src="assets/aicurve.jpg" width=800 height=400><img src="assets/aisurface.png" width=800 height=400>
+<img src="assets/aicurve.jpg" width=500 height=400>
+<img src="assets/aisurface.png" width=500 height=400>
 
 ## Convert to OpenCascade NURBS surface
 ```C++
@@ -142,6 +143,10 @@ Welcome join this project including discussions in **Issues** and make **Pull re
 
 - Algorithm Adviser: 
 [csulijunji](https://github.com/csulijunji)
+
+## Repositories based-on LNLib
+- [fplnlib](https://github.com/zamtmn/fplnlib): **Pascal** Version NURBS Algorithm
+- [VL.Nurbsy](https://github.com/antokhio/VL.Nurbsy): **Native C#** Version of NURBS Algorithm
 
 ## Contact
 LNLib is created by Yuqing Liang (BIMCoder Liang).
