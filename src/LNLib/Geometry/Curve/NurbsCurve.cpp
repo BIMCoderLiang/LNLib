@@ -949,11 +949,16 @@ void LNLib::NurbsCurve::ElevateDegree(const LN_NurbsCurve& curve, int times, LN_
 	int cind = 1;
 	double ua = knotVector[0];
 
-	int moresize = controlPoints.size() + controlPoints.size() * times;
-	std::vector<XYZW> updatedControlPoints(moresize,XYZW(Constants::MaxDistance, Constants::MaxDistance, Constants::MaxDistance,1));
+	int startIdx = degree + 1;
+	int endIdx = static_cast<int>(knotVector.size()) - (degree + 1);
+	int uniqueCount = endIdx - startIdx;
+	int nh = n + (uniqueCount + 1) * times;
+
+	int moresize = nh + 1;
+	std::vector<XYZW> updatedControlPoints(nh + 1,XYZW());
 	updatedControlPoints[0] = controlPoints[0];
 
-	std::vector<double> updatedKnotVector(moresize + ph + 1,Constants::MaxDistance);
+	std::vector<double> updatedKnotVector(nh + 1 + ph + 1);
 	for (int i = 0; i <= ph; i++)
 	{
 		updatedKnotVector[i] = ua;
@@ -1097,26 +1102,6 @@ void LNLib::NurbsCurve::ElevateDegree(const LN_NurbsCurve& curve, int times, LN_
 		}
 	}
 
-	for (int i = updatedControlPoints.size() - 1; i > 0; i--)
-	{
-		if (MathUtils::IsAlmostEqualTo(updatedControlPoints[i][0], Constants::MaxDistance) &&
-			MathUtils::IsAlmostEqualTo(updatedControlPoints[i][1], Constants::MaxDistance) &&
-			MathUtils::IsAlmostEqualTo(updatedControlPoints[i][2], Constants::MaxDistance))
-		{
-			updatedControlPoints.pop_back();
-			continue;
-		}
-		break;
-	}
-	for (int i = updatedKnotVector.size() -1 ; i >0; i--)
-	{
-		if (MathUtils::IsAlmostEqualTo(updatedKnotVector[i], Constants::MaxDistance))
-		{
-			updatedKnotVector.pop_back();
-			continue;
-		}
-		break;
-	}
 	result.Degree = ph;
 	result.KnotVector = updatedKnotVector;
 	result.ControlPoints = updatedControlPoints;
