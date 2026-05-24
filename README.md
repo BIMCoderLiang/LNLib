@@ -1,7 +1,9 @@
 ## Introduction
-**LNLib is a NURBS Algorithms Kernel Library.** <br/>These algorithms are primary referenced from [The NURBS Book 2nd Edition](https://link.springer.com/book/10.1007/978-3-642-97385-7). 
+**LNLib is a NURBS Algorithms Kernel Library.** <br/>These algorithms are primary referenced from [The NURBS Book 2nd Edition](https://link.springer.com/book/10.1007/978-3-642-97385-7). <br/>
+For NURBS **Curve | Surface | Volume**
 
-<img src="assets/LNLib.png" width=400 height=200>
+<img src="assets/LNLib.png" width=400 height=200> 
+
 
 ## Build Project
 |Project|API Language|Instruction|
@@ -16,6 +18,7 @@
 ## Features
 Basic Elements:
 - UV
+- UVW
 - XYZ
 - XYZW
 - Matrix4d
@@ -41,6 +44,7 @@ Additional Algorithms:
 |***Basic Properties***  | Curve/Surface Curvature and Normal</br>Curve Split/Segment/Merge/Offset</br>Curve IsLinear/IsArc</br>Curve Approximate Length</br>Surface Approximate Area |
 |***Curve Creation***  | Create Line/Cubic Hermite |
 |***Tessellation***  | Curve Tessellation </br> Surface Triangulation|
+|***NurbsVolume***  | Volume Related Algorithms|
 
 ## Visualization
 [LNLibViewer](https://github.com/BIMCoderLiang/LNLibViewer) based on [VTK](https://vtk.org/)

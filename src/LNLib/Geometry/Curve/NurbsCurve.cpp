@@ -1255,110 +1255,91 @@ double LNLib::NurbsCurve::GetParamOnCurve(const LN_NurbsCurve& curve, const XYZ&
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
 
-	double minValue = Constants::MaxDistance;
-
-	int maxIterations = 10;
-	double paramT = Constants::DoubleEpsilon;
 	double minParam = knotVector[0];
 	double maxParam = knotVector[knotVector.size() - 1];
+	bool isClosed = IsClosed(curve);
 
 	std::vector<XYZ> tessellatedPoints;
 	std::vector<double> correspondingKnots;
 	EquallyTessellate(curve, tessellatedPoints, correspondingKnots);
-	for (int i = 0; i < tessellatedPoints.size() - 1; i++)
+
+	double minDistSq = std::numeric_limits<double>::max();
+	double bestT = minParam;
+
+	for (size_t i = 0; i < tessellatedPoints.size() - 1; ++i)
 	{
-		double currentU = correspondingKnots[i];
-		double nextU = correspondingKnots[i + 1];
+		const XYZ& P0 = tessellatedPoints[i];
+		const XYZ& P1 = tessellatedPoints[i + 1];
+		double t0 = correspondingKnots[i];
+		double t1 = correspondingKnots[i + 1];
 
-		XYZ currentPoint = tessellatedPoints[i];
-		XYZ nextPoint = tessellatedPoints[i + 1];
 
-		XYZ vector1 = (givenPoint - currentPoint).Normalize();
-		XYZ vector2 = (nextPoint - currentPoint).Normalize();
-		double dot = vector1.DotProduct(vector2);
+		XYZ seg = P1 - P0;
+		double segLenSq = seg.DotProduct(seg);
+		double u = 0.5;
 
-		XYZ projectPoint;
-		double projectU;
-
-		if (MathUtils::IsLessThan(dot, 0))
+		if (segLenSq > Constants::DoubleEpsilon)
 		{
-			projectPoint = currentPoint;
-			projectU = currentU;
-		}
-		else if (MathUtils::IsGreaterThanOrEqual(dot, 1))
-		{
-			projectPoint = nextPoint;
-			projectU = nextU;
-		}
-		else
-		{
-			projectPoint = currentPoint + dot * (nextPoint - currentPoint);
-			projectU = currentU + (nextU - currentU) * dot;
+			u = (givenPoint - P0).DotProduct(seg) / segLenSq;
+			u = std::max(0.0, std::min(1.0, u)); 
 		}
 
-		double distance = (givenPoint - projectPoint).Length();
-		if (distance < minValue)
+		XYZ projectPoint = P0 + seg * u;
+		double projectT = t0 + (t1 - t0) * u;
+
+		double distSq = (givenPoint - projectPoint).SqrLength();
+		if (distSq < minDistSq)
 		{
-			minValue = distance;
-			paramT = projectU;
+			minDistSq = distSq;
+			bestT = projectT;
 		}
 	}
 
-	bool isClosed = IsClosed(curve);
-	double a = minParam;
-	double b = maxParam;
+	double paramT = bestT;
+	int maxIterations = 20;
 
-	int counters = 0;
-	while (counters < maxIterations)
+	for (int iter = 0; iter < maxIterations; ++iter)
 	{
 		std::vector<XYZ> derivatives = ComputeRationalCurveDerivatives(curve, 2, paramT);
-		XYZ difference = derivatives[0] - givenPoint;
-		double f = derivatives[1].DotProduct(difference);
 
-		double condition1 = difference.Length();
-		double condition2 = std::abs(f / (derivatives[1].Length() * condition1));
+		XYZ C = derivatives[0]; 
+		XYZ Ct = derivatives[1];
+		XYZ Ctt = derivatives[2];
 
-		if (condition1 < Constants::DistanceEpsilon &&
-			condition2 < Constants::DistanceEpsilon)
-		{
+		XYZ diff = C - givenPoint;
+		double currentDist = diff.Length();
+
+		if (currentDist < Constants::DistanceEpsilon) {
 			return paramT;
 		}
 
-		double df = derivatives[2].DotProduct(difference) + derivatives[1] * derivatives[1];
-		double temp = paramT - f / df;
+		double f = Ct.DotProduct(diff);
+		double df = Ct.DotProduct(Ct) + diff.DotProduct(Ctt);
 
-		if (!isClosed)
-		{
-			if (temp < a)
-			{
-				temp = a;
-			}
-			if (temp > b)
-			{
-				temp = b;
-			}
-		}
-		else
-		{
-			if (temp < a)
-			{
-				temp = b - (a - temp);
-			}
-			if (temp > b)
-			{
-				temp = a + (temp - b);
-			}
+		if (std::abs(df) < Constants::DoubleEpsilon) {
+			break;
 		}
 
-		double condition4 = ((temp - paramT) * derivatives[1]).Length();
-		if (condition4 < Constants::DistanceEpsilon) 
-		{
-			return paramT;
+		double deltaT = f / df;
+		double newT = paramT - deltaT;
+
+		if (std::abs(deltaT * Ct.Length()) < Constants::DistanceEpsilon) {
+			paramT = newT;
+			break;
 		}
 
-		paramT = temp;
-		counters++;
+		if (!isClosed) {
+			newT = std::max(minParam, std::min(maxParam, newT));
+		}
+		else {
+			double range = maxParam - minParam;
+			while (newT < minParam) newT += range;
+			while (newT > maxParam) newT -= range;
+		}
+
+		paramT = newT;
 	}
+
 	return paramT;
 }
 

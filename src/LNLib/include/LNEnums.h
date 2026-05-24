@@ -72,6 +72,13 @@ namespace LNLib
 		// which had better controlled by error tolerance and yet self-intersection had not dealt with.
 		PieglAndTiller = 1,
 	};
+
+	enum class VolumeDirection : int
+	{
+		U = 0,
+		V = 1,
+		W = 2,
+	};
 }
 
 

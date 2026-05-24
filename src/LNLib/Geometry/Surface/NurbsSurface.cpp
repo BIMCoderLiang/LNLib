@@ -1028,45 +1028,56 @@ void LNLib::NurbsSurface::EquallyTessellate(const LN_NurbsSurface& surface, std:
 
 bool LNLib::NurbsSurface::IsClosed(const LN_NurbsSurface& surface, bool isUDirection)
 {
+	int numU = surface.ControlPoints.size();
+	if (numU == 0) return false;
+	int numV = surface.ControlPoints[0].size();
+
 	if (isUDirection)
 	{
-		std::vector<std::vector<XYZW>> transposed;
-		MathUtils::Transpose(surface.ControlPoints, transposed);
-
-		for (int i = 0; i < transposed.size(); i++)
+		for (int v = 0; v < numV; ++v)
 		{
+			std::vector<XYZW> uCurveCPs;
+			uCurveCPs.reserve(numU);
+			for (int u = 0; u < numU; ++u)
+			{
+				uCurveCPs.push_back(surface.ControlPoints[u][v]);
+			}
+
 			LN_NurbsCurve curve;
 			curve.Degree = surface.DegreeU;
 			curve.KnotVector = surface.KnotVectorU;
-			curve.ControlPoints = transposed[i];
+			curve.ControlPoints = uCurveCPs;
 
-			bool rowResult = NurbsCurve::IsClosed(curve);
-
-			if (!rowResult)
+			if (!NurbsCurve::IsClosed(curve))
 			{
 				return false;
 			}
 		}
 		return true;
 	}
-	else
+	else 
 	{
-		for (int i = 0; i < surface.ControlPoints.size(); i++)
+		for (int u = 0; u < numU; ++u)
 		{
+			std::vector<XYZW> vCurveCPs;
+			vCurveCPs.reserve(numV);
+			for (int v = 0; v < numV; ++v)
+			{
+				vCurveCPs.push_back(surface.ControlPoints[u][v]);
+			}
+
 			LN_NurbsCurve curve;
 			curve.Degree = surface.DegreeV;
 			curve.KnotVector = surface.KnotVectorV;
-			curve.ControlPoints = surface.ControlPoints[i];
+			curve.ControlPoints = vCurveCPs;
 
-			bool rowResult = NurbsCurve::IsClosed(curve);
-			if (!rowResult)
+			if (!NurbsCurve::IsClosed(curve))
 			{
 				return false;
 			}
 		}
 		return true;
 	}
-	return false;
 }
 
 LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const LN_NurbsSurface& surface, const XYZ& givenPoint)
@@ -1077,20 +1088,10 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const LN_NurbsSurface& surface,
 	std::vector<double> knotVectorV = surface.KnotVectorV;
 	std::vector<std::vector<XYZW>> controlPoints = surface.ControlPoints;
 
-	double minValue = Constants::MaxDistance;
-
-	int maxIterations = 10;
-	UV param = UV(Constants::DoubleEpsilon, Constants::DoubleEpsilon);
-
-	double minUParam = knotVectorU[0];
-	double maxUParam = knotVectorU[knotVectorU.size() - 1];
-	double minVParam = knotVectorV[0];
-	double maxVParam = knotVectorV[knotVectorV.size() - 1];
-
-	double a = minUParam;
-	double b = maxUParam;
-	double c = minVParam;
-	double d = maxVParam;
+	double minU = knotVectorU[0];
+	double maxU = knotVectorU[knotVectorU.size() - 1];
+	double minV = knotVectorV[0];
+	double maxV = knotVectorV[knotVectorV.size() - 1];
 
 	bool isClosedU = IsClosed(surface, true);
 	bool isClosedV = IsClosed(surface, false);
@@ -1098,166 +1099,108 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const LN_NurbsSurface& surface,
 	std::vector<XYZ> tessellatedPoints;
 	std::vector<UV> correspondingKnots;
 	EquallyTessellate(surface, tessellatedPoints, correspondingKnots);
-	for (int i = 0; i < tessellatedPoints.size() - 1; i++)
+
+	double minDistanceSquared = std::numeric_limits<double>::max();
+	UV bestParam(Constants::DoubleEpsilon, Constants::DoubleEpsilon);
+
+	for (size_t i = 0; i < tessellatedPoints.size() - 1; ++i)
 	{
-		UV currentUV = correspondingKnots[i];
-		UV nextUV = correspondingKnots[i + 1];
+		const XYZ& P0 = tessellatedPoints[i];
+		const XYZ& P1 = tessellatedPoints[i + 1];
+		const UV& UV0 = correspondingKnots[i];
+		const UV& UV1 = correspondingKnots[i + 1];
 
-		XYZ currentPoint = tessellatedPoints[i];
-		XYZ nextPoint = tessellatedPoints[i + 1];
+		XYZ seg = P1 - P0;
+		double segLenSq = seg.DotProduct(seg);
+		double t = 0.5;
 
-		XYZ vector1 = currentPoint - givenPoint;
-		XYZ vector2 = nextPoint - currentPoint;
-		double dot = vector1.DotProduct(vector2);
-
-		XYZ projectPoint;
-		UV project = UV(Constants::DoubleEpsilon, Constants::DoubleEpsilon);
-
-		if (dot < 0)
+		if (segLenSq > Constants::DoubleEpsilon)
 		{
-			projectPoint = currentPoint;
-			project = currentUV;
-		}
-		else if (dot > 1)
-		{
-			projectPoint = nextPoint;
-			project = nextUV;
-		}
-		else
-		{
-			projectPoint = currentPoint + dot * vector1.Normalize();
-			project = currentUV + (nextUV - currentUV) * dot;
+			t = (givenPoint - P0).DotProduct(seg) / segLenSq;
+			t = std::max(0.0, std::min(1.0, t));
 		}
 
-		double distance = (givenPoint - projectPoint).Length();
-		if (distance < minValue)
+		XYZ projectPoint = P0 + seg * t;
+		UV projectParam = UV0 + (UV1 - UV0) * t;
+
+		double distSq = (givenPoint - projectPoint).SqrLength();
+		if (distSq < minDistanceSquared)
 		{
-			minValue = distance;
-			param = project;
+			minDistanceSquared = distSq;
+			bestParam = projectParam;
 		}
 	}
 
-	int counters = 0;
-	while (counters < maxIterations)
+	UV param = bestParam;
+	int maxIterations = 20;
+
+	for (int iter = 0; iter < maxIterations; ++iter)
 	{
+		
 		std::vector<std::vector<XYZ>> derivatives = ComputeRationalSurfaceDerivatives(surface, 2, param);
-		XYZ difference = derivatives[0][0] - givenPoint;
-		double fa = derivatives[1][0].DotProduct(difference);
-		double fb = derivatives[0][1].DotProduct(difference);
 
-		double condition1 = difference.Length();
-		double condition2a = std::abs(fa / (derivatives[1][0].Length() * condition1));
-		double condition2b = std::abs(fb / (derivatives[0][1].Length() * condition1));
-
-		if (condition1 < Constants::DistanceEpsilon &&
-			condition2a < Constants::DistanceEpsilon &&
-			condition2b < Constants::DistanceEpsilon)
-		{
-			return param;
-		}
-
+		XYZ S = derivatives[0][0]; 
 		XYZ Su = derivatives[1][0];
 		XYZ Sv = derivatives[0][1];
-
 		XYZ Suu = derivatives[2][0];
 		XYZ Svv = derivatives[0][2];
+		XYZ Suv = derivatives[1][1];
 
-		XYZ Suv, Svu = derivatives[1][1];
+		XYZ diff = S - givenPoint;
+		double currentDist = diff.Length();
 
-		double fuv = -Su.DotProduct(difference);
-		double guv = -Sv.DotProduct(difference);
-
-		double fu = Su.DotProduct(Su) + difference.DotProduct(Suu);
-		double fv = Su.DotProduct(Sv) + difference.DotProduct(Suv);
-		double gu = Su.DotProduct(Sv) + difference.DotProduct(Svu);
-		double gv = Sv.DotProduct(Sv) + difference.DotProduct(Svv);
-
-		if (MathUtils::IsAlmostEqualTo(fu * gv, fv * gu))
-		{
-			counters++;
-			continue;
-		}
-
-		double deltaU = ((-fuv * gv) - fv * (-guv)) / (fu * gv - fv * gu);
-		double deltaV = (fu * (-guv) - (-fuv) * gu) / (fu * gv - fv * gu);
-
-		UV delta = UV(deltaU, deltaV);
-		UV temp = param + delta;
-
-		if (!isClosedU)
-		{
-			if (param[0] < a)
-			{
-				param = UV(a, param[1]);
-			}
-			if (param[0] > b)
-			{
-				param = UV(b, param[1]);
-			}
-		}
-		if (!isClosedV)
-		{
-			if (param[1] < c)
-			{
-				param = UV(param[0], c);
-			}
-			if (param[1] > d)
-			{
-				param = UV(param[0], d);
-			}
-		}
-		if (isClosedU)
-		{
-			if (param[0] < a)
-			{
-				param = UV(b - (a - param[0]), param[1]);
-			}
-			if (param[0] > b)
-			{
-				param = UV(a + (param[0] - b), param[1]);
-			}
-		}
-		if (isClosedV)
-		{
-			if (param[1] < c)
-			{
-				param = UV(param[0], d - (c - param[1]));
-			}
-			if (param[1] > d)
-			{
-				param = UV(param[0], c + (param[1] - d));
-			}
-		}
-
-		double condition4a = ((temp[0] - param[0]) * derivatives[1][0]).Length();
-		double condition4b = ((temp[1] - param[1]) * derivatives[0][1]).Length();
-		if (condition4a + condition4b < Constants::DistanceEpsilon) {
+		if (currentDist < Constants::DistanceEpsilon) {
 			return param;
 		}
 
-		param = temp;
-		double u = param.GetU();
-		double v = param.GetV();
+		
+		double J00 = Su.DotProduct(Su) + diff.DotProduct(Suu);
+		double J01 = Su.DotProduct(Sv) + diff.DotProduct(Suv);
+		double J10 = J01;
+		double J11 = Sv.DotProduct(Sv) + diff.DotProduct(Svv);
 
-		if (MathUtils::IsLessThan(u, minUParam))
-		{
-			param = UV(minUParam, param.GetV());
-		}
-		if (MathUtils::IsGreaterThan(u, maxUParam))
-		{
-			param = UV(maxUParam, param.GetV());
+		double K0 = Su.DotProduct(diff);
+		double K1 = Sv.DotProduct(diff);
+
+		double determinant = J00 * J11 - J01 * J10;
+
+		if (std::abs(determinant) < Constants::DoubleEpsilon) {
+			break;
 		}
 
-		if (MathUtils::IsLessThan(v, minVParam))
-		{
-			param = UV(param.GetU(), minVParam);
+		double deltaU = (J10 * K1 - J11 * K0) / determinant;
+		double deltaV = (J01 * K0 - J00 * K1) / determinant;
+
+		double newU = param.GetU() + deltaU;
+		double newV = param.GetV() + deltaV;
+
+		XYZ deltaWorld = Su * deltaU + Sv * deltaV;
+		if (deltaWorld.Length() < Constants::DistanceEpsilon) {
+			param = UV(newU, newV);
+			break;
 		}
-		if (MathUtils::IsGreaterThan(v, maxUParam))
-		{
-			param = UV(param.GetU(), maxUParam);
+
+		if (isClosedU) {
+			double rangeU = maxU - minU;
+			while (newU < minU) newU += rangeU;
+			while (newU > maxU) newU -= rangeU;
 		}
-		counters++;
+		if (isClosedV) {
+			double rangeV = maxV - minV;
+			while (newV < minV) newV += rangeV;
+			while (newV > maxV) newV -= rangeV;
+		}
+
+		if (!isClosedU) {
+			newU = std::max(minU, std::min(maxU, newU));
+		}
+		if (!isClosedV) {
+			newV = std::max(minV, std::min(maxV, newV));
+		}
+
+		param = UV(newU, newV);
 	}
+
 	return param;
 }
 

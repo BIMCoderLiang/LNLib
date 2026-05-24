@@ -54,6 +54,22 @@ namespace LNLib
 
 	typedef LN_BsplineSurface<XYZW> LNLIB_EXPORT LN_NurbsSurface;
 
+	template <typename T>
+	struct LN_BsplineVolume
+	{
+		int DegreeU;
+		int DegreeV;
+		int DegreeW;
+
+		std::vector<double> KnotVectorU;
+		std::vector<double> KnotVectorV;
+		std::vector<double> KnotVectorW;
+
+		std::vector<std::vector<std::vector<T>>> ControlPoints;
+	};
+
+	typedef LN_BsplineVolume<XYZW> LNLIB_EXPORT LN_NurbsVolume;
+
 	struct LNLIB_EXPORT LN_Mesh
 	{
 		std::vector<XYZ> Vertices;
