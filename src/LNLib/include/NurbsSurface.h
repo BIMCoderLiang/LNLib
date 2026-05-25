@@ -25,6 +25,8 @@ namespace LNLib
 
 		static void Check(const LN_NurbsSurface& surface);
 
+		static LN_NurbsCurve GetIsoCurve(const LN_NurbsSurface& surface, double fixedParam, bool isUDirection);
+
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page134
 		/// Algorithm A4.3

@@ -105,6 +105,69 @@ void  LNLib::NurbsSurface::Check(const LN_NurbsSurface& surface)
 	VALIDATE_ARGUMENT(ValidationUtils::IsValidNurbs(degreeV, knotVectorV.size(), controlPoints[0].size()), "controlPoints", "Arguments must be fit: m = n + p + 1");
 }
 
+LNLib::LN_NurbsCurve LNLib::NurbsSurface::GetIsoCurve(const LN_NurbsSurface& surface, double fixedParam, bool isUDirection)
+{
+	LN_NurbsCurve isoCurve;
+
+	int numU = surface.ControlPoints.size();
+	if (numU == 0) return isoCurve;
+	int numV = surface.ControlPoints[0].size();
+
+	if (isUDirection)
+	{
+		isoCurve.Degree = surface.DegreeU;
+		isoCurve.KnotVector = surface.KnotVectorU;
+		isoCurve.ControlPoints.reserve(numU);
+
+		double minV = surface.KnotVectorV[surface.DegreeV];
+		double maxV = surface.KnotVectorV[surface.KnotVectorV.size() - surface.DegreeV - 1];
+		double fixedV = std::clamp(fixedParam, minV, maxV);
+
+		int vSpan = Polynomials::GetKnotSpanIndex(surface.DegreeV, surface.KnotVectorV, fixedV);
+
+		double Nv[LNLib::Constants::NURBSMaxDegree + 1];
+		Polynomials::BasisFunctions(vSpan, surface.DegreeV, surface.KnotVectorV, fixedV, Nv);
+
+		for (int i = 0; i < numU; ++i)
+		{
+			XYZW combinedPoint(0.0, 0.0, 0.0, 0.0);
+			for (int j = 0; j <= surface.DegreeV; ++j)
+			{
+				int vIndex = vSpan - surface.DegreeV + j;
+				combinedPoint = combinedPoint + (Nv[j] * surface.ControlPoints[i][vIndex]);
+			}
+			isoCurve.ControlPoints.push_back(combinedPoint);
+		}
+	}
+	else
+	{
+		isoCurve.Degree = surface.DegreeV;
+		isoCurve.KnotVector = surface.KnotVectorV;
+		isoCurve.ControlPoints.reserve(numV);
+
+		double minU = surface.KnotVectorU[surface.DegreeU];
+		double maxU = surface.KnotVectorU[surface.KnotVectorU.size() - surface.DegreeU - 1];
+		double fixedU = std::clamp(fixedParam, minU, maxU);
+
+		int uSpan = Polynomials::GetKnotSpanIndex(surface.DegreeU, surface.KnotVectorU, fixedU);
+
+		double Nu[LNLib::Constants::NURBSMaxDegree + 1];
+		Polynomials::BasisFunctions(uSpan, surface.DegreeU, surface.KnotVectorU, fixedU, Nu);
+
+		for (int j = 0; j < numV; ++j)
+		{
+			XYZW combinedPoint(0.0, 0.0, 0.0, 0.0);
+			for (int i = 0; i <= surface.DegreeU; ++i)
+			{
+				int uIndex = uSpan - surface.DegreeU + i;
+				combinedPoint = combinedPoint + (Nu[i] * surface.ControlPoints[uIndex][j]);
+			}
+			isoCurve.ControlPoints.push_back(combinedPoint);
+		}
+	}
+	return isoCurve;
+}
+
 LNLib::XYZ LNLib::NurbsSurface::GetPointOnSurface(const LN_NurbsSurface& surface, UV uv)
 {
 	XYZW result = BsplineSurface::GetPointOnSurface(surface, uv);

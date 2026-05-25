@@ -22,6 +22,13 @@ namespace LNLib
 	{
 	public:
 
+        static bool Check(const LN_NurbsVolume& volume);
+
+        /// <summary>
+        /// One member of uvw must be -1, it means not be fixed, namely variation direction.
+        /// </summary>
+        static LN_NurbsCurve GetIsoCurve(const LN_NurbsVolume& volume, UVW uvw);
+
         static LNLib::XYZ GetPointOnVolume(const LN_NurbsVolume& volume, UVW uvw);
 
         static std::vector<std::vector<std::vector<LNLib::XYZ>>> ComputeVolumeRationalDerivatives(const LN_NurbsVolume& volume, int derivative, UVW uvw);
@@ -43,7 +50,5 @@ namespace LNLib
         static void Reverse(const LN_NurbsVolume& volume, VolumeDirection direction, LN_NurbsVolume& result);
 
         static void Swap(const LN_NurbsVolume& volume, VolumeDirection direction, VolumeDirection swap, LN_NurbsVolume& result);
-
-        static bool Check(const LN_NurbsVolume& volume);
 	};
 }

@@ -16,6 +16,124 @@
 #include "MathUtils.h"
 #include "NurbsCurve.h"
 
+#include <algorithm>
+
+LNLib::LN_NurbsCurve LNLib::NurbsVolume::GetIsoCurve(const LN_NurbsVolume& volume, UVW uvw)
+{
+	LN_NurbsCurve isoCurve;
+
+	int numU = volume.ControlPoints.size();
+	if (numU == 0) return isoCurve;
+	int numV = volume.ControlPoints[0].size();
+	if (numV == 0) return isoCurve;
+	int numW = volume.ControlPoints[0][0].size();
+
+	auto clampParam = [](double param, const std::vector<double>& kv, int degree) {
+		double minVal = kv[degree];
+		double maxVal = kv[kv.size() - degree - 1];
+		return std::clamp(param, minVal, maxVal);
+		};
+
+	if (MathUtils::IsAlmostEqualTo(uvw.U(),-1.0))
+	{
+		isoCurve.Degree = volume.DegreeU;
+		isoCurve.KnotVector = volume.KnotVectorU;
+		isoCurve.ControlPoints.reserve(numU);
+
+		double fixedV = clampParam(uvw.V(), volume.KnotVectorV, volume.DegreeV);
+		double fixedW = clampParam(uvw.W(), volume.KnotVectorW, volume.DegreeW);
+
+		int vSpan = Polynomials::GetKnotSpanIndex(volume.DegreeV, volume.KnotVectorV, fixedV);
+		int wSpan = Polynomials::GetKnotSpanIndex(volume.DegreeW, volume.KnotVectorW, fixedW);
+		double Nv[Constants::NURBSMaxDegree + 1];
+		Polynomials::BasisFunctions(vSpan, volume.DegreeV, volume.KnotVectorV, fixedV, Nv);
+		double Nw[Constants::NURBSMaxDegree + 1];
+		Polynomials::BasisFunctions(wSpan, volume.DegreeW, volume.KnotVectorW, fixedW, Nw);
+
+		for (int u = 0; u < numU; ++u)
+		{
+			XYZW combinedPoint(0.0, 0.0, 0.0, 0.0);
+			for (int j = 0; j <= volume.DegreeV; ++j)
+			{
+				int vIndex = vSpan - volume.DegreeV + j;
+				for (int k = 0; k <= volume.DegreeW; ++k)
+				{
+					int wIndex = wSpan - volume.DegreeW + k;
+					combinedPoint = combinedPoint + (Nv[j] * Nw[k] * volume.ControlPoints[u][vIndex][wIndex]);
+				}
+			}
+			isoCurve.ControlPoints.emplace_back(std::move(combinedPoint));
+		}
+	}
+	else if (MathUtils::IsAlmostEqualTo(uvw.V(), -1.0))
+	{
+		isoCurve.Degree = volume.DegreeV;
+		isoCurve.KnotVector = volume.KnotVectorV;
+		isoCurve.ControlPoints.reserve(numV);
+
+		double fixedU = clampParam(uvw.U(), volume.KnotVectorU, volume.DegreeU);
+		double fixedW = clampParam(uvw.W(), volume.KnotVectorW, volume.DegreeW);
+
+		int uSpan = Polynomials::GetKnotSpanIndex(volume.DegreeU, volume.KnotVectorU, fixedU);
+		int wSpan = Polynomials::GetKnotSpanIndex(volume.DegreeW, volume.KnotVectorW, fixedW);
+
+		double Nu[Constants::NURBSMaxDegree + 1];
+		Polynomials::BasisFunctions(uSpan, volume.DegreeU, volume.KnotVectorU, fixedU, Nu);
+		double Nw[Constants::NURBSMaxDegree + 1];
+		Polynomials::BasisFunctions(wSpan, volume.DegreeW, volume.KnotVectorW, fixedW, Nw);
+
+		for (int v = 0; v < numV; ++v)
+		{
+			XYZW combinedPoint(0.0, 0.0, 0.0, 0.0);
+			for (int i = 0; i <= volume.DegreeU; ++i)
+			{
+				int uIndex = uSpan - volume.DegreeU + i;
+				for (int k = 0; k <= volume.DegreeW; ++k)
+				{
+					int wIndex = wSpan - volume.DegreeW + k;
+					combinedPoint = combinedPoint + (Nu[i] * Nw[k] * volume.ControlPoints[uIndex][v][wIndex]);
+				}
+			}
+			isoCurve.ControlPoints.emplace_back(std::move(combinedPoint));
+		}
+	}
+
+	else if (MathUtils::IsAlmostEqualTo(uvw.W(), -1.0))
+	{
+		isoCurve.Degree = volume.DegreeW;
+		isoCurve.KnotVector = volume.KnotVectorW;
+		isoCurve.ControlPoints.reserve(numW);
+
+		double fixedU = clampParam(uvw.U(), volume.KnotVectorU, volume.DegreeU);
+		double fixedV = clampParam(uvw.V(), volume.KnotVectorV, volume.DegreeV);
+
+		int uSpan = Polynomials::GetKnotSpanIndex(volume.DegreeU, volume.KnotVectorU, fixedU);
+		int vSpan = Polynomials::GetKnotSpanIndex(volume.DegreeV, volume.KnotVectorV, fixedV);
+
+		double Nu[Constants::NURBSMaxDegree + 1];
+		Polynomials::BasisFunctions(uSpan, volume.DegreeU, volume.KnotVectorU, fixedU, Nu);
+
+		double Nv[Constants::NURBSMaxDegree + 1];
+		Polynomials::BasisFunctions(vSpan, volume.DegreeV, volume.KnotVectorV, fixedV, Nv);
+
+		for (int w = 0; w < numW; ++w)
+		{
+			XYZW combinedPoint(0.0, 0.0, 0.0, 0.0);
+			for (int i = 0; i <= volume.DegreeU; ++i)
+			{
+				int uIndex = uSpan - volume.DegreeU + i;
+				for (int j = 0; j <= volume.DegreeV; ++j)
+				{
+					int vIndex = vSpan - volume.DegreeV + j;
+					combinedPoint = combinedPoint + (Nu[i] * Nv[j] * volume.ControlPoints[uIndex][vIndex][w]);
+				}
+			}
+			isoCurve.ControlPoints.emplace_back(std::move(combinedPoint));
+		}
+	}
+	return isoCurve;
+}
+
 LNLib::XYZ LNLib::NurbsVolume::GetPointOnVolume(const LN_NurbsVolume& volume, UVW uvw)
 {
 	int degreeU = volume.DegreeU;
