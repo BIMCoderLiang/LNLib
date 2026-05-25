@@ -1166,7 +1166,7 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const LN_NurbsSurface& surface,
 	double minDistanceSquared = std::numeric_limits<double>::max();
 	UV bestParam(Constants::DoubleEpsilon, Constants::DoubleEpsilon);
 
-	for (size_t i = 0; i < tessellatedPoints.size() - 1; ++i)
+	for (int i = 0; i < tessellatedPoints.size() - 1; ++i)
 	{
 		const XYZ& P0 = tessellatedPoints[i];
 		const XYZ& P1 = tessellatedPoints[i + 1];
@@ -1177,7 +1177,7 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const LN_NurbsSurface& surface,
 		double segLenSq = seg.DotProduct(seg);
 		double t = 0.5;
 
-		if (segLenSq > Constants::DoubleEpsilon)
+		if (MathUtils::IsGreaterThan(segLenSq, 0.0))
 		{
 			t = (givenPoint - P0).DotProduct(seg) / segLenSq;
 			t = std::max(0.0, std::min(1.0, t));
@@ -1212,7 +1212,7 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const LN_NurbsSurface& surface,
 		XYZ diff = S - givenPoint;
 		double currentDist = diff.Length();
 
-		if (currentDist < Constants::DistanceEpsilon) {
+		if (MathUtils::IsAlmostEqualTo(currentDist, 0.0)) {
 			return param;
 		}
 
@@ -1227,7 +1227,7 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const LN_NurbsSurface& surface,
 
 		double determinant = J00 * J11 - J01 * J10;
 
-		if (std::abs(determinant) < Constants::DoubleEpsilon) {
+		if (MathUtils::IsAlmostEqualTo(std::abs(determinant), 0.0)) {
 			break;
 		}
 
@@ -1238,7 +1238,7 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const LN_NurbsSurface& surface,
 		double newV = param.GetV() + deltaV;
 
 		XYZ deltaWorld = Su * deltaU + Sv * deltaV;
-		if (deltaWorld.Length() < Constants::DistanceEpsilon) {
+		if (MathUtils::IsAlmostEqualTo(deltaWorld.Length(), 0.0)) {
 			param = UV(newU, newV);
 			break;
 		}
