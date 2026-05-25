@@ -44,7 +44,7 @@ Additional Algorithms:
 |***Basic Properties***  | Curve/Surface Curvature and Normal</br>Curve Split/Segment/Merge/Offset</br>Curve IsLinear/IsArc</br>Curve Approximate Length</br>Surface Approximate Area |
 |***Curve Creation***  | Create Line/Cubic Hermite |
 |***Tessellation***  | Curve Tessellation </br> Surface Triangulation|
-|***NurbsVolume***  | Volume Related Algorithms|
+|***NURBS Volume***  | Degree Elevation</br>Knot Insertion/Refinement</br>Volume Point Inversion</br>Volume Split</br>Extract Surface From Volume</br>Extract IsoCurve From Volume</br>Volume Swap and Reverse|
 
 ## Visualization
 [LNLibViewer](https://github.com/BIMCoderLiang/LNLibViewer) based on [VTK](https://vtk.org/)
