@@ -51,6 +51,7 @@ Additional Algorithms:
 
 <img src="assets/curve.png" width=500 height=400>
 <img src="assets/surface.png" width=500 height=400>
+<img src="assets/volume.png" width=500 height=400>
 
 ## NURBS Fitting by Neural Network
 [ND-LNLib](https://github.com/BIMCoderLiang/NURBS-Diff-with-LNLib) based on [LibTorch](https://pytorch.org/cppdocs/installing.html) (PyTorch C++ version)
