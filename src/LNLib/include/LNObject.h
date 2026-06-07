@@ -85,6 +85,26 @@ namespace LNLib
 		double Radius = 0.0;
 		XYZ Center;
 	};
+
+	//AABB Box
+	struct LN_BoundingBox3d {
+		XYZ MinPoint;
+		XYZ MaxPoint;
+
+		bool Intersects(const LN_BoundingBox3d& other) const {
+			return (MinPoint.X() <= other.MaxPoint.X() && MaxPoint.X() >= other.MinPoint.X()) &&
+					(MinPoint.Y() <= other.MaxPoint.Y() && MaxPoint.Y() >= other.MinPoint.Y()) &&
+					(MinPoint.Z() <= other.MaxPoint.Z() && MaxPoint.Z() >= other.MinPoint.Z());
+		}
+	};
+
+	//OBB Box
+	struct LN_OrientedBoundingBox3d {
+
+		XYZ Center;        
+		XYZ Axes[3];
+		double HalfExtents[3];
+	};
 }
 
 

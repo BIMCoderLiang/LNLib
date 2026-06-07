@@ -94,6 +94,8 @@ namespace LNLib
 
 		static bool MakeInverse(const std::vector<std::vector<double>>& matrix, std::vector<std::vector<double>>& inverse);
 
+		static void ComputeOBBAxes(const std::vector<std::array<double, 3>>& controlPoints, const std::array<double, 3>& centroid, std::array<double, 3> axes[3]);
+
 		/// <summary>
 		/// matrix * result = right.
 		/// </summary>

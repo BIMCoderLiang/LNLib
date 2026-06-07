@@ -48,6 +48,10 @@ namespace LNLib
 
 		static double Curvature(const LN_NurbsSurface& surface, SurfaceCurvature curvature, UV uv);
 
+		static LN_BoundingBox3d GetBoundingBox(const LN_NurbsSurface& surface);
+
+		static LN_OrientedBoundingBox3d GetOrientedBoundingBox(const LN_NurbsSurface& surface);
+
 		static XYZ Normal(const LN_NurbsSurface& surface, UV uv);
 
 		/// <summary>

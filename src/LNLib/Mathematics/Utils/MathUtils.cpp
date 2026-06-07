@@ -225,6 +225,33 @@ bool LNLib::MathUtils::MakeInverse(const std::vector<std::vector<double>>& matri
     return true;
 }
 
+void LNLib::MathUtils::ComputeOBBAxes(const std::vector<std::array<double, 3>>& controlPoints, const std::array<double, 3>& centroid, std::array<double, 3> axes[3])
+{
+    axes[0] = { 1.0, 0.0, 0.0 };
+    axes[1] = { 0.0, 1.0, 0.0 };
+    axes[2] = { 0.0, 0.0, 1.0 };
+
+    if (controlPoints.empty()) return;
+
+    Eigen::Matrix3d covariance = Eigen::Matrix3d::Zero();
+    int count = static_cast<int>(controlPoints.size());
+
+    Eigen::Vector3d c(centroid[0], centroid[1], centroid[2]);
+
+    for (const auto& pt : controlPoints) {
+        Eigen::Vector3d p(pt[0] - c(0), pt[1] - c(1), pt[2] - c(2));
+        covariance += p * p.transpose();
+    }
+    covariance /= count;
+
+    Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> solver(covariance);
+    Eigen::Matrix3d eigenvectors = solver.eigenvectors();
+
+    for (int i = 0; i < 3; ++i) {
+        axes[i] = { eigenvectors(0, i), eigenvectors(1, i), eigenvectors(2, i) };
+    }
+}
+
 std::vector<std::vector<double>> LNLib::MathUtils::SolveLinearSystem(
     const std::vector<std::vector<double>>& matrix,
     const std::vector<std::vector<double>>& right)

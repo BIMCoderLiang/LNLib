@@ -31,6 +31,7 @@
 #include <random>
 #include <algorithm>
 #include <cmath>
+#include <array>
 
 namespace LNLib
 {
@@ -317,6 +318,97 @@ double LNLib::NurbsSurface::Curvature(const LN_NurbsSurface& surface, SurfaceCur
 		return std::sqrt(k1 * k1 + k2 * k2);
 	}
 	return 0.0;
+}
+
+LNLib::LN_BoundingBox3d LNLib::NurbsSurface::GetBoundingBox(const LN_NurbsSurface& surface)
+{
+	std::vector<std::vector<LNLib::XYZW>> controlPoints = surface.ControlPoints;
+
+	LN_BoundingBox3d box;
+	if (controlPoints.empty() || controlPoints[0].empty()) {
+		box.MinPoint = box.MaxPoint = LNLib::XYZ();
+		return box;
+	}
+
+	box.MinPoint = controlPoints[0][0].ToXYZ(true);
+	box.MaxPoint = controlPoints[0][0].ToXYZ(true);
+
+	for (const auto& row : controlPoints) {
+		for (const LNLib::XYZW& ptw : row) {
+
+			XYZ pt = ptw.ToXYZ(true);
+
+			box.MinPoint.X() = std::min(box.MinPoint.X(), pt.X());
+			box.MinPoint.Y() = std::min(box.MinPoint.Y(), pt.Y());
+			box.MinPoint.Z() = std::min(box.MinPoint.Z(), pt.Z());
+
+			box.MaxPoint.X() = std::max(box.MaxPoint.X(), pt.X());
+			box.MaxPoint.Y() = std::max(box.MaxPoint.Y(), pt.Y());
+			box.MaxPoint.Z() = std::max(box.MaxPoint.Z(), pt.Z());
+		}
+	}
+	return box;
+}
+
+LNLib::LN_OrientedBoundingBox3d LNLib::NurbsSurface::GetOrientedBoundingBox(const LN_NurbsSurface& surface)
+{
+	LN_OrientedBoundingBox3d obb;
+
+	obb.HalfExtents[0] = 0.0;
+	obb.HalfExtents[1] = 0.0;
+	obb.HalfExtents[2] = 0.0;
+
+	std::vector<std::vector<XYZW>> controlPoints = surface.ControlPoints;
+	if (controlPoints.empty() || controlPoints[0].empty()) return obb;
+
+	XYZ centroid(0, 0, 0);
+	int count = 0;
+	for (const auto& row : controlPoints) {
+		for (const XYZW& ptw : row) {
+			XYZ pt = ptw.ToXYZ(true);
+			centroid = centroid + pt;
+			count++;
+		}
+	}
+	centroid = centroid / count;
+	obb.Center = centroid;
+
+	std::vector<std::array<double,3>> pts;
+	pts.reserve(count);
+	for (const auto& row : controlPoints) {
+		for (const XYZW& ptw : row) {
+			XYZ pt = ptw.ToXYZ(true);
+			pts.push_back({ pt.X(), pt.Y(), pt.Z() });
+		}
+	}
+
+	std::array<double, 3> axes[3];
+	MathUtils::ComputeOBBAxes(pts, std::array<double, 3>{centroid.X(), centroid.Y(), centroid.Z()}, axes);
+	for (int i = 0; i < 3; ++i) {
+		obb.Axes[i] = XYZ(axes[i][0], axes[i][1], axes[i][2]);
+	}
+
+	double minProj[3] = { std::numeric_limits<double>::max(), std::numeric_limits<double>::max(), std::numeric_limits<double>::max() };
+	double maxProj[3] = { std::numeric_limits<double>::lowest(), std::numeric_limits<double>::lowest(), std::numeric_limits<double>::lowest() };
+
+	for (const auto& row : controlPoints) {
+		for (const XYZW& ptw : row) {
+			XYZ pt = ptw.ToXYZ(true);
+			XYZ p = pt - centroid;
+			for (int i = 0; i < 3; ++i) {
+				double proj = p.DotProduct(obb.Axes[i]);
+				minProj[i] = std::min(minProj[i], proj);
+				maxProj[i] = std::max(maxProj[i], proj);
+			}
+		}
+	}
+
+	for (int i = 0; i < 3; ++i) {
+		obb.HalfExtents[i] = (maxProj[i] - minProj[i]) / 2.0;
+		double centerOffset = (maxProj[i] + minProj[i]) / 2.0;
+		obb.Center = obb.Center + obb.Axes[i] * centerOffset;
+	}
+	return obb;
 }
 
 LNLib::XYZ LNLib::NurbsSurface::Normal(const LN_NurbsSurface& surface, UV uv)
