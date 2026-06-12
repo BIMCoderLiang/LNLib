@@ -324,30 +324,58 @@ LNLib::LN_BoundingBox3d LNLib::NurbsSurface::GetBoundingBox(const LN_NurbsSurfac
 {
 	std::vector<std::vector<LNLib::XYZW>> controlPoints = surface.ControlPoints;
 
-	LN_BoundingBox3d box;
+	LN_BoundingBox3d box0;
 	if (controlPoints.empty() || controlPoints[0].empty()) {
-		box.MinPoint = box.MaxPoint = LNLib::XYZ();
-		return box;
+		box0.MinPoint = box0.MaxPoint = LNLib::XYZ();
+		return box0;
 	}
 
-	box.MinPoint = controlPoints[0][0].ToXYZ(true);
-	box.MaxPoint = controlPoints[0][0].ToXYZ(true);
+	box0.MinPoint = controlPoints[0][0].ToXYZ(true);
+	box0.MaxPoint = controlPoints[0][0].ToXYZ(true);
 
 	for (const auto& row : controlPoints) {
 		for (const LNLib::XYZW& ptw : row) {
 
 			XYZ pt = ptw.ToXYZ(true);
 
-			box.MinPoint.X() = std::min(box.MinPoint.X(), pt.X());
-			box.MinPoint.Y() = std::min(box.MinPoint.Y(), pt.Y());
-			box.MinPoint.Z() = std::min(box.MinPoint.Z(), pt.Z());
+			box0.MinPoint.X() = std::min(box0.MinPoint.X(), pt.X());
+			box0.MinPoint.Y() = std::min(box0.MinPoint.Y(), pt.Y());
+			box0.MinPoint.Z() = std::min(box0.MinPoint.Z(), pt.Z());
 
-			box.MaxPoint.X() = std::max(box.MaxPoint.X(), pt.X());
-			box.MaxPoint.Y() = std::max(box.MaxPoint.Y(), pt.Y());
-			box.MaxPoint.Z() = std::max(box.MaxPoint.Z(), pt.Z());
+			box0.MaxPoint.X() = std::max(box0.MaxPoint.X(), pt.X());
+			box0.MaxPoint.Y() = std::max(box0.MaxPoint.Y(), pt.Y());
+			box0.MaxPoint.Z() = std::max(box0.MaxPoint.Z(), pt.Z());
 		}
 	}
-	return box;
+
+	LN_BoundingBox3d box1;
+	for (int i = 0; i < surface.KnotVectorU.size() - 1; i++)
+	{
+		for (int j = 0; j < surface.KnotVectorV.size() - 1; j++)
+		{
+			double u = surface.KnotVectorU[i];
+			double v = surface.KnotVectorV[i];
+
+			XYZ pt = GetPointOnSurface(surface, UV(u,v));
+			box1.MinPoint.X() = std::min(box1.MinPoint.X(), pt.X());
+			box1.MinPoint.Y() = std::min(box1.MinPoint.Y(), pt.Y());
+			box1.MinPoint.Z() = std::min(box1.MinPoint.Z(), pt.Z());
+
+			box1.MaxPoint.X() = std::max(box1.MaxPoint.X(), pt.X());
+			box1.MaxPoint.Y() = std::max(box1.MaxPoint.Y(), pt.Y());
+			box1.MaxPoint.Z() = std::max(box1.MaxPoint.Z(), pt.Z());
+		}
+	}
+
+	LN_BoundingBox3d result;
+	result.MinPoint.X() = std::max(box0.MinPoint.X(), box1.MinPoint.X());
+	result.MinPoint.Y() = std::max(box0.MinPoint.Y(), box1.MinPoint.Y());
+	result.MinPoint.Z() = std::max(box0.MinPoint.Z(), box1.MinPoint.Z());
+
+	result.MaxPoint.X() = std::min(box0.MaxPoint.X(), box1.MaxPoint.X());
+	result.MaxPoint.Y() = std::min(box0.MaxPoint.Y(), box1.MaxPoint.Y());
+	result.MaxPoint.Z() = std::min(box0.MaxPoint.Z(), box1.MaxPoint.Z());
+	return result;
 }
 
 LNLib::LN_OrientedBoundingBox3d LNLib::NurbsSurface::GetOrientedBoundingBox(const LN_NurbsSurface& surface)

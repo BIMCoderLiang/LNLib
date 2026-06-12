@@ -149,8 +149,8 @@ TEST(Test_NurbsSurface, Box)
 	EXPECT_NEAR(box3d.MaxPoint.X(), 50.0, Constants::DoubleEpsilon);
 	EXPECT_NEAR(box3d.MinPoint.Y(), 0.0, Constants::DoubleEpsilon);
 	EXPECT_NEAR(box3d.MaxPoint.Y(), 50.0, Constants::DoubleEpsilon);
-	EXPECT_NEAR(box3d.MinPoint.Z(), -62.1717, Constants::DoubleEpsilon);
-	EXPECT_NEAR(box3d.MaxPoint.Z(), 129.1583, Constants::DoubleEpsilon);
+	EXPECT_NEAR(box3d.MinPoint.Z(), 0.0, Constants::DoubleEpsilon);
+	EXPECT_NEAR(box3d.MaxPoint.Z(), 40.000001934765436, Constants::DoubleEpsilon);
 
 	LN_OrientedBoundingBox3d obox3d = NurbsSurface::GetOrientedBoundingBox(surface);
 }
