@@ -19,9 +19,12 @@
 #include "MathUtils.h"
 
 #include <Eigen/Dense>
+#include <Eigen/SparseLU>
+#include <Eigen/Sparse>
 
 #include <cmath>
 #include <limits>
+
 
 namespace LNLib {
 
