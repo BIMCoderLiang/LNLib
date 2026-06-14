@@ -145,12 +145,8 @@ TEST(Test_NurbsSurface, Box)
 	surface.ControlPoints = controlPoints;
 
 	LN_BoundingBox3d box3d =  NurbsSurface::GetBoundingBox(surface);
-	EXPECT_NEAR(box3d.MinPoint.X(),0.0, Constants::DoubleEpsilon);
-	EXPECT_NEAR(box3d.MaxPoint.X(), 50.0, Constants::DoubleEpsilon);
-	EXPECT_NEAR(box3d.MinPoint.Y(), 0.0, Constants::DoubleEpsilon);
-	EXPECT_NEAR(box3d.MaxPoint.Y(), 50.0, Constants::DoubleEpsilon);
-	EXPECT_NEAR(box3d.MinPoint.Z(), 0.0, Constants::DoubleEpsilon);
-	EXPECT_NEAR(box3d.MaxPoint.Z(), 40.000001934765436, Constants::DoubleEpsilon);
+	EXPECT_TRUE(box3d.MinPoint.IsAlmostEqualTo(XYZ(0,0,0)));
+	EXPECT_TRUE(box3d.MaxPoint.IsAlmostEqualTo(XYZ(50,50, 40.000001934765436)));
 
 	LN_OrientedBoundingBox3d obox3d = NurbsSurface::GetOrientedBoundingBox(surface);
 }
