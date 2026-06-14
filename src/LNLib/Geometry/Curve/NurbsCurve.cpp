@@ -3786,6 +3786,43 @@ double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, Integrat
 	return length;
 }
 
+void LNLib::NurbsCurve::Extend(const LN_NurbsCurve& curve, double delta, bool isFromStart, ExtensionType type, LN_NurbsCurve& result) {
+	
+	result = curve;
+
+	if (MathUtils::IsLessThanOrEqual(delta, 0.0)) return;
+	if (IsPeriodic(curve)) return;
+
+	int degree = curve.Degree;
+	std::vector<double> knotVector = curve.KnotVector;
+	std::vector<XYZW> controlPoints = curve.ControlPoints;
+
+	switch (type)
+	{
+		case ExtensionType::Tangent:
+		{
+			double paramT = isFromStart?knotVector[0]:knotVector[knotVector.size() - 1];
+			std::vector<XYZ> ders = ComputeRationalCurveDerivatives(curve, 1, paramT);
+			XYZ point = ders[0];
+			XYZ tangent = ders[1];
+			LN_NurbsCurve extend;
+			isFromStart ? CreateLine(point - tangent.Normalize() * delta, point, extend): CreateLine(point, point + tangent.Normalize() * delta, extend);
+			isFromStart ? Merge(extend, curve, result) : Merge(curve, extend, result);
+			break;
+		}	
+		case ExtensionType::Arc:
+		{
+			break;
+		}
+		case ExtensionType::Natural:
+		{
+			break;
+		}
+		default:
+			break;
+	}
+}
+
 double LNLib::NurbsCurve::GetParamOnCurve(const LN_NurbsCurve& curve, double givenLength, IntegratorType type)
 {
 	std::vector<double> knotVector = curve.KnotVector;

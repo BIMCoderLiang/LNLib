@@ -374,6 +374,11 @@ namespace LNLib
 		static double ApproximateLength(const LN_NurbsCurve& curve, IntegratorType type = IntegratorType::GaussLegendre);
 
 		/// <summary>
+		/// Extend curve from start or end with delta length.
+		/// </summary>
+		static void Extend(const LN_NurbsCurve& curve, double delta, bool isFromStart, ExtensionType type, LN_NurbsCurve& result);
+
+		/// <summary>
 		/// Calculate parameter makes first segment length equals to given length.
 		/// </summary>
 		static double GetParamOnCurve(const LN_NurbsCurve& curve, double givenLength, IntegratorType type = IntegratorType::GaussLegendre);
