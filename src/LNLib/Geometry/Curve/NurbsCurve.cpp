@@ -3801,7 +3801,7 @@ void LNLib::NurbsCurve::Extend(const LN_NurbsCurve& curve, double delta, bool is
 	{
 		case ExtensionType::Tangent:
 		{
-			double paramT = isFromStart?knotVector[0]:knotVector[knotVector.size() - 1];
+			double paramT = isFromStart ? knotVector[0] : knotVector[knotVector.size() - 1];
 			std::vector<XYZ> ders = ComputeRationalCurveDerivatives(curve, 1, paramT);
 			XYZ point = ders[0];
 			XYZ tangent = ders[1];
@@ -3812,6 +3812,36 @@ void LNLib::NurbsCurve::Extend(const LN_NurbsCurve& curve, double delta, bool is
 		}	
 		case ExtensionType::Arc:
 		{
+			double paramT = isFromStart ? knotVector[0] : knotVector[knotVector.size() - 1];
+			std::vector<XYZ> ders = ComputeRationalCurveDerivatives(curve, 1, paramT);
+			XYZ point = ders[0];
+			XYZ tangent = ders[1];
+			XYZ normal = Normal(curve, CurveNormal::Normal, paramT);
+			double curvature = Curvature(curve, paramT);
+			if (MathUtils::IsAlmostEqualTo(curvature, 0.0)) return;
+			double radius = 1 / curvature;
+
+			double theta = delta / radius;
+			XYZ center = point + radius * normal;
+
+			XYZ xAxis = tangent.Normalize();
+			XYZ yAxis = normal.Normalize();
+
+			XYZ vecToPoint = (point - center).Normalize();
+			double x = vecToPoint.DotProduct(xAxis);
+			double y = vecToPoint.DotProduct(yAxis);
+
+			double startRad = atan2(y, x);
+			double endRad = startRad + theta;
+			if (isFromStart)
+			{
+				startRad = startRad - theta;
+				endRad = atan2(y, x);
+			}
+
+			LN_NurbsCurve extend;
+			CreateArc(center, xAxis, yAxis, startRad, endRad, radius, radius, extend);
+			isFromStart ? Merge(extend, curve, result) : Merge(curve, extend, result);
 			break;
 		}
 		case ExtensionType::Natural:

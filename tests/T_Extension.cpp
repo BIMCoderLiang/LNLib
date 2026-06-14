@@ -2,6 +2,7 @@
 #include "XYZ.h"
 #include "XYZW.h"
 #include "NurbsCurve.h"
+#include "MathUtils.h"
 using namespace LNLib;
 
 TEST(Test_Extension, Curve)
@@ -19,8 +20,16 @@ TEST(Test_Extension, Curve)
 	LN_NurbsCurve tangentResult;
 	NurbsCurve::Extend(curve, 10, true, ExtensionType::Tangent, tangentResult);
 	double extensionLength = NurbsCurve::ApproximateLength(tangentResult);
-	EXPECT_TRUE(extensionLength == originLength + 10);
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(extensionLength, originLength + 10, Constants::DistanceEpsilon));
 	NurbsCurve::Extend(curve, 10, false, ExtensionType::Tangent, tangentResult);
 	extensionLength = NurbsCurve::ApproximateLength(tangentResult);
-	EXPECT_TRUE(extensionLength == originLength + 10);
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(extensionLength, originLength + 10, Constants::DistanceEpsilon));
+
+	LN_NurbsCurve arcResult;
+	NurbsCurve::Extend(curve, 10, true, ExtensionType::Arc, arcResult);
+	extensionLength = NurbsCurve::ApproximateLength(arcResult);
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(extensionLength, originLength + 10, Constants::DistanceEpsilon));
+	NurbsCurve::Extend(curve, 10, false, ExtensionType::Arc, arcResult);
+	extensionLength = NurbsCurve::ApproximateLength(arcResult);
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(extensionLength, originLength + 10, Constants::DistanceEpsilon));
 }
