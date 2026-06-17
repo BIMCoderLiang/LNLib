@@ -1478,58 +1478,38 @@ bool LNLib::NurbsCurve::SplitAt(const LN_NurbsCurve& curve, double parameter, LN
 	return true;
 }
 
-bool LNLib::NurbsCurve::Segment(const LN_NurbsCurve& curve, double startParameter, double endParameter, LN_NurbsCurve& segment)
+void LNLib::NurbsCurve::Extract(const LN_NurbsCurve& curve, double startParameter, double endParameter, LN_NurbsCurve& result)
 {
 	int degree = curve.Degree;
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
 
-	if (MathUtils::IsLessThanOrEqual(startParameter, knotVector[degree]))
-	{
-		if (MathUtils::IsGreaterThanOrEqual(endParameter, knotVector[knotVector.size() - degree - 1]))
-		{
-			segment = curve;
-			return true;
-		}
-		LN_NurbsCurve left;
-		LN_NurbsCurve right;
-		bool result = SplitAt(curve, endParameter, left, right);
-		if (result)
-		{
-			segment = left;
-			return true;
-		}
+	VALIDATE_ARGUMENT_RANGE(startParameter, knotVector[0], knotVector[knotVector.size() - 1]);
+	VALIDATE_ARGUMENT_RANGE(endParameter, knotVector[0], knotVector[knotVector.size() - 1]);
+	VALIDATE_ARGUMENT(MathUtils::IsLessThan(startParameter, endParameter), "endParameter", "startParameter must less than endParameter.");
+
+	LN_NurbsCurve tempCurve = curve;
+
+	std::map<double, int> kmap = KnotVectorUtils::GetKnotMultiplicityMap(knotVector);
+
+	int mult_start = kmap[startParameter];
+	int insert_count_start = (degree + 1) - mult_start;
+	if (insert_count_start > 0) {
+		InsertKnot(tempCurve, startParameter, insert_count_start, tempCurve);
 	}
-	else
-	{
-		if (MathUtils::IsGreaterThanOrEqual(endParameter, knotVector[knotVector.size() - degree - 1]))
-		{
-			LN_NurbsCurve left;
-			LN_NurbsCurve right;
-			bool result = SplitAt(curve, startParameter, left, right);
-			if (result)
-			{
-				segment = right;
-				return true;
-			}
-		}
-		else
-		{
-			LN_NurbsCurve left;
-			LN_NurbsCurve right;
-			bool result = SplitAt(curve, startParameter, left, right);
-			if (result)
-			{
-				result = SplitAt(right, endParameter, left, right);
-				if (result)
-				{
-					segment = left;
-					return true;
-				}
-			}
-		}
+
+	int mult_end = kmap[endParameter];
+	int insert_count_end = (degree + 1) - mult_end;
+	if (insert_count_end > 0) {
+		InsertKnot(tempCurve, endParameter, insert_count_end, tempCurve);
 	}
-	return false;
+
+	int ks = Polynomials::GetKnotSpanIndex(degree, tempCurve.KnotVector, startParameter);
+	int ke = Polynomials::GetKnotSpanIndex(degree, tempCurve.KnotVector, endParameter);
+
+	result.Degree = degree;
+	result.KnotVector.assign(tempCurve.KnotVector.begin() + ks, tempCurve.KnotVector.begin() + ke + 2);
+	result.ControlPoints.assign(tempCurve.ControlPoints.begin() + ks - degree, tempCurve.ControlPoints.begin() + ke + 1);
 }
 
 bool LNLib::NurbsCurve::Merge(const LN_NurbsCurve& left, const LN_NurbsCurve& right, LN_NurbsCurve& result)
@@ -3786,6 +3766,13 @@ double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, Integrat
 	return length;
 }
 
+double LNLib::NurbsCurve::ApproximateLength(const LN_NurbsCurve& curve, double startParameter, double endParameter, IntegratorType type)
+{
+	LN_NurbsCurve result;
+	Extract(curve, startParameter, endParameter, result);
+	return ApproximateLength(result, type);
+}
+
 void LNLib::NurbsCurve::Extend(const LN_NurbsCurve& curve, double delta, bool isFromStart, ExtensionType type, LN_NurbsCurve& result) {
 	
 	result = curve;
@@ -3797,29 +3784,27 @@ void LNLib::NurbsCurve::Extend(const LN_NurbsCurve& curve, double delta, bool is
 	std::vector<double> knotVector = curve.KnotVector;
 	std::vector<XYZW> controlPoints = curve.ControlPoints;
 
+	double paramT = isFromStart ? knotVector[0] : knotVector[knotVector.size() - 1];
+	std::vector<XYZ> ders = ComputeRationalCurveDerivatives(curve, 1, paramT);
+	XYZ point = ders[0];
+	XYZ tangent = ders[1];
+
+	LN_NurbsCurve extend;
+
 	switch (type)
 	{
 		case ExtensionType::Tangent:
 		{
-			double paramT = isFromStart ? knotVector[0] : knotVector[knotVector.size() - 1];
-			std::vector<XYZ> ders = ComputeRationalCurveDerivatives(curve, 1, paramT);
-			XYZ point = ders[0];
-			XYZ tangent = ders[1];
-			LN_NurbsCurve extend;
 			isFromStart ? CreateLine(point - tangent.Normalize() * delta, point, extend): CreateLine(point, point + tangent.Normalize() * delta, extend);
 			isFromStart ? Merge(extend, curve, result) : Merge(curve, extend, result);
 			break;
 		}	
 		case ExtensionType::Arc:
 		{
-			double paramT = isFromStart ? knotVector[0] : knotVector[knotVector.size() - 1];
-			std::vector<XYZ> ders = ComputeRationalCurveDerivatives(curve, 1, paramT);
-			XYZ point = ders[0];
-			XYZ tangent = ders[1];
 			XYZ normal = Normal(curve, CurveNormal::Normal, paramT);
 			double curvature = Curvature(curve, paramT);
 			if (MathUtils::IsAlmostEqualTo(curvature, 0.0)) return;
-			double radius = 1 / curvature;
+			double radius = 1.0 / curvature;
 
 			double theta = delta / radius;
 			XYZ center = point + radius * normal;
@@ -3839,13 +3824,150 @@ void LNLib::NurbsCurve::Extend(const LN_NurbsCurve& curve, double delta, bool is
 				endRad = atan2(y, x);
 			}
 
-			LN_NurbsCurve extend;
 			CreateArc(center, xAxis, yAxis, startRad, endRad, radius, radius, extend);
 			isFromStart ? Merge(extend, curve, result) : Merge(curve, extend, result);
 			break;
 		}
 		case ExtensionType::Natural:
 		{
+			double directionSign = isFromStart ? -1.0 : 1.0;
+			int taylorOrder = curve.Degree;
+			std::vector<XYZ> derivatives = ComputeRationalCurveDerivatives(curve, taylorOrder, paramT);
+			std::vector<XYZ> coeffs(taylorOrder + 1);
+			double factorial = 1.0;
+			for (int i = 0; i <= taylorOrder; ++i)
+			{
+				if (i > 0) factorial *= i;
+				coeffs[i] = derivatives[i] / factorial;
+			}
+
+			auto evaluateFirstDerivative = [&](double t) -> XYZ {
+				XYZ v = coeffs[taylorOrder] * static_cast<double>(taylorOrder);
+				for (int k = taylorOrder - 1; k >= 1; --k)
+				{
+					v = v * t + (coeffs[k] * static_cast<double>(k));
+				}
+				return v;
+				};
+
+			double currentDeltaT = delta * directionSign;
+			const int maxIter = 50;
+			for (int i = 0; i < maxIter; ++i)
+			{
+				double absLen = std::abs(currentDeltaT) * 0.5; 
+				double mid = currentDeltaT * 0.5; 
+
+				const double sqrt_3_5 = 0.7745966692414834;
+				const double w1 = 0.5555555555555556;
+				const double w2 = 0.8888888888888889;
+
+				double t1 = mid - absLen * sqrt_3_5;
+				double t2 = mid;
+				double t3 = mid + absLen * sqrt_3_5;
+
+				double speed1 = evaluateFirstDerivative(t1).Length();
+				double speed2 = evaluateFirstDerivative(t2).Length();
+				double speed3 = evaluateFirstDerivative(t3).Length();
+
+				double currentLen = absLen * (w1 * speed1 + w2 * speed2 + w1 * speed3);
+				XYZ velocity = evaluateFirstDerivative(currentDeltaT);
+				double speed = velocity.Length();
+
+				if (MathUtils::IsAlmostEqualTo(speed, 0.0)) break;
+
+				double error = currentLen - delta;
+				if (MathUtils::IsAlmostEqualTo(std::abs(error), 0.0)) break;
+
+				double dLen_dDeltaT = speed * (currentDeltaT > 0 ? 1.0 : -1.0);
+				double step = -error / dLen_dDeltaT;
+
+				double maxStep = std::abs(currentDeltaT) * 0.5;
+				if (MathUtils::IsAlmostEqualTo(maxStep, 0.0)) maxStep = std::abs(delta) * 0.1;
+
+				if (std::abs(step) > maxStep) {
+					step = (step > 0 ? 1.0 : -1.0) * maxStep;
+				}
+				currentDeltaT += step;
+			}
+
+			double L = std::abs(currentDeltaT);
+
+			if (!isFromStart) {
+				double newParam = paramT + L;
+
+				if (result.ControlPoints.empty()) {
+					result = curve;
+				}
+
+				XYZW lastCP = result.ControlPoints.back();
+				double w = lastCP.GetW();
+
+				std::vector<XYZW> newCPs;
+				newCPs.reserve(degree + 1);
+
+				for (int i = 0; i <= degree; ++i) {
+					XYZ pt = coeffs[0];
+					for (int k = 1; k <= i; ++k) {
+
+						double binom_i_k = LNLib::MathUtils::Binomial(i, k);
+						double binom_p_k = LNLib::MathUtils::Binomial(degree, k);
+						double scale = binom_i_k / binom_p_k;
+
+						pt = pt + coeffs[k] * (std::pow(L, k) * scale);
+					}
+					newCPs.push_back(XYZW(pt, w));
+				}
+
+				for (int i = 1; i <= degree; ++i) {
+					result.ControlPoints.push_back(newCPs[i]);
+				}
+
+				if (result.KnotVector.size() > degree) {
+					result.KnotVector.erase(result.KnotVector.end() - 1);
+				}
+				for (int i = 0; i <= degree; ++i) {
+					result.KnotVector.push_back(newParam);
+				}
+			}
+			else {
+
+				double newParam = paramT - L;
+
+				if (result.ControlPoints.empty()) {
+					result = curve;
+				}
+
+				XYZW firstCP = result.ControlPoints.front();
+				double w = firstCP.GetW(); 
+
+				std::vector<XYZW> newCPs;
+				newCPs.reserve(degree + 1);
+
+				double S = -L;
+
+				for (int i = 0; i <= degree; ++i) {
+					XYZ pt = coeffs[0];
+					for (int k = 1; k <= i; ++k) {
+						double binom_i_k = LNLib::MathUtils::Binomial(i, k);
+						double binom_p_k = LNLib::MathUtils::Binomial(degree, k);
+						double scale = binom_i_k / binom_p_k;
+
+						pt = pt + coeffs[k] * (std::pow(S, k) * scale);
+					}
+					newCPs.push_back(XYZW(pt, w));
+				}
+
+				for (int i = 1; i <= degree; ++i) {
+					result.ControlPoints.insert(result.ControlPoints.begin(), newCPs[i]);
+				}
+
+				if (result.KnotVector.size() > degree) {
+					result.KnotVector.erase(result.KnotVector.begin());
+				}
+				for (int i = 0; i <= degree; ++i) {
+					result.KnotVector.insert(result.KnotVector.begin(), newParam);
+				}
+			}
 			break;
 		}
 		default:

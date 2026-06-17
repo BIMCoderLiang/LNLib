@@ -161,9 +161,9 @@ namespace LNLib
 		static bool SplitAt(const LN_NurbsCurve& curve, double parameter, LN_NurbsCurve& left, LN_NurbsCurve& right);
 
 		/// <summary>
-		/// Segment curve.
+		/// Extract curve.
 		/// </summary>
-		static bool Segment(const LN_NurbsCurve& curve, double startParameter, double endParameter, LN_NurbsCurve& segment);
+		static void Extract(const LN_NurbsCurve& curve, double startParameter, double endParameter, LN_NurbsCurve& result);
 
 		/// <summary>
 		/// Merge two connected curves to one curve.
@@ -374,7 +374,12 @@ namespace LNLib
 		static double ApproximateLength(const LN_NurbsCurve& curve, IntegratorType type = IntegratorType::GaussLegendre);
 
 		/// <summary>
-		/// Extend curve from start or end with delta length.
+		/// Calculate curve arc length between [startParameter, endParameter].
+		/// </summary>
+		static double ApproximateLength(const LN_NurbsCurve& curve, double startParameter, double endParameter, IntegratorType type = IntegratorType::GaussLegendre);
+
+		/// <summary>
+		/// Extend curve from start point or end point with delta length.
 		/// </summary>
 		static void Extend(const LN_NurbsCurve& curve, double delta, bool isFromStart, ExtensionType type, LN_NurbsCurve& result);
 

@@ -32,4 +32,12 @@ TEST(Test_Extension, Curve)
 	NurbsCurve::Extend(curve, 10, false, ExtensionType::Arc, arcResult);
 	extensionLength = NurbsCurve::ApproximateLength(arcResult);
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(extensionLength, originLength + 10, Constants::DistanceEpsilon));
+
+	LN_NurbsCurve naturalResult;
+	NurbsCurve::Extend(curve, 10, true, ExtensionType::Natural, naturalResult);
+	extensionLength = NurbsCurve::ApproximateLength(naturalResult);
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(extensionLength, originLength + 10, Constants::DistanceEpsilon));
+	NurbsCurve::Extend(curve, 10, false, ExtensionType::Natural, naturalResult);
+	extensionLength = NurbsCurve::ApproximateLength(naturalResult);
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(extensionLength, originLength + 10, Constants::DistanceEpsilon));
 }
