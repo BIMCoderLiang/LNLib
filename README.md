@@ -41,9 +41,9 @@ Algorithms in ***The NURBS Book***:
 Additional Algorithms:
 |Description|Content|
 |--|--|  
-|***NURBS Curve***  | Curve/Surface Curvature and Normal</br>Curve Split/Segment/Merge/Offset</br>Curve IsLinear/IsArc</br>Curve Approximate Length</br>Curve Extension (Tangent/Arc/Natural)</br>Curve Tessellation</br>Line/Cubic Hermite (as NURBS) Creation|
-|***NURBS Surface***  | Surface Approximate Area</br> Surface Triangulation |
-|***NURBS Volume***  | Degree Elevation</br>Knot Insertion/Refinement</br>Point Inversion</br>Split</br>Extract Surface From Volume</br>Extract IsoCurve</br>Swap and Reverse|
+|***NURBS Curve***  | Curve Curvature and Normal</br>Curve Split/Segment/Merge/Offset</br>Curve IsLinear/IsArc</br>Curve Approximate Length</br>Curve Extension (Tangent/Arc/Natural)</br>Curve Tessellation</br>Line/Cubic Hermite (as NURBS) Creation|
+|***NURBS Surface***  | Surface AABB and OBB BoundingBox</br>Surface Curvature and Normal</br>Surface Approximate Area</br> Surface Triangulation |
+|***NURBS Volume***  | Volume Degree Elevation</br>Volume Knot Insertion/Refinement</br>Volume Point Inversion</br>Volume Split</br>Extract Surface From Volume</br>Extract IsoCurve From Volume</br>Volume Swap and Reverse|
 
 ## Visualization
 [LNLibViewer](https://github.com/BIMCoderLiang/LNLibViewer) based on [VTK](https://vtk.org/)
