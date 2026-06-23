@@ -9,50 +9,38 @@
  */
 
 #include <pybind11/pybind11.h>
-#include "XYZW.h"
+#include <pybind11/stl.h>
 #include "LNObject.h"
+#include "XYZ.h"
+#include "XYZW.h"
+#include "UV.h"
 
 namespace py = pybind11;
 void cstrObject(py::module_&m)
 {
-    py::class_<LNLib::LN_BezierCurve<LNLib::XYZW>>(m, "BezierCurve")
+    py::class_<LNLib::LN_BezierCurve<LNLib::XYZ>>(m, "LN_BezierCurve_XYZ")
+        .def(py::init<>())
+        .def_readwrite("Degree", &LNLib::LN_BezierCurve<LNLib::XYZ>::Degree)
+        .def_readwrite("ControlPoints", &LNLib::LN_BezierCurve<LNLib::XYZ>::ControlPoints);
+
+    py::class_<LNLib::LN_BezierCurve<LNLib::XYZW>>(m, "LN_BezierCurve_XYZW")
         .def(py::init<>())
         .def_readwrite("Degree", &LNLib::LN_BezierCurve<LNLib::XYZW>::Degree)
         .def_readwrite("ControlPoints", &LNLib::LN_BezierCurve<LNLib::XYZW>::ControlPoints);
 
-    py::class_<LNLib::LN_BezierSurface<LNLib::XYZW>>(m, "BezierSurface")
+    py::class_<LNLib::LN_BsplineCurve<LNLib::XYZ>>(m, "LN_BsplineCurve_XYZ")
         .def(py::init<>())
-        .def_readwrite("DegreeU", &LNLib::LN_BezierSurface<LNLib::XYZW>::DegreeU)
-        .def_readwrite("DegreeV", &LNLib::LN_BezierSurface<LNLib::XYZW>::DegreeV)
-        .def_property("ControlPoints",
-            [](const LNLib::LN_BsplineSurface<LNLib::XYZW>& surface) {
-                return surface.ControlPoints;
-            },
-            [](LNLib::LN_BsplineSurface<LNLib::XYZW>& surface, const std::vector<std::vector<LNLib::XYZW>>& controlPoints) {
-                surface.ControlPoints = controlPoints;
-            });
+        .def_readwrite("Degree", &LNLib::LN_BsplineCurve<LNLib::XYZ>::Degree)
+        .def_readwrite("KnotVector", &LNLib::LN_BsplineCurve<LNLib::XYZ>::KnotVector)
+        .def_readwrite("ControlPoints", &LNLib::LN_BsplineCurve<LNLib::XYZ>::ControlPoints);
 
-    py::class_<LNLib::LN_NurbsCurve>(m, "NurbsCurve")
+    py::class_<LNLib::LN_BsplineCurve<LNLib::XYZW>>(m, "LN_NurbsCurve", py::module_local())
         .def(py::init<>())
-        .def_readwrite("Degree", &LNLib::LN_NurbsCurve::Degree)
-        .def_readwrite("KnotVector", &LNLib::LN_NurbsCurve::KnotVector)
-        .def_readwrite("ControlPoints", &LNLib::LN_NurbsCurve::ControlPoints);
+        .def_readwrite("Degree", &LNLib::LN_BsplineCurve<LNLib::XYZW>::Degree)
+        .def_readwrite("KnotVector", &LNLib::LN_BsplineCurve<LNLib::XYZW>::KnotVector)
+        .def_readwrite("ControlPoints", &LNLib::LN_BsplineCurve<LNLib::XYZW>::ControlPoints);
 
-    py::class_<LNLib::LN_NurbsSurface>(m, "NurbsSurface")
-        .def(py::init<>())
-        .def_readwrite("DegreeU", &LNLib::LN_NurbsSurface::DegreeU)
-        .def_readwrite("DegreeV", &LNLib::LN_NurbsSurface::DegreeV)
-        .def_readwrite("KnotVectorU", &LNLib::LN_NurbsSurface::KnotVectorU)
-        .def_readwrite("KnotVectorV", &LNLib::LN_NurbsSurface::KnotVectorV)
-        .def_property("ControlPoints",
-            [](const LNLib::LN_NurbsSurface& surface) {
-                return surface.ControlPoints;
-            },
-            [](LNLib::LN_NurbsSurface& surface, const std::vector<std::vector<LNLib::XYZW>>& controlPoints) {
-                surface.ControlPoints = controlPoints;
-            });
-
-    py::class_<LNLib::LN_Mesh>(m, "Mesh")
+    py::class_<LNLib::LN_Mesh>(m, "LN_Mesh")
         .def(py::init<>())
         .def_readwrite("Vertices", &LNLib::LN_Mesh::Vertices)
         .def_readwrite("Faces", &LNLib::LN_Mesh::Faces)
@@ -61,8 +49,38 @@ void cstrObject(py::module_&m)
         .def_readwrite("Normals", &LNLib::LN_Mesh::Normals)
         .def_readwrite("NormalIndices", &LNLib::LN_Mesh::NormalIndices);
 
-    py::class_<LNLib::LN_ArcInfo>(m, "ArcInfo")
+    py::class_<LNLib::LN_ArcInfo>(m, "LN_ArcInfo")
         .def(py::init<>())
         .def_readwrite("Radius", &LNLib::LN_ArcInfo::Radius)
         .def_readwrite("Center", &LNLib::LN_ArcInfo::Center);
+
+    py::class_<LNLib::LN_BoundingBox3d>(m, "LN_BoundingBox3d")
+        .def(py::init<>())
+        .def_readwrite("MinPoint", &LNLib::LN_BoundingBox3d::MinPoint)
+        .def_readwrite("MaxPoint", &LNLib::LN_BoundingBox3d::MaxPoint)
+        .def("Intersects", &LNLib::LN_BoundingBox3d::Intersects);
+
+    py::class_<LNLib::LN_OrientedBoundingBox3d>(m, "LN_OrientedBoundingBox3d")
+        .def(py::init<>())
+        .def_readwrite("Center", &LNLib::LN_OrientedBoundingBox3d::Center)
+        .def_property("Axes",
+            [](const LNLib::LN_OrientedBoundingBox3d& self) {
+                return std::vector<LNLib::XYZ>{self.Axes[0], self.Axes[1], self.Axes[2]};
+            },
+            [](LNLib::LN_OrientedBoundingBox3d& self, const std::vector<LNLib::XYZ>& val) {
+                if (val.size() != 3) throw std::runtime_error("Axes size must be 3");
+                self.Axes[0] = val[0];
+                self.Axes[1] = val[1];
+                self.Axes[2] = val[2];
+            })
+        .def_property("HalfExtents",
+            [](const LNLib::LN_OrientedBoundingBox3d& self) {
+                return std::vector<double>{self.HalfExtents[0], self.HalfExtents[1], self.HalfExtents[2]};
+            },
+            [](LNLib::LN_OrientedBoundingBox3d& self, const std::vector<double>& val) {
+                if (val.size() != 3) throw std::runtime_error("HalfExtents size must be 3");
+                self.HalfExtents[0] = val[0];
+                self.HalfExtents[1] = val[1];
+                self.HalfExtents[2] = val[2];
+            });
 }

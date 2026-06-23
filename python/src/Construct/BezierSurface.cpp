@@ -16,7 +16,7 @@ namespace py = pybind11;
 void cstrBezierSurface(py::module_&m)
 {
     py::class_<LNLib::BezierSurface>(m, "BezierSurface")
-        .def_static("GetPointOnSurfaceByDeCasteljau", [](const LNLib::LN_BezierSurface<LNLib::XYZ>& surface, LNLib::UV uv) {
-        return LNLib::BezierSurface::GetPointOnSurfaceByDeCasteljau(surface, uv);
-            });
+        .def_static("GetPointOnSurfaceByDeCasteljau_XYZ", &LNLib::BezierSurface::GetPointOnSurfaceByDeCasteljau<LNLib::XYZ>)
+        .def_static("GetPointOnSurfaceByDeCasteljau_XYZW", &LNLib::BezierSurface::GetPointOnSurfaceByDeCasteljau<LNLib::XYZW>);
+
 }

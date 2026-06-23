@@ -9,6 +9,7 @@
  */
 
 #include <pybind11/pybind11.h>
+#include <pybind11/operators.h>
 #include "XYZ.h"
 #include "XYZW.h"
 #include "Matrix4d.h"
@@ -19,10 +20,7 @@ void cstrMatrix4d(py::module_&m)
     py::class_<LNLib::Matrix4d>(m, "Matrix4d")
         .def(py::init<>())
         .def(py::init<LNLib::XYZ, LNLib::XYZ, LNLib::XYZ, LNLib::XYZ>())
-        .def(py::init<double, double, double, double,
-            double, double, double, double,
-            double, double, double, double,
-            double, double, double, double>())
+        .def(py::init<double, double, double, double, double, double, double, double, double, double, double, double, double, double, double, double>())
         .def_static("CreateReflection", py::overload_cast<const LNLib::XYZ&, double>(&LNLib::Matrix4d::CreateReflection))
         .def_static("CreateReflection", py::overload_cast<const LNLib::XYZ&>(&LNLib::Matrix4d::CreateReflection))
         .def_static("CreateRotation", &LNLib::Matrix4d::CreateRotation)
@@ -43,20 +41,14 @@ void cstrMatrix4d(py::module_&m)
         .def("OfPoint", &LNLib::Matrix4d::OfPoint)
         .def("OfWeightedPoint", &LNLib::Matrix4d::OfWeightedPoint)
         .def("OfVector", &LNLib::Matrix4d::OfVector)
-        .def("GetInverse", &LNLib::Matrix4d::GetInverse)
+        .def("GetInverse", [](LNLib::Matrix4d& self, LNLib::Matrix4d& inverse) { return self.GetInverse(inverse); })
         .def("GetTranspose", &LNLib::Matrix4d::GetTranspose)
         .def("GetScale", &LNLib::Matrix4d::GetScale)
         .def("GetDeterminant", &LNLib::Matrix4d::GetDeterminant)
         .def("IsIdentity", &LNLib::Matrix4d::IsIdentity)
         .def("HasReflection", &LNLib::Matrix4d::HasReflection)
         .def("IsTranslation", &LNLib::Matrix4d::IsTranslation)
-        .def("__mul__", [](const LNLib::Matrix4d& m1, const LNLib::Matrix4d& m2) {
-        return m1 * m2;
-            })
-        .def("__add__", [](const LNLib::Matrix4d& m1, const LNLib::Matrix4d& m2) {
-        return m1 + m2;
-            })
-        .def("__sub__", [](const LNLib::Matrix4d& m1, const LNLib::Matrix4d& m2) {
-        return m1 - m2;
-            });
+        .def(py::self * py::self)
+        .def(py::self + py::self)
+        .def(py::self - py::self);
 }

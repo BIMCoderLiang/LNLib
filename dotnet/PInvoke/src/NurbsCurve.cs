@@ -151,12 +151,12 @@ namespace LNLibSharp
             out LN_NurbsCurve out_left,
             out LN_NurbsCurve out_right);
 
-        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSCUR_segment")]
-        public static extern int Segment(
+        [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSCUR_extract")]
+        public static extern void Extract(
             LN_NurbsCurve curve,
             double start_param,
             double end_param,
-            out LN_NurbsCurve out_segment);
+            out LN_NurbsCurve out_extract);
 
         [DllImport(LNLIB_CAPI_DLL, CallingConvention = CallingConvention.Cdecl, EntryPoint = "LNLIB_NURBSCUR_merge")]
         public static extern int Merge(

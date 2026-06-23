@@ -94,11 +94,11 @@ extern "C" {
         double param_t,
         LN_NurbsCurve_C* out_left,
         LN_NurbsCurve_C* out_right);
-    LNLIB_EXPORT int LNLIB_NURBSCUR_segment(
+    LNLIB_EXPORT void LNLIB_NURBSCUR_extract(
         LN_NurbsCurve_C curve,
         double start_param,
         double end_param,
-        LN_NurbsCurve_C* out_segment);
+        LN_NurbsCurve_C* out_extract);
     LNLIB_EXPORT int LNLIB_NURBSCUR_merge(LN_NurbsCurve_C left, LN_NurbsCurve_C right, LN_NurbsCurve_C* out_curve);
     LNLIB_EXPORT void LNLIB_NURBSCUR_offset(LN_NurbsCurve_C curve, double offset, LNLIB_ENUMS_OffsetType_C type, LN_NurbsCurve_C* out_curve);
     LNLIB_EXPORT LN_NurbsCurve_C LNLIB_NURBSCUR_create_line(XYZ_C start, XYZ_C end);

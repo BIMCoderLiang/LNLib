@@ -16,10 +16,8 @@ namespace py = pybind11;
 void cstrBezierCurve(py::module_&m)
 {
     py::class_<LNLib::BezierCurve>(m, "BezierCurve")
-        .def_static("GetPointOnCurveByBernstein", [](const LNLib::LN_BezierCurve<LNLib::XYZ>& curve, double paramT) {
-        return LNLib::BezierCurve::GetPointOnCurveByBernstein(curve, paramT);
-            })
-        .def_static("GetPointOnCurveByDeCasteljau", [](const LNLib::LN_BezierCurve<LNLib::XYZ>& curve, double paramT) {
-        return LNLib::BezierCurve::GetPointOnCurveByDeCasteljau(curve, paramT);
-            });
+        .def_static("GetPointOnCurveByBernstein_XYZ", &LNLib::BezierCurve::GetPointOnCurveByBernstein<LNLib::XYZ>)
+        .def_static("GetPointOnCurveByBernstein_XYZW", &LNLib::BezierCurve::GetPointOnCurveByBernstein<LNLib::XYZW>)
+        .def_static("GetPointOnCurveByDeCasteljau_XYZ", &LNLib::BezierCurve::GetPointOnCurveByDeCasteljau<LNLib::XYZ>)
+        .def_static("GetPointOnCurveByDeCasteljau_XYZW", &LNLib::BezierCurve::GetPointOnCurveByDeCasteljau<LNLib::XYZW>);
 }

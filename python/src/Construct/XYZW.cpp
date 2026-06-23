@@ -9,6 +9,7 @@
  */
 
 #include <pybind11/pybind11.h>
+#include <pybind11/operators.h>
 #include "XYZW.h"
 
 namespace py = pybind11;
@@ -23,41 +24,26 @@ void cstrXYZW(py::module_&m)
         .def("GetWZ", &LNLib::XYZW::GetWZ)
         .def("SetW", &LNLib::XYZW::SetW)
         .def("GetW", &LNLib::XYZW::GetW)
-        .def("WX", py::overload_cast<>(&LNLib::XYZW::WX, py::const_))
-        .def("WX", py::overload_cast<>(&LNLib::XYZW::WX))
-        .def("WY", py::overload_cast<>(&LNLib::XYZW::WY, py::const_))
-        .def("WY", py::overload_cast<>(&LNLib::XYZW::WY))
-        .def("WZ", py::overload_cast<>(&LNLib::XYZW::WZ, py::const_))
-        .def("WZ", py::overload_cast<>(&LNLib::XYZW::WZ))
-        .def("W", py::overload_cast<>(&LNLib::XYZW::W, py::const_))
-        .def("W", py::overload_cast<>(&LNLib::XYZW::W))
-        .def("ToXYZ", &LNLib::XYZW::ToXYZ)
+        .def_property("WX",
+            [](const LNLib::XYZW& self) { return self.WX(); },
+            [](LNLib::XYZW& self, double val) { self.WX() = val; })
+        .def_property("WY",
+            [](const LNLib::XYZW& self) { return self.WY(); },
+            [](LNLib::XYZW& self, double val) { self.WY() = val; })
+        .def_property("WZ",
+            [](const LNLib::XYZW& self) { return self.WZ(); },
+            [](LNLib::XYZW& self, double val) { self.WZ() = val; })
+        .def_property("W",
+            [](const LNLib::XYZW& self) { return self.W(); },
+            [](LNLib::XYZW& self, double val) { self.W() = val; })
+        .def("ToXYZ", &LNLib::XYZW::ToXYZ, py::arg("divideWeight"))
         .def("IsAlmostEqualTo", &LNLib::XYZW::IsAlmostEqualTo)
         .def("Distance", &LNLib::XYZW::Distance)
-        .def("__getitem__", [](const LNLib::XYZW& xyzw, int index) {
-        if (index < 0 || index >= 4) throw py::index_error();
-        return xyzw[index];
-            })
-        .def("__setitem__", [](LNLib::XYZW& xyzw, int index, double value) {
-        if (index < 0 || index >= 4) throw py::index_error();
-        xyzw[index] = value;
-            })
-        .def("__add__", [](const LNLib::XYZW& xyzw1, const LNLib::XYZW& xyzw2) {
-        return xyzw1 + xyzw2;
-            })
-        .def("__sub__", [](const LNLib::XYZW& xyzw1, const LNLib::XYZW& xyzw2) {
-        return xyzw1 - xyzw2;
-            })
-        .def("__mul__", [](const LNLib::XYZW& xyzw, double d) {
-        return xyzw * d;
-            })
-        .def("__rmul__", [](const LNLib::XYZW& xyzw, double d) {
-        return xyzw * d;
-            })
-        .def("__truediv__", [](const LNLib::XYZW& xyzw, double d) {
-        return xyzw / d;
-            })
-        .def("__repr__", [](const LNLib::XYZW& xyzw) {
-        return "XYZW(" + std::to_string(xyzw.GetWX()) + ", " + std::to_string(xyzw.GetWY()) + ", " + std::to_string(xyzw.GetWZ()) + ", " + std::to_string(xyzw.GetW()) + ")";
-            });
+        .def("__getitem__", [](const LNLib::XYZW& self, int index) { return self[index]; })
+        .def("__setitem__", [](LNLib::XYZW& self, int index, double val) { self[index] = val; })
+        .def(py::self + py::self)
+        .def(py::self - py::self)
+        .def(py::self * double())
+        .def(double() * py::self)
+        .def(py::self / double());
 }

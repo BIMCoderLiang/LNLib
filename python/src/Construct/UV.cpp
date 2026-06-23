@@ -9,6 +9,8 @@
  */
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/operators.h>
 #include "Constants.h"
 #include "UV.h"
 
@@ -23,10 +25,12 @@ void cstrUV(py::module_&m)
         .def("GetU", &LNLib::UV::GetU)
         .def("SetV", &LNLib::UV::SetV)
         .def("GetV", &LNLib::UV::GetV)
-        .def("U", py::overload_cast<>(&LNLib::UV::U, py::const_))
-        .def("U", py::overload_cast<>(&LNLib::UV::U))
-        .def("V", py::overload_cast<>(&LNLib::UV::V, py::const_))
-        .def("V", py::overload_cast<>(&LNLib::UV::V))
+        .def_property("U",
+            [](const LNLib::UV& self) { return self.U(); },
+            [](LNLib::UV& self, double val) { self.U() = val; })
+        .def_property("V",
+            [](const LNLib::UV& self) { return self.V(); },
+            [](LNLib::UV& self, double val) { self.V() = val; })
         .def("IsZero", &LNLib::UV::IsZero, py::arg("epsilon") = LNLib::Constants::DoubleEpsilon)
         .def("IsUnit", &LNLib::UV::IsUnit, py::arg("epsilon") = LNLib::Constants::DoubleEpsilon)
         .def("IsAlmostEqualTo", &LNLib::UV::IsAlmostEqualTo)
@@ -39,38 +43,15 @@ void cstrUV(py::module_&m)
         .def("DotProduct", &LNLib::UV::DotProduct)
         .def("CrossProduct", &LNLib::UV::CrossProduct)
         .def("Distance", &LNLib::UV::Distance)
-        .def("__getitem__", [](const LNLib::UV& uv, int index) {
-        if (index < 0 || index >= 2) throw py::index_error();
-        return uv[index];
-            })
-        .def("__setitem__", [](LNLib::UV& uv, int index, double value) {
-        if (index < 0 || index >= 2) throw py::index_error();
-        uv[index] = value;
-            })
-        .def("__add__", [](const LNLib::UV& uv1, const LNLib::UV& uv2) {
-        return uv1 + uv2;
-            })
-        .def("__sub__", [](const LNLib::UV& uv1, const LNLib::UV& uv2) {
-        return uv1 - uv2;
-            })
-        .def("__mul__", [](const LNLib::UV& uv1, const LNLib::UV& uv2) {
-        return uv1 * uv2;
-            })
-        .def("__mul__", [](const LNLib::UV& uv, double d) {
-        return uv * d;
-            })
-        .def("__rmul__", [](const LNLib::UV& uv, double d) {
-        return uv * d;
-            })
-        .def("__truediv__", [](const LNLib::UV& uv, double d) {
-        return uv / d;
-            })
-        .def("__neg__", [](const LNLib::UV& uv) {
-        return -uv;
-            })
-        .def("__repr__", [](const LNLib::UV& uv) {
-        return "UV(" + std::to_string(uv.GetU()) + ", " + std::to_string(uv.GetV()) + ")";
-            });	
+        .def("__getitem__", [](const LNLib::UV& self, int index) { return self[index]; })
+        .def("__setitem__", [](LNLib::UV& self, int index, double val) { self[index] = val; })
+        .def(py::self + py::self)
+        .def(py::self - py::self)
+        .def(py::self * double())
+        .def(double() * py::self)
+        .def(py::self / double())
+        .def("__xor__", [](const LNLib::UV& a, const LNLib::UV& b) { return a ^ b; })
+        .def(-py::self);
 }
 
 

@@ -306,15 +306,14 @@ int LNLIB_NURBSCUR_split_at(
 	return ok ? 1 : 0;
 }
 
-int LNLIB_NURBSCUR_segment(
+void LNLIB_NURBSCUR_extract(
 	LN_NurbsCurve_C curve,
 	double start_param,
 	double end_param,
-	LN_NurbsCurve_C* out_segment) {
+	LN_NurbsCurve_C* out_extract) {
 	LN_NurbsCurve seg;
-	bool ok = NurbsCurve::Segment(FromCAPI(curve), start_param, end_param, seg);
-	if (ok) *out_segment = ToCAPI(seg);
-	return ok ? 1 : 0;
+	NurbsCurve::Extract(FromCAPI(curve), start_param, end_param, seg);
+	*out_extract = ToCAPI(seg);
 }
 
 int LNLIB_NURBSCUR_merge(LN_NurbsCurve_C left, LN_NurbsCurve_C right, LN_NurbsCurve_C* out_curve)

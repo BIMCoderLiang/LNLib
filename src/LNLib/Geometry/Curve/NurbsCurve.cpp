@@ -44,21 +44,6 @@ namespace LNLib
 		}
 	};
 
-	double GetNode(int degree, const std::vector<double>& knotVector, int lastIndex)
-	{
-		double t = 0.0;
-		for (int i = 0; i <= lastIndex; i++)
-		{
-			double sum = 0.0;
-			for (int j = 1; j <= degree; j++)
-			{
-				sum += knotVector[i + j];
-			}
-			t = sum * (1.0 / degree);
-		}
-		return t;
-	}
-
 	double CalculateLengthBySimpson(FirstDerivativeLengthFunction function, const LN_NurbsCurve& curve, double start, double end, double simpson, double tolearance)
 	{
 		double length = 0.0;

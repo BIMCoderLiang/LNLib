@@ -9,6 +9,8 @@
  */
 
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11/operators.h>
 #include "Constants.h"
 #include "XYZ.h"
 
@@ -25,12 +27,15 @@ void cstrXYZ(py::module_&m)
         .def("GetY", &LNLib::XYZ::GetY)
         .def("SetZ", &LNLib::XYZ::SetZ)
         .def("GetZ", &LNLib::XYZ::GetZ)
-        .def("X", py::overload_cast<>(&LNLib::XYZ::X, py::const_))
-        .def("X", py::overload_cast<>(&LNLib::XYZ::X))
-        .def("Y", py::overload_cast<>(&LNLib::XYZ::Y, py::const_))
-        .def("Y", py::overload_cast<>(&LNLib::XYZ::Y))
-        .def("Z", py::overload_cast<>(&LNLib::XYZ::Z, py::const_))
-        .def("Z", py::overload_cast<>(&LNLib::XYZ::Z))
+        .def_property("X",
+            [](const LNLib::XYZ& self) { return self.X(); },
+            [](LNLib::XYZ& self, double val) { self.X() = val; })
+        .def_property("Y",
+            [](const LNLib::XYZ& self) { return self.Y(); },
+            [](LNLib::XYZ& self, double val) { self.Y() = val; })
+        .def_property("Z",
+            [](const LNLib::XYZ& self) { return self.Z(); },
+            [](LNLib::XYZ& self, double val) { self.Z() = val; })
         .def("IsZero", &LNLib::XYZ::IsZero, py::arg("epsilon") = LNLib::Constants::DoubleEpsilon)
         .def("IsUnit", &LNLib::XYZ::IsUnit, py::arg("epsilon") = LNLib::Constants::DoubleEpsilon)
         .def("IsAlmostEqualTo", &LNLib::XYZ::IsAlmostEqualTo)
@@ -45,39 +50,13 @@ void cstrXYZ(py::module_&m)
         .def("CrossProduct", &LNLib::XYZ::CrossProduct)
         .def("Distance", &LNLib::XYZ::Distance)
         .def_static("CreateRandomOrthogonal", &LNLib::XYZ::CreateRandomOrthogonal)
-        .def("__getitem__", [](const LNLib::XYZ& xyz, int index) {
-        if (index < 0 || index >= 3) throw py::index_error();
-        return xyz[index];
-            })
-        .def("__setitem__", [](LNLib::XYZ& xyz, int index, double value) {
-        if (index < 0 || index >= 3) throw py::index_error();
-        xyz[index] = value;
-            })
-        .def("__add__", [](const LNLib::XYZ& xyz1, const LNLib::XYZ& xyz2) {
-        return xyz1 + xyz2;
-            })
-        .def("__sub__", [](const LNLib::XYZ& xyz1, const LNLib::XYZ& xyz2) {
-        return xyz1 - xyz2;
-            })
-        .def("__mul__", [](const LNLib::XYZ& xyz1, const LNLib::XYZ& xyz2) {
-        return xyz1 * xyz2;
-            })
-        .def("__mul__", [](const LNLib::XYZ& xyz, double d) {
-        return xyz * d;
-            })
-        .def("__rmul__", [](const LNLib::XYZ& xyz, double d) {
-        return xyz * d;
-            })
-        .def("__truediv__", [](const LNLib::XYZ& xyz, double d) {
-        return xyz / d;
-            })
-        .def("__xor__", [](const LNLib::XYZ& xyz1, const LNLib::XYZ& xyz2) {
-        return xyz1 ^ xyz2;
-            })
-        .def("__neg__", [](const LNLib::XYZ& xyz) {
-        return -xyz;
-            })
-        .def("__repr__", [](const LNLib::XYZ& xyz) {
-        return "XYZ(" + std::to_string(xyz.GetX()) + ", " + std::to_string(xyz.GetY()) + ", " + std::to_string(xyz.GetZ()) + ")";
-            });
+        .def("__getitem__", [](const LNLib::XYZ& self, int index) { return self[index]; })
+        .def("__setitem__", [](LNLib::XYZ& self, int index, double val) { self[index] = val; })
+        .def(py::self + py::self)
+        .def(py::self - py::self)
+        .def(py::self * double())
+        .def(double() * py::self)
+        .def(py::self / double())
+        .def("__xor__", [](const LNLib::XYZ& a, const LNLib::XYZ& b) { return a ^ b; })
+        .def(-py::self);
 }

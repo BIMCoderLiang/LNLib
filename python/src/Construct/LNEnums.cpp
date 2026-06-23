@@ -18,21 +18,25 @@ void cstrEnums(py::module_&m)
         .value("Intersecting", LNLib::CurveCurveIntersectionType::Intersecting)
         .value("Parallel", LNLib::CurveCurveIntersectionType::Parallel)
         .value("Coincident", LNLib::CurveCurveIntersectionType::Coincident)
-        .value("Skew", LNLib::CurveCurveIntersectionType::Skew);
+        .value("Skew", LNLib::CurveCurveIntersectionType::Skew)
+        .export_values();
 
     py::enum_<LNLib::LinePlaneIntersectionType>(m, "LinePlaneIntersectionType")
         .value("Intersecting", LNLib::LinePlaneIntersectionType::Intersecting)
         .value("Parallel", LNLib::LinePlaneIntersectionType::Parallel)
-        .value("On", LNLib::LinePlaneIntersectionType::On);
+        .value("On", LNLib::LinePlaneIntersectionType::On)
+        .export_values();
 
     py::enum_<LNLib::CurveNormal>(m, "CurveNormal")
         .value("Normal", LNLib::CurveNormal::Normal)
-        .value("Binormal", LNLib::CurveNormal::Binormal);
+        .value("Binormal", LNLib::CurveNormal::Binormal)
+        .export_values();
 
     py::enum_<LNLib::SurfaceDirection>(m, "SurfaceDirection")
         .value("All", LNLib::SurfaceDirection::All)
         .value("UDirection", LNLib::SurfaceDirection::UDirection)
-        .value("VDirection", LNLib::SurfaceDirection::VDirection);
+        .value("VDirection", LNLib::SurfaceDirection::VDirection)
+        .export_values();
 
     py::enum_<LNLib::SurfaceCurvature>(m, "SurfaceCurvature")
         .value("Maximum", LNLib::SurfaceCurvature::Maximum)
@@ -40,14 +44,29 @@ void cstrEnums(py::module_&m)
         .value("Gauss", LNLib::SurfaceCurvature::Gauss)
         .value("Mean", LNLib::SurfaceCurvature::Mean)
         .value("Abs", LNLib::SurfaceCurvature::Abs)
-        .value("Rms", LNLib::SurfaceCurvature::Rms);
+        .value("Rms", LNLib::SurfaceCurvature::Rms)
+        .export_values();
 
     py::enum_<LNLib::IntegratorType>(m, "IntegratorType")
         .value("Simpson", LNLib::IntegratorType::Simpson)
         .value("GaussLegendre", LNLib::IntegratorType::GaussLegendre)
-        .value("Chebyshev", LNLib::IntegratorType::Chebyshev);
+        .value("Chebyshev", LNLib::IntegratorType::Chebyshev)
+        .export_values();
 
     py::enum_<LNLib::OffsetType>(m, "OffsetType")
         .value("TillerAndHanson", LNLib::OffsetType::TillerAndHanson)
-        .value("PieglAndTiller", LNLib::OffsetType::PieglAndTiller);
+        .value("PieglAndTiller", LNLib::OffsetType::PieglAndTiller)
+        .export_values();
+
+    py::enum_<LNLib::ExtensionType>(m, "ExtensionType")
+        .value("Tangent", LNLib::ExtensionType::Tangent)
+        .value("Arc", LNLib::ExtensionType::Arc)
+        .value("Natural", LNLib::ExtensionType::Natural)
+        .export_values();
+
+    py::enum_<LNLib::VolumeDirection>(m, "VolumeDirection")
+        .value("U", LNLib::VolumeDirection::U)
+        .value("V", LNLib::VolumeDirection::V)
+        .value("W", LNLib::VolumeDirection::W)
+        .export_values();
 }
