@@ -31,6 +31,7 @@ TEST(Test_Circles, All)
 		
 		bool result = NurbsCurve::CreateArc(center, xAxis, yAxis, 0, 2 * Constants::Pi, 10, 10, curve);
 		EXPECT_TRUE(result);
+		EXPECT_THROW(NurbsCurve::GetAllParamsOnCurve(curve, center), std::invalid_argument);
 
 		XYZ C0 = NurbsCurve::GetPointOnCurve(curve, 0);
 		EXPECT_TRUE(C0.IsAlmostEqualTo(XYZ(10, 0, 0)));

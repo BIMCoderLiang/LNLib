@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Author:
  * 2023/06/08 - Yuqing Liang (BIMCoder Liang)
  * bim.frankliang@foxmail.com
@@ -122,9 +122,14 @@ namespace LNLib
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page232
-		/// Point inversion:finding the corresponding parameter make S(u,v) = P.
+		/// Point inversion: According to projection or short distance (at endpoint) to find one corresponding parameter make S(u,v) = P.
 		/// </summary>
 		static UV GetParamOnSurface(const LN_NurbsSurface& surface, const XYZ& givenPoint);
+
+		/// <summary>
+		/// Point inversion:finding the all parameters {uv1,uv2,uv3,......} make S(u,v) = P.
+		/// </summary>
+		static std::vector<UV> GetAllParamsOnSurface(const LN_NurbsSurface& surface, const XYZ& givenPoint);
 
 		/// <summary>
 		/// Experimental:
@@ -278,5 +283,10 @@ namespace LNLib
 		/// 2. if useDelaunay = false, it is simple and run faster.
 		/// </summary>
 		static LN_Mesh Triangulate(const LN_NurbsSurface& surface, int resolutionU, int resolutionV, bool useDelaunay);
+
+		/// <summary>
+		/// A positive value indicates the point is on the side the normal points to (outside), while a negative value means it is inside.
+		/// </summary>
+		static double ComputeSignedDistanceFunction(const LN_NurbsSurface& surface, const XYZ& point);
 	};
 }

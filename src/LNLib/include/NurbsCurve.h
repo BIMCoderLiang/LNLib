@@ -127,9 +127,14 @@ namespace LNLib
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page230
-		/// Point inversion:finding the corresponding parameter make C(u) = P.
+		/// Point inversion: According to projection or short distance (at endpoint) to find one corresponding parameter make C(u) = P.
 		/// </summary>
 		static double GetParamOnCurve(const LN_NurbsCurve& curve, const XYZ& givenPoint);
+
+		/// <summary>
+		/// Point inversion:finding the all parameters {u1,u2,u3,......} make C(u) = P.
+		/// </summary>
+		static std::vector<double> GetAllParamsOnCurve(const LN_NurbsCurve& curve, const XYZ& givenPoint);
 
 		/// <summary>
 		/// The NURBS Book 2nd Edition Page236

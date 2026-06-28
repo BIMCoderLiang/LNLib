@@ -83,7 +83,8 @@ namespace LNLib
 	struct LNLIB_EXPORT LN_ArcInfo
 	{
 		double Radius = 0.0;
-		XYZ Center;
+		XYZ Center = XYZ(0,0,0);
+		bool IsCircle = false;
 	};
 
 	//AABB Box

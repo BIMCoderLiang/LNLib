@@ -24,6 +24,9 @@ TEST(Test_AdvancedGeometric, Curve_GetParamOrGetPoint)
 	XYZ result = NurbsCurve::GetPointOnCurve(curve, 1.0);
 	double param = NurbsCurve::GetParamOnCurve(curve, result);
 	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(1.0, param));
+	std::vector<double> paramList = NurbsCurve::GetAllParamsOnCurve(curve, result);
+	EXPECT_TRUE(paramList.size() == 1);
+	EXPECT_TRUE(MathUtils::IsAlmostEqualTo(1.0, paramList[0]));
 }
 
 TEST(Test_AdvancedGeometric, Surface_GetParamOrGetPoint)

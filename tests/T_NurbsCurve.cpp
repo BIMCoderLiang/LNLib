@@ -30,4 +30,24 @@ TEST(Test_NurbsCurve, All)
 	std::vector<XYZ> ders = NurbsCurve::ComputeRationalCurveDerivatives(curve, 2, 0.0);
 	EXPECT_TRUE(ders[1].IsAlmostEqualTo(XYZ(0, 2, 0)));
 	EXPECT_TRUE(ders[2].IsAlmostEqualTo(XYZ(-4, 0, 0)));
+
+	curve.Degree = 3; 
+	curve.ControlPoints = {
+		XYZW(-10, 10, 0, 1.0),
+		XYZW(-10,  0, 0, 1.0),
+		XYZW(-10, -5, 0, 1.0),
+		XYZW(0, -5, 0, 1.0),
+		XYZW(10, -5, 0, 1.0),
+		XYZW(10,  0, 0, 1.0),
+		XYZW(10, 10, 0, 1.0)
+	};
+	curve.KnotVector = {
+		0.0, 0.0, 0.0, 0.0,
+		0.25, 0.5, 0.75,
+		1.0, 1.0, 1.0, 1.0
+	};
+
+	XYZ givenPoint(0.0, 15.0, 0.0);
+	std::vector<double> allParams = LNLib::NurbsCurve::GetAllParamsOnCurve(curve, givenPoint);
+	EXPECT_TRUE(allParams.size() == 5);
 }

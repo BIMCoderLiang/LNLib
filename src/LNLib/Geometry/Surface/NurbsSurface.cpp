@@ -1387,6 +1387,168 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurface(const LN_NurbsSurface& surface,
 	return param;
 }
 
+std::vector<LNLib::UV> LNLib::NurbsSurface::GetAllParamsOnSurface(const LN_NurbsSurface& surface, const XYZ& givenPoint)
+{
+	int degreeU = surface.DegreeU;
+	int degreeV = surface.DegreeV;
+	std::vector<double> knotVectorU = surface.KnotVectorU;
+	std::vector<double> knotVectorV = surface.KnotVectorV;
+	std::vector<std::vector<XYZW>> controlPoints = surface.ControlPoints;
+
+	double minU = knotVectorU[0];
+	double maxU = knotVectorU[knotVectorU.size() - 1];
+	double minV = knotVectorV[0];
+	double maxV = knotVectorV[knotVectorV.size() - 1];
+
+	bool isClosedU = IsClosed(surface, true);
+	bool isClosedV = IsClosed(surface, false);
+
+	std::vector<XYZ> tessellatedPoints;
+	std::vector<UV> correspondingKnots;
+	EquallyTessellate(surface, tessellatedPoints, correspondingKnots);
+
+	std::vector<double> uniqueKvU = knotVectorU;
+	uniqueKvU.erase(std::unique(uniqueKvU.begin(), uniqueKvU.end()), uniqueKvU.end());
+	int sizeU = uniqueKvU.size();
+
+	std::vector<double> uniqueKvV = knotVectorV;
+	uniqueKvV.erase(std::unique(uniqueKvV.begin(), uniqueKvV.end()), uniqueKvV.end());
+	int sizeV = uniqueKvV.size();
+
+	int intervals = 100;
+	int numU = (sizeU - 1) * intervals; 
+	int numV = (sizeV - 1) * intervals; 
+
+	std::vector<double> distSq(tessellatedPoints.size());
+	for (size_t i = 0; i < tessellatedPoints.size(); ++i)
+	{
+		distSq[i] = (givenPoint - tessellatedPoints[i]).SqrLength();
+	}
+
+	std::vector<UV> initialGuesses;
+
+	for (int i = 1; i < numU - 1; ++i)
+	{
+		for (int j = 1; j < numV - 1; ++j)
+		{
+			int idx = i * numV + j;
+			int idxUp = (i - 1) * numV + j;
+			int idxDown = (i + 1) * numV + j;
+			int idxLeft = i * numV + (j - 1);
+			int idxRight = i * numV + (j + 1);
+
+			if (MathUtils::IsLessThan(distSq[idx],distSq[idxUp]) &&
+				MathUtils::IsLessThan(distSq[idx],distSq[idxDown]) &&
+				MathUtils::IsLessThan(distSq[idx],distSq[idxLeft]) &&
+				MathUtils::IsLessThan(distSq[idx],distSq[idxRight]))
+			{
+				initialGuesses.push_back(correspondingKnots[idx]);
+			}
+		}
+	}
+
+	if (!tessellatedPoints.empty()) {
+		initialGuesses.push_back(correspondingKnots.back());
+	}
+
+	std::vector<UV> result;
+	int maxIterations = 20;
+
+	for (const UV& guess : initialGuesses)
+	{
+		UV param = guess;
+
+		for (int iter = 0; iter < maxIterations; ++iter)
+		{
+			std::vector<std::vector<XYZ>> derivatives = ComputeRationalSurfaceDerivatives(surface, 2, param);
+
+			XYZ S = derivatives[0][0];
+			XYZ Su = derivatives[1][0];
+			XYZ Sv = derivatives[0][1];
+			XYZ Suu = derivatives[2][0];
+			XYZ Svv = derivatives[0][2];
+			XYZ Suv = derivatives[1][1];
+
+			XYZ diff = S - givenPoint;
+			double currentDist = diff.Length();
+
+			if (MathUtils::IsAlmostEqualTo(currentDist, 0.0)) {
+				break;
+			}
+
+			double J00 = Su.DotProduct(Su) + diff.DotProduct(Suu);
+			double J01 = Su.DotProduct(Sv) + diff.DotProduct(Suv);
+			double J10 = J01;
+			double J11 = Sv.DotProduct(Sv) + diff.DotProduct(Svv);
+
+			double K0 = Su.DotProduct(diff);
+			double K1 = Sv.DotProduct(diff);
+
+			double determinant = J00 * J11 - J01 * J10;
+
+			if (MathUtils::IsAlmostEqualTo(std::abs(determinant), 0.0)) {
+				break;
+			}
+
+			double deltaU = (J10 * K1 - J11 * K0) / determinant;
+			double deltaV = (J01 * K0 - J00 * K1) / determinant;
+
+			double newU = param.GetU() + deltaU;
+			double newV = param.GetV() + deltaV;
+
+			XYZ deltaWorld = Su * deltaU + Sv * deltaV;
+			if (MathUtils::IsAlmostEqualTo(deltaWorld.Length(), 0.0)) {
+				param = UV(newU, newV);
+				break;
+			}
+
+			if (isClosedU) {
+				double rangeU = maxU - minU;
+				while (MathUtils::IsLessThan(newU, minU)) newU += rangeU;
+				while (MathUtils::IsGreaterThan(newU, maxU)) newU -= rangeU;
+			}
+			else {
+				newU = std::max(minU, std::min(maxU, newU));
+			}
+
+			if (isClosedV) {
+				double rangeV = maxV - minV;
+				while (newV < minV) newV += rangeV;
+				while (newV > maxV) newV -= rangeV;
+			}
+			else {
+				newV = std::max(minV, std::min(maxV, newV));
+			}
+
+			param = UV(newU, newV);
+		}
+
+		bool isDuplicate = false;
+		for (const UV& existingUV : result)
+		{
+			double diffU = std::abs(existingUV.GetU() - param.GetU());
+			double diffV = std::abs(existingUV.GetV() - param.GetV());
+
+			if (isClosedU) diffU = std::min(diffU, std::abs(diffU - (maxU - minU)));
+			if (isClosedV) diffV = std::min(diffV, std::abs(diffV - (maxV - minV)));
+
+			if (MathUtils::IsAlmostEqualTo(diffU,0.0) && 
+				MathUtils::IsAlmostEqualTo(diffV, 0.0))
+			{
+				isDuplicate = true;
+				break;
+			}
+		}
+
+		if (!isDuplicate)
+		{
+			result.push_back(param);
+		}
+	}
+
+	return result;
+}
+
 LNLib::UV LNLib::NurbsSurface::GetParamOnSurfaceByGSA(const LN_NurbsSurface& surface, const XYZ& givenPoint)
 {
 	std::vector<double> knotVectorU = surface.KnotVectorU;
@@ -3773,6 +3935,18 @@ LNLib::LN_Mesh LNLib::NurbsSurface::Triangulate(const LN_NurbsSurface& surface, 
 		}
 		return mesh;
 	}
+}
+
+double LNLib::NurbsSurface::ComputeSignedDistanceFunction(const LN_NurbsSurface& surface, const XYZ& point)
+{
+	UV uv = GetParamOnSurface(surface, point);
+	XYZ closestPointOnSurf = GetPointOnSurface(surface, uv);
+	XYZ vecPQ = point - closestPointOnSurf;
+	XYZ normal = Normal(surface, uv);
+	double dotProduct = vecPQ.DotProduct(normal);
+	double distance = vecPQ.Length();
+
+	return (MathUtils::IsGreaterThanOrEqual(dotProduct, 0.0)) ? distance : -distance;
 }
 
 
