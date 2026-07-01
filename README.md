@@ -16,14 +16,6 @@ For NURBS **Curve | Surface | Volume**
 ***notice***: Unit tests now only cover Native C++ APIs on Windows System.
 
 ## Features
-Basic Elements:
-- UV
-- UVW
-- XYZ
-- XYZW
-- Matrix4d
-- LNObject
-
 Algorithms in ***The NURBS Book***:
 |Chapter|Content|
 |--|--|
@@ -46,14 +38,139 @@ Additional Algorithms:
 |***NURBS Volume***  | Volume Degree Elevation</br>Volume Knot Insertion/Refinement</br>Volume Point Inversion</br>Volume Split</br>Extract Surface From Volume</br>Extract IsoCurve From Volume</br>Volume Swap and Reverse|
 
 ## Visualization
-[LNLibViewer](https://github.com/BIMCoderLiang/LNLibViewer) based on [VTK](https://vtk.org/)
-
 <img src="assets/curve.png" width=500 height=400>
+
+```C++
+XYZ center(10, 0, 0);
+XYZ xAxis(-1, 0, 0);
+XYZ yAxis(0, 1, 0);
+double startRad = 0;
+double endRad = Constants::Pi;
+double radius = 5;
+LN_NurbsCurve arc;
+NurbsCurve::CreateArc(center, xAxis, yAxis, startRad, endRad, radius, radius, arc);
+```
 <img src="assets/surface.png" width=500 height=400>
+
+```C++
+int degreeU = 3;
+int degreeV = 3;
+std::vector<double> kvU = { 0,0,0,0,0.4,0.6,1,1,1,1 };
+std::vector<double> kvV = { 0,0,0,0,0.4,0.6,1,1,1,1 };
+std::vector<std::vector<XYZW>> controlPoints(6, std::vector<XYZW>(6));
+
+controlPoints[0][0] = XYZW(0, 0, 0, 1);
+controlPoints[0][1] = XYZW(6.666666, 0, 4, 1);
+controlPoints[0][2] = XYZW(16.666666, 0, 22, 1);
+controlPoints[0][3] = XYZW(33.333333, 0, 22, 1);
+controlPoints[0][4] = XYZW(43.333333, 0, 4, 1);
+controlPoints[0][5] = XYZW(50, 0, 0, 1);
+
+controlPoints[1][0] = XYZW(0, 6.666667, 0, 1);
+controlPoints[1][1] = XYZW(6.6666667, 6.666667, 9.950068, 1);
+controlPoints[1][2] = XYZW(16.6666666, 6.666667, 9.65541838, 1);
+controlPoints[1][3] = XYZW(33.3333333, 6.666667, 47.21371742, 1);
+controlPoints[1][4] = XYZW(43.3333333, 6.666667, -11.56982167, 1);
+controlPoints[1][5] = XYZW(50, 6.6666667, 0, 1);
+
+controlPoints[2][0] = XYZW(0, 16.666666, 0, 1);
+controlPoints[2][1] = XYZW(6.6666667, 16.666666, -7.9001371, 1);
+controlPoints[2][2] = XYZW(16.6666666, 16.666666, 46.6891632, 1);
+controlPoints[2][3] = XYZW(33.3333333, 16.666667, -28.4274348, 1);
+controlPoints[2][4] = XYZW(43.3333333, 16.666667, 35.1396433, 1);
+controlPoints[2][5] = XYZW(50, 16.6666667, 0, 1);
+
+controlPoints[3][0] = XYZW(0, 33.3333333, 0, 1);
+controlPoints[3][1] = XYZW(6.6666667, 33.3333333, 29.2877911, 1);
+controlPoints[3][2] = XYZW(16.6666666, 33.3333333, -30.4644718, 1);
+controlPoints[3][3] = XYZW(33.3333333, 33.3333333, 129.1582990, 1);
+controlPoints[3][4] = XYZW(43.3333333, 33.3333333, -62.1717142, 1);
+controlPoints[3][5] = XYZW(50, 33.333333, 0, 1);
+
+controlPoints[4][0] = XYZW(0, 43.333333, 0, 1);
+controlPoints[4][1] = XYZW(6.6666667, 43.333333, -10.384636, 1);
+controlPoints[4][2] = XYZW(16.6666666, 43.333333, 59.21371742, 1);
+controlPoints[4][3] = XYZW(33.3333333, 43.333333, -37.7272976, 1);
+controlPoints[4][4] = XYZW(43.3333333, 43.333333, 45.1599451, 1);
+controlPoints[4][5] = XYZW(50, 43.333333, 0, 1);
+
+controlPoints[5][0] = XYZW(0, 50, 0, 1);
+controlPoints[5][1] = XYZW(6.6666667, 50, 0, 1);
+controlPoints[5][2] = XYZW(16.6666666, 50, 0, 1);
+controlPoints[5][3] = XYZW(33.3333333, 50, 0, 1);
+controlPoints[5][4] = XYZW(43.3333333, 50, 0, 1);
+controlPoints[5][5] = XYZW(50, 50, 0, 1);
+
+LNLib::LN_NurbsSurface surface;
+surface.DegreeU = degreeU;
+surface.DegreeV = degreeV;
+surface.KnotVectorU = kvU;
+surface.KnotVectorV = kvV;
+surface.ControlPoints = controlPoints;
+```
 <img src="assets/volume.png" width=500 height=400>
 
+```C++
+LN_NurbsVolume volume;
+
+volume.DegreeU = 3;
+volume.DegreeV = 1;
+volume.DegreeW = 1;
+
+volume.KnotVectorU = { 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0 };
+volume.KnotVectorV = { 0.0, 0.0, 1.0, 1.0 };
+volume.KnotVectorW = { 0.0, 0.0, 1.0, 1.0 };
+
+volume.ControlPoints.resize(4);
+for (int i = 0; i < 4; ++i) {
+	volume.ControlPoints[i].resize(2);
+	for (int j = 0; j < 2; ++j) {
+		volume.ControlPoints[i][j].resize(2);
+	}
+}
+
+double w_mid = std::sqrt(2.0) / 2.0;
+w_mid = std::sqrt(3.0) / 2.0;
+
+double tan_15 = 2.0 - std::sqrt(3.0);
+
+double R_out = 10.0;
+
+double out_x1 = R_out;                 double out_y1 = R_out * tan_15;
+double out_x2 = R_out * tan_15;        double out_y2 = R_out;
+
+double R_in = 6.0;
+double in_x1 = R_in;                   double in_y1 = R_in * tan_15;
+double in_x2 = R_in * tan_15;          double in_y2 = R_in;
+
+volume.ControlPoints[0][0][0] = XYZW(R_out * 1.0, 0.0, 0.0, 1.0);
+volume.ControlPoints[1][0][0] = XYZW(out_x1 * w_mid, out_y1 * w_mid, 0.0, w_mid);
+volume.ControlPoints[2][0][0] = XYZW(out_x2 * w_mid, out_y2 * w_mid, 0.0, w_mid);
+volume.ControlPoints[3][0][0] = XYZW(0.0, R_out * 1.0, 0.0, 1.0);
+
+double Z_top = 5.0;
+volume.ControlPoints[0][1][0] = XYZW(R_out * 1.0, 0.0, Z_top * 1.0, 1.0);
+volume.ControlPoints[1][1][0] = XYZW(out_x1 * w_mid, out_y1 * w_mid, Z_top * w_mid, w_mid);
+volume.ControlPoints[2][1][0] = XYZW(out_x2 * w_mid, out_y2 * w_mid, Z_top * w_mid, w_mid);
+volume.ControlPoints[3][1][0] = XYZW(0.0, R_out * 1.0, Z_top * 1.0, 1.0);
+
+volume.ControlPoints[0][0][1] = XYZW(R_in * 1.0, 0.0, 0.0, 1.0);
+volume.ControlPoints[1][0][1] = XYZW(in_x1 * w_mid, in_y1 * w_mid, 0.0, w_mid);
+volume.ControlPoints[2][0][1] = XYZW(in_x2 * w_mid, in_y2 * w_mid, 0.0, w_mid);
+volume.ControlPoints[3][0][1] = XYZW(0.0, R_in * 1.0, 0.0, 1.0);
+
+volume.ControlPoints[0][1][1] = XYZW(R_in * 1.0, 0.0, Z_top * 1.0, 1.0);
+volume.ControlPoints[1][1][1] = XYZW(in_x1 * w_mid, in_y1 * w_mid, Z_top * w_mid, w_mid);
+volume.ControlPoints[2][1][1] = XYZW(in_x2 * w_mid, in_y2 * w_mid, Z_top * w_mid, w_mid);
+volume.ControlPoints[3][1][1] = XYZW(0.0, R_in * 1.0, Z_top * 1.0, 1.0);
+```
+**Visualization Tool** [LNLibViewer](https://github.com/BIMCoderLiang/LNLibViewer) based on [VTK](https://vtk.org/)
+More Samples can be found in [tests](tests) folder
+
 ## NURBS Fitting by Neural Network
-[ND-LNLib](https://github.com/BIMCoderLiang/NURBS-Diff-with-LNLib) based on [LibTorch](https://pytorch.org/cppdocs/installing.html) (PyTorch C++ version)
+
+Red one is the target and white one is fitting result.
+More details could be found in [ND-LNLib](https://github.com/BIMCoderLiang/NURBS-Diff-with-LNLib) based on [LibTorch](https://pytorch.org/cppdocs/installing.html) (PyTorch C++ version)
 
 <img src="assets/aicurve.jpg" width=500 height=400>
 <img src="assets/aisurface.png" width=500 height=400>
@@ -133,9 +250,9 @@ void ConvertToOpenCascadeSurface(const LNLib::LN_NurbsSurface& surface, Handle(G
         surface.DegreeU, surface.DegreeV);
 }
 ```
-More Details could be found in [LNLibEx](https://github.com/BIMCoderLiang/LNLibEx) Library, which used for **export nurbs surfaces to STEP or IGES** format file.
+More Details could be found in [LNLibExtension](https://github.com/BIMCoderLiang/LNLibEx) Library, which used for **export nurbs surfaces to STEP or IGES** format file.
 
-## Online Document
+## Document
 Welcome to use https://deepwiki.com/BIMCoderLiang/LNLib powered by Devin.
 
 ## Contributing
@@ -148,7 +265,7 @@ Welcome join this project including discussions in **Issues** and make **Pull re
 - Algorithm Adviser: 
 [csulijunji](https://github.com/csulijunji)
 
-## Repositories based-on LNLib
+## Use Cases
 - [fplnlib](https://github.com/zamtmn/fplnlib): **Pascal** Version NURBS Algorithm
 - [VL.Nurbsy](https://github.com/antokhio/VL.Nurbsy): **Native C#** Version of NURBS Algorithm
 
