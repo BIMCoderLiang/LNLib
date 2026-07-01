@@ -1,6 +1,5 @@
 ## Introduction
-**LNLib is a NURBS Algorithms Kernel Library.** <br/>These algorithms are primary referenced from [The NURBS Book 2nd Edition](https://link.springer.com/book/10.1007/978-3-642-97385-7). <br/>
-For NURBS **Curve | Surface | Volume**
+**LNLib is a NURBS Algorithms Kernel Library.** <br/>These algorithms are primary referenced from [The NURBS Book 2nd Edition](https://link.springer.com/book/10.1007/978-3-642-97385-7). <br/>For NURBS **Curve | Surface | Volume**
 
 <img src="assets/LNLib.png" width=400 height=200> 
 
@@ -164,13 +163,11 @@ volume.ControlPoints[1][1][1] = XYZW(in_x1 * w_mid, in_y1 * w_mid, Z_top * w_mid
 volume.ControlPoints[2][1][1] = XYZW(in_x2 * w_mid, in_y2 * w_mid, Z_top * w_mid, w_mid);
 volume.ControlPoints[3][1][1] = XYZW(0.0, R_in * 1.0, Z_top * 1.0, 1.0);
 ```
-**Visualization Tool** [LNLibViewer](https://github.com/BIMCoderLiang/LNLibViewer) based on [VTK](https://vtk.org/)
-More Samples can be found in [tests](tests) folder
+**Visualization Tool** [LNLibViewer](https://github.com/BIMCoderLiang/LNLibViewer) based on [VTK](https://vtk.org/). <br/>More Samples could be found in [tests](tests) folder.
 
 ## NURBS Fitting by Neural Network
 
-Red one is the target and white one is fitting result.
-More details could be found in [ND-LNLib](https://github.com/BIMCoderLiang/NURBS-Diff-with-LNLib) based on [LibTorch](https://pytorch.org/cppdocs/installing.html) (PyTorch C++ version)
+Red one is the target and white one is fitting result.<br/>More details could be found in [ND-LNLib](https://github.com/BIMCoderLiang/NURBS-Diff-with-LNLib) based on [LibTorch](https://pytorch.org/cppdocs/installing.html) (PyTorch C++ version).
 
 <img src="assets/aicurve.jpg" width=500 height=400>
 <img src="assets/aisurface.png" width=500 height=400>
