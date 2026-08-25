@@ -1,0 +1,7 @@
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/LNLibTargets.cmake")
+
+# Public headers do not reference Eigen (header-only, only used internally by
+# the .cpp files), so consumers link LNLib::LNLib without extra dependencies.
+check_required_components(LNLib)
