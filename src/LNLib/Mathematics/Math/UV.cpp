@@ -132,7 +132,7 @@ double UV::CrossProduct(const UV& another) const
 
 double LNLib::UV::Distance(const UV& another) const
 {
-	double squareValue = pow((another.GetU() - m_uv[0]), 2) + pow((another.GetV() - m_uv[1]), 2);
+	double squareValue = std::pow((another.GetU() - m_uv[0]), 2) + std::pow((another.GetV() - m_uv[1]), 2);
 	return std::sqrt(squareValue);
 }
 

@@ -290,8 +290,8 @@ double LNLib::NurbsSurface::Curvature(const LN_NurbsSurface& surface, SurfaceCur
 
 	double K = (L * N - M * M) / denominator;
 	double H = (E * N + G * L - 2 * F * M) / (2 * denominator);
-	double k1 = H + std::sqrt(abs(H * H - K));
-	double k2 = H - std::sqrt(abs(H * H - K));
+	double k1 = H + std::sqrt(std::abs(H * H - K));
+	double k2 = H - std::sqrt(std::abs(H * H - K));
 
 	if (curvature == SurfaceCurvature::Gauss)
 	{
@@ -311,7 +311,7 @@ double LNLib::NurbsSurface::Curvature(const LN_NurbsSurface& surface, SurfaceCur
 	}
 	else if (curvature == SurfaceCurvature::Abs)
 	{
-		return abs(k1) + abs(k2);
+		return std::abs(k1) + std::abs(k2);
 	}
 	else if (curvature == SurfaceCurvature::Rms)
 	{
@@ -1602,7 +1602,7 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurfaceByGSA(const LN_NurbsSurface& sur
 		double a2 = (c1 * c1 * s2 - c1 * c2 * s1 - c1 * F * s3 + c2 * E * s3 - E * s2 + F * s1)/(c1 * c1 * G - 2 * c1 * c2 * F + c2 * c2 * E - E * G + F * F);
 
 		double curvature = (L * a1 * a1 + 2 * M * a1* a2 + N * a2 * a2)/(E * a1 * a1 + 2 * F * a1 * a2 + G * a2 * a2);
-		double radius = 1 / abs(curvature);
+		double radius = 1 / std::abs(curvature);
 
 		XYZ m = p0 + radius * normal;
 		XYZ q = givenPoint + (m - givenPoint) * (1 - radius / (m.Distance(givenPoint)));
@@ -1619,8 +1619,8 @@ LNLib::UV LNLib::NurbsSurface::GetParamOnSurfaceByGSA(const LN_NurbsSurface& sur
 		u0 = ut;
 		v0 = vt;
 
-		bool condition1 = MathUtils::IsLessThanOrEqual(abs(deltaU), Constants::DoubleEpsilon) && MathUtils::IsLessThanOrEqual(abs(deltaV), Constants::DoubleEpsilon);
-		bool condition2 = MathUtils::IsLessThanOrEqual((abs(deltaU) * abs(deltaU) + abs(deltaV) * abs(deltaV)), Constants::DoubleEpsilon);
+		bool condition1 = MathUtils::IsLessThanOrEqual(std::abs(deltaU), Constants::DoubleEpsilon) && MathUtils::IsLessThanOrEqual(std::abs(deltaV), Constants::DoubleEpsilon);
+		bool condition2 = MathUtils::IsLessThanOrEqual((std::abs(deltaU) * std::abs(deltaU) + std::abs(deltaV) * std::abs(deltaV)), Constants::DoubleEpsilon);
 
 		if (condition1 || condition2)
 		{
@@ -1890,7 +1890,7 @@ bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& ax
 	}
 
 	int n = 2 * narcs;
-	double wm = cos(dtheta / 2.0);
+	double wm = std::cos(dtheta / 2.0);
 	double angle = 0.0;
 	std::vector<double> cosines(narcs + 1, 0.0);
 	std::vector<double> sines(narcs + 1, 0.0);
@@ -1898,8 +1898,8 @@ bool LNLib::NurbsSurface::CreateRevolvedSurface(const XYZ& origin, const XYZ& ax
 	for (int i = 1; i <= narcs; i++)
 	{
 		angle += dtheta;
-		cosines[i] = cos(angle);
-		sines[i] = sin(angle);
+		cosines[i] = std::cos(angle);
+		sines[i] = std::sin(angle);
 	}
 
 	int m = profile.ControlPoints.size() - 1;
@@ -2032,7 +2032,7 @@ void LNLib::NurbsSurface::MakeCornerFilletSurface(const LN_NurbsCurve& arc, LN_N
 	XYZ projectPoint;
 	Projection::PointToLine(c2_start, c2_end, c2_half, projectPoint);
 	double archHeight = c2_half.Distance(projectPoint);
-	double radius = (pow(chordLength / 2.0, 2) + pow(archHeight, 2)) / (2 * archHeight);
+	double radius = (std::pow(chordLength / 2.0, 2) + std::pow(archHeight, 2)) / (2 * archHeight);
 	double radius2 = radius * radius;
 
 	XYZ p01 = Projection::Stereographic(c2_start, radius);
@@ -2055,14 +2055,14 @@ void LNLib::NurbsSurface::MakeCornerFilletSurface(const LN_NurbsCurve& arc, LN_N
 	double x31 = x3 - x1;
 	double x21 = x2 - x1;
 
-	double sx13 = pow(x1, 2) - pow(x3, 2);
-	double sy13 = pow(y1, 2) - pow(y3, 2);
-	double sx21 = pow(x2, 2) - pow(x1, 2);
-	double sy21 = pow(y2, 2) - pow(y1, 2);
+	double sx13 = std::pow(x1, 2) - std::pow(x3, 2);
+	double sy13 = std::pow(y1, 2) - std::pow(y3, 2);
+	double sx21 = std::pow(x2, 2) - std::pow(x1, 2);
+	double sy21 = std::pow(y2, 2) - std::pow(y1, 2);
 
 	double f = (sx13 * x12 + sy13 * x12 + sx21 * x13 + sy21 * x13) / (2 * (y31 * x12 - y21 * x13));
 	double g = (sx13 * y12 + sy13 * y12 + sx21 * y13 + sy21 * y13) / (2 * (x31 * y12 - x21 * y13));
-	double c = -pow(x1, 2) - pow(y1, 2) - 2 * g * x1 - 2 * f * y1;
+	double c = -std::pow(x1, 2) - std::pow(y1, 2) - 2 * g * x1 - 2 * f * y1;
 	double cx = -g;
 	double cy = -f;
 	double r = std::sqrt(cx * cx + cy * cy - c);
@@ -2070,13 +2070,13 @@ void LNLib::NurbsSurface::MakeCornerFilletSurface(const LN_NurbsCurve& arc, LN_N
 	XYZ center = XYZ(cx, cy, 0);
 	XYZ middle = (p01 + p21) / 2.0;
 	double center2Middle = center.Distance(middle);
-	double a = pow(r, 2) / pow(center2Middle, 2);
+	double a = std::pow(r, 2) / std::pow(center2Middle, 2);
 	XYZ p11 = (1 - a) * center + a * middle;
 
 	XYZ d1 = p11 - p21;
 	XYZ d2 = p01 - p21;
 	double theta = d1.AngleTo(d2);
-	double w11 = cos(theta);
+	double w11 = std::cos(theta);
 
 	std::vector<std::vector<XYZW>> bezierControlPoints(3, std::vector<XYZW>(2));
 
@@ -2113,19 +2113,19 @@ void LNLib::NurbsSurface::MakeCornerFilletSurface(const LN_NurbsCurve& arc, LN_N
 	std::vector<std::vector<XYZW>> b(5, std::vector<XYZW>(3));
 	b[0][0] = XYZW(0, 0, 0, 4 * radius2 * h[0][0]);
 	b[0][1] = XYZW(4 * radius2 * u[0][1] * h[0][0], 0, 0, 1);
-	b[0][2] = XYZW(0, 0, 2 * radius * pow(u[0][1], 2), pow(u[0][1], 2));
-	b[1][0] = XYZW(0, 0, 0, 4 * radius2 * pow(h[0][0], 2));
+	b[0][2] = XYZW(0, 0, 2 * radius * std::pow(u[0][1], 2), std::pow(u[0][1], 2));
+	b[1][0] = XYZW(0, 0, 0, 4 * radius2 * std::pow(h[0][0], 2));
 	b[1][1] = XYZW(4 * radius2 * (u[1][1] * h[0][0] + u[0][1] * h[1][0]), 4 * radius2 * v[1][1] * h[0][0], 0, 1);
 	b[1][2] = XYZW(0, 0, 4 * radius * u[0][1] * u[1][1], 2 * u[0][1] * u[1][1]);
-	b[2][0] = XYZW(0, 0, 0, 4 * radius2 * (pow(h[1][0], 2) + 2 * h[0][0] * h[2][0]));
+	b[2][0] = XYZW(0, 0, 0, 4 * radius2 * (std::pow(h[1][0], 2) + 2 * h[0][0] * h[2][0]));
 	b[2][1] = XYZW(4 * radius2 * (u[2][1] * h[0][0] + u[1][1] * h[1][0] + u[0][1] * h[2][0]), 4 * radius2 * (v[2][1] * h[0][0] + v[1][1] * h[1][0]), 0, 1);
-	b[2][2] = XYZW(0, 0, 2 * radius * (pow(u[1][1], 2) + 2 * u[0][1] * u[2][1] + pow(v[1][1], 2)), pow(u[1][1], 2) + 2 * u[0][1] * u[2][1] + pow(v[1][1], 2));
+	b[2][2] = XYZW(0, 0, 2 * radius * (std::pow(u[1][1], 2) + 2 * u[0][1] * u[2][1] + std::pow(v[1][1], 2)), std::pow(u[1][1], 2) + 2 * u[0][1] * u[2][1] + std::pow(v[1][1], 2));
 	b[3][0] = XYZW(0, 0, 0, 8 * radius2 * h[1][0] * h[2][0]);
 	b[3][1] = XYZW(4 * radius2 * (u[2][1] * h[1][0] + u[1][1] * h[2][0]), 4 * radius2 * (v[1][1] * h[2][0] + v[2][1] * h[1][0]), 0, 1);
 	b[3][2] = XYZW(0, 0, 4 * radius * (u[1][1] * u[2][1] + v[1][1] * v[2][1]), 2 * (u[1][1] * u[2][1] + v[1][1] * v[2][1]));
-	b[4][0] = XYZW(0, 0, 0, 4 * radius2 * pow(h[2][0], 2));
+	b[4][0] = XYZW(0, 0, 0, 4 * radius2 * std::pow(h[2][0], 2));
 	b[4][1] = XYZW(4 * radius2 * u[2][1] * h[2][0], 4 * radius2 * v[2][1] * h[2][0], 0, 1);
-	b[4][2] = XYZW(0, 0, 2 * radius * (pow(u[2][1], 2) + pow(v[2][1], 2)), pow(u[2][1], 2) + pow(v[2][1], 2));
+	b[4][2] = XYZW(0, 0, 2 * radius * (std::pow(u[2][1], 2) + std::pow(v[2][1], 2)), std::pow(u[2][1], 2) + std::pow(v[2][1], 2));
 
 	std::vector<std::vector<double>> M4 = Polynomials::BezierToPowerMatrix(4);
 	std::vector<std::vector<double>> IM4;
@@ -3811,7 +3811,7 @@ LNLib::LN_Mesh LNLib::NurbsSurface::Triangulate(const LN_NurbsSurface& surface, 
 				{
 					ppf = perMin + perRange * f;
 				}
-				ppf = ceil(ppf);
+				ppf = std::ceil(ppf);
 
 				std::uniform_real_distribution<> disU(currentU, nextU);
 				std::uniform_real_distribution<> disV(currentV, nextV);

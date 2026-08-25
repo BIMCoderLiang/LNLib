@@ -35,9 +35,9 @@ function prototypes
 		(notes: sum_j=0^n-1 is a summation from j=0 to n-1)
 	[usage]
 		<case1>
-			cdft(2*n, cos(M_PI/n), sin(M_PI/n), a);
+			cdft(2*n, std::cos(M_PI/n), std::sin(M_PI/n), a);
 		<case2>
-			cdft(2*n, cos(M_PI/n), -sin(M_PI/n), a);
+			cdft(2*n, std::cos(M_PI/n), -std::sin(M_PI/n), a);
 	[parameters]
 		2*n          :data length (int)
 					  n >= 1, n = power of 2
@@ -48,9 +48,9 @@ function prototypes
 						  a[2*k] = Re(X[k]), a[2*k+1] = Im(X[k]), 0<=k<n
 	[remark]
 		Inverse of
-			cdft(2*n, cos(M_PI/n), -sin(M_PI/n), a);
+			cdft(2*n, std::cos(M_PI/n), -std::sin(M_PI/n), a);
 		is
-			cdft(2*n, cos(M_PI/n), sin(M_PI/n), a);
+			cdft(2*n, std::cos(M_PI/n), std::sin(M_PI/n), a);
 			for (j = 0; j <= 2 * n - 1; j++) {
 				a[j] *= 1.0 / n;
 			}
@@ -66,9 +66,9 @@ function prototypes
 				   sum_j=1^n/2-1 I[j]*sin(2*pi*j*k/n), 0<=k<n
 	[usage]
 		<case1>
-			rdft(n, cos(M_PI/n), sin(M_PI/n), a);
+			rdft(n, std::cos(M_PI/n), std::sin(M_PI/n), a);
 		<case2>
-			rdft(n, cos(M_PI/n), -sin(M_PI/n), a);
+			rdft(n, std::cos(M_PI/n), -std::sin(M_PI/n), a);
 	[parameters]
 		n            :data length (int)
 					  n >= 2, n = power of 2
@@ -85,9 +85,9 @@ function prototypes
 							  a[1] = R[n/2]
 	[remark]
 		Inverse of
-			rdft(n, cos(M_PI/n), sin(M_PI/n), a);
+			rdft(n, std::cos(M_PI/n), std::sin(M_PI/n), a);
 		is
-			rdft(n, cos(M_PI/n), -sin(M_PI/n), a);
+			rdft(n, std::cos(M_PI/n), -std::sin(M_PI/n), a);
 			for (j = 0; j <= n - 1; j++) {
 				a[j] *= 2.0 / n;
 			}
@@ -100,9 +100,9 @@ function prototypes
 			C[k] = sum_j=0^n-1 a[j]*cos(pi*(j+1/2)*k/n), 0<=k<n
 	[usage]
 		<case1>
-			ddct(n, cos(M_PI/n/2), sin(M_PI/n/2), a);
+			ddct(n, std::cos(M_PI/n/2), std::sin(M_PI/n/2), a);
 		<case2>
-			ddct(n, cos(M_PI/n/2), -sin(M_PI/n/2), a);
+			ddct(n, std::cos(M_PI/n/2), -std::sin(M_PI/n/2), a);
 	[parameters]
 		n            :data length (int)
 					  n >= 2, n = power of 2
@@ -111,10 +111,10 @@ function prototypes
 						  a[k] = C[k], 0<=k<n
 	[remark]
 		Inverse of
-			ddct(n, cos(M_PI/n/2), -sin(M_PI/n/2), a);
+			ddct(n, std::cos(M_PI/n/2), -std::sin(M_PI/n/2), a);
 		is
 			a[0] *= T(0.5);
-			ddct(n, cos(M_PI/n/2), sin(M_PI/n/2), a);
+			ddct(n, std::cos(M_PI/n/2), std::sin(M_PI/n/2), a);
 			for (j = 0; j <= n - 1; j++) {
 				a[j] *= 2.0 / n;
 			}
@@ -127,9 +127,9 @@ function prototypes
 			S[k] = sum_j=0^n-1 a[j]*sin(pi*(j+1/2)*k/n), 0<k<=n
 	[usage]
 		<case1>
-			ddst(n, cos(M_PI/n/2), sin(M_PI/n/2), a);
+			ddst(n, std::cos(M_PI/n/2), std::sin(M_PI/n/2), a);
 		<case2>
-			ddst(n, cos(M_PI/n/2), -sin(M_PI/n/2), a);
+			ddst(n, std::cos(M_PI/n/2), -std::sin(M_PI/n/2), a);
 	[parameters]
 		n            :data length (int)
 					  n >= 2, n = power of 2
@@ -146,10 +146,10 @@ function prototypes
 							  a[0] = S[n]
 	[remark]
 		Inverse of
-			ddst(n, cos(M_PI/n/2), -sin(M_PI/n/2), a);
+			ddst(n, std::cos(M_PI/n/2), -std::sin(M_PI/n/2), a);
 		is
 			a[0] *= T(0.5);
-			ddst(n, cos(M_PI/n/2), sin(M_PI/n/2), a);
+			ddst(n, std::cos(M_PI/n/2), std::sin(M_PI/n/2), a);
 			for (j = 0; j <= n - 1; j++) {
 				a[j] *= 2.0 / n;
 			}
@@ -158,7 +158,7 @@ function prototypes
 	[definition]
 		C[k] = sum_j=0^n a[j]*cos(pi*j*k/n), 0<=k<=n
 	[usage]
-		dfct(n, cos(M_PI/n), sin(M_PI/n), a);
+		dfct(n, std::cos(M_PI/n), std::sin(M_PI/n), a);
 	[parameters]
 		n            :data length - 1 (int)
 					  n >= 2, n = power of 2
@@ -169,11 +169,11 @@ function prototypes
 		Inverse of
 			a[0] *= T(0.5);
 			a[n] *= T(0.5);
-			dfct(n, cos(M_PI/n), sin(M_PI/n), a);
+			dfct(n, std::cos(M_PI/n), std::sin(M_PI/n), a);
 		is
 			a[0] *= T(0.5);
 			a[n] *= T(0.5);
-			dfct(n, cos(M_PI/n), sin(M_PI/n), a);
+			dfct(n, std::cos(M_PI/n), std::sin(M_PI/n), a);
 			for (j = 0; j <= n; j++) {
 				a[j] *= 2.0 / n;
 			}
@@ -182,7 +182,7 @@ function prototypes
 	[definition]
 		S[k] = sum_j=1^n-1 a[j]*sin(pi*j*k/n), 0<k<n
 	[usage]
-		dfst(n, cos(M_PI/n), sin(M_PI/n), a);
+		dfst(n, std::cos(M_PI/n), std::sin(M_PI/n), a);
 	[parameters]
 		n            :data length + 1 (int)
 					  n >= 2, n = power of 2
@@ -192,9 +192,9 @@ function prototypes
 					  (a[0] is used for work area)
 	[remark]
 		Inverse of
-			dfst(n, cos(M_PI/n), sin(M_PI/n), a);
+			dfst(n, std::cos(M_PI/n), std::sin(M_PI/n), a);
 		is
-			dfst(n, cos(M_PI/n), sin(M_PI/n), a);
+			dfst(n, std::cos(M_PI/n), std::sin(M_PI/n), a);
 			for (j = 1; j <= n - 1; j++) {
 				a[j] *= 2.0 / n;
 			}

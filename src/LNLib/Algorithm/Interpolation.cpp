@@ -190,7 +190,7 @@ std::vector<double> LNLib::Interpolation::ComputeKnotVector(int degree, int cont
 	double d = (double)(m + 1) / (double)(n - degree + 1);
 	for (int j = 1; j <= n - degree; j++)
 	{
-		int i = floor(j * d);
+		int i = std::floor(j * d);
 		double alpha = (j * d) - i;
 		knotVector[degree + j] = (1.0 - alpha) * params[i - 1] + (alpha * params[i]);
 	}
