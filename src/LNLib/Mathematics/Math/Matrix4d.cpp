@@ -111,8 +111,8 @@ Matrix4d LNLib::Matrix4d::CreateReflection(const XYZ& normal)
 
 Matrix4d LNLib::Matrix4d::CreateRotation(const XYZ& axis, double rad)
 {
-	double c = cos(rad);
-	double s = sin(rad);
+	double c = std::cos(rad);
+	double s = std::sin(rad);
 	double t = 1.0 - c;
 
 	XYZ nAxis = const_cast<XYZ&>(axis).Normalize();

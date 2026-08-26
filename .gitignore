@@ -41,3 +41,10 @@ test/x64
 *.user
 src/packages
 build
+/install/
+
+# Local tooling
+.claude/
+.ua/
+openspec/
+CLAUDE.md

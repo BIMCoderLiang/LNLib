@@ -53,7 +53,7 @@ namespace LNLib
 
 		double differ = left + right - simpson;
 		if (MathUtils::IsAlmostEqualTo(differ, 0.0) || 
-			MathUtils::IsLessThan(abs(differ) / 15.0, tolearance))
+			MathUtils::IsLessThan(std::abs(differ) / 15.0, tolearance))
 		{
 			length = left + right + differ / 15.0;
 		}
@@ -208,7 +208,7 @@ namespace LNLib
 			if (ders.size() > 2)
 			{
 				XYZ d2 = NurbsCurve::ComputeRationalCurveDerivatives(curve, 2, knotVector[i])[2];
-				int l = (int)(sqrt(1.0 / Constants::DistanceEpsilon) * sqrt(d2.Length() / 8.0));
+				int l = (int)(std::sqrt(1.0 / Constants::DistanceEpsilon) * std::sqrt(d2.Length() / 8.0));
 				if (l > n)
 				{
 					n = l;
@@ -318,7 +318,7 @@ double LNLib::NurbsCurve::Curvature(const LN_NurbsCurve& curve, double paramT)
 		return d2.Length();
 	}
 	double numerator = d1.CrossProduct(d2).Length();
-	double denominator = pow(d1.Length(), 3);
+	double denominator = std::pow(d1.Length(), 3);
 	return numerator / denominator;
 }
 
@@ -901,7 +901,7 @@ void LNLib::NurbsCurve::ElevateDegree(const LN_NurbsCurve& curve, int times, LN_
 	int n = controlPoints.size() - 1;
 	int m = n + degree + 1;
 	int ph = degree + times;
-	int ph2 = floor(ph / 2);
+	int ph2 = std::floor(ph / 2);
 
 	std::vector<std::vector<double>> bezalfs(degree + times + 1, std::vector<double>(degree + 1));
 	bezalfs[0][0] = bezalfs[ph][degree] = 1.0;
@@ -971,8 +971,8 @@ void LNLib::NurbsCurve::ElevateDegree(const LN_NurbsCurve& curve, int times, LN_
 		int oldr = r;
 		r = degree - mul;
 
-		int lbz = oldr > 0 ? floor((oldr + 2) / 2) : 1;
-		int rbz = r > 0 ? floor(ph - (r + 1) / 2) : ph;
+		int lbz = oldr > 0 ? std::floor((oldr + 2) / 2) : 1;
+		int rbz = r > 0 ? std::floor(ph - (r + 1) / 2) : ph;
 
 		if (r > 0)
 		{
@@ -1104,7 +1104,7 @@ bool LNLib::NurbsCurve::ReduceDegree(const LN_NurbsCurve& curve, LN_NurbsCurve& 
 	bool isBezier = ValidationUtils::IsValidBezier(degree, size);
 	if (!isBezier) return false;
 
-	int r = floor((degree - 1) / 2);
+	int r = std::floor((degree - 1) / 2);
 	std::vector<XYZW> updatedControlPoints(degree);
 	updatedControlPoints[0] = controlPoints[0];
 	updatedControlPoints[degree - 1] = controlPoints[degree];
@@ -1127,7 +1127,7 @@ bool LNLib::NurbsCurve::ReduceDegree(const LN_NurbsCurve& curve, LN_NurbsCurve& 
 		}
 		error = (controlPoints[r + 1].Distance(0.5 * (updatedControlPoints[r] + updatedControlPoints[r + 1])));
 		double c = MathUtils::Binomial(degree, r + 1);
-		error = error * (c * pow(0.5, r + 1) * pow(1 - 0.5, degree - r - 1));
+		error = error * (c * std::pow(0.5, r + 1) * std::pow(1 - 0.5, degree - r - 1));
 	}
 	else
 	{
@@ -1144,7 +1144,7 @@ bool LNLib::NurbsCurve::ReduceDegree(const LN_NurbsCurve& curve, LN_NurbsCurve& 
 		updatedControlPoints[r] = 0.5 * (PLr + PRr);
 		error = PLr.Distance(PRr);
 		double maxU = (degree - std::sqrt(degree)) / (2 * degree);
-		error = error * 0.5 * (1 - alpha[r]) * (MathUtils::Binomial(degree, r) * pow(maxU, r) * pow(1 - maxU, r + 1) * (1 - 2 * maxU));
+		error = error * 0.5 * (1 - alpha[r]) * (MathUtils::Binomial(degree, r) * std::pow(maxU, r) * std::pow(1 - maxU, r + 1) * (1 - 2 * maxU));
 	}
 	if (error > tol) return false;
 
@@ -1492,7 +1492,7 @@ void LNLib::NurbsCurve::Reparametrize(const LN_NurbsCurve& curve, double alpha, 
 			double lambda = updatedKnotVector[i + j] * gamma - alpha;
 			temp = temp * lambda;
 		}
-		double newW = abs(controlPoints[i].GetW() * temp);
+		double newW = std::abs(controlPoints[i].GetW() * temp);
 		updatedControlPoints[i] = XYZW(const_cast<XYZW&>(controlPoints[i]).ToXYZ(true), newW);
 	}
 
@@ -1822,11 +1822,11 @@ bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ
 	std::vector<double> knotVector(n + degree + 1 + 1);
 	std::vector<XYZW> controlPoints(n + 1);
 
-	double w1 = cos(dtheta / 2.0);
+	double w1 = std::cos(dtheta / 2.0);
 	XYZ nX = const_cast<XYZ&>(xAxis).Normalize();
 	XYZ nY = const_cast<XYZ&>(yAxis).Normalize();
-	XYZ P0 = center + xRadius * cos(startRad) * nX + yRadius * sin(startRad) * nY;
-	XYZ T0 = -sin(startRad) * nX + cos(startRad) * nY;
+	XYZ P0 = center + xRadius * std::cos(startRad) * nX + yRadius * std::sin(startRad) * nY;
+	XYZ T0 = -std::sin(startRad) * nX + std::cos(startRad) * nY;
 
 	controlPoints[0] = XYZW(P0, 1);
 	int index = 0;
@@ -1834,9 +1834,9 @@ bool LNLib::NurbsCurve::CreateArc(const XYZ& center, const XYZ& xAxis, const XYZ
 	for (int i = 1; i <= narcs; i++)
 	{
 		angle += dtheta;
-		XYZ P2 = center + xRadius * cos(angle) * nX + yRadius * sin(angle) * nY;
+		XYZ P2 = center + xRadius * std::cos(angle) * nX + yRadius * std::sin(angle) * nY;
 		controlPoints[index + 2] = XYZW(P2, 1);
-		XYZ T2 = -sin(angle) * nX + cos(angle) * nY;
+		XYZ T2 = -std::sin(angle) * nX + std::cos(angle) * nY;
 
 		double param0, param2 = 0.0;
 		XYZ P1;
@@ -3093,9 +3093,9 @@ bool LNLib::NurbsCurve::FitWithCubic(const std::vector<XYZ>& throughPoints, int 
 			double s = 1 - uh[k];
 			double t = uh[k];
 
-			XYZ a1 = 3 * pow(s, 2) * t * startTangent;
-			XYZ b1 = 3 * s * pow(t, 2) * endTangent;
-			XYZ c1 = throughPoints[k] - (pow(s, 3) + 3 * pow(s, 2) * t) * startPoint - (pow(t, 3) + 3 * s * pow(t, 2)) * endPoint;
+			XYZ a1 = 3 * std::pow(s, 2) * t * startTangent;
+			XYZ b1 = 3 * s * std::pow(t, 2) * endTangent;
+			XYZ c1 = throughPoints[k] - (std::pow(s, 3) + 3 * std::pow(s, 2) * t) * startPoint - (std::pow(t, 3) + 3 * s * std::pow(t, 2)) * endPoint;
 
 			double alk = (uh[k] - uh[k - 1]) / (uh[k + 1] - uh[k - 1]);
 			XYZ dk = (throughPoints[k] - throughPoints[k - 1]) / (uh[k] - uh[k - 1]);
@@ -3327,8 +3327,8 @@ bool LNLib::NurbsCurve::NeighborWeightsModification(const LN_NurbsCurve& curve, 
 	double abk = D.Distance(movePoint2) / controlLegLength;
 	double abk1 = C.Distance(movePoint1) / controlLegLength;
 
-	if (MathUtils::IsLessThan(abs(ak), 0.0) || MathUtils::IsLessThan(abs(ak1), 0.0) ||
-		MathUtils::IsLessThan(abs(abk), 0.0) || MathUtils::IsLessThan(abs(abk1), 0.0))
+	if (MathUtils::IsLessThan(std::abs(ak), 0.0) || MathUtils::IsLessThan(std::abs(ak1), 0.0) ||
+		MathUtils::IsLessThan(std::abs(abk), 0.0) || MathUtils::IsLessThan(std::abs(abk1), 0.0))
 	{
 		return false;
 	}
@@ -3372,7 +3372,7 @@ void LNLib::NurbsCurve::Warping(const LN_NurbsCurve& curve, const std::vector<do
 	{
 		double weight = temp[i].GetW();
 		XYZ currentPoint = temp[i].ToXYZ(true);
-		XYZ newPoint = currentPoint + warpShape[i] * abs(warpDistance) * W.Normalize();
+		XYZ newPoint = currentPoint + warpShape[i] * std::abs(warpDistance) * W.Normalize();
 		resultControlPoints.emplace_back(XYZW(newPoint, weight));
 	}
 	

@@ -371,7 +371,7 @@ void LNLib::VoronoiDiagramGenerator::geominit()
 	nvertices = 0;
 	nedges = 0;
 	sn = (float)nsites + 4;
-	sqrt_nsites = (int)sqrt(sn);
+	sqrt_nsites = (int)std::sqrt(sn);
 	deltay = ymax - ymin;
 	deltax = xmax - xmin;
 }
@@ -529,7 +529,7 @@ float LNLib::VoronoiDiagramGenerator::dist(struct Site* s, struct Site* t)
 	float dx, dy;
 	dx = s->coord.x - t->coord.x;
 	dy = s->coord.y - t->coord.y;
-	return (float)(sqrt(dx * dx + dy * dy));
+	return (float)(std::sqrt(dx * dx + dy * dy));
 }
 
 void LNLib::VoronoiDiagramGenerator::makevertex(struct Site* v)

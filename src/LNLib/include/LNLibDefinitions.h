@@ -14,15 +14,19 @@
 #define DLL_IMPORT __declspec(dllimport)
 
 #if defined(WIN64) || defined(_WIN64) || defined(__WIN64__) || defined(__CYGWIN__)
-    #ifdef LNLIB_HOME
+    #if defined(LNLIB_HOME) && !defined(LNLIB_STATIC)
         #define LNLIB_EXPORT __declspec(dllexport)
-    #else
+    #elif !defined(LNLIB_HOME)
         #define LNLIB_EXPORT __declspec(dllimport)
-    #endif
-#else
-    #ifdef LNLIB_HOME
-        #define LNLIB_EXPORT __attribute__((visibility("default")))
     #else
         #define LNLIB_EXPORT
     #endif
+#else
+    /*
+     * POSIX: no export attribute needed. CMake does not enable
+     * -fvisibility=hidden, so all symbols are visible by default, and GCC
+     * warns (-Wattributes) when visibility is applied to a typedef (used for
+     * LN_NurbsCurve etc. in LNObject.h).
+     */
+    #define LNLIB_EXPORT
 #endif
