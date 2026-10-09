@@ -2144,94 +2144,156 @@ void LNLib::NurbsSurface::MakeCornerFilletSurface(const LN_NurbsCurve& arc, LN_N
 	surface.ControlPoints = controlPoints;
 }
 
-void LNLib::NurbsSurface::GlobalInterpolation(
-	const std::vector<std::vector<XYZ>>& throughPoints,
-	int degreeU,
-	int degreeV,
-	LN_NurbsSurface& surface)
+void LNLib::NurbsSurface::GlobalInterpolation(const std::vector<std::vector<XYZ>>& throughPoints, int degreeU, int degreeV, LN_NurbsSurface& surface)
 {
-	VALIDATE_ARGUMENT(throughPoints.size() > 0, "throughPoints", "ThroughPoints row size must be greater than zero.");
-	VALIDATE_ARGUMENT(throughPoints[0].size() > 0, "throughPoints", "ThroughPoints column size must be greater than zero.");
-	VALIDATE_ARGUMENT(degreeU >= 0 && degreeU <= Constants::NURBSMaxDegree, "degreeU", "DegreeU out of range.");
-	VALIDATE_ARGUMENT(degreeV >= 0 && degreeV <= Constants::NURBSMaxDegree, "degreeV", "DegreeV out of range.");
+		VALIDATE_ARGUMENT(
+			throughPoints.size() > 0,
+			"throughPoints",
+			"ThroughPoints row size must be greater than zero.");
 
-	int rows = static_cast<int>(throughPoints.size());
-	int cols = static_cast<int>(throughPoints[0].size());
+		VALIDATE_ARGUMENT(
+			throughPoints[0].size() > 0,
+			"throughPoints",
+			"ThroughPoints column size must be greater than zero.");
 
-	VALIDATE_ARGUMENT(cols > degreeU, "throughPoints", "Column size must be greater than degreeU.");
-	VALIDATE_ARGUMENT(rows > degreeV, "throughPoints", "Row size must be greater than degreeV.");
+		VALIDATE_ARGUMENT(
+			degreeU >= 0 && degreeU <= Constants::NURBSMaxDegree,
+			"degreeU",
+			"DegreeU out of range.");
 
-	std::vector<double> uk, vl;
-	Interpolation::GetSurfaceMeshParameterization(throughPoints, uk, vl);
+		VALIDATE_ARGUMENT(
+			degreeV >= 0 && degreeV <= Constants::NURBSMaxDegree,
+			"degreeV",
+			"DegreeV out of range.");
 
-	std::vector<double> knotVectorU = Interpolation::AverageKnotVector(degreeU, uk);
-	std::vector<double> knotVectorV = Interpolation::AverageKnotVector(degreeV, vl);
+		int rows = static_cast<int>(throughPoints.size());
+		int cols = static_cast<int>(throughPoints[0].size());
 
-	int total = rows * cols;
-	std::vector<std::vector<double>> A(total, std::vector<double>(total, 0.0));
+		VALIDATE_ARGUMENT(
+			rows > degreeU,
+			"throughPoints",
+			"Row size must be greater than degreeU.");
 
-	for (int i = 0; i < rows; ++i) {
-		for (int j = 0; j < cols; ++j) {
-			int eqIdx = i * cols + j;
+		VALIDATE_ARGUMENT(
+			cols > degreeV,
+			"throughPoints",
+			"Column size must be greater than degreeV.");
 
-			if ((i == 0 || i == rows - 1) && (j == 0 || j == cols - 1)) {
-				int ctrlIdx = eqIdx;
-				A[eqIdx][ctrlIdx] = 1.0;
-			}
-			else {
-				double u = uk[j];
-				double v = vl[i];
+		std::vector<double> uk, vl;
 
-				int spanU = Polynomials::GetKnotSpanIndex(degreeU, knotVectorU, u);
-				int spanV = Polynomials::GetKnotSpanIndex(degreeV, knotVectorV, v);
+		Interpolation::GetSurfaceMeshParameterization(throughPoints, uk, vl);
+
+		VALIDATE_ARGUMENT(
+			uk.size() == static_cast<size_t>(rows),
+			"throughPoints",
+			"U parameter size does not match row size.");
+
+		VALIDATE_ARGUMENT(
+			vl.size() == static_cast<size_t>(cols),
+			"throughPoints",
+			"V parameter size does not match column size.");
+
+		std::vector<double> knotVectorU = Interpolation::AverageKnotVector(degreeU, uk);
+
+		std::vector<double> knotVectorV = Interpolation::AverageKnotVector(degreeV, vl);
+
+		int total = rows * cols;
+
+		std::vector<std::vector<double>> A(
+			total,
+			std::vector<double>(total, 0.0));
+
+		for (int i = 0; i < rows; ++i) {
+			for (int j = 0; j < cols; ++j) {
+
+				int eqIdx = i * cols + j;
+
+				double u = uk[i];
+				double v = vl[j];
+
+				int spanU = Polynomials::GetKnotSpanIndex(
+					degreeU,
+					knotVectorU,
+					u);
+
+				int spanV = Polynomials::GetKnotSpanIndex(
+					degreeV,
+					knotVectorV,
+					v);
 
 				double basisU[Constants::NURBSMaxDegree + 1];
 				double basisV[Constants::NURBSMaxDegree + 1];
 
-				Polynomials::BasisFunctions(spanU, degreeU, knotVectorU, u, basisU);
-				Polynomials::BasisFunctions(spanV, degreeV, knotVectorV, v, basisV);
+				Polynomials::BasisFunctions(
+					spanU,
+					degreeU,
+					knotVectorU,
+					u,
+					basisU);
+
+				Polynomials::BasisFunctions(
+					spanV,
+					degreeV,
+					knotVectorV,
+					v,
+					basisV);
 
 				for (int l = 0; l <= degreeV; ++l) {
-					int ctrlRow = spanV - degreeV + l;
-					if (ctrlRow < 0 || ctrlRow >= rows) continue;
+
+					int ctrlV = spanV - degreeV + l;
+					if (ctrlV < 0 || ctrlV >= cols) continue;
 
 					for (int k = 0; k <= degreeU; ++k) {
-						int ctrlCol = spanU - degreeU + k;
-						if (ctrlCol < 0 || ctrlCol >= cols) continue;
 
-						int ctrlIdx = ctrlRow * cols + ctrlCol;
-						A[eqIdx][ctrlIdx] = basisV[l] * basisU[k];
+						int ctrlU = spanU - degreeU + k;
+						if (ctrlU < 0 || ctrlU >= rows) continue;
+
+						int ctrlIdx = ctrlU * cols + ctrlV;
+						A[eqIdx][ctrlIdx] = basisU[k] * basisV[l];
 					}
 				}
 			}
 		}
-	}
 
-	std::vector<std::vector<double>> right(total, std::vector<double>(3));
-	for (int i = 0; i < rows; ++i) {
-		for (int j = 0; j < cols; ++j) {
-			int idx = i * cols + j;
-			right[idx][0] = throughPoints[i][j].X();
-			right[idx][1] = throughPoints[i][j].Y();
-			right[idx][2] = throughPoints[i][j].Z();
+		std::vector<std::vector<double>> right(total, std::vector<double>(3));
+
+		for (int i = 0; i < rows; ++i) {
+			for (int j = 0; j < cols; ++j) {
+
+				int idx = i * cols + j;
+
+				right[idx][0] = throughPoints[i][j].X();
+				right[idx][1] = throughPoints[i][j].Y();
+				right[idx][2] = throughPoints[i][j].Z();
+			}
 		}
-	}
 
-	auto result = MathUtils::SolveLinearSystem(A, right);
-	std::vector<std::vector<XYZW>> controlPoints(rows, std::vector<XYZW>(cols));
-	for (int i = 0; i < rows; ++i) {
-		for (int j = 0; j < cols; ++j) {
-			int idx = i * cols + j;
-			XYZ pt(result[idx][0], result[idx][1], result[idx][2]);
-			controlPoints[i][j] = XYZW(pt, 1.0);
+		auto result = MathUtils::SolveLinearSystem(A, right);
+
+		std::vector<std::vector<XYZW>> controlPoints(
+			rows,
+			std::vector<XYZW>(cols));
+
+		for (int i = 0; i < rows; ++i) {
+			for (int j = 0; j < cols; ++j) {
+
+				int idx = i * cols + j;
+
+				XYZ pt(
+					result[idx][0],
+					result[idx][1],
+					result[idx][2]);
+
+				controlPoints[i][j] = XYZW(pt, 1.0);
+			}
 		}
-	}
 
-	surface.DegreeU = degreeU;
-	surface.DegreeV = degreeV;
-	surface.KnotVectorU = knotVectorU;
-	surface.KnotVectorV = knotVectorV;
-	surface.ControlPoints = controlPoints;
+		surface.DegreeU = degreeU;
+		surface.DegreeV = degreeV;
+		surface.KnotVectorU = knotVectorU;
+		surface.KnotVectorV = knotVectorV;
+		surface.ControlPoints = controlPoints;
+	
 }
 
 bool LNLib::NurbsSurface::BicubicLocalInterpolation(const std::vector<std::vector<XYZ>>& throughPoints, LN_NurbsSurface& surface)
