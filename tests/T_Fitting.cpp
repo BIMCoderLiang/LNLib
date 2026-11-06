@@ -73,6 +73,60 @@ TEST(Test_Fitting, Interpolation)
 		EXPECT_TRUE(cps[0].ToXYZ(true).IsAlmostEqualTo(Q[0]));
 		EXPECT_TRUE(cps[cps.size()-1].ToXYZ(true).IsAlmostEqualTo(Q[4]));
 	}
+	{
+
+		auto GetSurfaceZ = [](double x, double y)->double
+		{
+				double dx = (x - 720.0) / 430.0;
+				double dy = (y - 520.0) / 340.0;
+
+				double hill = 4.8 * std::exp(
+					-1.3 * (dx * dx + dy * dy)
+				);
+
+				double wave1 = 0.65 *
+					std::sin(2.0 * Constants::Pi * x / 850.0) *
+					std::cos(2.0 * Constants::Pi * y / 700.0);
+
+				double wave2 = 0.35 *
+					std::sin(2.0 * Constants::Pi * x / 1200.0 + 0.8);
+
+				double z = -7.0 + hill + wave1 + wave2;
+				return z;
+		};
+
+		int numX = 51, numY = 51;
+		const double minX = 0.0;
+		const double maxX = 1500.0;
+		
+		const double minY = 0.0;
+		const double maxY = 1000.0;
+		
+		std::vector<std::vector<XYZ>> points;
+		
+		points.resize(numX);
+		
+		for (int i = 0; i < numX; ++i)
+		{
+			double x = minX +
+			(maxX - minX) * i / (numX - 1);
+			points[i].reserve(numY);
+		
+			for (int j = 0; j < numY; ++j)
+			{
+				double y = minY +
+				(maxY - minY) * j / (numY - 1);
+		
+				double z = GetSurfaceZ(x, y) * 100; //make z same value as x and y.
+		
+				points[i].emplace_back(x, y, z);
+			}
+		}
+		LN_NurbsSurface surface;
+		NurbsSurface::GlobalInterpolation(points, 3, 3, surface);
+		EXPECT_TRUE(ValidationUtils::IsValidNurbs(3, surface.KnotVectorU.size(), surface.ControlPoints.size()));
+		EXPECT_TRUE(ValidationUtils::IsValidNurbs(3, surface.KnotVectorV.size(), surface.ControlPoints[0].size()));
+	}
 }
 
 TEST(Test_Fitting, Approximation)
